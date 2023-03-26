@@ -3,15 +3,17 @@ using Microsoft.EntityFrameworkCore;
 using Domain.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration
+                           .AddUserSecrets("Lilith.Backend")
+                           .AddEnvironmentVariables();
+
+var connectionString = builder.Configuration["ConnectionString"] ?? "";
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString, b => b.MigrationsAssembly("Api")));
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-// Get the connection string & add the DBContext to the dependency container
-var connectionString = builder.Configuration.GetConnectionString("Postgres");
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString, b => b.MigrationsAssembly("Api")));
 
 var app = builder.Build();
 
