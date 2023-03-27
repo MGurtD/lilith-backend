@@ -1,5 +1,5 @@
 ﻿using Domain.Entities;
-using Infrastructure.Persistance.Builders;
+using Infrastructure.Persistance.EntityConfiguration;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistance

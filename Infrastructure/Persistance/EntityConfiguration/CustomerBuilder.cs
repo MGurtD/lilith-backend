@@ -2,7 +2,7 @@
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Persistance.Builders
+namespace Infrastructure.Persistance.EntityConfiguration
 {
     public class CustomerBuilder : IEntityTypeConfiguration<Customer>
     {

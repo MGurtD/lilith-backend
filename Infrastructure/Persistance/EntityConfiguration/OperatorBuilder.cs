@@ -2,7 +2,7 @@
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Persistance.Builders
+namespace Infrastructure.Persistance.EntityConfiguration
 {
     public class OperatorBuilder : IEntityTypeConfiguration<Operator>
     {
@@ -23,6 +23,12 @@ namespace Infrastructure.Persistance.Builders
                 .HasDefaultValue(0)
                 .HasPrecision(8, 2)
                 .IsRequired();
+            builder
+                .Property(b => b.Type)
+                .IsRequired()
+                .HasDefaultValue("")
+                .HasColumnType("varchar")
+                .HasMaxLength(500);
 
             builder
                 .HasKey(b => b.Id)
