@@ -2,8 +2,8 @@
 {
     public abstract class Entity
     {
-        public Guid Id { get; private set; } = Guid.NewGuid();
-        public DateTime CreatedOn { get; private set; }
-        public DateTime UpdatedOn { get; private set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public DateTime CreatedOn { get; set; }
+        public DateTime UpdatedOn { get; set; }
     }
 }

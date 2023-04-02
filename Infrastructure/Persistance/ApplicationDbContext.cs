@@ -15,11 +15,8 @@ namespace Infrastructure.Persistance
             base.OnModelCreating(builder);
 
             new CustomerBuilder().Configure(builder.Entity<Customer>());
+            new EnterpriseBuilder().Configure(builder.Entity<Enterprise>());
         }
 
-        //protected override void OnConfiguring(DbContextOptionsBuilder builder)
-        //{
-        //    builder.UseNpgsql("Host=51.75.123.239;Port=3000;Database=EFCoreTest;Username=ubuntu;Password=J0ab#271106;");
-        //}
     }
 }

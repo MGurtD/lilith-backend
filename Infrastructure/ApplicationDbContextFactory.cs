@@ -27,7 +27,7 @@ namespace Infrastructure
                 .AddEnvironmentVariables()
                 .Build();
 
-            return config["ConnectionString"] ?? "";
+            return config["ConnectionStrings:Default"] ?? "";
         }
     }
 }
