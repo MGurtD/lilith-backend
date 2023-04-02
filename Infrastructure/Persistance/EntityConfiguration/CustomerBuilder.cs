@@ -1,18 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Xml;
 
 namespace Infrastructure.Persistance.EntityConfiguration
 {
     public class CustomerBuilder : IEntityTypeConfiguration<Customer>
     {
-
         public void Configure(EntityTypeBuilder<Customer> builder)
         {
-            builder
-                .Property(b => b.Id)
-                .ValueGeneratedOnAdd()
-                .HasColumnType("uuid");
+            builder.ConfigureBase();
+
             builder
                 .Property(b => b.Name)
                 .IsRequired()

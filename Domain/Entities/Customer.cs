@@ -1,8 +1,7 @@
 ﻿namespace Domain.Entities
 {
-    public class Customer
+    public class Customer : Entity
     {
-        public Guid Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
         public string Address { get; set; }
@@ -13,8 +12,7 @@
         public string Phone { get; set; }
         public string HomePage { get; set; } = string.Empty;
 
-        public Customer(Guid id,
-                        string name,
+        public Customer(string name,
                         string email,
                         string address,
                         string city,
@@ -24,7 +22,6 @@
                         string phone,
                         string homePage)
         {
-            Id = id;
             Name = name;
             Email = email;
             Address = address;

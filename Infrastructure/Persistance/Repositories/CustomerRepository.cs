@@ -1,6 +1,5 @@
 ﻿using Application.Persistance;
 using Domain.Entities;
-using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Persistance.Repositories
 {

@@ -50,5 +50,10 @@ namespace Infrastructure.Persistance.Repositories
         {
             dbSet.RemoveRange(entities);
         }
+
+        public void Update(Entity entity)
+        {
+            dbSet.Update(entity);
+        }
     }
 }
