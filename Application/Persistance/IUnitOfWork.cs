@@ -5,6 +5,6 @@
         ICustomerRepository Customers { get; }
         IEnterpriseRepository Enterprises { get; }
 
-        int Complete();
+        Task<int> CompleteAsync();
     }
 }

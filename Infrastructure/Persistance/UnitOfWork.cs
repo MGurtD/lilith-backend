@@ -16,9 +16,9 @@ namespace Infrastructure.Persistance
             Enterprises = new EnterpriseRepository(context);
         }
 
-        public int Complete()
+        public async Task<int> CompleteAsync()
         {
-            return context.SaveChanges();
+            return await context.SaveChangesAsync();
         }
 
         public void Dispose()

@@ -1,7 +1,7 @@
-﻿using Application.Persistance;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+
+using Application.Persistance;
 
 namespace Infrastructure.Persistance.Repositories
 {
@@ -16,14 +16,14 @@ namespace Infrastructure.Persistance.Repositories
             dbSet = context.Set<Entity>();
         }
 
-        public Entity? Get(Id id)
+        public async Task<Entity?> Get(Id id)
         {
-            return dbSet.Find(id);
+            return await dbSet.FindAsync(id);
         }
 
-        public IEnumerable<Entity> GetAll()
+        public async Task<IEnumerable<Entity>> GetAll()
         {
-            return dbSet.ToList();
+            return await dbSet.ToListAsync();
         }
 
         public IEnumerable<Entity> Find(Expression<Func<Entity, bool>> predicate)
@@ -31,29 +31,36 @@ namespace Infrastructure.Persistance.Repositories
             return dbSet.Where(predicate);
         }
 
-        public void Add(Entity entity)
+        public async Task Add(Entity entity)
         {
-            dbSet.Add(entity);
+            await dbSet.AddAsync(entity);
+            await context.SaveChangesAsync();
         }
 
-        public void AddRange(IEnumerable<Entity> entities)
+        public async Task AddRange(IEnumerable<Entity> entities)
         {
-            dbSet.AddRange(entities);
+            await dbSet.AddRangeAsync(entities);
+            await context.SaveChangesAsync();
         }
 
-        public void Remove(Entity entity)
-        {
-            dbSet.Remove(entity);
-        }
-
-        public void RemoveRange(IEnumerable<Entity> entities)
-        {
-            dbSet.RemoveRange(entities);
-        }
-
-        public void Update(Entity entity)
+        public async Task Update(Entity entity)
         {
             dbSet.Update(entity);
+            await context.SaveChangesAsync();
         }
+
+        public async Task Remove(Entity entity)
+        {
+            dbSet.Remove(entity);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task RemoveRange(IEnumerable<Entity> entities)
+        {
+            dbSet.RemoveRange(entities);
+            await context.SaveChangesAsync();
+        }
+
+        
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Api.DTOs
+﻿namespace Api.DataTransferObjects
 {
     public class AuthResponse
     {

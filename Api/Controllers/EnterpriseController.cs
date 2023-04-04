@@ -1,12 +1,5 @@
-using Api.DTOs;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Application.Persistance;
-using Infrastructure.Persistance;
 using Domain.Entities;
 
 namespace Api.Controllers
@@ -25,7 +18,7 @@ namespace Api.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(Enterprise requestEnterprise)
+        public async Task<IActionResult> Create(Enterprise requestEnterprise)
         {
             // Validation the incoming request
             if (!ModelState.IsValid) return BadRequest();
@@ -40,15 +33,14 @@ namespace Api.Controllers
             requestEnterprise.CreatedOn = DateTime.UtcNow;
             requestEnterprise.UpdatedOn = DateTime.UtcNow;
 
-            _unitOfWork.Enterprises.Add(requestEnterprise);
-            _unitOfWork.Complete();
+            await _unitOfWork.Enterprises.Add(requestEnterprise);
             return Ok();
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var enterprises = _unitOfWork.Enterprises.GetAll();
+            var enterprises = await _unitOfWork.Enterprises.GetAll();
             return Ok(enterprises);
         }
 

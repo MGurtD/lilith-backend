@@ -8,11 +8,5 @@ namespace Infrastructure.Persistance.Repositories
         public CustomerRepository(ApplicationDbContext context) : base(context)
         {
         }
-
-        // TODO: Remove
-        public IEnumerable<Customer> GetTopCustomers()
-        {
-            return dbSet.OrderBy(c => c.Name).Take(10);
-        }
     }
 }

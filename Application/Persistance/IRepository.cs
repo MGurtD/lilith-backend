@@ -1,20 +1,21 @@
-﻿using System.Linq.Expressions;
+﻿using Domain.Entities;
+using System.Linq.Expressions;
 
 namespace Application.Persistance
 {
     public interface IRepository<TEntity, TId> where TEntity : class
     {
-        TEntity? Get(TId id);
-        IEnumerable<TEntity> GetAll();
+        Task<TEntity?> Get(TId id);
+        Task<IEnumerable<TEntity>> GetAll();
         IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate);
 
-        void Add(TEntity entity);
-        void AddRange(IEnumerable<TEntity> entities);
+        Task Add(TEntity entity);
+        Task AddRange(IEnumerable<TEntity> entities);
 
-        void Update(TEntity entity);
+        Task Update(TEntity entity);
 
-        void Remove(TEntity entity);
-        void RemoveRange(IEnumerable<TEntity> entities);
+        Task Remove(TEntity entity);
+        Task RemoveRange(IEnumerable<TEntity> entities);
 
     }
 }
