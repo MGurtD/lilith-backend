@@ -9,6 +9,7 @@ using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 using NLog;
 using NLog.Web;
+using Api.Mapping;
 
 // Early init of NLog to allow startup and exception logging, before host is built
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
@@ -27,6 +28,9 @@ try
         builder.Services.AddDbContext<ApplicationDbContext>(options => {
             options.UseNpgsql(GetConnectionString(builder.Configuration));
         });
+        builder.Services
+            .AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedEmail = false)
+            .AddEntityFrameworkStores<ApplicationDbContext>();
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         // JWT Service    
@@ -52,12 +56,9 @@ try
                 };
             });
 
-        // 
-        builder.Services
-            .AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedEmail = false)
-            .AddEntityFrameworkStores<ApplicationDbContext>();
-
+        builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
         builder.Services.AddControllers();
+
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Api.DataTransferObjects
+namespace Api.Mapping.Dtos
 {
     public class UserRegistrationRequest
     {

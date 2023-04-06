@@ -1,4 +1,4 @@
-﻿namespace Api.DataTransferObjects
+﻿namespace Api.Mapping.Dtos
 {
     public class UserLoginRequest
     {

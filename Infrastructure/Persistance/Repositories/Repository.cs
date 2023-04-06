@@ -23,12 +23,12 @@ namespace Infrastructure.Persistance.Repositories
 
         public async Task<IEnumerable<Entity>> GetAll()
         {
-            return await dbSet.ToListAsync();
+            return await dbSet.AsNoTracking().ToListAsync();
         }
 
         public IEnumerable<Entity> Find(Expression<Func<Entity, bool>> predicate)
         {
-            return dbSet.Where(predicate);
+            return dbSet.AsNoTracking().Where(predicate);
         }
 
         public async Task Add(Entity entity)
