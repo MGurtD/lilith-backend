@@ -16,7 +16,7 @@ namespace Infrastructure.Persistance.Repositories
             dbSet = context.Set<Entity>();
         }
 
-        public async Task<Entity?> Get(Id id)
+        public virtual async Task<Entity?> Get(Id id)
         {
             return await dbSet.FindAsync(id);
         }

@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230407063728_EnterpiseSiteRelationship")]
+    partial class EnterpiseSiteRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -121,11 +123,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Enterprises", "Config");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Enterprise", b =>
-            {
-                b.Navigation("Sites");
-            });
-
             modelBuilder.Entity("Domain.Entities.Site", b =>
                 {
                     b.Property<Guid>("Id")
@@ -206,17 +203,6 @@ namespace Infrastructure.Migrations
 
                     b.ToTable("Sites", "Config");
                 });
-
-            modelBuilder.Entity("Domain.Entities.Site", b =>
-            {
-                b.HasOne("Domain.Entities.Enterprise", "Enterprise")
-                    .WithMany("Sites")
-                    .HasForeignKey("EnterpriseId")
-                    .OnDelete(DeleteBehavior.Cascade)
-                    .IsRequired();
-
-                b.Navigation("Enterprise");
-            });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -414,6 +400,17 @@ namespace Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.Site", b =>
+                {
+                    b.HasOne("Domain.Entities.Enterprise", "Enterprise")
+                        .WithMany("Sites")
+                        .HasForeignKey("EnterpriseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Enterprise");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -465,6 +462,10 @@ namespace Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Domain.Entities.Enterprise", b =>
+                {
+                    b.Navigation("Sites");
+                });
 #pragma warning restore 612, 618
         }
     }

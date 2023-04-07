@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Domain.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace Api.Mapping.Dtos
 {
@@ -10,5 +11,6 @@ namespace Api.Mapping.Dtos
         public string Name { get; set; } = string.Empty;
         [Required]
         public string Description { get; set; } = string.Empty;
+        public List<SiteDto> Sites { get; set; } = new List<SiteDto>();
     }
 }

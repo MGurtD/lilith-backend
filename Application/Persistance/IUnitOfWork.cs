@@ -4,6 +4,7 @@
     {
         ICustomerRepository Customers { get; }
         IEnterpriseRepository Enterprises { get; }
+        ISiteRepository Sites { get; }
 
         Task<int> CompleteAsync();
     }

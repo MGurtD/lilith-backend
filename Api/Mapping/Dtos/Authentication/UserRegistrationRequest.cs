@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Api.Mapping.Dtos
+namespace Api.Mapping.Dtos.Authentication
 {
     public class UserRegistrationRequest
     {

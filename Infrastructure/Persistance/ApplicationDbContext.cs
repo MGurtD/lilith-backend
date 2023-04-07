@@ -16,6 +16,9 @@ namespace Infrastructure.Persistance
 
             new CustomerBuilder().Configure(builder.Entity<Customer>());
             new EnterpriseBuilder().Configure(builder.Entity<Enterprise>());
+            new SiteBuilder().Configure(builder.Entity<Site>());
+
+
         }
 
     }

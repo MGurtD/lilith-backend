@@ -8,7 +8,12 @@ namespace Api.Mapping
     {
         public MappingProfile()
         {
-            CreateMap<Enterprise, EnterpriseDto>().ReverseMap();
+            CreateMap<Enterprise, EnterpriseDto>()
+                .ForMember(dest => dest.Sites,
+                   opts => opts.MapFrom(src => src.Sites.Select(ci => ci).ToList())
+                   )
+                .ReverseMap();
+            CreateMap<Site, SiteDto>().ReverseMap();
         }
     }
 }

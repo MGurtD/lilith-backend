@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230406175425_SiteEntity")]
+    partial class SiteEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -121,11 +123,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Enterprises", "Config");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Enterprise", b =>
-            {
-                b.Navigation("Sites");
-            });
-
             modelBuilder.Entity("Domain.Entities.Site", b =>
                 {
                     b.Property<Guid>("Id")
@@ -160,9 +157,6 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("varchar");
-
-                    b.Property<Guid>("EnterpriseId")
-                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -200,23 +194,10 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("PK_Site");
 
-                    b.HasIndex("EnterpriseId");
-
                     b.HasIndex(new[] { "Name" }, "UK_Site_Name");
 
                     b.ToTable("Sites", "Config");
                 });
-
-            modelBuilder.Entity("Domain.Entities.Site", b =>
-            {
-                b.HasOne("Domain.Entities.Enterprise", "Enterprise")
-                    .WithMany("Sites")
-                    .HasForeignKey("EnterpriseId")
-                    .OnDelete(DeleteBehavior.Cascade)
-                    .IsRequired();
-
-                b.Navigation("Enterprise");
-            });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -464,7 +445,6 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
-
 #pragma warning restore 612, 618
         }
     }
