@@ -4,6 +4,7 @@ using Domain.Entities;
 using AutoMapper;
 using Api.Mapping.Dtos;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Server.IIS.Core;
 
 namespace Api.Controllers
 {
@@ -34,7 +35,7 @@ namespace Api.Controllers
             var dbEnterprise = _unitOfWork.Enterprises.Find(e => e.Name == enterprise.Name).SingleOrDefault();
             if (dbEnterprise is not null)
             {
-                return BadRequest($"Enterprise with name {requestEnterprise.Name} already exists");
+                throw new KeyNotFoundException($"Enterprise with name {requestEnterprise.Name} already exists");
             }
 
             enterprise.CreatedOn = DateTime.UtcNow;
@@ -73,7 +74,9 @@ namespace Api.Controllers
 
             var enterpriseDb = _unitOfWork.Enterprises.Find(e => e.Id == id).FirstOrDefault();
             if (enterpriseDb is null)
-                return NotFound();
+            {
+                throw new KeyNotFoundException($"Enterprise with id {id} does not exists");
+            }
 
             var enterprise = _mapper.Map<Enterprise>(requestEnterprise);
             enterprise.CreatedOn = enterpriseDb.CreatedOn;
@@ -88,7 +91,9 @@ namespace Api.Controllers
         {
             var enterprise = await _unitOfWork.Enterprises.Get(id);
             if (enterprise is null)
-                return NotFound();
+            {
+                throw new KeyNotFoundException($"Enterprise with id {id} does not exists");
+            }
 
             await _unitOfWork.Enterprises.Remove(enterprise);
 

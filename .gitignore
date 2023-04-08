@@ -261,3 +261,6 @@ FakesAssemblies/
 
 # Visual Studio 6 workspace options file
 *.opt
+
+# Local Development Files
+docker-compose.yml

@@ -10,6 +10,7 @@ using System.Text;
 using NLog;
 using NLog.Web;
 using Api.Mapping;
+using Api.Middlewares;
 
 // Early init of NLog to allow startup and exception logging, before host is built
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
@@ -85,6 +86,15 @@ try
         app.UseAuthentication();
         app.UseAuthorization();
 
+        // global cors policy
+        app.UseCors(x => x
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+
+        // global error handler
+        app.UseMiddleware<ErrorHandlerMiddleware>();
+
         app.MapControllers();
 
         app.Run();
@@ -98,7 +108,7 @@ catch (Exception exception)
 finally
 {
     // Ensure to flush and stop internal timers/threads before application-exit (Avoid segmentation fault on Linux)
-    NLog.LogManager.Shutdown();
+    LogManager.Shutdown();
 }
 
 static string GetConnectionString(ConfigurationManager configurationManager)
