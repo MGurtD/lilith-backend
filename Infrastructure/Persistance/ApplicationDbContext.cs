@@ -14,11 +14,10 @@ namespace Infrastructure.Persistance
         {
             base.OnModelCreating(builder);
 
+            new UserRefreshTokenBuilder().Configure(builder.Entity<UserRefreshToken>());
             new CustomerBuilder().Configure(builder.Entity<Customer>());
             new EnterpriseBuilder().Configure(builder.Entity<Enterprise>());
             new SiteBuilder().Configure(builder.Entity<Site>());
-
-
         }
 
     }

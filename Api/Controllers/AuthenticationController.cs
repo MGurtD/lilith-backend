@@ -121,7 +121,7 @@ namespace Api.Controllers
 
         private string GenerateJwtToken(IdentityUser user)
         {
-            var signKey = Encoding.ASCII.GetBytes(_configuration.GetSection("JwtConfig:Secret").Value);
+            var signKey = Encoding.ASCII.GetBytes(ApplicationConfiguration.JwtSecret);
 
             // Token specifications
             var jwtTokenHandler = new JwtSecurityTokenHandler();
@@ -129,11 +129,12 @@ namespace Api.Controllers
             {
                 Subject = new ClaimsIdentity(new[]
                 {
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Token identifier
                     new Claim("id", user.Id),
                     new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 }),
-                Expires = DateTime.Now.AddDays(1),
+                Expires = DateTime.UtcNow.Add(ApplicationConfiguration.JwtExpirationTime),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(signKey), SecurityAlgorithms.HmacSha256)
             };
 

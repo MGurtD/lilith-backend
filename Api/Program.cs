@@ -19,7 +19,7 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
     {
-        builder.Configuration.AddUserSecrets("Lilith.Backend").AddEnvironmentVariables();
+        ApplicationConfiguration.LoadConfiguration(builder.Configuration);
 
         // Logging with NLog
         builder.Logging.ClearProviders();
@@ -27,7 +27,7 @@ try
 
         // Database Context
         builder.Services.AddDbContext<ApplicationDbContext>(options => {
-            options.UseNpgsql(GetConnectionString(builder.Configuration));
+            options.UseNpgsql(ApplicationConfiguration.ConnectionString);
         });
         builder.Services
             .AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedEmail = false)
@@ -35,6 +35,17 @@ try
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         // JWT Service    
+        var signKey = Encoding.ASCII.GetBytes(ApplicationConfiguration.JwtSecret);
+        var tokenValidationParameters = new TokenValidationParameters()
+        {
+            IssuerSigningKey = new SymmetricSecurityKey(signKey),
+            ValidateIssuer = !builder.Environment.IsDevelopment(),
+            ValidateIssuerSigningKey = true,
+            ValidateAudience = !builder.Environment.IsDevelopment(),
+            RequireExpirationTime = !builder.Environment.IsDevelopment(),
+            ValidateLifetime = true,
+        };
+
         builder.Services
             .AddAuthentication(options => {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -43,18 +54,8 @@ try
             })
             .AddJwtBearer(jwt =>
             {
-                var signKey = Encoding.ASCII.GetBytes(GetJwtToken(builder.Configuration));
-
                 jwt.SaveToken = true; // After authentication, token will be saved
-                jwt.TokenValidationParameters = new TokenValidationParameters()
-                {
-                    IssuerSigningKey = new SymmetricSecurityKey(signKey),
-                    ValidateIssuer = !builder.Environment.IsDevelopment(),
-                    ValidateIssuerSigningKey = true,
-                    ValidateAudience = !builder.Environment.IsDevelopment(),
-                    RequireExpirationTime = !builder.Environment.IsDevelopment(),
-                    ValidateLifetime = true,
-                };
+                jwt.TokenValidationParameters = tokenValidationParameters;
             });
 
         builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
@@ -109,26 +110,4 @@ finally
 {
     // Ensure to flush and stop internal timers/threads before application-exit (Avoid segmentation fault on Linux)
     LogManager.Shutdown();
-}
-
-static string GetConnectionString(ConfigurationManager configurationManager)
-{
-    var connectionString = configurationManager.GetConnectionString("Default");
-    if (connectionString is null)
-    {
-        throw new Exception("ConnectionString:Default configuration is required");
-    }
-
-    return connectionString;
-}
-
-static string GetJwtToken(ConfigurationManager configurationManager)
-{
-    var jwtSecret = configurationManager.GetSection("JwtConfig:Secret").Value;
-    if (jwtSecret is null)
-    {
-        throw new Exception("JwtConfig:Secret configuration is required");
-    }
-
-    return jwtSecret;
 }
