@@ -11,27 +11,28 @@ namespace Infrastructure.Persistance.EntityConfiguration
         {
             builder.ConfigureBase();
 
-            builder.Property(b => b.JwtId)
-                   .ValueGeneratedNever()
-                   .HasColumnType("uuid");
+            builder
+                .Property(b => b.JwtId)
+                .ValueGeneratedNever()
+                .IsRequired()
+                .HasColumnType("uuid");
             builder
                 .Property(b => b.Token)
+                .ValueGeneratedNever()
                 .IsRequired()
-                .HasColumnType("varchar")
-                .HasMaxLength(600);
+                .HasColumnType("uuid");
             builder
-                .Property(b => b.IsActive)
+                .Property(b => b.Used)
                 .IsRequired()
                 .HasColumnType("bool")
-                .HasDefaultValue(true);
+                .HasDefaultValue(false);
             builder
-                .Property(b => b.IsRevoked)
+                .Property(b => b.Revoked)
                 .IsRequired()
                 .HasColumnType("bool")
                 .HasDefaultValue(false);
             builder
                 .Property(e => e.ExpiryDate)
-                .HasColumnType<DateTime>("timestamp")
                 .IsRequired();
 
             builder

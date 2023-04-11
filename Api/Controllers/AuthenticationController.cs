@@ -5,6 +5,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Api.Mapping.Dtos.Authentication;
+using Application.Persistance;
+using Domain.Entities;
+using Api.Exceptions;
 
 namespace Api.Controllers
 {
@@ -13,24 +16,20 @@ namespace Api.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly IConfiguration _configuration;
-        private readonly ILogger<AuthenticationController> _logger;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly TokenValidationParameters _tokenValidationParameters;
 
-        public AuthenticationController(UserManager<IdentityUser> userManager, IConfiguration configuration, ILogger<AuthenticationController> logger)
+        public AuthenticationController(UserManager<IdentityUser> userManager, IUnitOfWork unitOfWork, TokenValidationParameters tokenValidationParameters)
         {
             _userManager = userManager;
-            _configuration = configuration;
-            _logger = logger;
-
-            _logger.LogDebug("NLog injected into HomeController");
+            _unitOfWork = unitOfWork;
+            _tokenValidationParameters = tokenValidationParameters;
         }
 
         [HttpPost]
         [Route("Register")]
         public async Task<IActionResult> Register(UserRegistrationRequest requestUser)
         {
-            _logger.LogInformation("Register request from");
-
             // Validation the incoming request
             if (!ModelState.IsValid) return BadRequest();
 
@@ -41,10 +40,7 @@ namespace Api.Controllers
                 return BadRequest(new AuthResponse()
                 {
                     Result = false,
-                    Errors = new List<string>()
-                    {
-                        "Email already exists"
-                    }
+                    Errors = new List<string>() { "Email already exists" }
                 });
             }
 
@@ -61,20 +57,14 @@ namespace Api.Controllers
                 return BadRequest(new AuthResponse()
                 {
                     Result = false,
-                    Errors = new List<string>()
-                    {
-                        "Could not insert the user on the database"
-                    }
+                    RefreshToken = Guid.Empty,
+                    Errors = created.Errors.Select(e => e.ToString() ?? string.Empty).ToList()
                 });
             }
 
             // Response with the authorization token
-            var token = GenerateJwtToken(user);
-            return Ok(new AuthResponse()
-            {
-                Token = token,
-                Result = true
-            });
+            var authResponse = await GenerateJwtToken(user);
+            return Ok(authResponse);
         }
 
         [HttpPost]
@@ -111,15 +101,37 @@ namespace Api.Controllers
                 });
             }
 
-            var jwtToken = GenerateJwtToken(dbUser);
-            return Ok(new AuthResponse()
-            {
-                Result = true,
-                Token = jwtToken
-            });
+            var authResponse = await GenerateJwtToken(dbUser);
+            return Ok(authResponse);
         }
 
-        private string GenerateJwtToken(IdentityUser user)
+        [HttpPost]
+        [Route("RefreshToken")]
+        public async Task<IActionResult> RefreshToken([FromBody] TokenRequest tokenRequest)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new AuthResponse()
+                {
+                    Result = false,
+                    Errors = new List<string>() { "Invalid parameters" }
+                });
+            }
+
+            var authResponse  = await VerifyAndGenerateToken(tokenRequest);
+            if (authResponse is null)
+            {
+                return BadRequest(new AuthResponse()
+                {
+                    Result = false,
+                    Errors = new List<string>() { "Invalid token" }
+                });
+            }
+
+            return Ok(authResponse);
+        }
+
+        private async Task<AuthResponse> GenerateJwtToken(IdentityUser user)
         {
             var signKey = Encoding.ASCII.GetBytes(ApplicationConfiguration.JwtSecret);
 
@@ -140,8 +152,131 @@ namespace Api.Controllers
 
             var token = jwtTokenHandler.CreateToken(tokenDescriptor);
             var jwtToken = jwtTokenHandler.WriteToken(token);
+            var refreshToken = Guid.NewGuid();
 
-            return jwtToken;
+            var userRefreshToken = new UserRefreshToken()
+            {
+                JwtId = Guid.Parse(token.Id),
+                Token = refreshToken,
+                ExpiryDate = DateTime.UtcNow.AddMonths(6),
+                Used = false,
+                Revoked = false,
+                UserId = Guid.Parse(user.Id)
+            };
+
+            await _unitOfWork.UserRefreshTokens.Add(userRefreshToken);
+
+            return new AuthResponse()
+            {
+                Result = true,
+                RefreshToken = refreshToken,
+                Token = jwtToken
+            };
+        }
+
+        private async Task<AuthResponse> VerifyAndGenerateToken(TokenRequest tokenRequest)
+        {
+            var jwtTokenHandler = new JwtSecurityTokenHandler();
+
+            try
+            {
+                _tokenValidationParameters.ValidateLifetime = false; // TODO: uncomment to production
+
+                var tokenInVerification = jwtTokenHandler.ValidateToken(tokenRequest.Token, _tokenValidationParameters, out var validatedToken);
+                if (validatedToken is JwtSecurityToken jwtSecurityToken){
+
+                    // Is the same algorithm?
+                    if (!jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        return new AuthResponse()
+                        {
+                            Result = false,
+                            Errors = new List<string>() { "Invalid algorithm" }
+                        };
+                    }
+                }
+
+                // Token has been expired?
+                var utcExpiryDate = long.Parse(tokenInVerification.Claims.First(t => t.Type.Equals(JwtRegisteredClaimNames.Exp)).Value);
+                var expiryDate = UnixTimeStampToDateTime(utcExpiryDate);
+
+                if (expiryDate > DateTime.UtcNow)
+                {
+                    return new AuthResponse()
+                    {
+                        Result = false,
+                        Errors = new List<string>() { $"Token is valid until {expiryDate}" }
+                    };
+                }
+
+                // Exist on the persistance layer?
+                var storedToken = _unitOfWork.UserRefreshTokens.Find(urt => urt.Token == tokenRequest.RefreshToken).FirstOrDefault();
+                if (storedToken is null)
+                {
+                    return new AuthResponse()
+                    {
+                        Result = false,
+                        Errors = new List<string>() { $"Refresh token '{tokenRequest.RefreshToken}' does not exist" }
+                    };
+                }
+
+                if (storedToken.Used)
+                {
+                    return new AuthResponse()
+                    {
+                        Result = false,
+                        Errors = new List<string>() { $"Refresh token used" }
+                    };
+                }
+
+                // Is a using token?
+                if (storedToken.Revoked)
+                {
+                    return new AuthResponse()
+                    {
+                        Result = false,
+                        Errors = new List<string>() { $"Refresh token revoked" }
+                    };
+                }
+
+                // Has the same identifier?
+                var jti = tokenInVerification.Claims.First(t => t.Type == JwtRegisteredClaimNames.Jti).Value;
+                if (storedToken.JwtId != Guid.Parse(jti))
+                {
+                    return new AuthResponse()
+                    {
+                        Result = false,
+                        Errors = new List<string>() { $"The unique key of the refresh token does not match. Stored: {storedToken.JwtId} != Requested: {jti}" }
+                    };
+                }
+
+                // Refresh token has been expired?
+                if (storedToken.ExpiryDate < DateTime.UtcNow)
+                {
+                    return new AuthResponse()
+                    {
+                        Result = false,
+                        Errors = new List<string>() { $"Expired token" }
+                    };
+                }
+                
+                storedToken.Used = true;
+                await _unitOfWork.UserRefreshTokens.Update(storedToken);
+
+                var dbUser = await _userManager.FindByIdAsync(storedToken.UserId.ToString());
+                return await GenerateJwtToken(dbUser);                
+            }
+            catch (Exception ex)
+            {
+                throw new ApiException(ex.Message);
+            }
+        }
+
+        // Seconds from 1-1-1970 00:00:00
+        private DateTime UnixTimeStampToDateTime(long unixTimeStamp)
+        {
+            var dateTimeValue = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            return dateTimeValue.AddSeconds(unixTimeStamp).ToUniversalTime();
         }
 
     }

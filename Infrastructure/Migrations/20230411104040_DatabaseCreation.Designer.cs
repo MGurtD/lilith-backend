@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230409094435_RenameUserRefreshTokens")]
-    partial class RenameUserRefreshTokens
+    [Migration("20230411104040_DatabaseCreation")]
+    partial class DatabaseCreation
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -215,28 +215,26 @@ namespace Infrastructure.Migrations
                         .HasDefaultValueSql("NOW()");
 
                     b.Property<DateTime>("ExpiryDate")
-                        .HasColumnType("timestamp");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsRevoked")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("JwtId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasMaxLength(600)
-                        .HasColumnType("varchar");
+                    b.Property<bool>("Revoked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<Guid>("Token")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("UpdatedOn")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Used")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");

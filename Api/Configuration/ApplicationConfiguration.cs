@@ -8,7 +8,7 @@ public static class ApplicationConfiguration
     public static string JwtSecret = string.Empty;
     public static TimeSpan JwtExpirationTime;
 
-    public static void LoadConfiguration(ConfigurationManager configurationManager)
+    public static void Load(ConfigurationManager configurationManager)
     {
         ConfigurationManager = configurationManager;
         ConfigurationManager.AddUserSecrets(USER_SECRET_ID).AddEnvironmentVariables();

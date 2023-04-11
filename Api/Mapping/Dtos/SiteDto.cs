@@ -20,11 +20,9 @@ namespace Api.Mapping.Dtos
         public string Region { get; set; } = string.Empty;
         [Required]
         public string Country { get; set; } = string.Empty;
-        [Required]
-        [Phone]
+        [Required,Phone]
         public string PhoneNumber { get; set; } = string.Empty;
-        [Required]
-        [EmailAddress]
+        [Required,EmailAddress]
         public string Email { get; set; } = string.Empty;
         [Required]
         public string VatNumber { get; set; } = string.Empty;

@@ -21,7 +21,7 @@ namespace Infrastructure.Persistance.Repositories
             return await dbSet.FindAsync(id);
         }
 
-        public async Task<IEnumerable<Entity>> GetAll()
+        public virtual async Task<IEnumerable<Entity>> GetAll()
         {
             return await dbSet.AsNoTracking().ToListAsync();
         }

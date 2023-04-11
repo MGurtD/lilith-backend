@@ -12,7 +12,12 @@ namespace Infrastructure.Persistance.Repositories
 
         public override async Task<Enterprise?> Get(Guid id)
         {
-            return await dbSet.Include("Sites").FirstOrDefaultAsync(e => e.Id == id);
+            return await dbSet.Include("Sites").AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
+        }
+
+        public override async Task<IEnumerable<Enterprise>> GetAll()
+        {
+            return await dbSet.Include("Sites").AsNoTracking().ToListAsync();
         }
 
     }

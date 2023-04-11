@@ -19,7 +19,7 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
     {
-        ApplicationConfiguration.LoadConfiguration(builder.Configuration);
+        ApplicationConfiguration.Load(builder.Configuration);
 
         // Logging with NLog
         builder.Logging.ClearProviders();
@@ -57,6 +57,7 @@ try
                 jwt.SaveToken = true; // After authentication, token will be saved
                 jwt.TokenValidationParameters = tokenValidationParameters;
             });
+        builder.Services.AddSingleton(tokenValidationParameters);
 
         builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
         builder.Services.AddControllers();
