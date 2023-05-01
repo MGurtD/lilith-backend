@@ -180,8 +180,6 @@ namespace Api.Controllers
 
             try
             {
-                _tokenValidationParameters.ValidateLifetime = false; // TODO: uncomment to production
-
                 var tokenInVerification = jwtTokenHandler.ValidateToken(tokenRequest.Token, _tokenValidationParameters, out var validatedToken);
                 if (validatedToken is JwtSecurityToken jwtSecurityToken){
 
@@ -196,7 +194,7 @@ namespace Api.Controllers
                     }
                 }
 
-                // Token has been expired?
+                // Token is still valid?
                 var utcExpiryDate = long.Parse(tokenInVerification.Claims.First(t => t.Type.Equals(JwtRegisteredClaimNames.Exp)).Value);
                 var expiryDate = UnixTimeStampToDateTime(utcExpiryDate);
 
