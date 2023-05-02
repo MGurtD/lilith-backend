@@ -58,7 +58,7 @@ namespace Api.Controllers
                 {
                     Result = false,
                     RefreshToken = Guid.Empty,
-                    Errors = created.Errors.Select(e => e.ToString() ?? string.Empty).ToList()
+                    Errors = created.Errors.Select(e => e.Code.ToString() ?? string.Empty).ToList()
                 });
             }
 
