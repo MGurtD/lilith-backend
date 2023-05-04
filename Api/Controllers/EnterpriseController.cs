@@ -12,13 +12,11 @@ namespace Api.Controllers
     [Route("api/[controller]")]
     public class EnterpriseController : ControllerBase
     {
-        private readonly ILogger<EnterpriseController> _logger;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
         public EnterpriseController(ILogger<EnterpriseController> logger, IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _logger = logger;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }

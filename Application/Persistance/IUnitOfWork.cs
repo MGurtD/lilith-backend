@@ -2,10 +2,11 @@
 {
     public interface IUnitOfWork
     {
-        IUserRefreshTokenRepository UserRefreshTokens { get; }
-        ICustomerRepository Customers { get; }
         IEnterpriseRepository Enterprises { get; }
         ISiteRepository Sites { get; }
+        IRoleRepository Roles { get; }
+        IUserRepository Users { get; }
+        IUserRefreshTokenRepository UserRefreshTokens { get; }
 
         Task<int> CompleteAsync();
     }

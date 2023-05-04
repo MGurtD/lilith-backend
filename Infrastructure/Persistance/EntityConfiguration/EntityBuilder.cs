@@ -15,8 +15,8 @@ namespace Infrastructure.Persistance.EntityConfiguration
             builder.Property(e => e.CreatedOn)
                   .ValueGeneratedOnAdd()
                   .HasDefaultValueSql("NOW()");
-            builder.Property(e => e.CreatedOn)
-                  .ValueGeneratedOnUpdate()
+            builder.Property(e => e.UpdatedOn)
+                  .ValueGeneratedOnAddOrUpdate()
                   .HasDefaultValueSql("NOW()");
         }
     }
