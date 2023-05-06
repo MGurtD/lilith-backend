@@ -6,7 +6,6 @@ using Application.Services;
 using AutoMapper;
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -41,6 +40,7 @@ namespace Api.Services
             }
 
             var user = _mapper.Map<User>(request);
+            user.Password = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password);
             await _unitOfWork.Users.Add(user);
 
             var authResponse = await GenerateJwtToken(user);
@@ -58,7 +58,8 @@ namespace Api.Services
                 };
             }
 
-            var isPasswordValid = user.Password == request.Password;
+            //var passwordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password);
+            var isPasswordValid = BCrypt.Net.BCrypt.EnhancedVerify(request.Password, user.Password);
             if (!isPasswordValid)
             {
                 return new AuthResponse()
@@ -66,7 +67,7 @@ namespace Api.Services
                     Result = false,
                     Errors = new List<string>()
                     {
-                        "Unexisting user"
+                        "Incorrect password"
                     }
                 };
             }
@@ -190,7 +191,7 @@ namespace Api.Services
                     };
                 }
 
-                // Is a using token?
+                // Is a revoked token?
                 if (storedToken.Revoked)
                 {
                     return new AuthResponse()
