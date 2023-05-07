@@ -4,8 +4,6 @@ namespace Application.Dtos
 {
     public class UserDto
     {
-        [Required]
-        public Guid Id { get; set; }
 
         [Required]
         [MinLength(4)]

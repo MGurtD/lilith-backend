@@ -5,7 +5,6 @@ using Application.Persistance;
 using Application.Services;
 using AutoMapper;
 using Domain.Entities;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -35,7 +34,7 @@ namespace Api.Services
                 return new AuthResponse() 
                 {
                     Result = false,
-                    Errors = new List<string>() { "Username already exists" }
+                    Errors = new List<string>() { $"El nom d'usuari {request.Username} no está disponible." }
                 };
             }
 
@@ -54,11 +53,10 @@ namespace Api.Services
                 return new AuthResponse()
                 {
                     Result = false,
-                    Errors = new List<string>() { "Unexisting user" }
+                    Errors = new List<string>() { $"L'usuari {request.Username} no existeix." }
                 };
             }
 
-            //var passwordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password);
             var isPasswordValid = BCrypt.Net.BCrypt.EnhancedVerify(request.Password, user.Password);
             if (!isPasswordValid)
             {
@@ -67,7 +65,7 @@ namespace Api.Services
                     Result = false,
                     Errors = new List<string>()
                     {
-                        "Incorrect password"
+                        "La contrasenya no es vàlida."
                     }
                 };
             }
