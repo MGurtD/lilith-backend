@@ -19,7 +19,7 @@ namespace Api.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
+        [HttpPost]
         public async Task<IActionResult> Create(UserDto request)
         {
             if(!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
