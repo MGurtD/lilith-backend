@@ -36,5 +36,45 @@ namespace Api.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var users = await _unitOfWork.Users.GetAll();
+            return Ok(users);
+        }
+
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var user = await _unitOfWork.Users.Get(id);
+            if (user is not null)
+            {
+                return Ok(user);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id, UserDto requestUser)
+        {
+            if(id != requestUser.Id)            
+                return BadRequest();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.ValidationState);
+
+            var userDb = _unitOfWork.Users.Find(e => e.Id == id).FirstOrDefault();
+            if (userDb is null)
+            {
+                return NotFound();
+            }
+
+            var user = _mapper.Map<User>(requestUser);
+            await _unitOfWork.Users.Update(user);  
+            return Ok(user);
+        }
     }
 }
