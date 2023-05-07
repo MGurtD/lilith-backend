@@ -58,15 +58,13 @@ namespace Api.Controllers
             }
         }
 
-        [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid id, UserDto requestUser)
+        [HttpPut]
+        public async Task<IActionResult> Update(UserDto requestUser)
         {
-            if(id != requestUser.Id)            
-                return BadRequest();
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var userDb = _unitOfWork.Users.Find(e => e.Id == id).FirstOrDefault();
+            var userDb = _unitOfWork.Users.Find(e => e.Username == requestUser.Username).FirstOrDefault();
             if (userDb is null)
             {
                 return NotFound();
