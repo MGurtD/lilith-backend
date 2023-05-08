@@ -52,7 +52,8 @@ namespace Api.Controllers
             var user = await _unitOfWork.Users.Get(id);
             if (user is not null)
             {
-                return Ok(user);
+                var userDto = _mapper.Map<UserDto>(user);
+                return Ok(userDto);
             }
             else
             {
