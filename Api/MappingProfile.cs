@@ -1,8 +1,8 @@
 ﻿using Api.Mapping.Dtos;
+using Api.Mapping.Dtos.Authentication;
 using Application.Dtos;
 using AutoMapper;
 using Domain.Entities;
-using Microsoft.AspNetCore.Identity;
 
 namespace Api
 {
@@ -16,8 +16,8 @@ namespace Api
                    )
                 .ReverseMap();
             CreateMap<Site, SiteDto>().ReverseMap();
-            CreateMap<IdentityRole, RoleDto>().ReverseMap();
             CreateMap<Role, RoleDto>().ReverseMap();
+            CreateMap<User, UserRegisterRequest>().ReverseMap();
             CreateMap<User, UserDto>().ReverseMap();
         }
     }

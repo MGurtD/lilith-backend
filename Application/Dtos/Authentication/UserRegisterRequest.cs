@@ -1,23 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.Dtos
+namespace Api.Mapping.Dtos.Authentication
 {
-    public class UserDto
+    public class UserRegisterRequest
     {
         [Required]
-        public Guid Id { get; set; }
-
-        [Required]
         public string Username { get; set; } = string.Empty;
-
+        [Required]
+        public string Password { get; set; } = string.Empty;
+        [Required]
+        public string RepeatPassword { get; set; } = string.Empty;
         [Required]
         public string FirstName { get; set; } = string.Empty;
-
         [Required]
         public string LastName { get; set; } = string.Empty;
-
-        [Required]
-        public bool Disabled { get; set; } = false;
-
     }
 }

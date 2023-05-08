@@ -1,4 +1,5 @@
-﻿using Application.Dtos;
+﻿using Api.Mapping.Dtos;
+using Application.Dtos;
 using Application.Persistance;
 using AutoMapper;
 using Domain.Entities;
@@ -41,7 +42,8 @@ namespace Api.Controllers
         public async Task<IActionResult> GetAll()
         {
             var users = await _unitOfWork.Users.GetAll();
-            return Ok(users);
+            var usersDto = _mapper.Map<IEnumerable<UserDto>>(users);
+            return Ok(usersDto);
         }
 
         [HttpGet("{id:guid}")]

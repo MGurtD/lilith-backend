@@ -25,7 +25,7 @@ namespace Api.Services
             _tokenValidationParameters = tokenValidationParameters;
         }
 
-        public async Task<AuthResponse> Register(UserDto request)
+        public async Task<AuthResponse> Register(UserRegisterRequest request)
         {
             // Validate existence of the unique user key
             var exists = _unitOfWork.Users.Find(u => u.Username == request.Username).FirstOrDefault();
@@ -38,8 +38,9 @@ namespace Api.Services
                 };
             }
 
+            request.Password = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password);
+
             var user = _mapper.Map<User>(request);
-            user.Password = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password);
             await _unitOfWork.Users.Add(user);
 
             var authResponse = await GenerateJwtToken(user);
@@ -66,6 +67,18 @@ namespace Api.Services
                     Errors = new List<string>()
                     {
                         "La contrasenya no es vàlida."
+                    }
+                };
+            }
+
+            if (user.Disabled)
+            {
+                return new AuthResponse()
+                {
+                    Result = false,
+                    Errors = new List<string>()
+                    {
+                        $"L'usuari ${request.Username} está deshabilitat."
                     }
                 };
             }

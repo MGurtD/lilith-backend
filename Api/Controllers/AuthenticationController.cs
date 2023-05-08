@@ -19,30 +19,21 @@ namespace Api.Controllers
     {
         private readonly IAuthenticationService _authenticationService;
 
-        public AuthenticationController(UserManager<IdentityUser> userManager, IUnitOfWork unitOfWork, TokenValidationParameters tokenValidationParameters, IAuthenticationService authenticationService)
+        public AuthenticationController(IAuthenticationService authenticationService)
         {
             _authenticationService = authenticationService;
         }
 
         [HttpPost]
         [Route("Register")]
-        public async Task<IActionResult> Register(UserDto requestUser)
+        public async Task<IActionResult> Register(UserRegisterRequest request)
         {
             // Validation the incoming request
             if (!ModelState.IsValid) return BadRequest();
 
             // Use the authentication service register
-            var authResponse = await _authenticationService.Register(requestUser);
+            var authResponse = await _authenticationService.Register(request);
             return authResponse.Result ? Ok(authResponse) : BadRequest(authResponse);
-        }
-
-        [HttpPost]
-        [Route("EnableUser")]
-        public async Task<IActionResult> EnableUser(Guid id)
-        {
-            // Use the authentication service register
-            var enabled = await _authenticationService.Enable(id);
-            return enabled ? Ok(enabled) : BadRequest(enabled);
         }
 
         [HttpPost]
