@@ -7,6 +7,7 @@ public static class ApplicationConfiguration
     public static string ConnectionString = string.Empty;
     public static string JwtSecret = string.Empty;
     public static TimeSpan JwtExpirationTime;
+    public static string FileUploadPath = string.Empty;
 
     public static void Load(ConfigurationManager configurationManager)
     {
@@ -16,6 +17,7 @@ public static class ApplicationConfiguration
         ConnectionString = GetConfigurationKey("ConnectionStrings:Default");
         JwtSecret = GetConfigurationKey("JwtConfig:Secret");
         JwtExpirationTime = TimeSpan.Parse(GetConfigurationKey("JwtConfig:ExpirationTimeFrame"));
+        FileUploadPath = GetConfigurationKey("FileManagment:UploadPath");
     }
 
     private static string GetConfigurationKey(string Key)

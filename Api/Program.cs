@@ -37,6 +37,9 @@ try
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
         builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
+        // File uploading
+        builder.Services.AddScoped<IFileService, FileService>();
+
         // JWT Service    
         var signKey = Encoding.ASCII.GetBytes(ApplicationConfiguration.JwtSecret);
         var tokenValidationParameters = new TokenValidationParameters()
