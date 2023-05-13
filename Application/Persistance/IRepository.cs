@@ -8,6 +8,7 @@ namespace Application.Persistance
         Task<TEntity?> Get(TId id);
         Task<IEnumerable<TEntity>> GetAll();
         IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate);
+        Task<bool> Exists(Guid id);
 
         Task Add(TEntity entity);
         Task AddRange(IEnumerable<TEntity> entities);

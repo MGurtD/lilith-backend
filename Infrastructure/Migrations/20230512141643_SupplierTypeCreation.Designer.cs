@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230512141643_SupplierTypeCreation")]
+    partial class SupplierTypeCreation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -186,149 +188,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Sites", "Config");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Supplier", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar");
-
-                    b.Property<string>("CIF")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar");
-
-                    b.Property<string>("ComercialName")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar");
-
-                    b.Property<string>("Country")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Observations")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar");
-
-                    b.Property<string>("PostalCode")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("varchar");
-
-                    b.Property<string>("Region")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar");
-
-                    b.Property<Guid>("SupplierTypeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("TaxName")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.HasKey("Id")
-                        .HasName("PK_Supplier");
-
-                    b.HasIndex("SupplierTypeId");
-
-                    b.HasIndex(new[] { "ComercialName" }, "UK_Supplier_Name")
-                        .IsUnique();
-
-                    b.ToTable("Suppliers", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.SupplierContact", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Charge")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar");
-
-                    b.Property<string>("Observations")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar");
-
-                    b.Property<string>("PhoneExtension")
-                        .IsRequired()
-                        .HasMaxLength(5)
-                        .HasColumnType("varchar");
-
-                    b.Property<Guid>("SupplierId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.HasKey("Id")
-                        .HasName("PK_SupplierContact");
-
-                    b.HasIndex("SupplierId");
-
-                    b.ToTable("SupplierContacts", (string)null);
-                });
-
             modelBuilder.Entity("Domain.Entities.SupplierType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -478,36 +337,9 @@ namespace Infrastructure.Migrations
                     b.Navigation("Enterprise");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Supplier", b =>
-                {
-                    b.HasOne("Domain.Entities.SupplierType", "Type")
-                        .WithMany()
-                        .HasForeignKey("SupplierTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Type");
-                });
-
-            modelBuilder.Entity("Domain.Entities.SupplierContact", b =>
-                {
-                    b.HasOne("Domain.Entities.Supplier", "Supplier")
-                        .WithMany("Contacts")
-                        .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Supplier");
-                });
-
             modelBuilder.Entity("Domain.Entities.Enterprise", b =>
                 {
                     b.Navigation("Sites");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Supplier", b =>
-                {
-                    b.Navigation("Contacts");
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>

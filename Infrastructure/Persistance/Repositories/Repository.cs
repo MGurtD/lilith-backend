@@ -5,7 +5,7 @@ using Application.Persistance;
 
 namespace Infrastructure.Persistance.Repositories
 {
-    public class Repository<Entity, Id> : IRepository<Entity, Id> where Entity : class
+    public class Repository<Entity, Id> : IRepository<Entity, Id> where Entity : Domain.Entities.Entity
     {
         protected ApplicationDbContext context;
         internal DbSet<Entity> dbSet;
@@ -29,6 +29,11 @@ namespace Infrastructure.Persistance.Repositories
         public IEnumerable<Entity> Find(Expression<Func<Entity, bool>> predicate)
         {
             return dbSet.AsNoTracking().Where(predicate);
+        }
+
+        public virtual async Task<bool> Exists(Guid Id)
+        {
+            return await dbSet.AnyAsync(e => e.Id == Id);
         }
 
         public async Task Add(Entity entity)

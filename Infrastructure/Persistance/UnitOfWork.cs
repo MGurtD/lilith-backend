@@ -1,4 +1,5 @@
 ﻿using Application.Persistance;
+using Domain.Entities;
 using Infrastructure.Persistance.Repositories;
 
 namespace Infrastructure.Persistance
@@ -11,6 +12,9 @@ namespace Infrastructure.Persistance
         public IRoleRepository Roles { get; private set; }
         public IUserRepository Users { get; private set; }
         public IUserRefreshTokenRepository UserRefreshTokens { get; private set; }
+        public ISupplierTypeRepository SupplierTypes { get; private set; }
+
+        public ISupplierRepository Suppliers { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -20,6 +24,8 @@ namespace Infrastructure.Persistance
             Sites = new SiteRepository(context);
             Users = new UserRepository(context);
             Roles = new RoleRepository(context);
+            SupplierTypes = new SupplierTypeRepository(context);
+            Suppliers =  new SupplierRepository(context, new SupplierContactRepository(context));
         }
 
         public async Task<int> CompleteAsync()

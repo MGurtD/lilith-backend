@@ -19,6 +19,7 @@ namespace Api
             CreateMap<Role, RoleDto>().ReverseMap();
             CreateMap<User, UserRegisterRequest>().ReverseMap();
             CreateMap<User, UserDto>().ReverseMap();
+            CreateMap<SupplierType, SupplierTypeDto>().ReverseMap();
         }
     }
 }
