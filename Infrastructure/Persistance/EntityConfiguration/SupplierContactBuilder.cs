@@ -54,7 +54,7 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasKey(b => b.Id)
                 .HasName("PK_SupplierContact");
 
-            builder.ToTable("SupplierContacts");
+            builder.ToTable("SupplierContacts", "Config");
         }
 
     }

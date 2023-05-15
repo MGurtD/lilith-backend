@@ -64,7 +64,7 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasIndex(builder => builder.ComercialName, "UK_Supplier_Name")
                 .IsUnique();
 
-            builder.ToTable("Suppliers");
+            builder.ToTable("Suppliers", "Config");
         }
 
     }

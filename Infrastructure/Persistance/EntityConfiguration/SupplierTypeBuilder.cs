@@ -29,7 +29,7 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasIndex(builder => builder.Name, "UK_SupplierType_Name")
                 .IsUnique();
 
-            builder.ToTable("SupplierTypes");
+            builder.ToTable("SupplierTypes", "Config");
         }
 
     }
