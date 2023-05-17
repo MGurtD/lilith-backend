@@ -36,6 +36,11 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasColumnType("varchar")
                 .HasMaxLength(250);
             builder
+                .Property(b => b.City)
+                .IsRequired()
+                .HasColumnType("varchar")
+                .HasMaxLength(250);            
+            builder
                 .Property(b => b.PostalCode)
                 .IsRequired()
                 .HasColumnType("varchar")

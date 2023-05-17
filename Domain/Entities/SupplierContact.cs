@@ -9,6 +9,7 @@
         public string Phone { get; set; } = string.Empty;
         public string PhoneExtension { get; set; } = string.Empty;
         public string Observations { get; set; } = string.Empty;
+        public bool Default { get; set; } = false;
         public bool Disabled { get; set; } = false;
 
         public Guid SupplierId { get; set; }

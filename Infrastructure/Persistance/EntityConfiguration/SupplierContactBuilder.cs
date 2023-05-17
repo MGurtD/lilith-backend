@@ -45,6 +45,11 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .IsRequired()
                 .HasColumnType("text");
             builder
+                .Property(b => b.Default)
+                .IsRequired()
+                .HasColumnType("bool")
+                .HasDefaultValue(false);
+            builder
                 .Property(b => b.Disabled)
                 .IsRequired()
                 .HasColumnType("bool")

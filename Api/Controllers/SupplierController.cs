@@ -120,6 +120,7 @@ namespace Api.Controllers
                 contact.PhoneExtension = request.PhoneExtension;
                 contact.Charge = request.Charge;
                 contact.Disabled = request.Disabled;
+                contact.Default = request.Default;
                 contact.Observations = request.Observations;
 
                 await _unitOfWork.Suppliers.UpdateContact(contact);
