@@ -58,11 +58,13 @@ namespace Api.Controllers
             }
         }
 
-        [HttpPut]
-        public async Task<IActionResult> Update(Supplier request)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid Id, Supplier request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
+            if (Id != request.Id)
+                return BadRequest();
 
             var exists = await _unitOfWork.Suppliers.Exists(request.Id);
             if (!exists)
