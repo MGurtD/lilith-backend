@@ -63,11 +63,13 @@ namespace Api.Controllers
             }
         }
 
-        [HttpPut]
-        public async Task<IActionResult> Update(SupplierTypeDto request)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid Id, SupplierType request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
+            if (Id != request.Id)
+                return BadRequest();
 
             var exists = await _unitOfWork.SupplierTypes.Exists(request.Id);
             if (!exists)
@@ -78,7 +80,7 @@ namespace Api.Controllers
             return Ok(entity);
         }
 
-        [HttpDelete]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             if (!ModelState.IsValid)

@@ -74,7 +74,7 @@ namespace Api.Controllers
             return Ok(request);
         }
 
-        [HttpDelete]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             if (!ModelState.IsValid)
