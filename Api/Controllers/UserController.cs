@@ -61,9 +61,12 @@ namespace Api.Controllers
             }
         }
 
-        [HttpPut]
-        public async Task<IActionResult> Update(UserDto requestUser)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id, UserDto requestUser)
         {
+            if (id != requestUser.Id) {
+                return BadRequest();
+            }
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
@@ -71,11 +74,14 @@ namespace Api.Controllers
             if (userDb is null)
             {
                 return NotFound();
-            }
+            };
 
-            var user = _mapper.Map<User>(requestUser);
-            await _unitOfWork.Users.Update(user);  
-            return Ok(user);
+            userDb.FirstName = requestUser.FirstName;
+            userDb.LastName = requestUser.LastName;
+            userDb.Disabled = requestUser.Disabled;
+
+            await _unitOfWork.Users.Update(userDb);  
+            return Ok(userDb);
         }
     }
 }
