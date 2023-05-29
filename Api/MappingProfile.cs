@@ -20,6 +20,7 @@ namespace Api
             CreateMap<User, UserRegisterRequest>().ReverseMap();
             CreateMap<User, UserDto>().ReverseMap();
             CreateMap<SupplierType, SupplierTypeDto>().ReverseMap();
+            CreateMap<CustomerType, CustomerTypeDto>().ReverseMap();
         }
     }
 }
