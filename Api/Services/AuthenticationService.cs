@@ -46,6 +46,20 @@ namespace Api.Services
             var authResponse = await GenerateJwtToken(user);
             return authResponse;
         }
+
+        public async Task<bool> ChangePassword(UserLoginRequest request)
+        {
+            var user = _unitOfWork.Users.Find((u) => u.Username == request.Username).FirstOrDefault();
+            if (user is null) 
+            {
+                return false;
+            }
+
+            var encrPassword = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password);
+            await _unitOfWork.Users.Update(user);
+            return true;
+        }
+
         public async Task<AuthResponse> Login(UserLoginRequest request)
         {
             var user = _unitOfWork.Users.Find(u => u.Username == request.Username).FirstOrDefault();
@@ -260,6 +274,5 @@ namespace Api.Services
             var dateTimeValue = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             return dateTimeValue.AddSeconds(unixTimeStamp).ToUniversalTime();
         }
-
     }
 }

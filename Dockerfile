@@ -18,6 +18,8 @@ RUN dotnet publish "Api/Api.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
+RUN mkdir -p /files
+
 COPY --from=publish /app/publish .
 
 ENTRYPOINT ["dotnet", "Api.dll"]

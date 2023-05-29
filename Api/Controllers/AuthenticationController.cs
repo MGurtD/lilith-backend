@@ -48,7 +48,19 @@ namespace Api.Controllers
             return authResponse.Result ? Ok(authResponse) : BadRequest(authResponse);
         }
 
-        // TODO > Implementar refresh tokens quan hagi separat les responsabilitats de autenticació i autorització
+        [HttpPost]
+        [Route("ChangePassword")]
+        public async Task<IActionResult> ChangePassword(UserLoginRequest requestUser)
+        {
+            // Validation the incoming request
+            if (!ModelState.IsValid) return BadRequest();
+
+            // Use the authentication service register
+            var changed = await _authenticationService.ChangePassword(requestUser);
+            return changed ? Ok() : StatusCode(StatusCodes.Status500InternalServerError);
+        }
+
+        // TODO > Implementar refresh tokens quan hagi separat les responsabilitats de autenticaciï¿½ i autoritzaciï¿½
         [HttpPost]
         [Route("RefreshToken")]
         public async Task<IActionResult> RefreshToken([FromBody] TokenRequest tokenRequest)
