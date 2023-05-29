@@ -16,6 +16,12 @@ namespace Infrastructure.Persistance
 
         public ISupplierRepository Suppliers { get; private set; }
 
+        public ICustomerTypeRepository CustomerTypes { get; private set; }
+        public ICustomerAddressRepository CustomerAddresses { get; private set; }
+        public ICustomerContactRepository CustomerContacts { get; private set; }
+        public ICustomerRepository Customers { get; private set; }
+        
+
         public UnitOfWork(ApplicationDbContext context)
         {
             this.context = context;
@@ -26,6 +32,10 @@ namespace Infrastructure.Persistance
             Roles = new RoleRepository(context);
             SupplierTypes = new SupplierTypeRepository(context);
             Suppliers =  new SupplierRepository(context, new SupplierContactRepository(context));
+            CustomerTypes = new CustomerTypeRepository(context);
+            CustomerAddresses = new CustomerAddressRepository(context);
+            CustomerContacts = new CustomerContactRepository(context);
+            Customers = new CustomerRepository(context, new CustomerContactRepository(context), new CustomerAddressRepository(context));
         }
 
         public async Task<int> CompleteAsync()
