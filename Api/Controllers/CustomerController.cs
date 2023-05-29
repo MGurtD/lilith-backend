@@ -1,7 +1,5 @@
 ﻿using Application.Persistance;
-using AutoMapper;
 using Domain.Entities;
-using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -132,6 +130,7 @@ namespace Api.Controllers
                 return NotFound();
             }
         }
+
         [Route("Contact/{id:guid}")]
         [HttpDelete]
         public async Task<IActionResult> RemoveContact(Guid id)
@@ -143,6 +142,70 @@ namespace Api.Controllers
             {
                 await _unitOfWork.Customers.RemoveContact(contact);
                 return Ok(contact);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [Route("Address")]
+        [HttpPost]
+        public async Task<IActionResult> CreateAddress(CustomerAddress request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+
+            var customer = await _unitOfWork.Customers.Get(request.CustomerId);
+            if (customer is not null)
+            {
+                await _unitOfWork.Customers.AddAddress(request);
+                return Ok(request);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [Route("Address/{id:guid}")]
+        [HttpPut]
+        public async Task<IActionResult> UpdateAddress(Guid id, CustomerAddress request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+
+            var address = _unitOfWork.Customers.GetAddressById(id);
+            if (address is not null)
+            {
+                address.Name = request.Name;
+                address.Address = request.Address;
+                address.Country = request.Country;
+                address.Region = request.Region;
+                address.PostalCode = request.PostalCode;
+                address.City = request.City;
+                address.Disabled = request.Disabled;
+                address.Default = request.Default;
+                address.Observations = request.Observations;
+
+                await _unitOfWork.Customers.UpdateAddress(address);
+                return Ok(address);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [Route("Address/{id:guid}")]
+        [HttpDelete]
+        public async Task<IActionResult> RemoveAddress(Guid id)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+
+            var address = _unitOfWork.Customers.GetAddressById(id);
+            if (address is not null)
+            {
+                await _unitOfWork.Customers.RemoveAddress(address);
+                return Ok(address);
             }
             else
             {

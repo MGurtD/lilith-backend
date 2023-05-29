@@ -4,7 +4,7 @@
     {
         public string ComercialName { get; set; } = string.Empty;
         public string TaxName { get; set; } = string.Empty;
-        public string CIF { get; set; } = string.Empty;
+        public string VatNumber { get; set; } = string.Empty;
         public string Country { get; set; } = string.Empty;
         public string Region { get; set; } = string.Empty;
         public string City { get; set; } = string.Empty;

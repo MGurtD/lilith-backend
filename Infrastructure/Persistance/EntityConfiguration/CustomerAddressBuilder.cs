@@ -23,7 +23,7 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasMaxLength(250);
 
             builder
-                .Property(b => b.MainAddress)
+                .Property(b => b.Default)
                 .IsRequired()
                 .HasColumnType("bool")
                 .HasDefaultValue(false);
@@ -35,7 +35,7 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasMaxLength(250);
 
             builder
-                .Property(b => b.AddressExtraInfo)
+                .Property(b => b.Observations)
                 .IsRequired()
                 .HasColumnType("text");
             builder

@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230529161259_FixCustomerAddressSchema")]
+    partial class FixCustomerAddressSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -94,6 +96,10 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("varchar");
 
+                    b.Property<string>("AddressExtraInfo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("City")
                         .IsRequired()
                         .HasMaxLength(250)
@@ -109,15 +115,15 @@ namespace Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
 
-                    b.Property<Guid>("CustomerId")
+                    b.Property<Guid?>("CustomerId")
                         .HasColumnType("uuid");
 
-                    b.Property<bool>("Default")
+                    b.Property<bool>("Disabled")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bool")
                         .HasDefaultValue(false);
 
-                    b.Property<bool>("Disabled")
+                    b.Property<bool>("MainAddress")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bool")
                         .HasDefaultValue(false);
@@ -126,10 +132,6 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("varchar");
-
-                    b.Property<string>("Observations")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("PostalCode")
                         .IsRequired()
@@ -715,9 +717,7 @@ namespace Infrastructure.Migrations
                 {
                     b.HasOne("Domain.Entities.Customer", null)
                         .WithMany("Address")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CustomerId");
                 });
 
             modelBuilder.Entity("Domain.Entities.CustomerContact", b =>

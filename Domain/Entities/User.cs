@@ -9,7 +9,8 @@
         public string LastName { get; set; } = string.Empty;
         public bool Disabled { get; set; } = true;
 
-        public ICollection<Role> Roles { get; set; } = new HashSet<Role>();
+        public Guid RoleId { get; set; }
+        public Role? Role { get; set; }
 
     }
 }

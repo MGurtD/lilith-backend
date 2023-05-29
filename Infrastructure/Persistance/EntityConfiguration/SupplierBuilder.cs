@@ -21,7 +21,7 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasColumnType("varchar")
                 .HasMaxLength(500);
             builder
-                .Property(b => b.CIF)
+                .Property(b => b.VatNumber)
                 .IsRequired()
                 .HasColumnType("varchar")
                 .HasMaxLength(20);

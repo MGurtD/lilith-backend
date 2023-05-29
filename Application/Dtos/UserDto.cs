@@ -19,5 +19,8 @@ namespace Application.Dtos
         [Required]
         public bool Disabled { get; set; } = false;
 
+        [Required]
+        public Guid RoleId { get; set; }
+
     }
 }
