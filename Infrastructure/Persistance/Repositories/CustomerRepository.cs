@@ -17,7 +17,7 @@ namespace Infrastructure.Persistance.Repositories
 
         public override async Task<Customer?> Get(Guid id)
         {
-            return await dbSet.Include(s => s.Contacts).AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);                                
+            return await dbSet.Include(s => s.Contacts).Include(s => s.Address).AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);                                
         }
 
         public CustomerContact? GetContactById(Guid id) 
