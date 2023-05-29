@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    internal class CustomerType : Entity
+    public class CustomerType : Entity
     {
         public string Name { get; set; } = string.Empty;
         public bool Disabled { get; set; } = false;

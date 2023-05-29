@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    internal class CustomerContact : Entity
+    public class CustomerContact : Entity
     {
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
@@ -18,4 +18,5 @@ namespace Domain.Entities
 
         public Guid CustomerId { get; set; }
         public Guid CustomerAddressId { get; set; }
+    }
 }
