@@ -9,6 +9,10 @@
         IUserRefreshTokenRepository UserRefreshTokens { get; }
         ISupplierTypeRepository SupplierTypes { get; }
         ISupplierRepository Suppliers { get; }
+        ICustomerTypeRepository CustomerTypes { get; }
+        ICustomerContactRepository CustomerContacts { get; }
+        ICustomerAddressRepository CustomerAddresses { get; }
+        ICustomerRepository Customers { get; }
 
         Task<int> CompleteAsync();
     }
