@@ -17,6 +17,9 @@
         public SupplierType? Type { get; set; }
         public Guid SupplierTypeId { get; set; }
 
+        public PaymentMethod? PaymentMethod { get; set; }
+        public Guid PaymentMethodId { get; set; }
+
         public ICollection<SupplierContact> Contacts { get; } = new List<SupplierContact>();
     }
 }
