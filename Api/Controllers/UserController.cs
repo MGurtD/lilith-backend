@@ -79,6 +79,7 @@ namespace Api.Controllers
             userDb.FirstName = requestUser.FirstName;
             userDb.LastName = requestUser.LastName;
             userDb.Disabled = requestUser.Disabled;
+            userDb.RoleId = requestUser.RoleId;
 
             await _unitOfWork.Users.Update(userDb);  
             return Ok(userDb);

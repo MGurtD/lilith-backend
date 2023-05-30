@@ -1,6 +1,6 @@
 ﻿using Domain.Entities;
 
-namespace Application.Persistance
+namespace Application.Persistance.Repositories
 {
     public interface ISupplierRepository : IRepository<Supplier, Guid>
     {

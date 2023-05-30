@@ -1,4 +1,6 @@
-﻿namespace Application.Persistance
+﻿using Application.Persistance.Repositories;
+
+namespace Application.Persistance
 {
     public interface IUnitOfWork
     {
@@ -13,6 +15,7 @@
         ICustomerContactRepository CustomerContacts { get; }
         ICustomerAddressRepository CustomerAddresses { get; }
         ICustomerRepository Customers { get; }
+        IPaymentMethodRepository PaymentMethods { get; }
 
         Task<int> CompleteAsync();
     }

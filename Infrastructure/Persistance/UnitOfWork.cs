@@ -1,5 +1,5 @@
 ﻿using Application.Persistance;
-using Domain.Entities;
+using Application.Persistance.Repositories;
 using Infrastructure.Persistance.Repositories;
 
 namespace Infrastructure.Persistance
@@ -13,14 +13,12 @@ namespace Infrastructure.Persistance
         public IUserRepository Users { get; private set; }
         public IUserRefreshTokenRepository UserRefreshTokens { get; private set; }
         public ISupplierTypeRepository SupplierTypes { get; private set; }
-
         public ISupplierRepository Suppliers { get; private set; }
-
         public ICustomerTypeRepository CustomerTypes { get; private set; }
         public ICustomerAddressRepository CustomerAddresses { get; private set; }
         public ICustomerContactRepository CustomerContacts { get; private set; }
         public ICustomerRepository Customers { get; private set; }
-        
+        public IPaymentMethodRepository PaymentMethods { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -36,6 +34,7 @@ namespace Infrastructure.Persistance
             CustomerAddresses = new CustomerAddressRepository(context);
             CustomerContacts = new CustomerContactRepository(context);
             Customers = new CustomerRepository(context, new CustomerContactRepository(context), new CustomerAddressRepository(context));
+            PaymentMethods = new PaymentMethodRepository(context);
         }
 
         public async Task<int> CompleteAsync()

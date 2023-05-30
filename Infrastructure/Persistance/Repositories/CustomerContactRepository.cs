@@ -1,4 +1,4 @@
-﻿using Application.Persistance;
+﻿using Application.Persistance.Repositories;
 using Domain.Entities;
 using System;
 using System.Collections.Generic;

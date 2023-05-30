@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Persistance
+namespace Application.Persistance.Repositories
 {
     public interface ICustomerRepository : IRepository<Customer, Guid>
     {

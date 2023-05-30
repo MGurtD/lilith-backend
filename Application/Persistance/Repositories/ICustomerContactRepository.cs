@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Domain.Entities;
 
-namespace Application.Persistance
+namespace Application.Persistance.Repositories
 {
     public interface ICustomerContactRepository : IRepository<CustomerContact, Guid>
     {

@@ -1,7 +1,6 @@
-﻿using Application.Persistance;
-using Domain.Entities;
+﻿using Domain.Entities;
 
-namespace Application.Persistance
+namespace Application.Persistance.Repositories
 {
     public interface ICustomerAddressRepository : IRepository<CustomerAddress, Guid>
     {
