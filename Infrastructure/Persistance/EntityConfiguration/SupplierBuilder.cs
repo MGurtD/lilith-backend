@@ -56,6 +56,11 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasColumnType("varchar")
                 .HasMaxLength(20);
             builder
+                .Property(b => b.AccountNumber)
+                .IsRequired()
+                .HasColumnType("varchar")
+                .HasMaxLength(35);            
+            builder
                 .Property(b => b.Disabled)
                 .IsRequired()
                 .HasColumnType("bool")
