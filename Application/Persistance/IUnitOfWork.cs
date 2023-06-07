@@ -1,4 +1,6 @@
 ﻿using Application.Persistance.Repositories;
+using Application.Persistance.Repositories.Purchase;
+using Application.Persistance.Repositories.Sales;
 
 namespace Application.Persistance
 {

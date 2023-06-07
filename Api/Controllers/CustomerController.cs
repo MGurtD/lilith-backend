@@ -1,5 +1,5 @@
 ﻿using Application.Persistance;
-using Domain.Entities;
+using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -119,7 +119,7 @@ namespace Api.Controllers
                 contact.PhoneNumber = request.PhoneNumber;                
                 contact.Charge = request.Charge;
                 contact.Disabled = request.Disabled;
-                contact.MainContact = request.MainContact;
+                contact.Main = request.Main;
                 
 
                 await _unitOfWork.Customers.UpdateContact(contact);
@@ -183,7 +183,7 @@ namespace Api.Controllers
                 address.PostalCode = request.PostalCode;
                 address.City = request.City;
                 address.Disabled = request.Disabled;
-                address.Default = request.Default;
+                address.Main = request.Main;
                 address.Observations = request.Observations;
 
                 await _unitOfWork.Customers.UpdateAddress(address);

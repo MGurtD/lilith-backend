@@ -1,6 +1,10 @@
 ﻿using Application.Persistance;
 using Application.Persistance.Repositories;
+using Application.Persistance.Repositories.Purchase;
+using Application.Persistance.Repositories.Sales;
 using Infrastructure.Persistance.Repositories;
+using Infrastructure.Persistance.Repositories.Purchase;
+using Infrastructure.Persistance.Repositories.Sales;
 
 namespace Infrastructure.Persistance
 {

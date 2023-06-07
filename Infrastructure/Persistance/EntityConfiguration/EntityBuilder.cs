@@ -9,15 +9,23 @@ namespace Infrastructure.Persistance.EntityConfiguration
         public static void ConfigureBase<TEntity>(this EntityTypeBuilder<TEntity> builder)
             where TEntity : Entity
         {
-            builder.Property(b => b.Id)
-                   .ValueGeneratedNever()
-                   .HasColumnType("uuid");
-            builder.Property(e => e.CreatedOn)
-                  .ValueGeneratedOnAdd()
-                  .HasDefaultValueSql("NOW()");
-            builder.Property(e => e.UpdatedOn)
-                  .ValueGeneratedOnAddOrUpdate()
-                  .HasDefaultValueSql("NOW()");
+            builder
+                .Property(b => b.Id)
+                .ValueGeneratedNever()
+                .HasColumnType("uuid");
+            builder
+                .Property(e => e.CreatedOn)
+                .ValueGeneratedOnAdd()
+                .HasDefaultValueSql("NOW()");
+            builder
+                .Property(e => e.UpdatedOn)
+                .ValueGeneratedOnAddOrUpdate()
+                .HasDefaultValueSql("NOW()");
+            builder
+                .Property(b => b.Disabled)
+                .IsRequired()
+                .HasColumnType("bool")
+                .HasDefaultValue(false);
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Api.Exceptions;
-using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
 
@@ -9,12 +8,12 @@ namespace Api.Middlewares
     public class ErrorHandlerMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ILogger logger;
+        private readonly ILogger _logger;
 
         public ErrorHandlerMiddleware(RequestDelegate next, ILoggerFactory loggerFactory)
         {
             _next = next;
-            logger = loggerFactory.CreateLogger<ErrorHandlerMiddleware>();
+            _logger = loggerFactory.CreateLogger<ErrorHandlerMiddleware>();
         }
 
         public async Task Invoke(HttpContext context)
@@ -35,7 +34,7 @@ namespace Api.Middlewares
                     _ => (int)HttpStatusCode.InternalServerError,// unhandled error
                 };
 
-                logger.LogError(error, $"Path: {context.Request.Path} | Method: {context.Request.Method}");
+                _logger.LogError(error, $"Path: {context.Request.Path} | Method: {context.Request.Method}");
 
                 var result = JsonSerializer.Serialize(new { message = error?.Message });
                 await response.WriteAsync(result);

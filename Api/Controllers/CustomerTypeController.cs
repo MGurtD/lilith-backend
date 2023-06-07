@@ -2,7 +2,7 @@
 using Application.Dtos;
 using Application.Persistance;
 using AutoMapper;
-using Domain.Entities;
+using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
 using NLog.Web.LayoutRenderers;
 

@@ -41,6 +41,18 @@ namespace Api.Services
             request.Password = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password);
 
             var user = _mapper.Map<User>(request);
+
+            var defaultRole = _unitOfWork.Roles.Find(r => r.Name == "user").FirstOrDefault();
+            if (defaultRole is null)
+            {
+                return new AuthResponse()
+                {
+                    Result = false,
+                    Errors = new List<string>() { $"El rol assignat per defecte 'user' no existeix." }
+                };
+            }
+
+            user.RoleId = defaultRole.Id;
             await _unitOfWork.Users.Add(user);
 
             var authResponse = await GenerateJwtToken(user);

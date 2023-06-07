@@ -1,0 +1,93 @@
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using Microsoft.EntityFrameworkCore;
+using Domain.Entities.Purchase;
+
+namespace Infrastructure.Persistance.EntityConfiguration.Purchase
+{
+    public class PurchaseInvoiceBuilder : IEntityTypeConfiguration<PurchaseInvoice>
+    {
+        public const string TABLE_NAME = "PurchaseInvoices";
+
+        public void Configure(EntityTypeBuilder<PurchaseInvoice> builder)
+        {
+            builder.ConfigureBase();
+
+            builder
+                .Property(b => b.Number)
+                .IsRequired()
+                .HasColumnType("integer");
+            builder
+                .Property(b => b.SupplierNumber)
+                .IsRequired()
+                .HasColumnType("varchar")
+                .HasMaxLength(25);
+            builder
+                .Property(b => b.PurchaseDate)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+            builder
+                .Property(b => b.BaseAmount)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.TransportAmount)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.Subtotal)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.TaxAmount)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.GrossAmount)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.NetAmount)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.DiscountPercentatge)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.DiscountAmount)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+
+            builder
+                .HasKey(b => b.Id)
+                .HasName($"PK_{TABLE_NAME}");
+
+            builder
+                .HasIndex(builder => new { builder.ExerciceId, builder.Number }, $"UK_{TABLE_NAME}")
+                .IsUnique();
+            builder
+                .HasIndex(builder => builder.PurchaseDate, $"IX_{TABLE_NAME}_PurchaseDate")
+                .HasSortOrder(SortOrder.Descending);
+
+            builder.ToTable(TABLE_NAME);
+        }
+
+    }
+}

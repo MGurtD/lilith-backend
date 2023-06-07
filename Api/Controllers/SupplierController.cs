@@ -1,6 +1,6 @@
 ﻿using Application.Persistance;
 using AutoMapper;
-using Domain.Entities;
+using Domain.Entities.Purchase;
 using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Mvc;
 

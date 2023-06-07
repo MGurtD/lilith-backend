@@ -22,11 +22,6 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasColumnType("varchar")
                 .HasMaxLength(250);
             builder
-                .Property(b => b.IsActive)
-                .IsRequired()
-                .HasColumnType("bool")
-                .HasDefaultValue(false);
-            builder
                 .Property(b => b.Address)
                 .IsRequired()
                 .HasColumnType("varchar")
@@ -73,7 +68,7 @@ namespace Infrastructure.Persistance.EntityConfiguration
 
             builder.HasIndex(builder => builder.Name, "UK_Site_Name");
 
-            builder.ToTable("Sites", "Config");
+            builder.ToTable("Sites");
         }
 
     }

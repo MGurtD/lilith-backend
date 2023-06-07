@@ -1,4 +1,4 @@
-﻿using Domain.Entities;
+﻿using Domain.Entities.Purchase;
 
 namespace Application.Persistance.Repositories
 {

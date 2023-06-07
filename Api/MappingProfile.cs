@@ -3,6 +3,8 @@ using Api.Mapping.Dtos.Authentication;
 using Application.Dtos;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Entities.Purchase;
+using Domain.Entities.Sales;
 
 namespace Api
 {

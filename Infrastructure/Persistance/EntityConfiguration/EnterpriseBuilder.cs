@@ -21,11 +21,6 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .IsRequired()
                 .HasColumnType("varchar")
                 .HasMaxLength(250);
-            builder
-                .Property(b => b.IsActive)
-                .IsRequired()
-                .HasColumnType("bool")
-                .HasDefaultValue(false);
 
             builder
                 .HasKey(b => b.Id)
@@ -33,7 +28,7 @@ namespace Infrastructure.Persistance.EntityConfiguration
 
             builder.HasIndex(builder => builder.Name, "UK_Enterprise_Name");
 
-            builder.ToTable("Enterprises", "Config");
+            builder.ToTable("Enterprises");
         }
 
     }
