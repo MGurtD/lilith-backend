@@ -1,14 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using Domain.Entities;
+using Domain.Entities.Auth;
 
-namespace Infrastructure.Persistance.EntityConfiguration.Purchase
+namespace Infrastructure.Persistance.EntityConfiguration.Auth
 {
-    public class PaymentMethodBuilder : IEntityTypeConfiguration<PaymentMethod>
+    public class RoleBuilder : IEntityTypeConfiguration<Role>
     {
-        public const string TABLE_NAME = "PaymentMethods";
-
-        public void Configure(EntityTypeBuilder<PaymentMethod> builder)
+        public void Configure(EntityTypeBuilder<Role> builder)
         {
             builder.ConfigureBase();
 
@@ -27,21 +25,14 @@ namespace Infrastructure.Persistance.EntityConfiguration.Purchase
                 .IsRequired()
                 .HasColumnType("bool")
                 .HasDefaultValue(false);
-            builder
-                 .Property(b => b.DueDays)
-                 .IsRequired()
-                 .HasColumnType("int")
-                 .HasDefaultValue(0);
 
             builder
                 .HasKey(b => b.Id)
-                .HasName($"PK_{TABLE_NAME}");
+                .HasName("PK_Role");
 
-            builder
-                .HasIndex(builder => builder.Name, $"UK_{TABLE_NAME}_Name")
-                .IsUnique();
+            builder.HasIndex(builder => builder.Name, "UK_Role_Name");
 
-            builder.ToTable(TABLE_NAME);
+            builder.ToTable("Roles");
         }
 
     }

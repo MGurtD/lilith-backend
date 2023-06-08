@@ -1,5 +1,5 @@
 ﻿using Application.Persistance.Repositories;
-using Domain.Entities.Purchase;
+using Domain.Entities;
 
 namespace Infrastructure.Persistance.Repositories
 {

@@ -2,7 +2,7 @@
 
 namespace Application.Persistance.Repositories
 {
-    public interface IPaymentMethodRepository : IRepository<PaymentMethod, Guid>
+    public interface IExerciceRepository : IRepository<Exercice, Guid>
     {
     }
 }

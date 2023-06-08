@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Application.Persistance;
-using Domain.Entities.Purchase;
+using Domain.Entities;
 
 namespace Api.Controllers
 {

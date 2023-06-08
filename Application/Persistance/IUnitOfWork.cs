@@ -1,4 +1,6 @@
 ﻿using Application.Persistance.Repositories;
+using Application.Persistance.Repositories.Auth;
+using Application.Persistance.Repositories.Production;
 using Application.Persistance.Repositories.Purchase;
 using Application.Persistance.Repositories.Sales;
 
@@ -6,18 +8,29 @@ namespace Application.Persistance
 {
     public interface IUnitOfWork
     {
-        IEnterpriseRepository Enterprises { get; }
-        ISiteRepository Sites { get; }
         IRoleRepository Roles { get; }
         IUserRepository Users { get; }
         IUserRefreshTokenRepository UserRefreshTokens { get; }
+
+        IExerciceRepository Exercices { get; }
+        ITaxRepository Taxes { get; }
+        IPaymentMethodRepository PaymentMethods { get; }
+
         ISupplierTypeRepository SupplierTypes { get; }
         ISupplierRepository Suppliers { get; }
+        IPurchaseInvoiceDueDateRepository PurchaseInvoiceDueDates { get; }
+        IPurchaseInvoiceRepository PurchaseInvoices { get; }
+        IPurchaseInvoiceSerieRepository PurchaseInvoiceSeries { get; }
+        IPurchaseInvoiceStatusRepository PurchaseInvoiceStatuses { get; }
+        IPurchaseInvoiceStatusTransitionRepository PurchaseInvoiceStatusTransitions { get; }
+
+
         ICustomerTypeRepository CustomerTypes { get; }
-        ICustomerContactRepository CustomerContacts { get; }
-        ICustomerAddressRepository CustomerAddresses { get; }
         ICustomerRepository Customers { get; }
-        IPaymentMethodRepository PaymentMethods { get; }
+
+        IEnterpriseRepository Enterprises { get; }
+        ISiteRepository Sites { get; }
+
 
         Task<int> CompleteAsync();
     }

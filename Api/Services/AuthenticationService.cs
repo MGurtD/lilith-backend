@@ -3,6 +3,7 @@ using Application.Dto;
 using Application.Persistance;
 using Application.Services;
 using Domain.Entities;
+using Domain.Entities.Auth;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;

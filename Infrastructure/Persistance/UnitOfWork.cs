@@ -1,8 +1,12 @@
 ﻿using Application.Persistance;
 using Application.Persistance.Repositories;
+using Application.Persistance.Repositories.Auth;
+using Application.Persistance.Repositories.Production;
 using Application.Persistance.Repositories.Purchase;
 using Application.Persistance.Repositories.Sales;
 using Infrastructure.Persistance.Repositories;
+using Infrastructure.Persistance.Repositories.Auth;
+using Infrastructure.Persistance.Repositories.Production;
 using Infrastructure.Persistance.Repositories.Purchase;
 using Infrastructure.Persistance.Repositories.Sales;
 
@@ -23,6 +27,13 @@ namespace Infrastructure.Persistance
         public ICustomerContactRepository CustomerContacts { get; private set; }
         public ICustomerRepository Customers { get; private set; }
         public IPaymentMethodRepository PaymentMethods { get; private set; }
+        public IExerciceRepository Exercices { get; private set; }
+        public ITaxRepository Taxes { get; private set; }
+        public IPurchaseInvoiceDueDateRepository PurchaseInvoiceDueDates { get; private set; }
+        public IPurchaseInvoiceRepository PurchaseInvoices { get; private set; }
+        public IPurchaseInvoiceSerieRepository PurchaseInvoiceSeries { get; private set; }
+        public IPurchaseInvoiceStatusRepository PurchaseInvoiceStatuses { get; private set; }
+        public IPurchaseInvoiceStatusTransitionRepository PurchaseInvoiceStatusTransitions { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -32,13 +43,23 @@ namespace Infrastructure.Persistance
             Sites = new SiteRepository(context);
             Users = new UserRepository(context);
             Roles = new RoleRepository(context);
-            SupplierTypes = new SupplierTypeRepository(context);
-            Suppliers =  new SupplierRepository(context, new SupplierContactRepository(context));
+            
             CustomerTypes = new CustomerTypeRepository(context);
-            CustomerAddresses = new CustomerAddressRepository(context);
-            CustomerContacts = new CustomerContactRepository(context);
             Customers = new CustomerRepository(context, new CustomerContactRepository(context), new CustomerAddressRepository(context));
+            
             PaymentMethods = new PaymentMethodRepository(context);
+            Taxes = new TaxRepository(context);
+            Exercices = new ExerciceRepository(context);
+
+            SupplierTypes = new SupplierTypeRepository(context);
+            Suppliers = new SupplierRepository(context, new SupplierContactRepository(context));
+            PurchaseInvoices = new PurchaseInvoiceRepository(context);
+            PurchaseInvoiceDueDates = new PurchaseInvoiceDueDateRepository(context);
+            PurchaseInvoiceSeries = new PurchaseInvoiceSerieRepository(context);
+            PurchaseInvoiceDueDates = new PurchaseInvoiceDueDateRepository(context);
+            PurchaseInvoiceStatuses = new PurchaseInvoiceStatusRepository(context);
+            PurchaseInvoiceStatusTransitions = new PurchaseInvoiceStatusTransitionRepository(context);
+
         }
 
         public async Task<int> CompleteAsync()

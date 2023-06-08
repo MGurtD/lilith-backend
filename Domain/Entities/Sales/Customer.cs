@@ -1,6 +1,4 @@
-﻿using Domain.Entities.Purchase;
-
-namespace Domain.Entities.Sales
+﻿namespace Domain.Entities.Sales
 {
     public class Customer : Entity
     {
