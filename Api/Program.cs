@@ -34,10 +34,10 @@ try
         builder.Services
             .AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedEmail = false)
             .AddEntityFrameworkStores<ApplicationDbContext>();
+
+        // Application services
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
         builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-
-        // File uploading
         builder.Services.AddScoped<IFileService, FileService>();
 
         // JWT Service    
@@ -51,7 +51,6 @@ try
             RequireExpirationTime = !builder.Environment.IsDevelopment(),
             ValidateLifetime = true,
         };
-
         builder.Services
             .AddAuthentication(options => {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -65,7 +64,6 @@ try
             });
         builder.Services.AddSingleton(tokenValidationParameters);
 
-        builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
         builder.Services.AddControllers();
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

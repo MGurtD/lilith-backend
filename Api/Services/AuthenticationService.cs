@@ -1,9 +1,7 @@
 ﻿using Api.Exceptions;
-using Api.Mapping.Dtos.Authentication;
-using Application.Dtos;
+using Application.Dto;
 using Application.Persistance;
 using Application.Services;
-using AutoMapper;
 using Domain.Entities;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -16,12 +14,10 @@ namespace Api.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly TokenValidationParameters _tokenValidationParameters;
-        private readonly IMapper _mapper;
 
-        public AuthenticationService(IUnitOfWork unitOfWork, IMapper mapper, TokenValidationParameters tokenValidationParameters)
+        public AuthenticationService(IUnitOfWork unitOfWork, TokenValidationParameters tokenValidationParameters)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             _tokenValidationParameters = tokenValidationParameters;
         }
 
@@ -38,10 +34,7 @@ namespace Api.Services
                 };
             }
 
-            request.Password = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password);
-
-            var user = _mapper.Map<User>(request);
-
+            // Retrive the default role
             var defaultRole = _unitOfWork.Roles.Find(r => r.Name == "user").FirstOrDefault();
             if (defaultRole is null)
             {
@@ -52,7 +45,16 @@ namespace Api.Services
                 };
             }
 
-            user.RoleId = defaultRole.Id;
+            // Generate instance of the user and add to database
+            var user = new User
+            {
+                Username = request.Username,
+                Password = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password),
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Disabled = true,
+                RoleId = defaultRole.Id
+            };
             await _unitOfWork.Users.Add(user);
 
             var authResponse = await GenerateJwtToken(user);

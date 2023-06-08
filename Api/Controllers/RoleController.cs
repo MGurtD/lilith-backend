@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Application.Persistance;
 using Domain.Entities;
-using AutoMapper;
-using Api.Mapping.Dtos;
 
 namespace Api.Controllers
 {
@@ -11,16 +9,14 @@ namespace Api.Controllers
     public class RoleController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
 
-        public RoleController(IUnitOfWork unitOfWork, IMapper mapper)
+        public RoleController(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(RoleDto request)
+        public async Task<IActionResult> Create(Role request)
         {
             // Validation the incoming request
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
@@ -30,10 +26,9 @@ namespace Api.Controllers
             var exists = _unitOfWork.Roles.Find(r => request.Name == r.Name).Count() > 0;
             if (!exists)
             {
-                var role = _mapper.Map<Role>(request);
-                await _unitOfWork.Roles.Add(role);
+                await _unitOfWork.Roles.Add(request);
 
-                return Ok(role);
+                return Ok(request);
             }
             else
             {

@@ -1,5 +1,4 @@
-﻿using Api.Mapping.Dtos.Authentication;
-using Application.Dtos;
+﻿using Application.Dto;
 
 namespace Application.Services
 {

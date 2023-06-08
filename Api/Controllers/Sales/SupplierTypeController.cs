@@ -1,38 +1,30 @@
-﻿using Api.Mapping.Dtos;
-using Application.Dtos;
-using Application.Persistance;
-using AutoMapper;
+﻿using Application.Persistance;
 using Domain.Entities.Purchase;
 using Microsoft.AspNetCore.Mvc;
-using NLog.Web.LayoutRenderers;
 
-namespace Api.Controllers
+namespace Api.Controllers.Sales
 {
     [ApiController]
     [Route("api/[controller]")]
     public class SupplierTypeController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
 
-        public SupplierTypeController(IUnitOfWork unitOfWork, IMapper mapper)
+        public SupplierTypeController(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(SupplierTypeDto request)
+        public async Task<IActionResult> Create(SupplierType request)
         {
-            if(!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
             var exists = _unitOfWork.SupplierTypes.Find(r => request.Name == r.Name).Any();
-            if(!exists)
+            if (!exists)
             {
-                var supplierType = _mapper.Map<SupplierType>(request);
-                await _unitOfWork.SupplierTypes.Add(supplierType);
-
-                return Ok(supplierType);
+                await _unitOfWork.SupplierTypes.Add(request);
+                return Ok(request);
             }
             else
             {
@@ -44,8 +36,7 @@ namespace Api.Controllers
         public async Task<IActionResult> GetAll()
         {
             var entities = await _unitOfWork.SupplierTypes.GetAll();
-            var dtos = _mapper.Map<IEnumerable<SupplierTypeDto>>(entities);
-            return Ok(dtos);
+            return Ok(entities);
         }
 
         [HttpGet("{id:guid}")]
@@ -54,8 +45,7 @@ namespace Api.Controllers
             var entity = await _unitOfWork.SupplierTypes.Get(id);
             if (entity is not null)
             {
-                var dto = _mapper.Map<SupplierTypeDto>(entity);
-                return Ok(dto);
+                return Ok(entity);
             }
             else
             {
@@ -75,9 +65,8 @@ namespace Api.Controllers
             if (!exists)
                 return NotFound();
 
-            var entity = _mapper.Map<SupplierType>(request);
-            await _unitOfWork.SupplierTypes.Update(entity);  
-            return Ok(entity);
+            await _unitOfWork.SupplierTypes.Update(request);
+            return Ok(request);
         }
 
         [HttpDelete("{id:guid}")]

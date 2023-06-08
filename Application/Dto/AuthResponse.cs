@@ -1,4 +1,4 @@
-﻿namespace Api.Mapping.Dtos.Authentication
+﻿namespace Application.Dto
 {
     public class AuthResponse
     {

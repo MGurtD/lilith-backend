@@ -1,38 +1,31 @@
-﻿using Api.Mapping.Dtos;
-using Application.Dtos;
-using Application.Persistance;
-using AutoMapper;
+﻿using Application.Persistance;
 using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
-using NLog.Web.LayoutRenderers;
 
-namespace Api.Controllers
+namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
     public class CustomerTypeController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
 
-        public CustomerTypeController(IUnitOfWork unitOfWork, IMapper mapper)
+        public CustomerTypeController(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(CustomerTypeDto request)
+        public async Task<IActionResult> Create(CustomerType request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
-            
+
             var exists = _unitOfWork.CustomerTypes.Find(r => request.Name == r.Name).Any();
             if (!exists)
             {
-                var customerType = _mapper.Map<CustomerType>(request);
-                await _unitOfWork.CustomerTypes.Add(customerType);
+                await _unitOfWork.CustomerTypes.Add(request);
 
-                return Ok(customerType);
+                return Ok(request);
             }
             else
             {
@@ -44,8 +37,7 @@ namespace Api.Controllers
         public async Task<IActionResult> GetAll()
         {
             var entities = await _unitOfWork.CustomerTypes.GetAll();
-            var dtos = _mapper.Map<IEnumerable<CustomerTypeDto>>(entities);
-            return Ok(dtos);
+            return Ok(entities);
         }
 
         [HttpGet("{id:guid}")]
@@ -54,8 +46,7 @@ namespace Api.Controllers
             var entity = await _unitOfWork.CustomerTypes.Get(id);
             if (entity is not null)
             {
-                var dto = _mapper.Map<CustomerTypeDto>(entity);
-                return Ok(dto);
+                return Ok(entity);
             }
             else
             {
@@ -74,9 +65,8 @@ namespace Api.Controllers
             if (!exists)
                 return NotFound();
 
-            var entity = _mapper.Map<CustomerType>(request);
-            await _unitOfWork.CustomerTypes.Update(entity);
-            return Ok(entity);
+            await _unitOfWork.CustomerTypes.Update(request);
+            return Ok(request);
         }
 
         [HttpDelete("{id:guid}")]

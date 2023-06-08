@@ -1,10 +1,8 @@
 ﻿using Application.Persistance;
-using AutoMapper;
 using Domain.Entities.Purchase;
-using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers
+namespace Api.Controllers.Sales
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -20,10 +18,10 @@ namespace Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(Supplier request)
         {
-            if(!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
             var exists = _unitOfWork.Suppliers.Find(r => request.ComercialName == r.ComercialName).Any();
-            if(!exists)
+            if (!exists)
             {
                 await _unitOfWork.Suppliers.Add(request);
 
@@ -70,7 +68,7 @@ namespace Api.Controllers
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.Suppliers.Update(request);  
+            await _unitOfWork.Suppliers.Update(request);
             return Ok(request);
         }
 
@@ -152,5 +150,5 @@ namespace Api.Controllers
             }
         }
     }
-    
+
 }

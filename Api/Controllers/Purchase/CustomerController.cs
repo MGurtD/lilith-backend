@@ -2,7 +2,7 @@
 using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers
+namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -116,11 +116,11 @@ namespace Api.Controllers
                 contact.FirstName = request.FirstName;
                 contact.LastName = request.LastName;
                 contact.Email = request.Email;
-                contact.PhoneNumber = request.PhoneNumber;                
+                contact.PhoneNumber = request.PhoneNumber;
                 contact.Charge = request.Charge;
                 contact.Disabled = request.Disabled;
                 contact.Main = request.Main;
-                
+
 
                 await _unitOfWork.Customers.UpdateContact(contact);
                 return Ok(contact);
