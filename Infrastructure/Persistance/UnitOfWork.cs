@@ -23,8 +23,6 @@ namespace Infrastructure.Persistance
         public ISupplierTypeRepository SupplierTypes { get; private set; }
         public ISupplierRepository Suppliers { get; private set; }
         public ICustomerTypeRepository CustomerTypes { get; private set; }
-        public ICustomerAddressRepository CustomerAddresses { get; private set; }
-        public ICustomerContactRepository CustomerContacts { get; private set; }
         public ICustomerRepository Customers { get; private set; }
         public IPaymentMethodRepository PaymentMethods { get; private set; }
         public IExerciceRepository Exercices { get; private set; }
@@ -33,7 +31,6 @@ namespace Infrastructure.Persistance
         public IPurchaseInvoiceRepository PurchaseInvoices { get; private set; }
         public IPurchaseInvoiceSerieRepository PurchaseInvoiceSeries { get; private set; }
         public IPurchaseInvoiceStatusRepository PurchaseInvoiceStatuses { get; private set; }
-        public IPurchaseInvoiceStatusTransitionRepository PurchaseInvoiceStatusTransitions { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -57,8 +54,7 @@ namespace Infrastructure.Persistance
             PurchaseInvoiceDueDates = new PurchaseInvoiceDueDateRepository(context);
             PurchaseInvoiceSeries = new PurchaseInvoiceSerieRepository(context);
             PurchaseInvoiceDueDates = new PurchaseInvoiceDueDateRepository(context);
-            PurchaseInvoiceStatuses = new PurchaseInvoiceStatusRepository(context);
-            PurchaseInvoiceStatusTransitions = new PurchaseInvoiceStatusTransitionRepository(context);
+            PurchaseInvoiceStatuses = new PurchaseInvoiceStatusRepository(context, new PurchaseInvoiceStatusTransitionRepository(context));
 
         }
 

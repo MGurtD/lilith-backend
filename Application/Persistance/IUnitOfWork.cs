@@ -18,11 +18,10 @@ namespace Application.Persistance
 
         ISupplierTypeRepository SupplierTypes { get; }
         ISupplierRepository Suppliers { get; }
-        IPurchaseInvoiceDueDateRepository PurchaseInvoiceDueDates { get; }
         IPurchaseInvoiceRepository PurchaseInvoices { get; }
+        IPurchaseInvoiceDueDateRepository PurchaseInvoiceDueDates { get; }
         IPurchaseInvoiceSerieRepository PurchaseInvoiceSeries { get; }
         IPurchaseInvoiceStatusRepository PurchaseInvoiceStatuses { get; }
-        IPurchaseInvoiceStatusTransitionRepository PurchaseInvoiceStatusTransitions { get; }
 
 
         ICustomerTypeRepository CustomerTypes { get; }
