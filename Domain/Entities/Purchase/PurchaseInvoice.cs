@@ -4,7 +4,7 @@
     {
         public int Number { get; set; }
         public string SupplierNumber { get; set; } = string.Empty;
-        public DateTime PurchaseDate { get; set; }
+        public DateTime PurchaseInvoiceDate { get; set; }
 
         public decimal BaseAmount { get; set; }
         public decimal TransportAmount { get; set; }
@@ -12,7 +12,7 @@
         public decimal TaxAmount { get; set; }
         public decimal GrossAmount { get; set; }
         public decimal NetAmount { get; set; }
-        public decimal DiscountPercentatge { get; set; }
+        public decimal DiscountPercentage { get; set; }
         public decimal DiscountAmount { get; set; }
 
         public Supplier? Supplier { get; set; }
@@ -41,7 +41,7 @@
                 for (var i = 0; i < PaymentMethod.Frequency; i++)
                 {
                     var dueDateAmount = NetAmount / PaymentMethod.NumberOfPayments;
-                    var dueDate = PurchaseDate.AddDays(PaymentMethod.DueDays);
+                    var dueDate = PurchaseInvoiceDate.AddDays(PaymentMethod.DueDays);
 
                     if (dueDate.Day > PaymentMethod.PaymentDay)
                     {

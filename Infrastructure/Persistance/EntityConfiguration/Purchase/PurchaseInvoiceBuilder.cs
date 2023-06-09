@@ -23,7 +23,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Purchase
                 .HasColumnType("varchar")
                 .HasMaxLength(25);
             builder
-                .Property(b => b.PurchaseDate)
+                .Property(b => b.PurchaseInvoiceDate)
                 .IsRequired()
                 .HasColumnType("timestamp with time zone");
             builder
@@ -63,7 +63,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Purchase
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                               ApplicationDbContextConstants.DECIMAL_SCALE);
             builder
-                .Property(b => b.DiscountPercentatge)
+                .Property(b => b.DiscountPercentage)
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
@@ -83,7 +83,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Purchase
                 .HasIndex(builder => new { builder.ExerciceId, builder.Number }, $"UK_{TABLE_NAME}")
                 .IsUnique();
             builder
-                .HasIndex(builder => builder.PurchaseDate, $"IX_{TABLE_NAME}_PurchaseDate")
+                .HasIndex(builder => builder.PurchaseInvoiceDate, $"IX_{TABLE_NAME}_PurchaseDate")
                 .HasSortOrder(SortOrder.Descending);
 
             builder.ToTable(TABLE_NAME);
