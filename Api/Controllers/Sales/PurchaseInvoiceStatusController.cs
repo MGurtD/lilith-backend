@@ -103,22 +103,14 @@ namespace Api.Controllers.Sales
             }
         }
 
-        [Route("Transition/{id:guid}")]
+        [Route("Transition/{fromStatusId:guid}/{toStatusId:guid}")]
         [HttpDelete]
-        public async Task<IActionResult> RemoveTransition(Guid id)
+        public async Task<IActionResult> RemoveTransition(Guid fromStatusId, Guid toStatusId)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var transition = _unitOfWork.PurchaseInvoiceStatuses.GetTransitionById(id);
-            if (transition is not null)
-            {
-                await _unitOfWork.PurchaseInvoiceStatuses.RemoveTransition(transition);
-                return Ok(transition);
-            }
-            else
-            {
-                return NotFound();
-            }
+            var deleted = await _unitOfWork.PurchaseInvoiceStatuses.RemoveTransition(fromStatusId, toStatusId);
+            return deleted ? Ok() : NotFound();
         }
 
     }

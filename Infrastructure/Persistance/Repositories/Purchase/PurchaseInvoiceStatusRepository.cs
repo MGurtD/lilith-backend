@@ -1,8 +1,5 @@
 ﻿using Application.Persistance.Repositories.Purchase;
 using Domain.Entities.Purchase;
-using Domain.Entities.Sales;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Immutable;
 
 namespace Infrastructure.Persistance.Repositories.Purchase
 {
@@ -40,20 +37,26 @@ namespace Infrastructure.Persistance.Repositories.Purchase
             await TransitionRepository.Add(transition);
         }
 
-        public PurchaseInvoiceStatusTransition? GetTransitionById(Guid id)
+        public async Task<PurchaseInvoiceStatusTransition?> GetTransitionById(Guid id)
         {
-            var searchTask = TransitionRepository.Get(id);
-            return searchTask.Result;
-        }
-
-        public async Task RemoveTransition(PurchaseInvoiceStatusTransition transition)
-        {
-            await TransitionRepository.Remove(transition);
+            var searchTask = await TransitionRepository.Get(id);
+            return searchTask;
         }
 
         public async Task UpdateTransition(PurchaseInvoiceStatusTransition transition)
         {
             await TransitionRepository.Update(transition);
+        }
+
+        public async Task<bool> RemoveTransition(Guid fromStatusId, Guid toStatusId)
+        {
+            var transition = TransitionRepository.Find(t => t.FromStatusId == fromStatusId && t.ToStatusId == toStatusId).FirstOrDefault();
+            if (transition != null)
+            {
+                await TransitionRepository.Remove(transition);
+                return true;
+            }
+            return false;
         }
     }
 }
