@@ -2,7 +2,7 @@
 
 namespace Application.Persistance.Repositories
 {
-    public interface IExerciceRepository : IRepository<Exercice, Guid>
+    public interface IExerciseRepository : IRepository<Exercise, Guid>
     {
     }
 }

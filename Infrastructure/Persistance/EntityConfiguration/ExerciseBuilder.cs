@@ -4,11 +4,11 @@ using Domain.Entities;
 
 namespace Infrastructure.Persistance.EntityConfiguration
 {
-    public class ExerciceBuilder : IEntityTypeConfiguration<Exercice>
+    public class ExerciseBuilder : IEntityTypeConfiguration<Exercise>
     {
-        public const string TABLE_NAME = "Exercices";
+        public const string TABLE_NAME = "Exercises";
 
-        public void Configure(EntityTypeBuilder<Exercice> builder)
+        public void Configure(EntityTypeBuilder<Exercise> builder)
         {
             builder.ConfigureBase();
 

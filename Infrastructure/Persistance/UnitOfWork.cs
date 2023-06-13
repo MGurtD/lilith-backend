@@ -25,7 +25,7 @@ namespace Infrastructure.Persistance
         public ICustomerTypeRepository CustomerTypes { get; private set; }
         public ICustomerRepository Customers { get; private set; }
         public IPaymentMethodRepository PaymentMethods { get; private set; }
-        public IExerciceRepository Exercices { get; private set; }
+        public IExerciseRepository Exercices { get; private set; }
         public ITaxRepository Taxes { get; private set; }
         public IPurchaseInvoiceDueDateRepository PurchaseInvoiceDueDates { get; private set; }
         public IPurchaseInvoiceRepository PurchaseInvoices { get; private set; }
@@ -46,7 +46,7 @@ namespace Infrastructure.Persistance
             
             PaymentMethods = new PaymentMethodRepository(context);
             Taxes = new TaxRepository(context);
-            Exercices = new ExerciceRepository(context);
+            Exercices = new ExerciseRepository(context);
 
             SupplierTypes = new SupplierTypeRepository(context);
             Suppliers = new SupplierRepository(context, new SupplierContactRepository(context));

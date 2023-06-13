@@ -21,7 +21,7 @@
         public Tax? Tax { get; set; }
         public Guid? TaxId { get; set; }
 
-        public Exercice? Exercice { get; set; }
+        public Exercise? Exercice { get; set; }
         public Guid? ExerciceId { get; set; }
 
         public PurchaseInvoiceSerie? PurchaseInvoiceSerie { get; set; }

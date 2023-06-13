@@ -6,17 +6,17 @@ namespace Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ExerciceController : ControllerBase
+    public class ExerciseController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
 
-        public ExerciceController(IUnitOfWork unitOfWork)
+        public ExerciseController(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Exercice request)
+        public async Task<IActionResult> Create(Exercise request)
         {
             // Validation the incoming request
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
@@ -58,7 +58,7 @@ namespace Api.Controllers
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid Id, [FromBody]Exercice request)
+        public async Task<IActionResult> Update(Guid Id, [FromBody]Exercise request)
         {
             if (Id != request.Id)
                 return BadRequest();

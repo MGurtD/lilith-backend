@@ -12,7 +12,7 @@ namespace Application.Persistance
         IUserRepository Users { get; }
         IUserRefreshTokenRepository UserRefreshTokens { get; }
 
-        IExerciceRepository Exercices { get; }
+        IExerciseRepository Exercices { get; }
         ITaxRepository Taxes { get; }
         IPaymentMethodRepository PaymentMethods { get; }
 
