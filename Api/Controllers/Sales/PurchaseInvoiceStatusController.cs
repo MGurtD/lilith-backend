@@ -83,7 +83,43 @@ namespace Api.Controllers.Sales
             return Ok(entity);
         }
 
-        // TODO: Get, Update & Delete Transitions
+        [Route("Transition")]
+        [HttpPost]
+        public async Task<IActionResult> CreateTransition(PurchaseInvoiceStatusTransition request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+            if (request.FromStatusId == request.ToStatusId) return BadRequest();
+
+            var statusFrom = await _unitOfWork.PurchaseInvoiceStatuses.Get(request.FromStatusId);
+            var statusId = await _unitOfWork.PurchaseInvoiceStatuses.Get(request.ToStatusId);
+            if (statusFrom is not null && statusId is not null)
+            {
+                await _unitOfWork.PurchaseInvoiceStatuses.AddTransition(request);
+                return Ok(request);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [Route("Transition/{id:guid}")]
+        [HttpDelete]
+        public async Task<IActionResult> RemoveTransition(Guid id)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+
+            var transition = _unitOfWork.PurchaseInvoiceStatuses.GetTransitionById(id);
+            if (transition is not null)
+            {
+                await _unitOfWork.PurchaseInvoiceStatuses.RemoveTransition(transition);
+                return Ok(transition);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
 
     }
 }

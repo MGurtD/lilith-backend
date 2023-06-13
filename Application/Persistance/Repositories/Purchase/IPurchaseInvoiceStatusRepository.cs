@@ -5,9 +5,9 @@ namespace Application.Persistance.Repositories.Purchase
     public interface IPurchaseInvoiceStatusRepository : IRepository<PurchaseInvoiceStatus, Guid>
     {
         IPurchaseInvoiceStatusTransitionRepository TransitionRepository { get; }
-        PurchaseInvoiceStatusTransition? GetTransationById(Guid id);
+        PurchaseInvoiceStatusTransition? GetTransitionById(Guid id);
         Task AddTransition(PurchaseInvoiceStatusTransition transition);
-        Task UpdateTranstion(PurchaseInvoiceStatusTransition transtion);
+        Task UpdateTransition(PurchaseInvoiceStatusTransition transtion);
         Task RemoveTransition(PurchaseInvoiceStatusTransition transtion);
 
     }
