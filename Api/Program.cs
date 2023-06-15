@@ -39,6 +39,7 @@ try
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
         builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
         builder.Services.AddScoped<IFileService, FileService>();
+        builder.Services.AddScoped<IPurchaseInvoiceService, PurchaseInvoiceService>();
 
         // JWT Service    
         var signKey = Encoding.ASCII.GetBytes(ApplicationConfiguration.JwtSecret);

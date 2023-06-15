@@ -28,39 +28,10 @@
         public Guid? PurchaseInvoiceSerieId { get; set; }
 
         public PaymentMethod? PaymentMethod { get; set; }
-        public Guid? PaymentMethodId { get; set; }
+        public Guid PaymentMethodId { get; set; }
 
         public PurchaseInvoiceStatus? PurchaseInvoiceStatus { get; set; }
-        public Guid? PurchaseInvoiceStatusId { get; set; }
-
-        public List<PurchaseInvoiceDueDate> GenerateDueDates()
-        {
-            var purchaseInvoiceDueDates = new List<PurchaseInvoiceDueDate>();
-            if (PaymentMethod is not null)
-            {
-                for (var i = 0; i < PaymentMethod.Frequency; i++)
-                {
-                    var dueDateAmount = NetAmount / PaymentMethod.NumberOfPayments;
-                    var dueDate = PurchaseInvoiceDate.AddDays(PaymentMethod.DueDays);
-
-                    if (dueDate.Day > PaymentMethod.PaymentDay)
-                    {
-                        dueDate = new DateTime(dueDate.Month == 12 ? dueDate.Year + 1 : dueDate.Year, 
-                                               dueDate.Month == 12 ? 1 : dueDate.Month + 1, 
-                                               PaymentMethod.PaymentDay);
-                    }
-
-                    var purchaseInvoiceDueDate = new PurchaseInvoiceDueDate()
-                    {
-                        PurchaseInvoiceId = Id,
-                        Amount = dueDateAmount,
-                        DueDate = dueDate,
-                    };
-                    purchaseInvoiceDueDates.Add(purchaseInvoiceDueDate);
-                }
-            }
-            return purchaseInvoiceDueDates;
-        }
-
+        public Guid PurchaseInvoiceStatusId { get; set; }
     }
+
 }
