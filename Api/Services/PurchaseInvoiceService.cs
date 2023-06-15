@@ -76,7 +76,7 @@ namespace Application.Services
             return new GenericResponse(true, new List<string> { });
         }
 
-        private List<PurchaseInvoiceDueDate> GenerateDueDates(PurchaseInvoice purchaseInvoice, PaymentMethod paymentMethod)
+        private static List<PurchaseInvoiceDueDate> GenerateDueDates(PurchaseInvoice purchaseInvoice, PaymentMethod paymentMethod)
         {
             var purchaseInvoiceDueDates = new List<PurchaseInvoiceDueDate>();
             if (paymentMethod is not null)
