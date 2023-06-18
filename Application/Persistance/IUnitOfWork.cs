@@ -11,6 +11,7 @@ namespace Application.Persistance
         IRoleRepository Roles { get; }
         IUserRepository Users { get; }
         IUserRefreshTokenRepository UserRefreshTokens { get; }
+        IFileRepository Files { get; }
 
         IExerciseRepository Exercices { get; }
         ITaxRepository Taxes { get; }

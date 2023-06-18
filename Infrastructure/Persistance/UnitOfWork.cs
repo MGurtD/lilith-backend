@@ -20,29 +20,26 @@ namespace Infrastructure.Persistance
         public IRoleRepository Roles { get; private set; }
         public IUserRepository Users { get; private set; }
         public IUserRefreshTokenRepository UserRefreshTokens { get; private set; }
-        public ISupplierTypeRepository SupplierTypes { get; private set; }
-        public ISupplierRepository Suppliers { get; private set; }
-        public ICustomerTypeRepository CustomerTypes { get; private set; }
-        public ICustomerRepository Customers { get; private set; }
         public IPaymentMethodRepository PaymentMethods { get; private set; }
         public IExerciseRepository Exercices { get; private set; }
         public ITaxRepository Taxes { get; private set; }
-        public IPurchaseInvoiceDueDateRepository PurchaseInvoiceDueDates { get; private set; }
-        public IPurchaseInvoiceRepository PurchaseInvoices { get; private set; }
+        public IFileRepository Files { get; private set; }
+        public ISupplierTypeRepository SupplierTypes { get; private set; }
+        public ISupplierRepository Suppliers { get; private set; }
         public IPurchaseInvoiceSerieRepository PurchaseInvoiceSeries { get; private set; }
         public IPurchaseInvoiceStatusRepository PurchaseInvoiceStatuses { get; private set; }
+        public IPurchaseInvoiceRepository PurchaseInvoices { get; private set; }
+        public IPurchaseInvoiceDueDateRepository PurchaseInvoiceDueDates { get; private set; }
+        public ICustomerTypeRepository CustomerTypes { get; private set; }
+        public ICustomerRepository Customers { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context)
         {
             this.context = context;
             UserRefreshTokens = new UserRefreshTokenRepository(context);
-            Enterprises = new EnterpriseRepository(context);
-            Sites = new SiteRepository(context);
             Users = new UserRepository(context);
             Roles = new RoleRepository(context);
-            
-            CustomerTypes = new CustomerTypeRepository(context);
-            Customers = new CustomerRepository(context, new CustomerContactRepository(context), new CustomerAddressRepository(context));
+            Files = new FileRepository(context);
             
             PaymentMethods = new PaymentMethodRepository(context);
             Taxes = new TaxRepository(context);
@@ -56,6 +53,11 @@ namespace Infrastructure.Persistance
             PurchaseInvoiceDueDates = new PurchaseInvoiceDueDateRepository(context);
             PurchaseInvoiceStatuses = new PurchaseInvoiceStatusRepository(context, new PurchaseInvoiceStatusTransitionRepository(context));
 
+            CustomerTypes = new CustomerTypeRepository(context);
+            Customers = new CustomerRepository(context, new CustomerContactRepository(context), new CustomerAddressRepository(context));
+
+            Enterprises = new EnterpriseRepository(context);
+            Sites = new SiteRepository(context);
         }
 
         public async Task<int> CompleteAsync()

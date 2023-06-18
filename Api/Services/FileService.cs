@@ -50,5 +50,30 @@ namespace Api.Services
         {
             throw new NotImplementedException();
         }
+
+        public IEnumerable<Domain.Entities.File> GetEntityFiles(string Entity, Guid EntityId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<Domain.Entities.File> GetEntityDocuments(string Entity, Guid EntityId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<Domain.Entities.File> GetEntityImages(string Entity, Guid EntityId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> RemoveEntityFiles(string Entity, Guid EntityId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> RemoveFile(Guid id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
