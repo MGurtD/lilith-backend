@@ -16,43 +16,60 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get(string fileName)
+        public IActionResult GetEntityFiles(string entity, Guid entityId)
         {
-            var filePath = Path.Combine(ApplicationConfiguration.FileUploadPath, fileName);
-            if (!System.IO.File.Exists(filePath))
+            var files = _fileService.GetEntityFiles(entity, entityId);
+            return Ok(files);
+        }
+
+        [Route("Documents")]
+        [HttpGet]
+        public IActionResult GetEntityDocuments(string entity, Guid entityId)
+        {
+            var files = _fileService.GetEntityDocuments(entity, entityId);
+            return Ok(files);
+        }
+
+        [Route("Images")]
+        [HttpGet]
+        public IActionResult GetEntityImages(string entity, Guid entityId)
+        {
+            var files = _fileService.GetEntityImages(entity, entityId);
+            return Ok(files);
+        }
+
+        [Route("Download")]
+        [HttpPost]
+        public async Task<IActionResult> Download(Domain.Entities.File file)
+        {
+            if (!System.IO.File.Exists(file.Path))
                 return NotFound();
 
             var memory = new MemoryStream();
-            await using (var stream = new FileStream(filePath, FileMode.Open))
+            await using (var stream = new FileStream(file.Path, FileMode.Open))
             {
                 await stream.CopyToAsync(memory);
             }
             memory.Position = 0;
-            return File(memory, GetContentType(filePath), filePath);
+            return File(memory, Services.FileService.GetContentType(file.Path), Path.GetFileName(file.Path));
         }
 
-        private string GetContentType(string path)
-        {
-            var provider = new FileExtensionContentTypeProvider();
-            if (!provider.TryGetContentType(path, out string contentType))
-            {
-                contentType = "application/octet-stream";
-            }
-            return contentType;
-        }
-
+        [Route("Upload")]
         [HttpPost]
-        public async Task<IActionResult> Upload(IFormFile file)
+        public async Task<IActionResult> Upload(IFormFile file, [FromForm] string entity, [FromForm] string id)
         {
-            var uploaded = await _fileService.UploadFile(file);
-
+            var uploaded = await _fileService.UploadFile(file, entity, Guid.Parse(id));
             return uploaded ? Ok(uploaded) : BadRequest();
         }
-
-        [HttpDelete]
-        public IActionResult Delete(IFormFile file)
+        
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Delete(Guid id)
         {
-            return BadRequest();
+            var result = await _fileService.RemoveFile(id);
+            if (result)
+                return Ok();
+            else
+                return BadRequest();
         }
     }
 }
