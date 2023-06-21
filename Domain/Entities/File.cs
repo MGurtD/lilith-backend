@@ -6,6 +6,7 @@
         public Guid EntityId { get; set; }
         public FileType Type { get; set; }
         public decimal Size { get; set; }
+        public string OriginalName { get; set; } = string.Empty;
         public string Path { get; set; } = string.Empty;
     }
 

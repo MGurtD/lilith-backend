@@ -29,6 +29,11 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION, 
                               ApplicationDbContextConstants.DECIMAL_SCALE);
             builder
+                .Property(b => b.OriginalName)
+                .IsRequired()
+                .HasColumnType("varchar")
+                .HasMaxLength(1000);
+            builder
                 .Property(b => b.Path)
                 .IsRequired()
                 .HasColumnType("varchar")
