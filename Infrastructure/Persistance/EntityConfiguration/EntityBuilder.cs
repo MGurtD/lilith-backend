@@ -15,10 +15,12 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasColumnType("uuid");
             builder
                 .Property(e => e.CreatedOn)
+                .HasColumnType("timestamp without time zone")
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("NOW()");
             builder
                 .Property(e => e.UpdatedOn)
+                .HasColumnType("timestamp without time zone")
                 .ValueGeneratedOnAddOrUpdate()
                 .HasDefaultValueSql("NOW()");
             builder

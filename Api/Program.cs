@@ -31,6 +31,7 @@ try
         builder.Services.AddDbContext<ApplicationDbContext>(options => {
             options.UseNpgsql(ApplicationConfiguration.ConnectionString);
         });
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         builder.Services
             .AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedEmail = false)
             .AddEntityFrameworkStores<ApplicationDbContext>();
