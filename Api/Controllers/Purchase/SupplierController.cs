@@ -2,7 +2,7 @@
 using Domain.Entities.Purchase;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers.Sales
+namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]

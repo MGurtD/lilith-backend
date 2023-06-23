@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Domain.Entities;
 
-namespace Infrastructure.Persistance.EntityConfiguration.Purchase
+namespace Infrastructure.Persistance.EntityConfiguration
 {
     public class PaymentMethodBuilder : IEntityTypeConfiguration<PaymentMethod>
     {

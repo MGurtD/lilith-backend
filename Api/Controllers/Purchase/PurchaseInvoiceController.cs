@@ -5,7 +5,7 @@ using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
-namespace Api.Controllers.Sales
+namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
