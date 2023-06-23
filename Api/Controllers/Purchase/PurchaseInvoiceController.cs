@@ -36,5 +36,13 @@ namespace Api.Controllers.Purchase
 
         }
 
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            var response = _service.GetBetweenDates(DateTime.Now.AddDays(-365), DateTime.Now);
+
+            return Ok(response);
+        }
+
     }
 }
