@@ -1,5 +1,6 @@
 ﻿using Application.Persistance.Repositories.Purchase;
 using Domain.Entities.Purchase;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistance.Repositories.Purchase
 {
@@ -7,6 +8,11 @@ namespace Infrastructure.Persistance.Repositories.Purchase
     {
         public PurchaseInvoiceRepository(ApplicationDbContext context) : base(context)
         {
+        }
+
+        public override async Task<PurchaseInvoice?> Get(Guid id)
+        {
+            return await dbSet.Include(s => s.Supplier).Include(s => s.PaymentMethod).AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
         }
 
         public int GetNextNumber()
