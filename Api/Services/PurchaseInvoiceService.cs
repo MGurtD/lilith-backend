@@ -2,7 +2,6 @@ using Application.Contracts;
 using Application.Persistance;
 using Domain.Entities;
 using Domain.Entities.Purchase;
-using Microsoft.VisualBasic;
 
 namespace Application.Services
 {
@@ -42,12 +41,6 @@ namespace Application.Services
 
         public async Task<GenericResponse> Create(PurchaseInvoice purchaseInvoice)
         {
-            var paymentMethod = await _unitOfWork.PaymentMethods.Get(purchaseInvoice.PaymentMethodId);
-            if (paymentMethod == null || paymentMethod.Disabled)
-            {
-                return new GenericResponse(false, new List<string> { $"Métode de pagament inválid" });
-            }
-            
             // Aplicar impost
             if (purchaseInvoice.TaxId.HasValue)
             {
@@ -56,17 +49,15 @@ namespace Application.Services
                 {
                     return new GenericResponse(false, new List<string> { $"Impost inválid" });
                 }
-
-                purchaseInvoice.TaxAmount = tax.ApplyTax(purchaseInvoice.GrossAmount);
-                purchaseInvoice.NetAmount = purchaseInvoice.GrossAmount - purchaseInvoice.TaxAmount;
             }
 
             purchaseInvoice.Number = _unitOfWork.PurchaseInvoices.GetNextNumber();
             await _unitOfWork.PurchaseInvoices.Add(purchaseInvoice);
 
             // Generació de venciments
-            var dueDates = GenerateDueDates(purchaseInvoice, paymentMethod);
-            await _unitOfWork.PurchaseInvoiceDueDates.AddRange(dueDates);
+            var dueDates = await GetPurchaseInvoiceDueDates(purchaseInvoice);
+            if (dueDates != null)
+                await _unitOfWork.PurchaseInvoiceDueDates.AddRange(dueDates);
 
             // Incrementar el comptador de factures de l'exercici
             if (purchaseInvoice.ExerciceId.HasValue)
@@ -80,6 +71,23 @@ namespace Application.Services
                 exercise.PurchaseInvoiceCounter += 1;
                 await _unitOfWork.Exercices.Update(exercise);
             }
+
+            return new GenericResponse(true, new List<string> { });
+        }
+
+        public async Task<GenericResponse> ChangeStatuses(List<PurchaseInvoice> purchaseInvoices, Guid toStatusId)
+        {
+            var status = await _unitOfWork.PurchaseInvoiceStatuses.Get(toStatusId);
+            if (status == null || status.Disabled)
+            {
+                return new GenericResponse(false, new List<string> { $"L'estat de factura amb ID {toStatusId} no existeix o está deshabilitat" });
+            }
+
+            foreach (var invoice in purchaseInvoices)
+            {
+                invoice.PurchaseInvoiceStatusId = toStatusId;
+                await _unitOfWork.PurchaseInvoices.Update(invoice);
+            }            
 
             return new GenericResponse(true, new List<string> { });
         }
@@ -104,10 +112,16 @@ namespace Application.Services
             return new GenericResponse(true, new List<string> { });
         }
 
-        private static List<PurchaseInvoiceDueDate> GenerateDueDates(PurchaseInvoice purchaseInvoice, PaymentMethod paymentMethod)
+        public async Task<IEnumerable<PurchaseInvoiceDueDate>?> GetPurchaseInvoiceDueDates(PurchaseInvoice purchaseInvoice)
         {
-            var purchaseInvoiceDueDates = new List<PurchaseInvoiceDueDate>();
+            // Recuperar métode de pagament
+            var paymentMethod = await _unitOfWork.PaymentMethods.Get(purchaseInvoice.PaymentMethodId);
+            if (paymentMethod == null || paymentMethod.Disabled)
+            {
+                return null;
+            }
 
+            var purchaseInvoiceDueDates = new List<PurchaseInvoiceDueDate>();
             for (var i = 0; i < paymentMethod.NumberOfPayments; i++)
             {
                 var dueDateAmount = purchaseInvoice.NetAmount / paymentMethod.NumberOfPayments;
@@ -116,8 +130,8 @@ namespace Application.Services
                 if (dueDate.Day > paymentMethod.PaymentDay)
                 {
                     dueDate = new DateTime(dueDate.Month == 12 ? dueDate.Year + 1 : dueDate.Year,
-                                            dueDate.Month == 12 ? 1 : dueDate.Month + 1,
-                                            paymentMethod.PaymentDay);
+                                           dueDate.Month == 12 ? 1 : dueDate.Month + 1,
+                                           paymentMethod.PaymentDay);
                 }
 
                 var purchaseInvoiceDueDate = new PurchaseInvoiceDueDate()
@@ -130,6 +144,5 @@ namespace Application.Services
             }
             return purchaseInvoiceDueDates;
         }
-
     }
 }
