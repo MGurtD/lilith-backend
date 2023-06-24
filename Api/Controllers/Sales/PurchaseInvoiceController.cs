@@ -35,6 +35,21 @@ namespace Api.Controllers.Sales
             }
 
         }
+        [Route("GetBetweenDates")]
+        [HttpPost]
+        public IActionResult GetBetweenDates(DateTime startDate, DateTime endDate)
+        {
+            var response =  _service.GetBetweenDates(startDate, endDate);
+            if (response is not null)
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
 
     }
 }
