@@ -32,6 +32,8 @@
 
         public PurchaseInvoiceStatus? PurchaseInvoiceStatus { get; set; }
         public Guid PurchaseInvoiceStatusId { get; set; }
+
+        public ICollection<PurchaseInvoiceDueDate>? PurchaseInvoiceDueDates { get; set; }
     }
 
 }

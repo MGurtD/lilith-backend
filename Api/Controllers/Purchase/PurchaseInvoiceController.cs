@@ -15,6 +15,42 @@ namespace Api.Controllers.Purchase
             _service = service;
         }
 
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var invoice = await _service.GetById(id);
+
+            if (invoice == null) return BadRequest();
+            else return Ok(invoice);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetPurchaseInvoices(DateTime startTime, DateTime endTime, Guid? supplierId, Guid? statusId, Guid? exerciceId)
+        {
+            IEnumerable<PurchaseInvoice> purchaseInvoices = new List<PurchaseInvoice>();
+            if (exerciceId.HasValue)
+                purchaseInvoices = await _service.GetByExercise(exerciceId.Value);
+            else if (supplierId.HasValue)
+                purchaseInvoices = _service.GetBetweenDatesAndSupplier(startTime, endTime, supplierId.Value);
+            else if (statusId.HasValue)
+                purchaseInvoices = _service.GetBetweenDatesAndStatus(startTime, endTime, statusId.Value);
+            else
+                purchaseInvoices = _service.GetBetweenDates(startTime, endTime);
+
+            if (purchaseInvoices != null) return Ok(purchaseInvoices);
+            else return BadRequest();
+        }
+
+        [HttpPost]
+        [Route("DueDates")]
+        public async Task<IActionResult> GetDueDates(PurchaseInvoice purchaseInvoice)
+        {
+            var dueDates = await _service.GetPurchaseInvoiceDueDates(purchaseInvoice);
+
+            if (dueDates == null) return BadRequest();
+            else return Ok(dueDates);
+        }
+
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -33,31 +69,28 @@ namespace Api.Controllers.Purchase
 
         }
 
-        [HttpPost]
-        [Route("DueDates")]
-        public async Task<IActionResult> GetDueDates(PurchaseInvoice purchaseInvoice)
+        [HttpPut("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Update(Guid id, [FromBody] PurchaseInvoice purchaseInvoice)
         {
-            var dueDates = await _service.GetPurchaseInvoiceDueDates(purchaseInvoice);
+            if (id != purchaseInvoice.Id) return BadRequest();
 
-            if (dueDates == null) return BadRequest();
-            else return Ok(dueDates); 
+            var response = await _service.Update(purchaseInvoice);
+
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetPurchaseInvoices(DateTime startTime, DateTime endTime, Guid? supplierId, Guid? statusId, Guid? exerciceId)
+        [HttpDelete("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Remove(Guid id)
         {
-            IEnumerable<PurchaseInvoice> purchaseInvoices = new List<PurchaseInvoice>();
-            if (exerciceId.HasValue)
-                purchaseInvoices = await _service.GetByExercise(exerciceId.Value);
-            if (supplierId.HasValue)
-                purchaseInvoices = _service.GetBetweenDatesAndSupplier(startTime, endTime, supplierId.Value);
-            if (statusId.HasValue) 
-                purchaseInvoices = _service.GetBetweenDatesAndSupplier(startTime, endTime, statusId.Value);
+            var response = await _service.Remove(id);
 
-            purchaseInvoices = _service.GetBetweenDates(startTime, endTime);
-
-            if (purchaseInvoices != null) return Ok(purchaseInvoices);
-            else return BadRequest();
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
         }
 
     }

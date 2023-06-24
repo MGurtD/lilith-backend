@@ -13,6 +13,7 @@ using Api.Middlewares;
 using Api;
 using Application.Services;
 using Api.Services;
+using System.Text.Json.Serialization;
 
 // Early init of NLog to allow startup and exception logging, before host is built
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
@@ -66,7 +67,8 @@ try
             });
         builder.Services.AddSingleton(tokenValidationParameters);
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+                        .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
