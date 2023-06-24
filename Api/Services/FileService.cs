@@ -28,7 +28,8 @@ namespace Api.Services
                 if (file.Length > 0 && CreateDirectory(entity))
                 {
                     // Crear arxiu al filesystem
-                    var fileName = $"{id}{Path.GetExtension(file.FileName)}";
+                    var timestamp = DateTime.Now.ToString("yyMMddHHmmss");
+                    var fileName = $"{id}_{timestamp}{Path.GetExtension(file.FileName)}";
                     var path = Path.Combine(ApplicationConfiguration.FileUploadPath, entity, fileName);
                     using var fileStream = new FileStream(path, FileMode.Create);
                     await file.CopyToAsync(fileStream);
@@ -39,6 +40,7 @@ namespace Api.Services
                         Entity = entity,
                         EntityId = id,
                         Path = path,
+                        OriginalName = file.FileName,
                         Size = file.Length,
                         Type = GetTypeFromFormFile(file)
                     };

@@ -25,7 +25,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Purchase
             builder
                 .Property(b => b.PurchaseInvoiceDate)
                 .IsRequired()
-                .HasColumnType("timestamp with time zone");
+                .HasColumnType("timestamp without time zone");
             builder
                 .Property(b => b.BaseAmount)
                 .IsRequired()

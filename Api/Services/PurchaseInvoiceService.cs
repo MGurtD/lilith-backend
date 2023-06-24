@@ -2,6 +2,7 @@ using Application.Contracts;
 using Application.Persistance;
 using Domain.Entities;
 using Domain.Entities.Purchase;
+using Microsoft.VisualBasic;
 
 namespace Application.Services
 {
@@ -46,12 +47,39 @@ namespace Application.Services
             {
                 return new GenericResponse(false, new List<string> { $"Métode de pagament inválid" });
             }
+            
+            // Aplicar impost
+            if (purchaseInvoice.TaxId.HasValue)
+            {
+                var tax = await _unitOfWork.Taxes.Get(purchaseInvoice.TaxId.Value);
+                if (tax == null || tax.Disabled)
+                {
+                    return new GenericResponse(false, new List<string> { $"Impost inválid" });
+                }
 
+                purchaseInvoice.TaxAmount = tax.ApplyTax(purchaseInvoice.GrossAmount);
+                purchaseInvoice.NetAmount = purchaseInvoice.GrossAmount - purchaseInvoice.TaxAmount;
+            }
+
+            purchaseInvoice.Number = _unitOfWork.PurchaseInvoices.GetNextNumber();
             await _unitOfWork.PurchaseInvoices.Add(purchaseInvoice);
 
             // Generació de venciments
             var dueDates = GenerateDueDates(purchaseInvoice, paymentMethod);
             await _unitOfWork.PurchaseInvoiceDueDates.AddRange(dueDates);
+
+            // Incrementar el comptador de factures de l'exercici
+            if (purchaseInvoice.ExerciceId.HasValue)
+            {
+                var exercise = _unitOfWork.Exercices.Find(e => e.Id == purchaseInvoice.ExerciceId.Value).FirstOrDefault();
+                if (exercise == null || exercise.Disabled)
+                {
+                    return new GenericResponse(false, new List<string> { $"Exercici inválid" });
+                }
+
+                exercise.PurchaseInvoiceCounter += 1;
+                await _unitOfWork.Exercices.Update(exercise);
+            }
 
             return new GenericResponse(true, new List<string> { });
         }
@@ -79,28 +107,26 @@ namespace Application.Services
         private static List<PurchaseInvoiceDueDate> GenerateDueDates(PurchaseInvoice purchaseInvoice, PaymentMethod paymentMethod)
         {
             var purchaseInvoiceDueDates = new List<PurchaseInvoiceDueDate>();
-            if (paymentMethod is not null)
+
+            for (var i = 0; i < paymentMethod.NumberOfPayments; i++)
             {
-                for (var i = 0; i < paymentMethod.Frequency; i++)
+                var dueDateAmount = purchaseInvoice.NetAmount / paymentMethod.NumberOfPayments;
+                var dueDate = purchaseInvoice.PurchaseInvoiceDate.AddDays(paymentMethod.Frequency > 0 ? paymentMethod.Frequency : paymentMethod.DueDays);
+
+                if (dueDate.Day > paymentMethod.PaymentDay)
                 {
-                    var dueDateAmount = purchaseInvoice.NetAmount / paymentMethod.NumberOfPayments;
-                    var dueDate = purchaseInvoice.PurchaseInvoiceDate.AddDays(paymentMethod.DueDays);
-
-                    if (dueDate.Day > paymentMethod.PaymentDay)
-                    {
-                        dueDate = new DateTime(dueDate.Month == 12 ? dueDate.Year + 1 : dueDate.Year,
-                                               dueDate.Month == 12 ? 1 : dueDate.Month + 1,
-                                               paymentMethod.PaymentDay);
-                    }
-
-                    var purchaseInvoiceDueDate = new PurchaseInvoiceDueDate()
-                    {
-                        PurchaseInvoiceId = purchaseInvoice.Id,
-                        Amount = dueDateAmount,
-                        DueDate = dueDate,
-                    };
-                    purchaseInvoiceDueDates.Add(purchaseInvoiceDueDate);
+                    dueDate = new DateTime(dueDate.Month == 12 ? dueDate.Year + 1 : dueDate.Year,
+                                            dueDate.Month == 12 ? 1 : dueDate.Month + 1,
+                                            paymentMethod.PaymentDay);
                 }
+
+                var purchaseInvoiceDueDate = new PurchaseInvoiceDueDate()
+                {
+                    PurchaseInvoiceId = purchaseInvoice.Id,
+                    Amount = dueDateAmount,
+                    DueDate = dueDate,
+                };
+                purchaseInvoiceDueDates.Add(purchaseInvoiceDueDate);
             }
             return purchaseInvoiceDueDates;
         }

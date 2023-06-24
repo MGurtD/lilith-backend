@@ -17,7 +17,7 @@ public static class ApplicationConfiguration
         ConnectionString = GetConfigurationKey("ConnectionStrings:Default");
         JwtSecret = GetConfigurationKey("JwtConfig:Secret");
         JwtExpirationTime = TimeSpan.Parse(GetConfigurationKey("JwtConfig:ExpirationTimeFrame"));
-        //FileUploadPath = GetConfigurationKey("FileManagment:UploadPath");
+        FileUploadPath = GetConfigurationKey("FileManagment:UploadPath");
     }
 
     private static string GetConfigurationKey(string Key)

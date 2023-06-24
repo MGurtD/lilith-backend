@@ -6,11 +6,11 @@ namespace Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class TaxesController : ControllerBase
+    public class TaxController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
 
-        public TaxesController(IUnitOfWork unitOfWork)
+        public TaxController(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }

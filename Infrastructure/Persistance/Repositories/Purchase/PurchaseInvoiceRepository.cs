@@ -8,5 +8,10 @@ namespace Infrastructure.Persistance.Repositories.Purchase
         public PurchaseInvoiceRepository(ApplicationDbContext context) : base(context)
         {
         }
+
+        public int GetNextNumber()
+        {
+            return dbSet.Max(x => x.Number) + 1;
+        }
     }
 }

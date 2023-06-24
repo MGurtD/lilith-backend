@@ -25,11 +25,11 @@ namespace Infrastructure.Persistance.EntityConfiguration
             builder
                 .Property(b => b.StartDate)
                 .IsRequired()
-                .HasColumnType("timestamp with time zone");
+                .HasColumnType("timestamp without time zone");
             builder
                 .Property(b => b.EndDate)
                 .IsRequired()
-                .HasColumnType("timestamp with time zone");
+                .HasColumnType("timestamp without time zone");
             builder
                 .Property(b => b.PurchaseInvoiceCounter)
                 .IsRequired()

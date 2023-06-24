@@ -5,7 +5,7 @@ using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
-namespace Api.Controllers.Sales
+namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -50,6 +50,14 @@ namespace Api.Controllers.Sales
             }
         }
 
+
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            var response = _service.GetBetweenDates(DateTime.Now.AddDays(-365), DateTime.Now);
+
+            return Ok(response);
+        }
 
     }
 }
