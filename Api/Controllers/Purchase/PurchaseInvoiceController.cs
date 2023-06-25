@@ -1,4 +1,5 @@
-﻿using Application.Services;
+﻿using Application.Contracts.Purchase;
+using Application.Services;
 using Domain.Entities.Purchase;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,15 +26,17 @@ namespace Api.Controllers.Purchase
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPurchaseInvoices(DateTime startTime, DateTime endTime, Guid? supplierId, Guid? statusId, Guid? exerciceId)
+        public async Task<IActionResult> GetPurchaseInvoices(DateTime startTime, DateTime endTime, Guid? supplierId, Guid? statusId, Guid? excludeStatusId, Guid? exerciceId)
         {
             IEnumerable<PurchaseInvoice> purchaseInvoices = new List<PurchaseInvoice>();
             if (exerciceId.HasValue)
                 purchaseInvoices = await _service.GetByExercise(exerciceId.Value);
-            else if (supplierId.HasValue)
+            if (supplierId.HasValue)
                 purchaseInvoices = _service.GetBetweenDatesAndSupplier(startTime, endTime, supplierId.Value);
             else if (statusId.HasValue)
                 purchaseInvoices = _service.GetBetweenDatesAndStatus(startTime, endTime, statusId.Value);
+            else if (excludeStatusId.HasValue)
+                purchaseInvoices = _service.GetBetweenDatesAndExcludeStatus(startTime, endTime, excludeStatusId.Value);
             else
                 purchaseInvoices = _service.GetBetweenDates(startTime, endTime);
 
@@ -59,13 +62,24 @@ namespace Api.Controllers.Purchase
             var response = await _service.Create(purchaseInvoice);
 
             if (response.Result)
-            {
                 return Ok();
-            }
             else
-            {
                 return BadRequest(response.Errors);
-            }
+        }
+
+        [HttpPost]
+        [Route("UpdateStatuses")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateStatuses(ChangeStatusOfPurchaseInvoicesRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            var response = await _service.ChangeStatuses(request);
+            if (response.Result)
+                return Ok();
+            else
+                return BadRequest(response.Errors);
 
         }
 

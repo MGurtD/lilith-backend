@@ -1,6 +1,7 @@
 ﻿using Application.Persistance.Repositories.Purchase;
 using Domain.Entities.Purchase;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Infrastructure.Persistance.Repositories.Purchase
 {
@@ -15,9 +16,18 @@ namespace Infrastructure.Persistance.Repositories.Purchase
             return await dbSet.Include(d => d.PurchaseInvoiceDueDates).AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
         }
 
+        public override IEnumerable<PurchaseInvoice> Find(Expression<Func<PurchaseInvoice, bool>> predicate)
+        {
+            return dbSet
+                .Include(d => d.PurchaseInvoiceDueDates).AsNoTracking()
+                .Where(predicate)
+                .OrderBy(pi => pi.PurchaseInvoiceDate);
+        }
+
         public int GetNextNumber()
         {
-            return dbSet.Max(x => x.Number) + 1;
+            if (dbSet.Count() == 0) return 1;
+            else return dbSet.Max(x => x.Number) + 1;
         }
     }
 }

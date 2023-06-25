@@ -1,4 +1,5 @@
-﻿using Application.Dto;
+﻿using Application.Contracts.Purchase;
+using Application.Dto;
 
 namespace Application.Services
 {

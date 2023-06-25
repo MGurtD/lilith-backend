@@ -1,4 +1,5 @@
 using Application.Contracts;
+using Application.Contracts.Purchase;
 using Application.Persistance;
 using Domain.Entities;
 using Domain.Entities.Purchase;
@@ -29,6 +30,12 @@ namespace Application.Services
         public IEnumerable<PurchaseInvoice> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid statusId)
         {
             var invoices = _unitOfWork.PurchaseInvoices.Find(p => p.PurchaseInvoiceDate >= startDate && p.PurchaseInvoiceDate <= endDate && p.PurchaseInvoiceStatusId == statusId);
+            return invoices;
+        }
+
+        public IEnumerable<PurchaseInvoice> GetBetweenDatesAndExcludeStatus(DateTime startDate, DateTime endDate, Guid statusId)
+        {
+            var invoices = _unitOfWork.PurchaseInvoices.Find(p => p.PurchaseInvoiceDate >= startDate && p.PurchaseInvoiceDate <= endDate && p.PurchaseInvoiceStatusId != statusId);
             return invoices;
         }
 
@@ -86,6 +93,12 @@ namespace Application.Services
             // Generació de venciments
             if (purchaseInvoice.PurchaseInvoiceDueDates != null)
             {
+                //foreach (var dueDate in purchaseInvoice.PurchaseInvoiceDueDates)
+                //{
+                //    dueDate.Id = Guid.NewGuid();
+                //    dueDate.PurchaseInvoiceId = purchaseInvoice.Id;
+                //}
+
                 await _unitOfWork.PurchaseInvoiceDueDates.AddRange(purchaseInvoice.PurchaseInvoiceDueDates);
             }   
 
@@ -118,38 +131,41 @@ namespace Application.Services
             return new GenericResponse(true, new List<string> { });
         }
 
-        public async Task<GenericResponse> ChangeStatuses(List<PurchaseInvoice> purchaseInvoices, Guid toStatusId)
+        public async Task<GenericResponse> ChangeStatuses(ChangeStatusOfPurchaseInvoicesRequest changeStatusOfPurchaseInvoicesRequest)
         {
-            var status = await _unitOfWork.PurchaseInvoiceStatuses.Get(toStatusId);
+            var statusToId = changeStatusOfPurchaseInvoicesRequest.StatusToId;
+            var status = await _unitOfWork.PurchaseInvoiceStatuses.Get(statusToId);
             if (status == null || status.Disabled)
             {
-                return new GenericResponse(false, new List<string> { $"L'estat de factura amb ID {toStatusId} no existeix o está deshabilitat" });
+                return new GenericResponse(false, new List<string> { $"L'estat de factura amb ID {statusToId} no existeix o está deshabilitat" });
             }
 
+            var purchaseInvoices = _unitOfWork.PurchaseInvoices.Find(pi => changeStatusOfPurchaseInvoicesRequest.Ids.Contains(pi.Id));
             foreach (var invoice in purchaseInvoices)
             {
-                invoice.PurchaseInvoiceStatusId = toStatusId;
-                await _unitOfWork.PurchaseInvoices.Update(invoice);
-            }            
+                invoice.PurchaseInvoiceStatusId = statusToId;
+                _unitOfWork.PurchaseInvoices.UpdateWithoutSave(invoice);
+            }
+            await _unitOfWork.CompleteAsync();
 
             return new GenericResponse(true, new List<string> { });
         }
 
-        public async Task<GenericResponse> ChangeStatus(Guid id, Guid toStatusId)
+        public async Task<GenericResponse> ChangeStatus(ChangeStatusOfPurchaseInvoiceRequest changeStatusOfPurchaseInvoiceRequest)
         {
-            var invoice = await _unitOfWork.PurchaseInvoices.Get(id);
+            var invoice = await _unitOfWork.PurchaseInvoices.Get(changeStatusOfPurchaseInvoiceRequest.Id);
             if (invoice == null)
             {
-                return new GenericResponse(false, new List<string> { $"La factura amb ID {id} no existeix" });
+                return new GenericResponse(false, new List<string> { $"La factura amb ID {changeStatusOfPurchaseInvoiceRequest.Id} no existeix" });
             }
 
-            var status = await _unitOfWork.PurchaseInvoiceStatuses.Get(toStatusId);
+            var status = await _unitOfWork.PurchaseInvoiceStatuses.Get(changeStatusOfPurchaseInvoiceRequest.StatusToId);
             if (status == null || status.Disabled)
             {
-                return new GenericResponse(false, new List<string> { $"L'estat de factura amb ID {id} no existeix o está deshabilitat" });
+                return new GenericResponse(false, new List<string> { $"L'estat de factura amb ID {changeStatusOfPurchaseInvoiceRequest.StatusToId} no existeix o está deshabilitat" });
             }
 
-            invoice.PurchaseInvoiceStatusId = toStatusId;
+            invoice.PurchaseInvoiceStatusId = changeStatusOfPurchaseInvoiceRequest.StatusToId;
             await _unitOfWork.PurchaseInvoices.Update(invoice);
 
             return new GenericResponse(true, new List<string> { });
@@ -169,5 +185,6 @@ namespace Application.Services
             }
 
         }
+
     }
 }
