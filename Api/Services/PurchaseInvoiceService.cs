@@ -93,11 +93,11 @@ namespace Application.Services
             // Generació de venciments
             if (purchaseInvoice.PurchaseInvoiceDueDates != null)
             {
-                //foreach (var dueDate in purchaseInvoice.PurchaseInvoiceDueDates)
-                //{
-                //    dueDate.Id = Guid.NewGuid();
-                //    dueDate.PurchaseInvoiceId = purchaseInvoice.Id;
-                //}
+                foreach (var dueDate in purchaseInvoice.PurchaseInvoiceDueDates)
+                {
+                    dueDate.Id = Guid.NewGuid();
+                    dueDate.PurchaseInvoiceId = purchaseInvoice.Id;
+                }
 
                 await _unitOfWork.PurchaseInvoiceDueDates.AddRange(purchaseInvoice.PurchaseInvoiceDueDates);
             }   
