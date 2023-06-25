@@ -12,7 +12,7 @@ namespace Infrastructure.Persistance.Repositories.Purchase
 
         public override async Task<PurchaseInvoice?> Get(Guid id)
         {
-            return await dbSet.Include(s => s.Supplier).Include(s => s.PaymentMethod).AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
+            return await dbSet.Include(d => d.PurchaseInvoiceDueDates).AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
         }
 
         public int GetNextNumber()
