@@ -1,4 +1,5 @@
 using Application.Contracts;
+using Application.Contracts.Purchase;
 using Domain.Entities.Purchase;
 
 namespace Application.Services
@@ -9,6 +10,7 @@ namespace Application.Services
 
         IEnumerable<PurchaseInvoice> GetBetweenDates(DateTime startDate, DateTime endDate);
         IEnumerable<PurchaseInvoice> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid statusId);
+        IEnumerable<PurchaseInvoice> GetBetweenDatesAndExcludeStatus(DateTime startDate, DateTime endDate, Guid statusId);
         IEnumerable<PurchaseInvoice> GetBetweenDatesAndSupplier(DateTime startDate, DateTime endDate, Guid supplierId);
         Task<IEnumerable<PurchaseInvoice>> GetByExercise(Guid exerciseId);
 
@@ -16,8 +18,8 @@ namespace Application.Services
 
         Task<GenericResponse> Create(PurchaseInvoice purchaseInvoice);
 
-        Task<GenericResponse> ChangeStatus(Guid id, Guid toStatusId);
-        Task<GenericResponse> ChangeStatuses(List<PurchaseInvoice> purchaseInvoices, Guid toStatusId);
+        Task<GenericResponse> ChangeStatus(ChangeStatusOfPurchaseInvoiceRequest changeStatusOfPurchaseInvoiceRequest);
+        Task<GenericResponse> ChangeStatuses(ChangeStatusOfPurchaseInvoicesRequest changeStatusOfPurchaseInvoicesRequest);
         Task<GenericResponse> Update(PurchaseInvoice purchaseInvoice);
 
         Task<GenericResponse> Remove(Guid id);

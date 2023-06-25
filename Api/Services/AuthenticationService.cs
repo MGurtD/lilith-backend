@@ -1,4 +1,5 @@
 ﻿using Api.Exceptions;
+using Application.Contracts.Purchase;
 using Application.Dto;
 using Application.Persistance;
 using Application.Services;

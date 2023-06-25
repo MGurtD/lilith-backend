@@ -14,6 +14,7 @@ namespace Application.Persistance.Repositories
         Task AddRange(IEnumerable<TEntity> entities);
 
         Task Update(TEntity entity);
+        bool UpdateWithoutSave(TEntity entity);
 
         Task Remove(TEntity entity);
         Task RemoveRange(IEnumerable<TEntity> entities);

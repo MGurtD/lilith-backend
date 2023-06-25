@@ -25,7 +25,7 @@ namespace Infrastructure.Persistance.Repositories
             return await dbSet.AsNoTracking().ToListAsync();
         }
 
-        public IEnumerable<Entity> Find(Expression<Func<Entity, bool>> predicate)
+        public virtual IEnumerable<Entity> Find(Expression<Func<Entity, bool>> predicate)
         {
             return dbSet.AsNoTracking().Where(predicate);
         }
@@ -49,8 +49,14 @@ namespace Infrastructure.Persistance.Repositories
 
         public async Task Update(Entity entity)
         {
-            dbSet.Update(entity);
+            dbSet.Update(entity); 
             await context.SaveChangesAsync();
+        }
+
+        public bool UpdateWithoutSave(Entity entity)
+        {
+            dbSet.Update(entity);
+            return true;
         }
 
         public async Task Remove(Entity entity)
