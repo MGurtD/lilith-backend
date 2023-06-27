@@ -77,7 +77,7 @@ namespace Application.Services
                 var purchaseInvoiceDueDate = new PurchaseInvoiceDueDate()
                 {
                     PurchaseInvoiceId = purchaseInvoice.Id,
-                    Amount = dueDateAmount,
+                    Amount = decimal.Round(dueDateAmount, 2),
                     DueDate = dueDate,
                 };
                 purchaseInvoiceDueDates.Add(purchaseInvoiceDueDate);
@@ -120,21 +120,26 @@ namespace Application.Services
 
         public async Task<GenericResponse> Update(PurchaseInvoice purchaseInvoice)
         {
+            purchaseInvoice.PurchaseInvoiceDueDates = null;
+
             await _unitOfWork.PurchaseInvoices.Update(purchaseInvoice);
             return new GenericResponse(true, new List<string> { });
         }
 
-        public async Task<GenericResponse> RecreateDueDates(PurchaseInvoice purchaseInvoice)
+        public async Task<GenericResponse> RecreateDueDates(PurchaseInvoice requestInvoice)
         {
-            if (purchaseInvoice.PurchaseInvoiceDueDates != null && purchaseInvoice.PurchaseInvoiceDueDates != null)
+            var dbInvoice = await _unitOfWork.PurchaseInvoices.Get(requestInvoice.Id);
+            if (dbInvoice != null && dbInvoice.PurchaseInvoiceDueDates != null && dbInvoice.PurchaseInvoiceDueDates.Count > 0)
             {
-                var dueDates = _unitOfWork.PurchaseInvoiceDueDates.Find(pid => pid.PurchaseInvoiceId == purchaseInvoice.Id);
-
-                if (dueDates != null && dueDates.Any())
-                    await _unitOfWork.PurchaseInvoiceDueDates.RemoveRange(dueDates);
-                if (purchaseInvoice.PurchaseInvoiceDueDates != null && purchaseInvoice.PurchaseInvoiceDueDates.Count > 0)
-                    await _unitOfWork.PurchaseInvoiceDueDates.AddRange(purchaseInvoice.PurchaseInvoiceDueDates);
+                await _unitOfWork.PurchaseInvoiceDueDates.RemoveRange(dbInvoice.PurchaseInvoiceDueDates);
             }
+
+            if (requestInvoice.PurchaseInvoiceDueDates != null)
+            {
+                foreach (var purchaseInvoiceDueDate in requestInvoice.PurchaseInvoiceDueDates)
+                    await _unitOfWork.PurchaseInvoiceDueDates.Add(purchaseInvoiceDueDate);
+            }
+
             return new GenericResponse(true, new List<string> { });
         }
 
