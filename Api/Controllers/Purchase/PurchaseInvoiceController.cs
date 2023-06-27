@@ -80,6 +80,21 @@ namespace Api.Controllers.Purchase
                 return Ok();
             else
                 return BadRequest(response.Errors);
+        }
+
+        [HttpPost]
+        [Route("RecreateDueDates")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> RecreateDueDates(PurchaseInvoice request)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            var response = await _service.RecreateDueDates(request);
+            if (response.Result)
+                return Ok();
+            else
+                return BadRequest(response.Errors);
 
         }
 

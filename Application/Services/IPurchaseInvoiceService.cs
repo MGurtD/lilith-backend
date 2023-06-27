@@ -15,6 +15,7 @@ namespace Application.Services
         Task<IEnumerable<PurchaseInvoice>> GetByExercise(Guid exerciseId);
 
         Task<IEnumerable<PurchaseInvoiceDueDate>?> GetPurchaseInvoiceDueDates(PurchaseInvoice purchaseInvoice);
+        Task<GenericResponse> RecreateDueDates(PurchaseInvoice purchaseInvoice);
 
         Task<GenericResponse> Create(PurchaseInvoice purchaseInvoice);
 
