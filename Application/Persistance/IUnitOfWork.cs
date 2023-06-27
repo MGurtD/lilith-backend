@@ -30,6 +30,9 @@ namespace Application.Persistance
 
         IEnterpriseRepository Enterprises { get; }
         ISiteRepository Sites { get; }
+        IWorkcenterRepository Workcenters { get; }
+        IAreaRepository Areas { get; }
+        IWorkcenterTypeRepository WorkcenterTypes { get; }
 
 
         Task<int> CompleteAsync();

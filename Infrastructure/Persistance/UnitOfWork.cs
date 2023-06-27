@@ -16,7 +16,10 @@ namespace Infrastructure.Persistance
     {
         public readonly ApplicationDbContext context;
         public IEnterpriseRepository Enterprises { get; private set; }
-        public ISiteRepository Sites { get; private set; }        
+        public ISiteRepository Sites { get; private set; }    
+        public IAreaRepository Areas { get; private set; }
+        public IWorkcenterRepository Workcenters { get; private set; }
+        public IWorkcenterTypeRepository WorkcenterTypes { get; private set; }
         public IRoleRepository Roles { get; private set; }
         public IUserRepository Users { get; private set; }
         public IUserRefreshTokenRepository UserRefreshTokens { get; private set; }
@@ -32,6 +35,8 @@ namespace Infrastructure.Persistance
         public IPurchaseInvoiceDueDateRepository PurchaseInvoiceDueDates { get; private set; }
         public ICustomerTypeRepository CustomerTypes { get; private set; }
         public ICustomerRepository Customers { get; private set; }
+
+        public IAreaRepository AreaRepositories => throw new NotImplementedException();
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -58,6 +63,10 @@ namespace Infrastructure.Persistance
 
             Enterprises = new EnterpriseRepository(context);
             Sites = new SiteRepository(context);
+            Areas = new AreaRepository(context);
+            Workcenters = new WorkcenterRepository(context);
+            WorkcenterTypes = new WorkcenterTypeRepository(context);
+
         }
 
         public async Task<int> CompleteAsync()
