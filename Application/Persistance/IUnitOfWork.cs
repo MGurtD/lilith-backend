@@ -1,5 +1,6 @@
 ﻿using Application.Persistance.Repositories;
 using Application.Persistance.Repositories.Auth;
+using Application.Persistance.Repositories.Expense;
 using Application.Persistance.Repositories.Production;
 using Application.Persistance.Repositories.Purchase;
 using Application.Persistance.Repositories.Sales;
@@ -33,6 +34,7 @@ namespace Application.Persistance
         IWorkcenterRepository Workcenters { get; }
         IAreaRepository Areas { get; }
         IWorkcenterTypeRepository WorkcenterTypes { get; }
+        IExpenseTypeRepository ExpenseTypes { get; }
 
 
         Task<int> CompleteAsync();
