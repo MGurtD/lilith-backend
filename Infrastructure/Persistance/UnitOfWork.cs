@@ -38,6 +38,7 @@ namespace Infrastructure.Persistance
         public ICustomerTypeRepository CustomerTypes { get; private set; }
         public ICustomerRepository Customers { get; private set; }
         public IExpenseTypeRepository ExpenseTypes { get; private set; }
+        public IExpenseRepository Expenses { get; private set; }
 
         public IAreaRepository AreaRepositories => throw new NotImplementedException();
 
@@ -71,6 +72,7 @@ namespace Infrastructure.Persistance
             WorkcenterTypes = new WorkcenterTypeRepository(context);
             
             ExpenseTypes = new ExpenseTypeRepository(context);
+            Expenses = new ExpenseRepository(context);
 
         }
 
@@ -85,3 +87,4 @@ namespace Infrastructure.Persistance
         }
     }
 }
+

@@ -35,6 +35,7 @@ namespace Application.Persistance
         IAreaRepository Areas { get; }
         IWorkcenterTypeRepository WorkcenterTypes { get; }
         IExpenseTypeRepository ExpenseTypes { get; }
+        IExpenseRepository Expenses { get; }
 
 
         Task<int> CompleteAsync();
