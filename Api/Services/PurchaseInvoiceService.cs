@@ -88,19 +88,7 @@ namespace Application.Services
         public async Task<GenericResponse> Create(PurchaseInvoice purchaseInvoice)
         {
             purchaseInvoice.Number = _unitOfWork.PurchaseInvoices.GetNextNumber();
-            await _unitOfWork.PurchaseInvoices.Add(purchaseInvoice);
-
-            // Generació de venciments
-            /*if (purchaseInvoice.PurchaseInvoiceDueDates != null)
-            {
-                foreach (var dueDate in purchaseInvoice.PurchaseInvoiceDueDates)
-                {
-                    dueDate.Id = Guid.NewGuid();
-                    dueDate.PurchaseInvoiceId = purchaseInvoice.Id;
-                }
-
-                await _unitOfWork.PurchaseInvoiceDueDates.AddRange(purchaseInvoice.PurchaseInvoiceDueDates);
-            }*/   
+            await _unitOfWork.PurchaseInvoices.Add(purchaseInvoice);   
 
             // Incrementar el comptador de factures de l'exercici
             if (purchaseInvoice.ExerciceId.HasValue)
