@@ -24,7 +24,7 @@ namespace Infrastructure.Persistance.Repositories.Purchase
                     status.Transitions = new List<PurchaseInvoiceStatus>();
                     foreach (var transition in transitions.ToList())
                     {
-                        status.Transitions.Add(transition.ToStatus);
+                        status.Transitions.Add(transition.ToStatus!);
                     }
                 }
             }

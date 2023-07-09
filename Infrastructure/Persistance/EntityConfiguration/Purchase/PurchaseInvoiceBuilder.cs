@@ -76,6 +76,20 @@ namespace Infrastructure.Persistance.EntityConfiguration.Purchase
                               ApplicationDbContextConstants.DECIMAL_SCALE);
 
             builder
+                .Property(b => b.ExtraTaxAmount)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasDefaultValue(0)
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+
+            builder
+                .Property(b => b.ExtraTaxPercentatge)
+                .IsRequired()
+                .HasDefaultValue(0)
+                .HasColumnType("integer");
+
+            builder
                 .HasKey(b => b.Id)
                 .HasName($"PK_{TABLE_NAME}");
 

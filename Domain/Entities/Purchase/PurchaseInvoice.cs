@@ -14,6 +14,8 @@
         public decimal NetAmount { get; set; }
         public decimal DiscountPercentage { get; set; }
         public decimal DiscountAmount { get; set; }
+        public int ExtraTaxPercentatge { get; set; }
+        public decimal ExtraTaxAmount { get; set; }
 
         public Supplier? Supplier { get; set; }
         public Guid SupplierId { get; set; }
