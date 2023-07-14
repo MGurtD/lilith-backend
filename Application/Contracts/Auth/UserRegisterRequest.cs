@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.Dto
+namespace Application.Contracts.Auth
 {
     public class UserRegisterRequest
     {

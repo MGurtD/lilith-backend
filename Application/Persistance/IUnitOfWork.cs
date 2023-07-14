@@ -1,4 +1,5 @@
-﻿using Application.Persistance.Repositories;
+﻿using Application.Contracts.Expense;
+using Application.Persistance.Repositories;
 using Application.Persistance.Repositories.Auth;
 using Application.Persistance.Repositories.Expense;
 using Application.Persistance.Repositories.Production;
@@ -25,7 +26,6 @@ namespace Application.Persistance
         IPurchaseInvoiceSerieRepository PurchaseInvoiceSeries { get; }
         IPurchaseInvoiceStatusRepository PurchaseInvoiceStatuses { get; }
 
-
         ICustomerTypeRepository CustomerTypes { get; }
         ICustomerRepository Customers { get; }
 
@@ -37,6 +37,8 @@ namespace Application.Persistance
         IExpenseTypeRepository ExpenseTypes { get; }
         IExpenseRepository Expenses { get; }
 
+        IContractReader<ConsolidatedExpense> ConsolidatedExpenses {get;}
+        
 
         Task<int> CompleteAsync();
     }

@@ -1,16 +1,19 @@
-﻿using Application.Persistance;
+﻿using Application.Contracts.Expense;
+using Application.Persistance;
 using Application.Persistance.Repositories;
 using Application.Persistance.Repositories.Auth;
 using Application.Persistance.Repositories.Expense;
 using Application.Persistance.Repositories.Production;
 using Application.Persistance.Repositories.Purchase;
 using Application.Persistance.Repositories.Sales;
+using Domain.Entities;
 using Infrastructure.Persistance.Repositories;
 using Infrastructure.Persistance.Repositories.Auth;
 using Infrastructure.Persistance.Repositories.Expense;
 using Infrastructure.Persistance.Repositories.Production;
 using Infrastructure.Persistance.Repositories.Purchase;
 using Infrastructure.Persistance.Repositories.Sales;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistance
 {
@@ -41,6 +44,8 @@ namespace Infrastructure.Persistance
         public IExpenseRepository Expenses { get; private set; }
 
         public IAreaRepository AreaRepositories => throw new NotImplementedException();
+
+        public IContractReader<ConsolidatedExpense> ConsolidatedExpenses { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -74,6 +79,7 @@ namespace Infrastructure.Persistance
             ExpenseTypes = new ExpenseTypeRepository(context);
             Expenses = new ExpenseRepository(context);
 
+            ConsolidatedExpenses = new ContractReader<ConsolidatedExpense>(context);
         }
 
         public async Task<int> CompleteAsync()

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Application.Dto;
 using Application.Services;
 using Application.Contracts.Purchase;
+using Application.Contracts.Auth;
 
 namespace Api.Controllers.Auth
 {

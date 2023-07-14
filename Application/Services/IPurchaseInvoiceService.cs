@@ -1,4 +1,4 @@
-using Application.Contracts;
+using Application.Contracts.Auth;
 using Application.Contracts.Purchase;
 using Domain.Entities.Purchase;
 

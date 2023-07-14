@@ -1,5 +1,5 @@
-﻿using Application.Contracts.Purchase;
-using Application.Dto;
+﻿using Application.Contracts.Auth;
+using Application.Contracts.Purchase;
 
 namespace Application.Services
 {

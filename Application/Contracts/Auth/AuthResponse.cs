@@ -1,4 +1,4 @@
-﻿namespace Application.Dto
+﻿namespace Application.Contracts.Auth
 {
     public class AuthResponse
     {

@@ -52,6 +52,14 @@ namespace Api.Controllers.Expense
             return Ok(entities);
         }
 
+        [HttpGet]
+        [Route("Consolidated")]
+        public IActionResult GetAllConsolidation(DateTime startTime, DateTime endTime)
+        {
+            var entities = _unitOfWork.ConsolidatedExpenses.Find(c => c.PaymentDate >= startTime && c.PaymentDate <= endTime);
+            return Ok(entities);
+        }
+
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {

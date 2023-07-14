@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Application.Contracts.Expense;
+using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace Infrastructure.Persistance
 {
@@ -21,7 +23,12 @@ namespace Infrastructure.Persistance
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            
+
+            builder
+                .Entity<ConsolidatedExpense>()
+                .ToView("vw_consolidatedExpenses")
+                .HasNoKey();
+
             builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
 
