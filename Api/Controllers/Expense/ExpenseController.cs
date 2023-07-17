@@ -100,8 +100,23 @@ namespace Api.Controllers.Expense
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.Expenses.Remove(entity);
+            if (entity.Recurring)
+            {
+                var parentId = string.IsNullOrEmpty(entity.RelatedExpenseId) ? entity.Id : Guid.Parse(entity.RelatedExpenseId);
+                var relatedParent = _unitOfWork.Expenses.Find(e => e.Id == parentId).FirstOrDefault();
+                if (relatedParent is not null)
+                    await _unitOfWork.Expenses.Remove(relatedParent);
+
+                var relatedExpenses = _unitOfWork.Expenses.Find(e => e.RelatedExpenseId == parentId.ToString());
+                await _unitOfWork.Expenses.RemoveRange(relatedExpenses);
+            }
+            else
+            {
+                await _unitOfWork.Expenses.Remove(entity);
+            }
+            
             return Ok(entity);
         }
+
     }
 }
