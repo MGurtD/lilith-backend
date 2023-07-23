@@ -36,7 +36,7 @@ namespace Api.Controllers.Expense
         public async Task<IActionResult> GetAll()
         {
             var entities = await _unitOfWork.ExpenseTypes.GetAll();
-            return Ok(entities);
+            return Ok(entities.OrderBy(e => e.Name));
         }
 
         [HttpGet("{id:guid}")]

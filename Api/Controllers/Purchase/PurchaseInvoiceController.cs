@@ -40,7 +40,7 @@ namespace Api.Controllers.Purchase
             else
                 purchaseInvoices = _service.GetBetweenDates(startTime, endTime);
 
-            if (purchaseInvoices != null) return Ok(purchaseInvoices);
+            if (purchaseInvoices != null) return Ok(purchaseInvoices.OrderBy(e => e.Number));
             else return BadRequest();
         }
 

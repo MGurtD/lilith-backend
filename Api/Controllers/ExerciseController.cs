@@ -40,7 +40,7 @@ namespace Api.Controllers
         public async Task<IActionResult> GetAll()
         {
             var exercice = await _unitOfWork.Exercices.GetAll();
-            return Ok(exercice);
+            return Ok(exercice.OrderBy(e => e.Name));
         }
 
         [HttpGet("{id:guid}")]

@@ -38,8 +38,7 @@ namespace Api.Controllers.Purchase
         public async Task<IActionResult> GetAll()
         {
             var entities = await _unitOfWork.Suppliers.GetAll();
-
-            return Ok(entities);
+            return Ok(entities.OrderBy(e => e.ComercialName));
         }
 
         [HttpGet("{id:guid}")]

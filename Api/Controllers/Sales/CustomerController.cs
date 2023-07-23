@@ -39,7 +39,7 @@ namespace Api.Controllers.Sales
         {
             var entities = await _unitOfWork.Customers.GetAll();
 
-            return Ok(entities);
+            return Ok(entities.OrderBy(e => e.ComercialName));
         }
 
         [HttpGet("{id:guid}")]
