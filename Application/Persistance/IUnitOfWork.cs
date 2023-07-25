@@ -1,7 +1,6 @@
-﻿using Application.Contracts.Expense;
+﻿using Application.Contracts.Purchase;
 using Application.Persistance.Repositories;
 using Application.Persistance.Repositories.Auth;
-using Application.Persistance.Repositories.Expense;
 using Application.Persistance.Repositories.Production;
 using Application.Persistance.Repositories.Purchase;
 using Application.Persistance.Repositories.Sales;

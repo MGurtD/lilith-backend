@@ -9,6 +9,7 @@
         public decimal BaseAmount { get; set; }
         public decimal TransportAmount { get; set; }
         public decimal Subtotal { get; set; }
+        // TODO > Eliminar
         public decimal TaxAmount { get; set; }
         public decimal GrossAmount { get; set; }
         public decimal NetAmount { get; set; }
@@ -36,6 +37,7 @@
         public Guid PurchaseInvoiceStatusId { get; set; }
 
         public ICollection<PurchaseInvoiceDueDate>? PurchaseInvoiceDueDates { get; set; }
+        public ICollection<PurchaseInvoiceImport>? PurchaseInvoiceImports { get; set; }
     }
 
 }

@@ -1,8 +1,8 @@
 ﻿using Application.Persistance;
-using Domain.Entities.Expense;
+using Domain.Entities.Purchase;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers.Expense
+namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -34,11 +34,11 @@ namespace Api.Controllers.Expense
                     {
                         paymentDay = paymentDay.AddDays(request.PaymentDay - request.PaymentDate.Day);
                     }
-                    
+
                     //TODO generar un nou ID, i asociar l'ID al related
                     Guid g = Guid.NewGuid();
                     request.Id = g;
-                    request.PaymentDate = paymentDay;                    
+                    request.PaymentDate = paymentDay;
                     await _unitOfWork.Expenses.Add(request);
                 }
             }
@@ -114,7 +114,7 @@ namespace Api.Controllers.Expense
             {
                 await _unitOfWork.Expenses.Remove(entity);
             }
-            
+
             return Ok(entity);
         }
 

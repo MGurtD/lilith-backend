@@ -1,13 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Domain.Entities.Expense;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Domain.Entities.Purchase;
 
-namespace Infrastructure.Persistance.EntityConfiguration.Expense
+namespace Infrastructure.Persistance.EntityConfiguration.Purchase
 {
     public class ExpenseBuilder : IEntityTypeConfiguration<Expenses>
     {
@@ -56,7 +56,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Expense
                    .HasKey(b => b.Id)
                    .HasName($"PK_{TABLE_NAME}");
 
-            
+
 
             builder.ToTable("Expenses");
 

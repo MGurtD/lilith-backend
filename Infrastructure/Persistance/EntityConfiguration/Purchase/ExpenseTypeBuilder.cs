@@ -1,4 +1,4 @@
-﻿using Domain.Entities.Expense;
+﻿using Domain.Entities.Purchase;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -7,12 +7,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Persistance.EntityConfiguration.Expense
+namespace Infrastructure.Persistance.EntityConfiguration.Purchase
 {
     public class ExpenseTypeBuilder : IEntityTypeConfiguration<ExpenseType>
     {
         public const string TABLE_NAME = "ExpenseTypes";
-        public void Configure(EntityTypeBuilder<ExpenseType> builder) 
+        public void Configure(EntityTypeBuilder<ExpenseType> builder)
         {
             builder.ConfigureBase();
 

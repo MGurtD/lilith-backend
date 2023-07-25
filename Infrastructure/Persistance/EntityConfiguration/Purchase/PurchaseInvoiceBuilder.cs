@@ -44,6 +44,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Purchase
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                               ApplicationDbContextConstants.DECIMAL_SCALE);
+            // TODO > Eliminar TaxAmount
             builder
                 .Property(b => b.TaxAmount)
                 .IsRequired()

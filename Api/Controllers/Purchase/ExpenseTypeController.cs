@@ -1,9 +1,8 @@
 ﻿using Application.Persistance;
-using Domain.Entities.Expense;
 using Domain.Entities.Purchase;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers.Expense
+namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]

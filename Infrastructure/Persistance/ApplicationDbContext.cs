@@ -1,4 +1,4 @@
-﻿using Application.Contracts.Expense;
+﻿using Application.Contracts.Purchase;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Emit;
 
