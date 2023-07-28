@@ -201,7 +201,13 @@ namespace Application.Services
 
         }
 
-        public async Task<GenericResponse> UpdateImport(PurchaseInvoiceImport import)
+        public async Task<GenericResponse> AddImport(PurchaseInvoiceImport import)
+        {
+            await _unitOfWork.PurchaseInvoices.AddImport(import);
+            return new GenericResponse(true, new List<string> { });
+        }
+
+            public async Task<GenericResponse> UpdateImport(PurchaseInvoiceImport import)
         {
             await _unitOfWork.PurchaseInvoices.UpdateImport(import);
             return new GenericResponse(true, new List<string> { });
@@ -212,5 +218,6 @@ namespace Application.Services
             await _unitOfWork.PurchaseInvoices.RemoveImport(id);
             return new GenericResponse(true, new List<string> { });
         }
+
     }
 }

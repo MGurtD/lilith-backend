@@ -22,6 +22,7 @@ namespace Application.Services
         Task<GenericResponse> Update(PurchaseInvoice purchaseInvoice);
         Task<GenericResponse> Remove(Guid id);
 
+        Task<GenericResponse> AddImport(PurchaseInvoiceImport import);
         Task<GenericResponse> UpdateImport(PurchaseInvoiceImport import);
         Task<GenericResponse> RemoveImport(Guid id);
     }

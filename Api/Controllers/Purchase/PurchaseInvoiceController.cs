@@ -138,6 +138,18 @@ namespace Api.Controllers.Purchase
             else return BadRequest(response.Errors);
         }
 
+        [HttpPost("Import")]
+        [SwaggerOperation("PurchaseInvoiceImportCreate")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddImport(PurchaseInvoiceImport import)
+        {
+            var response = await _service.AddImport(import);
+
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
+        }
+
         [HttpPut("Import/{id:guid}")]
         [SwaggerOperation("PurchaseInvoiceImportUpdate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
