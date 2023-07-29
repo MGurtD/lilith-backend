@@ -40,6 +40,7 @@ namespace Infrastructure.Persistance
         public IPurchaseInvoiceDueDateRepository PurchaseInvoiceDueDates { get; private set; }
         public ICustomerTypeRepository CustomerTypes { get; private set; }
         public ICustomerRepository Customers { get; private set; }
+        public IReferenceRepository References { get; private set; }
         public IExpenseTypeRepository ExpenseTypes { get; private set; }
         public IExpenseRepository Expenses { get; private set; }
 
@@ -69,6 +70,7 @@ namespace Infrastructure.Persistance
 
             CustomerTypes = new CustomerTypeRepository(context);
             Customers = new CustomerRepository(context, new CustomerContactRepository(context), new CustomerAddressRepository(context));
+            References = new ReferenceRepository(context);
 
             Enterprises = new EnterpriseRepository(context);
             Sites = new SiteRepository(context);
