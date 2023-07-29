@@ -45,12 +45,6 @@ namespace Infrastructure.Persistance.EntityConfiguration.Purchase
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                               ApplicationDbContextConstants.DECIMAL_SCALE);
             builder
-                .Property(b => b.TaxAmount)
-                .IsRequired()
-                .HasColumnType("decimal")
-                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                              ApplicationDbContextConstants.DECIMAL_SCALE);
-            builder
                 .Property(b => b.GrossAmount)
                 .IsRequired()
                 .HasColumnType("decimal")

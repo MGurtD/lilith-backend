@@ -1,8 +1,8 @@
 ﻿using Application.Persistance;
-using Domain.Entities.Expense;
+using Domain.Entities.Purchase;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers.Expense
+namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -34,11 +34,11 @@ namespace Api.Controllers.Expense
                     {
                         paymentDay = paymentDay.AddDays(request.PaymentDay - request.PaymentDate.Day);
                     }
-                    
+
                     //TODO generar un nou ID, i asociar l'ID al related
                     Guid g = Guid.NewGuid();
                     request.Id = g;
-                    request.PaymentDate = paymentDay;                    
+                    request.PaymentDate = paymentDay;
                     await _unitOfWork.Expenses.Add(request);
                 }
             }
@@ -49,7 +49,7 @@ namespace Api.Controllers.Expense
         public async Task<IActionResult> GetAll()
         {
             var entities = await _unitOfWork.Expenses.GetAll();
-            return Ok(entities);
+            return Ok(entities.OrderBy(e => e.PaymentDay));
         }
 
         [HttpGet]
@@ -100,8 +100,23 @@ namespace Api.Controllers.Expense
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.Expenses.Remove(entity);
+            if (entity.Recurring)
+            {
+                var parentId = string.IsNullOrEmpty(entity.RelatedExpenseId) ? entity.Id : Guid.Parse(entity.RelatedExpenseId);
+                var relatedParent = _unitOfWork.Expenses.Find(e => e.Id == parentId).FirstOrDefault();
+                if (relatedParent is not null)
+                    await _unitOfWork.Expenses.Remove(relatedParent);
+
+                var relatedExpenses = _unitOfWork.Expenses.Find(e => e.RelatedExpenseId == parentId.ToString());
+                await _unitOfWork.Expenses.RemoveRange(relatedExpenses);
+            }
+            else
+            {
+                await _unitOfWork.Expenses.Remove(entity);
+            }
+
             return Ok(entity);
         }
+
     }
 }

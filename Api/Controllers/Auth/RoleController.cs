@@ -40,7 +40,7 @@ namespace Api.Controllers.Auth
         public async Task<IActionResult> GetAll()
         {
             var roles = await _unitOfWork.Roles.GetAll();
-            return Ok(roles);
+            return Ok(roles.OrderBy(e => e.Name));
         }
 
         [HttpGet("{id:guid}")]

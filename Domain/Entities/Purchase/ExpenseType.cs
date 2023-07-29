@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities.Expense
+namespace Domain.Entities.Purchase
 {
     public class ExpenseType : Entity
     {

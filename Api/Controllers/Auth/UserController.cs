@@ -36,7 +36,7 @@ namespace Api.Controllers.Auth
         public async Task<IActionResult> GetAll()
         {
             var users = await _unitOfWork.Users.GetAll();
-            return Ok(users);
+            return Ok(users.OrderBy(e => e.Username));
         }
 
         [HttpGet("{id:guid}")]

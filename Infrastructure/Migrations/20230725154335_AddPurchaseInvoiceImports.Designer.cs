@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230725154335_AddPurchaseInvoiceImports")]
+    partial class AddPurchaseInvoiceImports
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -783,6 +785,13 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(25)
                         .HasColumnType("varchar");
 
+                    b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<Guid?>("TaxId")
+                        .HasColumnType("uuid");
+
                     b.Property<decimal>("TransportAmount")
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)");
@@ -802,6 +811,8 @@ namespace Infrastructure.Migrations
                     b.HasIndex("PurchaseInvoiceStatusId");
 
                     b.HasIndex("SupplierId");
+
+                    b.HasIndex("TaxId");
 
                     b.HasIndex(new[] { "PurchaseInvoiceDate" }, "IX_PurchaseInvoices_PurchaseDate");
 
@@ -1465,52 +1476,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("CustomerTypes", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.Sales.Reference", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar");
-
-                    b.Property<decimal>("Cost")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<decimal>("Price")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.HasKey("Id")
-                        .HasName("PK_Reference");
-
-                    b.HasIndex(new[] { "Code" }, "UK_Reference_Code");
-
-                    b.ToTable("References", (string)null);
-                });
-
             modelBuilder.Entity("Domain.Entities.Tax", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1629,6 +1594,10 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.Tax", "Tax")
+                        .WithMany()
+                        .HasForeignKey("TaxId");
+
                     b.Navigation("Exercice");
 
                     b.Navigation("PaymentMethod");
@@ -1638,6 +1607,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("PurchaseInvoiceStatus");
 
                     b.Navigation("Supplier");
+
+                    b.Navigation("Tax");
                 });
 
             modelBuilder.Entity("Domain.Entities.Purchase.PurchaseInvoiceDueDate", b =>

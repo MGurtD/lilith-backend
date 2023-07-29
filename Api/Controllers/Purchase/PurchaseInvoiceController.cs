@@ -2,6 +2,7 @@
 using Application.Services;
 using Domain.Entities.Purchase;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Api.Controllers.Purchase
 {
@@ -40,7 +41,7 @@ namespace Api.Controllers.Purchase
             else
                 purchaseInvoices = _service.GetBetweenDates(startTime, endTime);
 
-            if (purchaseInvoices != null) return Ok(purchaseInvoices);
+            if (purchaseInvoices != null) return Ok(purchaseInvoices.OrderBy(e => e.Number));
             else return BadRequest();
         }
 
@@ -132,6 +133,42 @@ namespace Api.Controllers.Purchase
         public async Task<IActionResult> Remove(Guid id)
         {
             var response = await _service.Remove(id);
+
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
+        }
+
+        [HttpPost("Import")]
+        [SwaggerOperation("PurchaseInvoiceImportCreate")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddImport(PurchaseInvoiceImport import)
+        {
+            var response = await _service.AddImport(import);
+
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
+        }
+
+        [HttpPut("Import/{id:guid}")]
+        [SwaggerOperation("PurchaseInvoiceImportUpdate")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateImport(Guid id, [FromBody] PurchaseInvoiceImport import)
+        {
+            var response = await _service.UpdateImport(import);
+
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
+        }
+
+        [HttpDelete("Import/{id:guid}")]
+        [SwaggerOperation("PurchaseInvoiceImportDelete")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> RemoveImport(Guid id)
+        {
+            var response = await _service.RemoveImport(id);
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);

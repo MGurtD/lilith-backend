@@ -200,5 +200,24 @@ namespace Application.Services
             }
 
         }
+
+        public async Task<GenericResponse> AddImport(PurchaseInvoiceImport import)
+        {
+            await _unitOfWork.PurchaseInvoices.AddImport(import);
+            return new GenericResponse(true, new List<string> { });
+        }
+
+            public async Task<GenericResponse> UpdateImport(PurchaseInvoiceImport import)
+        {
+            await _unitOfWork.PurchaseInvoices.UpdateImport(import);
+            return new GenericResponse(true, new List<string> { });
+        }
+
+        public async Task<GenericResponse> RemoveImport(Guid id)
+        {
+            await _unitOfWork.PurchaseInvoices.RemoveImport(id);
+            return new GenericResponse(true, new List<string> { });
+        }
+
     }
 }

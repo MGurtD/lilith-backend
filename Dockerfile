@@ -19,6 +19,8 @@ RUN dotnet publish "Api/Api.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 RUN mkdir -p /files
+# Set timezone (debian way)
+RUN ln -sf /usr/share/zoneinfo/Europe/Madrid /etc/localtime
 
 COPY --from=publish /app/publish .
 

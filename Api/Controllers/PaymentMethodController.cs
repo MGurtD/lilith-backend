@@ -39,8 +39,8 @@ namespace Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var roles = await _unitOfWork.PaymentMethods.GetAll();
-            return Ok(roles);
+            var paymentMethods = await _unitOfWork.PaymentMethods.GetAll();
+            return Ok(paymentMethods.OrderBy(e => e.Name));
         }
 
         [HttpGet("{id:guid}")]

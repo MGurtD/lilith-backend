@@ -1,9 +1,8 @@
 ﻿using Application.Persistance;
-using Domain.Entities.Expense;
 using Domain.Entities.Purchase;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers.Expense
+namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -36,7 +35,7 @@ namespace Api.Controllers.Expense
         public async Task<IActionResult> GetAll()
         {
             var entities = await _unitOfWork.ExpenseTypes.GetAll();
-            return Ok(entities);
+            return Ok(entities.OrderBy(e => e.Name));
         }
 
         [HttpGet("{id:guid}")]

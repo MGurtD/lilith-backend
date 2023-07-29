@@ -9,7 +9,6 @@
         public decimal BaseAmount { get; set; }
         public decimal TransportAmount { get; set; }
         public decimal Subtotal { get; set; }
-        public decimal TaxAmount { get; set; }
         public decimal GrossAmount { get; set; }
         public decimal NetAmount { get; set; }
         public decimal DiscountPercentage { get; set; }
@@ -19,9 +18,6 @@
 
         public Supplier? Supplier { get; set; }
         public Guid SupplierId { get; set; }
-
-        public Tax? Tax { get; set; }
-        public Guid? TaxId { get; set; }
 
         public Exercise? Exercice { get; set; }
         public Guid? ExerciceId { get; set; }
@@ -36,6 +32,7 @@
         public Guid PurchaseInvoiceStatusId { get; set; }
 
         public ICollection<PurchaseInvoiceDueDate>? PurchaseInvoiceDueDates { get; set; }
+        public ICollection<PurchaseInvoiceImport>? PurchaseInvoiceImports { get; set; }
     }
 
 }
