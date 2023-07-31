@@ -28,6 +28,17 @@ namespace Infrastructure.Persistance
         public IExerciseRepository Exercices { get; private set; }
         public ITaxRepository Taxes { get; private set; }
         public IFileRepository Files { get; private set; }
+        public ILifeCycleRepository Lifecycles { get; private set; }
+
+        public IEnterpriseRepository Enterprises { get; private set; }
+        public ISiteRepository Sites { get; private set; }    
+        public IAreaRepository Areas { get; private set; }
+        public IWorkcenterRepository Workcenters { get; private set; }
+        public IWorkcenterTypeRepository WorkcenterTypes { get; private set; }
+
+        public ICustomerTypeRepository CustomerTypes { get; private set; }
+        public ICustomerRepository Customers { get; private set; }
+
         public ISupplierTypeRepository SupplierTypes { get; private set; }
         public ISupplierRepository Suppliers { get; private set; }
         public IPurchaseInvoiceSerieRepository PurchaseInvoiceSeries { get; private set; }
@@ -39,9 +50,6 @@ namespace Infrastructure.Persistance
         public IReferenceRepository References { get; private set; }
         public IExpenseTypeRepository ExpenseTypes { get; private set; }
         public IExpenseRepository Expenses { get; private set; }
-
-        public IAreaRepository AreaRepositories => throw new NotImplementedException();
-
         public IContractReader<ConsolidatedExpense> ConsolidatedExpenses { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context)
@@ -63,9 +71,13 @@ namespace Infrastructure.Persistance
             PurchaseInvoiceSeries = new PurchaseInvoiceSerieRepository(context);
             PurchaseInvoiceDueDates = new PurchaseInvoiceDueDateRepository(context);
             PurchaseInvoiceStatuses = new PurchaseInvoiceStatusRepository(context, new PurchaseInvoiceStatusTransitionRepository(context));
+            ExpenseTypes = new ExpenseTypeRepository(context);
+            Expenses = new ExpenseRepository(context);
+            ConsolidatedExpenses = new ContractReader<ConsolidatedExpense>(context);
 
             CustomerTypes = new CustomerTypeRepository(context);
             Customers = new CustomerRepository(context, new CustomerContactRepository(context), new CustomerAddressRepository(context));
+            Lifecycles = new LifecycleRepository(context, new StatusRepository(context, new StatusTransitionRepository(context)));
             References = new ReferenceRepository(context);
 
             Enterprises = new EnterpriseRepository(context);
@@ -73,11 +85,6 @@ namespace Infrastructure.Persistance
             Areas = new AreaRepository(context);
             Workcenters = new WorkcenterRepository(context);
             WorkcenterTypes = new WorkcenterTypeRepository(context);
-            
-            ExpenseTypes = new ExpenseTypeRepository(context);
-            Expenses = new ExpenseRepository(context);
-
-            ConsolidatedExpenses = new ContractReader<ConsolidatedExpense>(context);
         }
 
         public async Task<int> CompleteAsync()
@@ -85,10 +92,7 @@ namespace Infrastructure.Persistance
             return await context.SaveChangesAsync();
         }
 
-        public void Dispose()
-        {
-            context.Dispose();
-        }
+        public void Dispose() => context.Dispose();
     }
 }
 

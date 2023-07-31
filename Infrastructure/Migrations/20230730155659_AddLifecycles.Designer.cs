@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230730155659_AddLifecycles")]
+    partial class AddLifecycles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1588,52 +1590,6 @@ namespace Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("StatusTransitions", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.Sales.Reference", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar");
-
-                    b.Property<decimal>("Cost")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<decimal>("Price")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.HasKey("Id")
-                        .HasName("PK_Reference");
-
-                    b.HasIndex(new[] { "Code" }, "UK_Reference_Code");
-
-                    b.ToTable("References", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Tax", b =>

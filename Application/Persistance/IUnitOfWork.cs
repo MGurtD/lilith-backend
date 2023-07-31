@@ -27,7 +27,7 @@ namespace Application.Persistance
 
         ICustomerTypeRepository CustomerTypes { get; }
         ICustomerRepository Customers { get; }
-        IReferenceRepository References { get; }
+        ILifeCycleRepository Lifecycles { get; }
 
         IEnterpriseRepository Enterprises { get; }
         ISiteRepository Sites { get; }
