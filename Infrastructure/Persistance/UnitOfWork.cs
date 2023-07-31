@@ -30,12 +30,6 @@ namespace Infrastructure.Persistance
         public IFileRepository Files { get; private set; }
         public ILifeCycleRepository Lifecycles { get; private set; }
 
-        public IEnterpriseRepository Enterprises { get; private set; }
-        public ISiteRepository Sites { get; private set; }    
-        public IAreaRepository Areas { get; private set; }
-        public IWorkcenterRepository Workcenters { get; private set; }
-        public IWorkcenterTypeRepository WorkcenterTypes { get; private set; }
-
         public ICustomerTypeRepository CustomerTypes { get; private set; }
         public ICustomerRepository Customers { get; private set; }
 
@@ -45,8 +39,6 @@ namespace Infrastructure.Persistance
         public IPurchaseInvoiceStatusRepository PurchaseInvoiceStatuses { get; private set; }
         public IPurchaseInvoiceRepository PurchaseInvoices { get; private set; }
         public IPurchaseInvoiceDueDateRepository PurchaseInvoiceDueDates { get; private set; }
-        public ICustomerTypeRepository CustomerTypes { get; private set; }
-        public ICustomerRepository Customers { get; private set; }
         public IReferenceRepository References { get; private set; }
         public IExpenseTypeRepository ExpenseTypes { get; private set; }
         public IExpenseRepository Expenses { get; private set; }

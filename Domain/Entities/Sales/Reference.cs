@@ -12,5 +12,6 @@ namespace Domain.Entities.Sales
         public string Description { get; set; } = String.Empty;
         public decimal Cost { get; set; } = decimal.Zero;
         public decimal Price { get; set; } = decimal.Zero;
+        public string Version { get; set; } = string.Empty;
     }
 }
