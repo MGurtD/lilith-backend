@@ -29,6 +29,8 @@ namespace Application.Persistance
         ICustomerRepository Customers { get; }
         IReferenceRepository References { get; }
         ILifeCycleRepository Lifecycles { get; }
+        ISalesOrderHeaderRepository SalesOrderHeaders { get; }
+        ISalesOrderDetailRepository SalesOrderDetails { get; }
 
         IEnterpriseRepository Enterprises { get; }
         ISiteRepository Sites { get; }

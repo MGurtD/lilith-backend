@@ -32,6 +32,8 @@ namespace Infrastructure.Persistance
 
         public ICustomerTypeRepository CustomerTypes { get; private set; }
         public ICustomerRepository Customers { get; private set; }
+        public ISalesOrderHeaderRepository SalesOrderHeaders { get; private set; }
+        public ISalesOrderDetailRepository SalesOrderDetails { get; private set; }
 
         public ISupplierTypeRepository SupplierTypes { get; private set; }
         public ISupplierRepository Suppliers { get; private set; }
@@ -71,6 +73,8 @@ namespace Infrastructure.Persistance
             Customers = new CustomerRepository(context, new CustomerContactRepository(context), new CustomerAddressRepository(context));
             Lifecycles = new LifecycleRepository(context, new StatusRepository(context, new StatusTransitionRepository(context)));
             References = new ReferenceRepository(context);
+            SalesOrderHeaders = new SalesOrderHeaderRepository(context, new SalesOrderDetailRepository(context));
+            SalesOrderDetails = new SalesOrderDetailRepository(context);
 
             Enterprises = new EnterpriseRepository(context);
             Sites = new SiteRepository(context);

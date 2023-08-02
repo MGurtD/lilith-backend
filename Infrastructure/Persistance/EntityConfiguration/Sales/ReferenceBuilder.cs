@@ -45,6 +45,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
             builder
                 .HasKey(b => b.Id)
                 .HasName("PK_Reference");
+            
             builder.HasIndex(builder => new { builder.Code, builder.Version }, "UK_Reference_Code_Version");
 
             builder.ToTable("References");
