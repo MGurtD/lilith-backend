@@ -10,6 +10,7 @@ namespace Domain.Entities.Sales
     {
         public Guid SalesOrderId { get; set; }
         public Guid ReferenceId { get; set; }
+        public Reference? Reference { get; set; }
         public int Quantity { get; set; }
         public decimal UnitCost { get; set; } = decimal.Zero;
         public decimal UnitPrice { get; set; } = decimal.Zero;
