@@ -18,7 +18,7 @@ namespace Infrastructure.Persistance.Repositories.Purchase
         {
             return await dbSet
                 .AsNoTracking()
-                .Include(d => d.Statuses)
+                .Include("Statuses.Transitions")
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
