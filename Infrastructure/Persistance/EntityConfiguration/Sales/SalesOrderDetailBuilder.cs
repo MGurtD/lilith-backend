@@ -48,6 +48,14 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .Property(b => b.EstimatedDeliveryDate)
                 .IsRequired()
                 .HasColumnType("timestamp without time zone");
+            builder
+                .Property(b => b.IsServed)
+                .IsRequired()
+                .HasColumnType("boolean");
+            builder
+                .Property(b => b.IsInvoiced)
+                .IsRequired()
+                .HasColumnType("boolean");
         }
     }
 }
