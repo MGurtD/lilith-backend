@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230803061325_SalesOrderStatus")]
+    partial class SalesOrderStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1718,8 +1720,6 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("SiteId");
 
-                    b.HasIndex("StatusId");
-
                     b.HasIndex(new[] { "CustomerId" }, "IDX_SalesOrderHeader_Customer");
 
                     b.HasIndex(new[] { "ExerciseId" }, "IDX_SalesOrderHeader_Exercise");
@@ -2081,17 +2081,11 @@ namespace Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("SiteId");
 
-                    b.HasOne("Domain.Entities.Status", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId");
-
                     b.Navigation("Customer");
 
                     b.Navigation("Exercise");
 
                     b.Navigation("Site");
-
-                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("Domain.Entities.Status", b =>
