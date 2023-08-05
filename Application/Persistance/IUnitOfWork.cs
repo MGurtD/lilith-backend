@@ -4,6 +4,7 @@ using Application.Persistance.Repositories.Auth;
 using Application.Persistance.Repositories.Production;
 using Application.Persistance.Repositories.Purchase;
 using Application.Persistance.Repositories.Sales;
+using Domain.Entities.Production;
 
 namespace Application.Persistance
 {
@@ -35,7 +36,7 @@ namespace Application.Persistance
         IEnterpriseRepository Enterprises { get; }
         ISiteRepository Sites { get; }
         IWorkcenterRepository Workcenters { get; }
-        IAreaRepository Areas { get; }
+        IRepository<Area, Guid> Areas { get; }
         IWorkcenterTypeRepository WorkcenterTypes { get; }
         IExpenseTypeRepository ExpenseTypes { get; }
         IExpenseRepository Expenses { get; }

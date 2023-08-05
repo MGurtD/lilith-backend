@@ -1,6 +1,5 @@
 ﻿using Application.Persistance.Repositories;
 using Domain.Entities;
-using Domain.Entities.Purchase;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistance.Repositories.Purchase

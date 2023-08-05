@@ -5,6 +5,7 @@ using Application.Persistance.Repositories.Auth;
 using Application.Persistance.Repositories.Production;
 using Application.Persistance.Repositories.Purchase;
 using Application.Persistance.Repositories.Sales;
+using Domain.Entities.Production;
 using Infrastructure.Persistance.Repositories;
 using Infrastructure.Persistance.Repositories.Auth;
 using Infrastructure.Persistance.Repositories.Production;
@@ -18,7 +19,7 @@ namespace Infrastructure.Persistance
         public readonly ApplicationDbContext context;
         public IEnterpriseRepository Enterprises { get; private set; }
         public ISiteRepository Sites { get; private set; }    
-        public IAreaRepository Areas { get; private set; }
+        public IRepository<Area, Guid> Areas { get; private set; }
         public IWorkcenterRepository Workcenters { get; private set; }
         public IWorkcenterTypeRepository WorkcenterTypes { get; private set; }
         public IRoleRepository Roles { get; private set; }
@@ -78,7 +79,7 @@ namespace Infrastructure.Persistance
 
             Enterprises = new EnterpriseRepository(context);
             Sites = new SiteRepository(context);
-            Areas = new AreaRepository(context);
+            Areas = new Repository<Area, Guid>(context);
             Workcenters = new WorkcenterRepository(context);
             WorkcenterTypes = new WorkcenterTypeRepository(context);
         }
