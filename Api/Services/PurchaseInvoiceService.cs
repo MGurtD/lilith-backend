@@ -79,9 +79,9 @@ namespace Application.Services
             for (var i = 0; i < paymentMethod.NumberOfPayments; i++)
             {
                 var dueDateAmount = purchaseInvoice.NetAmount / paymentMethod.NumberOfPayments;
-                var dueDate = purchaseInvoice.PurchaseInvoiceDate.AddDays(paymentMethod.Frequency > 0 ? paymentMethod.Frequency : paymentMethod.DueDays + 1);
+                var dueDate = purchaseInvoice.PurchaseInvoiceDate.AddDays(paymentMethod.Frequency > 0 ? paymentMethod.Frequency : paymentMethod.DueDays);
 
-                if (paymentMethod.PaymentDay > 0 && paymentMethod.PaymentDay > dueDate.Day)
+                if (paymentMethod.PaymentDay > 0 && dueDate.Month > purchaseInvoice.PurchaseInvoiceDate.Month)
                 {
                     dueDate = new DateTime(dueDate.Month == 12 ? dueDate.Year + 1 : dueDate.Year,
                                            dueDate.Month == 12 ? 1 : dueDate.Month + 1,
