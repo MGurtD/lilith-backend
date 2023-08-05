@@ -29,6 +29,8 @@ namespace Domain.Entities.Sales
         public string Region { get; set; } = string.Empty;
         public string Country { get; set; } = string.Empty;
         public string VatNumber { get; set; } = string.Empty;
+        public Guid? StatusId { get; set; }
+        public Status? Status { get; set; }
         public ICollection<SalesOrderDetail> SalesOrderDetails { get; set; } = new List<SalesOrderDetail>();
 
 

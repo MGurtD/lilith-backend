@@ -33,9 +33,16 @@ namespace Infrastructure.Persistance.Repositories.Sales
         {
             await _salesOrderDetailRepository.Update(detail);
         }
-        public async Task RemoveDetail(SalesOrderDetail detail)
+        public async Task RemoveDetail(Guid id)
         {
-            await _salesOrderDetailRepository.Remove(detail);
+            var detail = _salesOrderDetailRepository.Find(d => d.Id == id).FirstOrDefault();
+            if(detail != null)
+            {
+                await _salesOrderDetailRepository.Remove(detail);
+               
+            }
+            
+            
         }
     }
 }

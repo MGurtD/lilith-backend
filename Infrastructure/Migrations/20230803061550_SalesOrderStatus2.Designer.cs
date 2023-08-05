@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230803061550_SalesOrderStatus2")]
+    partial class SalesOrderStatus2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1577,19 +1579,16 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("EstimatedDeliveryDate")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<bool>("IsInvoiced")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsServed")
-                        .HasColumnType("boolean");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
                     b.Property<Guid>("ReferenceId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("SalesOrderHeaderId")
+                    b.Property<Guid?>("SalesOrderHeaderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SalesOrderId")
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("TotalCost")
@@ -2063,15 +2062,11 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.Sales.SalesOrderHeader", "SalesOrderHeader")
+                    b.HasOne("Domain.Entities.Sales.SalesOrderHeader", null)
                         .WithMany("SalesOrderDetails")
-                        .HasForeignKey("SalesOrderHeaderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SalesOrderHeaderId");
 
                     b.Navigation("Reference");
-
-                    b.Navigation("SalesOrderHeader");
                 });
 
             modelBuilder.Entity("Domain.Entities.Sales.SalesOrderHeader", b =>

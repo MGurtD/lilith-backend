@@ -12,7 +12,7 @@ namespace Application.Persistance.Repositories.Sales
         SalesOrderDetail? GetDetailById(Guid id);
         Task AddDetail(SalesOrderDetail detail);
         Task UpdateDetail(SalesOrderDetail detail);
-        Task RemoveDetail(SalesOrderDetail detail);
+        Task RemoveDetail(Guid id);
     }
 }
 

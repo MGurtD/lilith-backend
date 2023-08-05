@@ -37,6 +37,18 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasColumnType("integer");
 
             builder
+                .Property(b => b.SalesInvoiceCounter)
+                .IsRequired()
+                .HasDefaultValue(0)
+                .HasColumnType("integer");
+
+            builder
+                .Property(b => b.SalesOrderCounter)
+                .IsRequired()
+                .HasDefaultValue(0)
+                .HasColumnType("integer");
+
+            builder
                 .HasKey(b => b.Id)
                 .HasName($"PK_{TABLE_NAME}");
 
