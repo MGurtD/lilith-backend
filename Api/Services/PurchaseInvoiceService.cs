@@ -100,21 +100,22 @@ namespace Application.Services
             return purchaseInvoiceDueDates;
         }
 
+        // TODO > Test creació de factura!!
         public async Task<GenericResponse> Create(PurchaseInvoice purchaseInvoice)
         {
-            purchaseInvoice.Number = _unitOfWork.PurchaseInvoices.GetNextNumber();
-            await _unitOfWork.PurchaseInvoices.Add(purchaseInvoice);   
-
             // Incrementar el comptador de factures de l'exercici
             if (purchaseInvoice.ExerciceId.HasValue)
             {
                 var exercise = _unitOfWork.Exercices.Find(e => e.Id == purchaseInvoice.ExerciceId.Value).FirstOrDefault();
                 if (exercise == null || exercise.Disabled)
                 {
-                    return new GenericResponse(false, new List<string> { $"Exercici inv�lid" });
+                    return new GenericResponse(false, new List<string> { $"Exercici invàlid" });
                 }
 
                 exercise.PurchaseInvoiceCounter += 1;
+                purchaseInvoice.Number = exercise.PurchaseInvoiceCounter;
+
+                await _unitOfWork.PurchaseInvoices.Add(purchaseInvoice);
                 await _unitOfWork.Exercices.Update(exercise);
             }
 
