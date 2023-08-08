@@ -17,6 +17,11 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
         {
             builder.ConfigureBase();
             builder
+                .Property(b => b.Description)
+                .IsRequired()
+                .HasColumnType("varchar")
+                .HasMaxLength(250);
+            builder
                 .Property(b => b.Quantity)
                 .IsRequired()
                 .HasColumnType("integer");
