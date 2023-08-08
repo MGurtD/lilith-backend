@@ -12,6 +12,7 @@ namespace Domain.Entities.Sales
         public SalesOrderHeader? SalesOrderHeader { get; set; }
         public Guid ReferenceId { get; set; }
         public Reference? Reference { get; set; }
+        public string Description { get; set; } = string.Empty;
         public int Quantity { get; set; }
         public decimal UnitCost { get; set; } = decimal.Zero;
         public decimal UnitPrice { get; set; } = decimal.Zero;

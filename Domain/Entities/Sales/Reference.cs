@@ -13,5 +13,7 @@ namespace Domain.Entities.Sales
         public decimal Cost { get; set; } = decimal.Zero;
         public decimal Price { get; set; } = decimal.Zero;
         public string Version { get; set; } = string.Empty;
+        public Guid TaxId { get; set; }
+        public Tax? Tax { get; set; }
     }
 }
