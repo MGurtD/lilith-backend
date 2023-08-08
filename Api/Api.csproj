@@ -10,6 +10,9 @@
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="FastReport.Data.Postgres" Version="2023.2.0" />
+    <PackageReference Include="FastReport.OpenSource" Version="2023.2.25" />
+    <PackageReference Include="FastReport.OpenSource.Export.PdfSimple" Version="2023.2.25" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.15" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />

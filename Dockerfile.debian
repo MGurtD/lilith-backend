@@ -1,10 +1,10 @@
 # https://hub.docker.com/_/microsoft-dotnet
-FROM mcr.microsoft.com/dotnet/aspnet:6.0-alpine AS base
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY . .
 
@@ -17,14 +17,11 @@ FROM build as publish
 RUN dotnet publish "Api/Api.csproj" -c Release -o /app/publish
 
 FROM base AS final
-# Set timezone
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
-    TZ=Europe/Madrid
-
 WORKDIR /app
 RUN mkdir -p /files
-
-RUN apk add --no-cache tzdata icu-libs
+# Set timezone (debian way)
+RUN ln -sf /usr/share/zoneinfo/Europe/Madrid /etc/localtime
 
 COPY --from=publish /app/publish .
+
 ENTRYPOINT ["dotnet", "Api.dll"]
