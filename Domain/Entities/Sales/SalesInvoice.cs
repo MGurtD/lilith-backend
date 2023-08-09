@@ -34,7 +34,10 @@ namespace Domain.Entities.Sales
         public Guid? ExerciseId { get; set; }
         public Guid? StatusId { get; set; }
         public Status? Status { get; set; }
-        public ICollection<SalesOrderDetail> SalesOrderDetails { get; set; } = new List<SalesOrderDetail>();
+
+        public ICollection<SalesInvoiceDetail> SalesInvoiceDetails { get; set; } = new List<SalesInvoiceDetail>();
+        public ICollection<SalesInvoiceImport> SalesInvoiceImports { get; set; } = new List<SalesInvoiceImport>();
+        public ICollection<SalesInvoiceDueDate> SalesInvoiceDueDates { get; set; } = new List<SalesInvoiceDueDate>();
 
     }
 }

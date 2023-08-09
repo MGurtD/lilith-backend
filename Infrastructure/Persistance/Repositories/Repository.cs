@@ -49,12 +49,16 @@ namespace Infrastructure.Persistance.Repositories
 
         public async Task Update(Entity entity)
         {
+            entity.UpdatedOn = DateTime.Now;
+
             dbSet.Update(entity); 
             await context.SaveChangesAsync();
         }
 
         public bool UpdateWithoutSave(Entity entity)
         {
+            entity.UpdatedOn = DateTime.Now;
+
             dbSet.Update(entity);
             return true;
         }
