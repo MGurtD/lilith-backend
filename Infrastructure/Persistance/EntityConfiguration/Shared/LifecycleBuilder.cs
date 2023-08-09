@@ -4,7 +4,7 @@ using Domain.Entities;
 
 namespace Infrastructure.Persistance.EntityConfiguration
 {
-    public class StatusEntityBuilder : IEntityTypeConfiguration<Lifecycle>
+    public class LifecycleBuilder : IEntityTypeConfiguration<Lifecycle>
     {
         public const string TABLE_NAME = "Lifecycles";
 

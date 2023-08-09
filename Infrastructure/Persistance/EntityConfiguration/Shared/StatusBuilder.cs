@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 using Domain.Entities;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System;
 
 namespace Infrastructure.Persistance.EntityConfiguration
 {
@@ -30,7 +28,7 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasName($"PK_{TABLE_NAME}");
 
             builder
-                .HasIndex(builder => builder.Name, $"UK_{TABLE_NAME}_Name")
+                .HasIndex(new[] { "LifecycleId", "Name" }, $"UK_{TABLE_NAME}")
                 .IsUnique();
 
             builder.ToTable(TABLE_NAME);
