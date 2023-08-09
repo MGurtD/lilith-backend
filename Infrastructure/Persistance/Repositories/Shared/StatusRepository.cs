@@ -6,11 +6,11 @@ namespace Infrastructure.Persistance.Repositories.Purchase
 {
     public class StatusRepository : Repository<Status, Guid>, IStatusRepository
     {
-        public IStatusTransitionRepository TransitionRepository { get; }
+        public IRepository<StatusTransition, Guid> TransitionRepository { get; }
 
-        public StatusRepository(ApplicationDbContext context, IStatusTransitionRepository transitionRepository) : base(context)
+        public StatusRepository(ApplicationDbContext context) : base(context)
         {
-            TransitionRepository = transitionRepository;
+            TransitionRepository = new Repository<StatusTransition, Guid>(context);
         }
 
         public override async Task<Status?> Get(Guid id)

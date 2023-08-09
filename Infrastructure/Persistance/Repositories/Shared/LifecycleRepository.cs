@@ -8,9 +8,9 @@ namespace Infrastructure.Persistance.Repositories.Purchase
     {
         public IStatusRepository StatusRepository { get; }
 
-        public LifecycleRepository(ApplicationDbContext context, IStatusRepository statusRepository) : base(context)
+        public LifecycleRepository(ApplicationDbContext context) : base(context)
         {
-            StatusRepository = statusRepository;
+            StatusRepository = new StatusRepository(context);
         }
 
         public override async Task<Lifecycle?> Get(Guid id)

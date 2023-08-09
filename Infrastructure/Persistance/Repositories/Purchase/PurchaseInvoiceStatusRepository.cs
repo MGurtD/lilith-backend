@@ -7,9 +7,9 @@ namespace Infrastructure.Persistance.Repositories.Purchase
     {
         public IPurchaseInvoiceStatusTransitionRepository TransitionRepository { get; }
 
-        public PurchaseInvoiceStatusRepository(ApplicationDbContext context, IPurchaseInvoiceStatusTransitionRepository purchaseInvoiceStatusTransitionRepository) : base(context)
+        public PurchaseInvoiceStatusRepository(ApplicationDbContext context) : base(context)
         {
-            TransitionRepository = purchaseInvoiceStatusTransitionRepository;
+            TransitionRepository = new PurchaseInvoiceStatusTransitionRepository(context);
         }
 
         public override async Task<PurchaseInvoiceStatus?> Get(Guid id)

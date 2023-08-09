@@ -1,4 +1,5 @@
-﻿using Application.Persistance.Repositories.Sales;
+﻿using Application.Persistance.Repositories;
+using Application.Persistance.Repositories.Sales;
 using Domain.Entities.Sales;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,13 +7,13 @@ namespace Infrastructure.Persistance.Repositories.Sales
 {
     public class CustomerRepository : Repository<Customer, Guid>, ICustomerRepository
     {
-        private readonly ICustomerContactRepository _customerContactRepository;
-        private readonly ICustomerAddressRepository _customerAddressRepository;
+        private readonly IRepository<CustomerContact, Guid> _customerContactRepository;
+        private readonly IRepository<CustomerAddress, Guid> _customerAddressRepository;
 
-        public CustomerRepository(ApplicationDbContext context, ICustomerContactRepository customerContactRepository, ICustomerAddressRepository customerAddressRepository) : base(context)
+        public CustomerRepository(ApplicationDbContext context) : base(context)
         {
-            _customerContactRepository = customerContactRepository;
-            _customerAddressRepository = customerAddressRepository;
+            _customerContactRepository = new Repository<CustomerContact, Guid>(context);
+            _customerAddressRepository = new Repository<CustomerAddress, Guid>(context);
         }
 
         public override async Task<Customer?> Get(Guid id)

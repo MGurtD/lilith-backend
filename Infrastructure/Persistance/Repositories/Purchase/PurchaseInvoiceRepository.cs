@@ -1,4 +1,5 @@
-﻿using Application.Persistance.Repositories.Purchase;
+﻿using Application.Persistance.Repositories;
+using Application.Persistance.Repositories.Purchase;
 using Domain.Entities.Purchase;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -7,11 +8,11 @@ namespace Infrastructure.Persistance.Repositories.Purchase
 {
     public class PurchaseInvoiceRepository : Repository<PurchaseInvoice, Guid>, IPurchaseInvoiceRepository
     {
-        public IPurchaseInvoiceImportRepository ImportsRepository { get; }
+        public IRepository<PurchaseInvoiceImport, Guid> ImportsRepository { get; }
 
-        public PurchaseInvoiceRepository(ApplicationDbContext context, IPurchaseInvoiceImportRepository purchaseInvoiceImportRepository) : base(context)
+        public PurchaseInvoiceRepository(ApplicationDbContext context) : base(context)
         {
-            ImportsRepository = purchaseInvoiceImportRepository;
+            ImportsRepository = new Repository<PurchaseInvoiceImport, Guid>(context);
         }
 
         public override async Task<PurchaseInvoice?> Get(Guid id)

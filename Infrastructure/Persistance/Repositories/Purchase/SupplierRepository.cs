@@ -1,4 +1,5 @@
-﻿using Application.Persistance.Repositories.Purchase;
+﻿using Application.Persistance.Repositories;
+using Application.Persistance.Repositories.Purchase;
 using Domain.Entities.Purchase;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,11 +7,11 @@ namespace Infrastructure.Persistance.Repositories.Purchase
 {
     public class SupplierRepository : Repository<Supplier, Guid>, ISupplierRepository
     {
-        private readonly ISupplierContactRepository _supplierContactRepository;
+        private readonly IRepository<SupplierContact, Guid> _supplierContactRepository;
 
-        public SupplierRepository(ApplicationDbContext context, ISupplierContactRepository supplierContactRepository) : base(context)
+        public SupplierRepository(ApplicationDbContext context) : base(context)
         {
-            _supplierContactRepository = supplierContactRepository;
+            _supplierContactRepository = new Repository<SupplierContact, Guid>(context);
         }
 
         public override async Task<Supplier?> Get(Guid id)

@@ -5,7 +5,7 @@ namespace Application.Persistance.Repositories.Purchase
     public interface IPurchaseInvoiceRepository : IRepository<PurchaseInvoice, Guid>
     {
 
-        IPurchaseInvoiceImportRepository ImportsRepository { get; }
+        IRepository<PurchaseInvoiceImport, Guid> ImportsRepository { get; }
 
         Task AddImport(PurchaseInvoiceImport import);
         Task UpdateImport(PurchaseInvoiceImport import);

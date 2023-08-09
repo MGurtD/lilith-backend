@@ -1,48 +1,54 @@
 ﻿using Application.Contracts.Purchase;
 using Application.Persistance.Repositories;
-using Application.Persistance.Repositories.Auth;
 using Application.Persistance.Repositories.Production;
 using Application.Persistance.Repositories.Purchase;
 using Application.Persistance.Repositories.Sales;
+using Domain.Entities;
+using Domain.Entities.Auth;
 using Domain.Entities.Production;
+using Domain.Entities.Purchase;
+using Domain.Entities.Sales;
 
 namespace Application.Persistance
 {
     public interface IUnitOfWork
     {
-        IRoleRepository Roles { get; }
-        IUserRepository Users { get; }
-        IUserRefreshTokenRepository UserRefreshTokens { get; }
-        IFileRepository Files { get; }
+        // Authentication
+        IRepository<Role, Guid> Roles { get; }
+        IRepository<User, Guid> Users { get; }
+        IRepository<UserRefreshToken, Guid> UserRefreshTokens { get; }
 
-        IExerciseRepository Exercices { get; }
-        ITaxRepository Taxes { get; }
-        IPaymentMethodRepository PaymentMethods { get; }
-
-        ISupplierTypeRepository SupplierTypes { get; }
-        ISupplierRepository Suppliers { get; }
-        IPurchaseInvoiceRepository PurchaseInvoices { get; }
-        IPurchaseInvoiceDueDateRepository PurchaseInvoiceDueDates { get; }
-        IPurchaseInvoiceSerieRepository PurchaseInvoiceSeries { get; }
-        IPurchaseInvoiceStatusRepository PurchaseInvoiceStatuses { get; }
-
-        ICustomerTypeRepository CustomerTypes { get; }
-        ICustomerRepository Customers { get; }
-        IReferenceRepository References { get; }
+        // Shared
+        IRepository<Domain.Entities.File, Guid> Files { get; }
+        IRepository<Exercise, Guid> Exercices { get; }
+        IRepository<Tax, Guid> Taxes { get; }
+        IRepository<PaymentMethod, Guid> PaymentMethods { get; }
         ILifeCycleRepository Lifecycles { get; }
+
+        // Purchase
+        IRepository<SupplierType, Guid> SupplierTypes { get; }
+        ISupplierRepository Suppliers { get; }
+        IPurchaseInvoiceStatusRepository PurchaseInvoiceStatuses { get; }
+        IPurchaseInvoiceRepository PurchaseInvoices { get; }
+        IRepository<PurchaseInvoiceDueDate, Guid> PurchaseInvoiceDueDates { get; }
+        IRepository<PurchaseInvoiceSerie, Guid> PurchaseInvoiceSeries { get; }
+        IRepository<ExpenseType, Guid> ExpenseTypes { get; }
+        IRepository<Expenses, Guid> Expenses { get; }
+        IContractReader<ConsolidatedExpense> ConsolidatedExpenses { get; }
+
+        // Sales
+        IRepository<CustomerType, Guid> CustomerTypes { get; }
+        ICustomerRepository Customers { get; }
+        IRepository<Reference, Guid> References { get; }
         ISalesOrderHeaderRepository SalesOrderHeaders { get; }
         ISalesOrderDetailRepository SalesOrderDetails { get; }
 
-        IEnterpriseRepository Enterprises { get; }
-        ISiteRepository Sites { get; }
-        IWorkcenterRepository Workcenters { get; }
+        // Production
+        IRepository<Enterprise, Guid> Enterprises { get; }
+        IRepository<Site, Guid> Sites { get; }
         IRepository<Area, Guid> Areas { get; }
-        IWorkcenterTypeRepository WorkcenterTypes { get; }
-        IExpenseTypeRepository ExpenseTypes { get; }
-        IExpenseRepository Expenses { get; }
-
-        IContractReader<ConsolidatedExpense> ConsolidatedExpenses {get;}
-        
+        IRepository<WorkcenterType, Guid> WorkcenterTypes { get; }
+        IWorkcenterRepository Workcenters { get; }
 
         Task<int> CompleteAsync();
     }

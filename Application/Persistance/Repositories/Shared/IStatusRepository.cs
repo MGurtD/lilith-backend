@@ -4,7 +4,7 @@ namespace Application.Persistance.Repositories
 {
     public interface IStatusRepository : IRepository<Status, Guid>
     {
-        IStatusTransitionRepository TransitionRepository { get; }
+        IRepository<StatusTransition, Guid> TransitionRepository { get; }
 
         Task AddTransition(StatusTransition transition);
         Task UpdateTransition(StatusTransition transition);
