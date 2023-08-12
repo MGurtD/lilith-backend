@@ -1,6 +1,5 @@
 ﻿using Application.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.StaticFiles;
 
 namespace Api.Controllers
 {
@@ -58,18 +57,15 @@ namespace Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Upload(IFormFile file, [FromForm] string entity, [FromForm] string id)
         {
-            var uploaded = await _fileService.UploadFile(file, entity, Guid.Parse(id));
-            return uploaded ? Ok(uploaded) : BadRequest();
+            var response = await _fileService.UploadFile(file, entity, Guid.Parse(id));
+            return response.Result ? Ok(response.Content) : BadRequest(response.Errors);
         }
         
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var result = await _fileService.RemoveFile(id);
-            if (result)
-                return Ok();
-            else
-                return BadRequest();
+            var response = await _fileService.RemoveFile(id);
+            return response.Result ? Ok(response.Content) : BadRequest(response.Errors);
         }
     }
 }

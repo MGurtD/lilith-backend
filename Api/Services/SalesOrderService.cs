@@ -1,4 +1,5 @@
-﻿using Application.Contracts.Auth;
+﻿using Application.Contracts;
+using Application.Contracts.Auth;
 using Application.Persistance;
 using Application.Services;
 using Domain.Entities.Purchase;

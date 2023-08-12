@@ -30,7 +30,7 @@ namespace Infrastructure.Persistance
         public IRepository<Exercise, Guid> Exercices { get; private set; }
         public IRepository<Tax, Guid> Taxes { get; private set; }
         public IRepository<PaymentMethod, Guid> PaymentMethods { get; private set; }
-        public ILifeCycleRepository Lifecycles { get; private set; }
+        public ILifecycleRepository Lifecycles { get; private set; }
 
         // Purchase
         public IRepository<SupplierType, Guid> SupplierTypes { get; private set; }
@@ -49,6 +49,7 @@ namespace Infrastructure.Persistance
         public IRepository<Reference, Guid> References { get; private set; }
         public ISalesOrderHeaderRepository SalesOrderHeaders { get; private set; }
         public ISalesOrderDetailRepository SalesOrderDetails { get; private set; }
+        public ISalesInvoiceRepository SalesInvoices { get; private set; }
 
         // Production
         public IRepository<Enterprise, Guid> Enterprises { get; private set; }
@@ -56,6 +57,7 @@ namespace Infrastructure.Persistance
         public IRepository<Area, Guid> Areas { get; private set; }
         public IRepository<WorkcenterType, Guid> WorkcenterTypes { get; private set; }
         public IWorkcenterRepository Workcenters { get; private set; }
+
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -86,6 +88,7 @@ namespace Infrastructure.Persistance
             References = new Repository<Reference, Guid>(context);
             SalesOrderHeaders = new SalesOrderHeaderRepository(context, new SalesOrderDetailRepository(context));
             SalesOrderDetails = new SalesOrderDetailRepository(context);
+            SalesInvoices = new SalesInvoiceRepository(context);
 
             Enterprises = new Repository<Enterprise, Guid>(context);
             Sites = new Repository<Site, Guid>(context);

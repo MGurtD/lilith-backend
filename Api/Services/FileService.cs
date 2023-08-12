@@ -1,4 +1,5 @@
-﻿using Application.Persistance;
+﻿using Application.Contracts;
+using Application.Persistance;
 using Application.Services;
 using Domain.Entities;
 using Microsoft.AspNetCore.StaticFiles;
@@ -21,7 +22,7 @@ namespace Api.Services
             return Directory.GetFiles(ApplicationConfiguration.FileUploadPath);
         }     
 
-        public async Task<bool> UploadFile(IFormFile file, string entity, Guid id)
+        public async Task<GenericResponse> UploadFile(IFormFile file, string entity, Guid id)
         {
             try
             {
@@ -46,16 +47,16 @@ namespace Api.Services
                     };
                     await unitOfWork.Files.Add(dbFile);
 
-                    return true;
+                    return new GenericResponse(true, new List<string>(), dbFile);
                 }
                 else
                 {
-                    return false;
+                    return new GenericResponse(false, new List<string>() { $"Problemes al crear el directori '${entity}'" });
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception("File Copy Failed", ex);
+                return new GenericResponse(false, new List<string>() { ex.Message });
             }
         }
 
@@ -77,7 +78,7 @@ namespace Api.Services
             return files;
         }
 
-        public async Task<bool> RemoveEntityFiles(string Entity, Guid EntityId)
+        public async Task<GenericResponse> RemoveEntityFiles(string Entity, Guid EntityId)
         {
             var files = GetEntityFiles(Entity, EntityId);
 
@@ -89,15 +90,15 @@ namespace Api.Services
                 }
                 await unitOfWork.Files.RemoveRange(files);
 
-                return true;
+                return new GenericResponse(false, new List<string>(), files);
             }
             catch (Exception ex)
             {
-                return false;
+                return new GenericResponse(false, new List<string>() { ex.Message });
             }
         }
 
-        public async Task<bool> RemoveFile(Guid id)
+        public async Task<GenericResponse> RemoveFile(Guid id)
         {
             try
             {
@@ -107,18 +108,20 @@ namespace Api.Services
                     System.IO.File.Delete(file.Path);
                     await unitOfWork.Files.Remove(file);
                 }
-                return true;
+
+                return new GenericResponse(false, new List<string>(), file);
             }
             catch (Exception ex)
             {
-                return false;
+                return new GenericResponse(false, new List<string>() { ex.Message });
             }
         }
 
         public static string GetContentType(string path)
         {
             var provider = new FileExtensionContentTypeProvider();
-            if (!provider.TryGetContentType(path, out string contentType))
+            var contentType = string.Empty;
+            if (!provider.TryGetContentType(path, out contentType))
             {
                 contentType = "application/octet-stream";
             }

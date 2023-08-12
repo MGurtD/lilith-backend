@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistance.Repositories.Purchase
 {
-    public class LifecycleRepository : Repository<Lifecycle, Guid>, ILifeCycleRepository
+    public class LifecycleRepository : Repository<Lifecycle, Guid>, ILifecycleRepository
     {
         public IStatusRepository StatusRepository { get; }
 

@@ -23,7 +23,7 @@ namespace Application.Persistance
         IRepository<Exercise, Guid> Exercices { get; }
         IRepository<Tax, Guid> Taxes { get; }
         IRepository<PaymentMethod, Guid> PaymentMethods { get; }
-        ILifeCycleRepository Lifecycles { get; }
+        ILifecycleRepository Lifecycles { get; }
 
         // Purchase
         IRepository<SupplierType, Guid> SupplierTypes { get; }
@@ -42,6 +42,7 @@ namespace Application.Persistance
         IRepository<Reference, Guid> References { get; }
         ISalesOrderHeaderRepository SalesOrderHeaders { get; }
         ISalesOrderDetailRepository SalesOrderDetails { get; }
+        ISalesInvoiceRepository SalesInvoices { get; }
 
         // Production
         IRepository<Enterprise, Guid> Enterprises { get; }

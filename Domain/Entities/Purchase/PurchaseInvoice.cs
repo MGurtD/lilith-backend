@@ -3,7 +3,6 @@
     public class PurchaseInvoice : Entity
     {
         public int Number { get; set; }
-        public string SupplierNumber { get; set; } = string.Empty;
         public DateTime PurchaseInvoiceDate { get; set; }
 
         public decimal BaseAmount { get; set; }
@@ -16,6 +15,7 @@
         public int ExtraTaxPercentatge { get; set; }
         public decimal ExtraTaxAmount { get; set; }
 
+        public string SupplierNumber { get; set; } = string.Empty;
         public Supplier? Supplier { get; set; }
         public Guid SupplierId { get; set; }
 

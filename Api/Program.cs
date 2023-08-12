@@ -43,6 +43,8 @@ try
         builder.Services.AddScoped<IFileService, FileService>();
         builder.Services.AddScoped<IPurchaseInvoiceService, PurchaseInvoiceService>();
         builder.Services.AddScoped<ISalesOrderService, SalesOrderService>();
+        builder.Services.AddScoped<ISalesInvoiceService, SalesInvoiceService>();
+        builder.Services.AddScoped<IDueDateService, DueDateService>();
 
         // JWT Service    
         var signKey = Encoding.ASCII.GetBytes(ApplicationConfiguration.JwtSecret);

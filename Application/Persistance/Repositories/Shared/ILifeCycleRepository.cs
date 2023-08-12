@@ -2,7 +2,7 @@
 
 namespace Application.Persistance.Repositories
 {
-    public interface ILifeCycleRepository : IRepository<Lifecycle, Guid>
+    public interface ILifecycleRepository : IRepository<Lifecycle, Guid>
     {
         IStatusRepository StatusRepository { get; }
     }

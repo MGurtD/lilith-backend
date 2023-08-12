@@ -1,6 +1,10 @@
-﻿using Application.Contracts.Purchase;
+﻿using Api.Services;
+using Application.Contracts.Purchase;
+using Application.Persistance;
 using Application.Services;
 using Domain.Entities.Purchase;
+using Domain.Entities.Sales;
+using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -11,10 +15,14 @@ namespace Api.Controllers.Purchase
     public class PurchaseInvoiceController : ControllerBase
     {
         private readonly IPurchaseInvoiceService _service;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IDueDateService _dueDateService;
 
-        public PurchaseInvoiceController(IPurchaseInvoiceService service)
+        public PurchaseInvoiceController(IPurchaseInvoiceService service, IUnitOfWork unitOfWork, IDueDateService dueDateService)
         {
             _service = service;
+            _unitOfWork = unitOfWork;
+            _dueDateService = dueDateService;
         }
 
         [HttpGet("{id:guid}")]
@@ -47,13 +55,26 @@ namespace Api.Controllers.Purchase
 
         [HttpPost]
         [Route("DueDates")]
-        public async Task<IActionResult> GetDueDates(PurchaseInvoice purchaseInvoice)
+        public async Task<IActionResult> GetDueDates(PurchaseInvoice invoice)
         {
-            var dueDates = await _service.GetPurchaseInvoiceDueDates(purchaseInvoice);
+            // Recuperar metode de pagament
+            var paymentMethod = await _unitOfWork.PaymentMethods.Get(invoice.PaymentMethodId);
+            if (paymentMethod == null || paymentMethod.Disabled)
+            {
+                return NotFound($"El métode de pagament amb ID {invoice.PaymentMethodId} no existeix o está desactivat");
+            }
 
-            if (dueDates == null) return BadRequest();
-            else return Ok(dueDates);
+            var invoiceDueDates = new List<SalesInvoiceDueDate>();
+            _dueDateService.GenerateDueDates(paymentMethod, invoice.PurchaseInvoiceDate, invoice.NetAmount)
+                .ForEach(dueDate => invoiceDueDates.Add(new SalesInvoiceDueDate()
+                {
+                    DueDate = dueDate.Date,
+                    Amount = dueDate.Amount,
+                    SalesInvoiceId = invoice.Id
+                }));
+            return Ok(invoiceDueDates);
         }
+
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]

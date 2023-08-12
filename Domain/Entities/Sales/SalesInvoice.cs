@@ -6,6 +6,22 @@ namespace Domain.Entities.Sales
     {
         public int InvoiceNumber { get; set; }
         public DateTime InvoiceDate { get; set; }
+        public decimal BaseAmount { get; set; }
+        public decimal TransportAmount { get; set; }
+        public decimal Subtotal { get; set; }
+        public decimal GrossAmount { get; set; }
+        public decimal NetAmount { get; set; }
+        public decimal DiscountPercentage { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public int ExtraTaxPercentatge { get; set; }
+        public decimal ExtraTaxAmount { get; set; }
+
+        public Exercise? Exercise { get; set; }
+        public Guid? ExerciseId { get; set; }
+        public Guid? StatusId { get; set; }
+        public Status? Status { get; set; }
+        public PaymentMethod? PaymentMethod { get; set; }
+        public Guid PaymentMethodId { get; set; }
 
         public Customer? Customer { get; set; }
         public Guid? CustomerId { get; set; }
@@ -29,11 +45,6 @@ namespace Domain.Entities.Sales
         public string Region { get; set; } = string.Empty;
         public string Country { get; set; } = string.Empty;
         public string VatNumber { get; set; } = string.Empty;
-                
-        public Exercise? Exercise { get; set; }
-        public Guid? ExerciseId { get; set; }
-        public Guid? StatusId { get; set; }
-        public Status? Status { get; set; }
 
         public ICollection<SalesInvoiceDetail> SalesInvoiceDetails { get; set; } = new List<SalesInvoiceDetail>();
         public ICollection<SalesInvoiceImport> SalesInvoiceImports { get; set; } = new List<SalesInvoiceImport>();

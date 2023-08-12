@@ -1,5 +1,4 @@
 ﻿using Application.Contracts.Auth;
-using Application.Contracts.Purchase;
 
 namespace Application.Services
 {

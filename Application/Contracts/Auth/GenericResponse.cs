@@ -1,4 +1,4 @@
-﻿namespace Application.Contracts.Auth
+﻿namespace Application.Contracts
 {
     public class GenericResponse
     {

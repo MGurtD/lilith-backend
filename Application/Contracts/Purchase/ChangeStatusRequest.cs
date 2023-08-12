@@ -2,7 +2,7 @@
 
 namespace Application.Contracts.Purchase
 {
-    public class ChangeStatusOfPurchaseInvoiceRequest
+    public class ChangeStatusRequest
     {
         [Required]
         public Guid Id { get; set; }

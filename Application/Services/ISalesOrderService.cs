@@ -1,10 +1,5 @@
-﻿using Application.Contracts.Auth;
-using Domain.Entities.Purchase;
+﻿using Application.Contracts;
 using Domain.Entities.Sales;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services
 {
@@ -17,7 +12,8 @@ namespace Application.Services
 
         Task<GenericResponse> Update(SalesOrderHeader salesOrderHeader);
         Task<GenericResponse> Remove(Guid id);  
-        Task<GenericResponse>AddDetail(SalesOrderDetail detail);
+
+        Task<GenericResponse> AddDetail(SalesOrderDetail detail);
         Task<GenericResponse> UpdateDetail(SalesOrderDetail detail);
         Task<GenericResponse> RemoveDetail(Guid id);
 

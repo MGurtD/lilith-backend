@@ -31,7 +31,6 @@ namespace Infrastructure.Persistance.Repositories.Purchase
                 .Include(d => d.PurchaseInvoiceDueDates)
                 .Include(d => d.PurchaseInvoiceImports)
                 .Where(predicate)
-
                 .OrderBy(pi => pi.PurchaseInvoiceDate);
         }
 
