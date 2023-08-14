@@ -8,13 +8,8 @@ namespace Domain.Entities.Sales
         public DateTime InvoiceDate { get; set; }
         public decimal BaseAmount { get; set; }
         public decimal TransportAmount { get; set; }
-        public decimal Subtotal { get; set; }
         public decimal GrossAmount { get; set; }
         public decimal NetAmount { get; set; }
-        public decimal DiscountPercentage { get; set; }
-        public decimal DiscountAmount { get; set; }
-        public int ExtraTaxPercentatge { get; set; }
-        public decimal ExtraTaxAmount { get; set; }
 
         public Exercise? Exercise { get; set; }
         public Guid? ExerciseId { get; set; }
