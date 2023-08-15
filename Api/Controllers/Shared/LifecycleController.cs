@@ -57,6 +57,16 @@ namespace Api.Controllers.Sales
             }
         }
 
+        [HttpGet("Name/{name}")]
+        public async Task<IActionResult> GetByName(string name)
+        {
+            var entity = await _unitOfWork.Lifecycles.GetByName(name);
+            if (entity is not null)
+                return Ok(entity);
+            else
+                return NotFound();
+        }
+
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid Id, Lifecycle request)
         {

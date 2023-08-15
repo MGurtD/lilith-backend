@@ -13,6 +13,14 @@ namespace Infrastructure.Persistance.Repositories.Purchase
             StatusRepository = new StatusRepository(context);
         }
 
+        public override async Task<IEnumerable<Lifecycle>> GetAll()
+        {
+            return await dbSet
+                .AsNoTracking()
+                .Include("Statuses")
+                .ToListAsync();
+        }
+
         public override async Task<Lifecycle?> Get(Guid id)
         {
             return await dbSet
@@ -21,5 +29,12 @@ namespace Infrastructure.Persistance.Repositories.Purchase
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
+        public async Task<Lifecycle?> GetByName(string name)
+        {
+            return await dbSet
+                .AsNoTracking()
+                .Include("Statuses.Transitions")
+                .FirstOrDefaultAsync(e => e.Name == name);
+        }
     }
 }
