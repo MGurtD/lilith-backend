@@ -19,8 +19,20 @@ namespace Domain.Entities.Sales
         public decimal TotalCost { get; set; } = decimal.Zero;
         public decimal Amount { get; set; } = decimal.Zero;
         public DateTime EstimatedDeliveryDate { get; set; }
-        public Boolean IsServed { get; set; }
-        public Boolean IsInvoiced { get; set; }
+        public bool IsServed { get; set; }
+        public bool IsInvoiced { get; set; }
+
+        public void SetReference(Reference reference, int quantity)
+        {
+            Description = $"{reference.Code} - {reference.Description}";
+
+            ReferenceId = reference.Id;
+            Quantity = quantity;
+            UnitCost = reference.Cost;
+            UnitPrice = reference.Price;
+            TotalCost = reference.Cost * quantity;
+            Amount = reference.Price * quantity;
+        }
 
     }
 }

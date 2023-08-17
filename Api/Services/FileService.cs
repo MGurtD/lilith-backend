@@ -19,7 +19,7 @@ namespace Api.Services
         public IEnumerable<object> GetFiles()
         {
 
-            return Directory.GetFiles(ApplicationConfiguration.FileUploadPath);
+            return Directory.GetFiles(Configuration.FileUploadPath);
         }     
 
         public async Task<GenericResponse> UploadFile(IFormFile file, string entity, Guid id)
@@ -31,7 +31,7 @@ namespace Api.Services
                     // Crear arxiu al filesystem
                     var timestamp = DateTime.Now.ToString("yyMMddHHmmss");
                     var fileName = $"{id}_{timestamp}{Path.GetExtension(file.FileName)}";
-                    var path = Path.Combine(ApplicationConfiguration.FileUploadPath, entity, fileName);
+                    var path = Path.Combine(Configuration.FileUploadPath, entity, fileName);
                     using var fileStream = new FileStream(path, FileMode.Create);
                     await file.CopyToAsync(fileStream);
 
@@ -132,7 +132,7 @@ namespace Api.Services
         {
             try
             {
-                string rootPath = Path.Combine(ApplicationConfiguration.FileUploadPath, entity);
+                string rootPath = Path.Combine(Configuration.FileUploadPath, entity);
                 if (!Directory.Exists(rootPath))
                     Directory.CreateDirectory(rootPath);
                 return true;

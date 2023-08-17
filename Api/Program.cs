@@ -22,7 +22,7 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
     {
-        ApplicationConfiguration.Load(builder.Configuration);
+        Configuration.Load(builder.Configuration);
 
         // Logging with NLog
         builder.Logging.ClearProviders();
@@ -30,7 +30,7 @@ try
 
         // Database Context
         builder.Services.AddDbContext<ApplicationDbContext>(options => {
-            options.UseNpgsql(ApplicationConfiguration.ConnectionString);
+            options.UseNpgsql(Configuration.ConnectionString);
         });
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         builder.Services
@@ -47,7 +47,7 @@ try
         builder.Services.AddScoped<IDueDateService, DueDateService>();
 
         // JWT Service    
-        var signKey = Encoding.ASCII.GetBytes(ApplicationConfiguration.JwtSecret);
+        var signKey = Encoding.ASCII.GetBytes(Configuration.JwtSecret);
         var tokenValidationParameters = new TokenValidationParameters()
         {
             IssuerSigningKey = new SymmetricSecurityKey(signKey),

@@ -40,7 +40,7 @@ namespace Api.Controllers.Purchase
             IEnumerable<PurchaseInvoice> purchaseInvoices = new List<PurchaseInvoice>();
             if (exerciceId.HasValue)
                 purchaseInvoices = await _service.GetByExercise(exerciceId.Value);
-            if (supplierId.HasValue)
+            else if (supplierId.HasValue)
                 purchaseInvoices = _service.GetBetweenDatesAndSupplier(startTime, endTime, supplierId.Value);
             else if (statusId.HasValue)
                 purchaseInvoices = _service.GetBetweenDatesAndStatus(startTime, endTime, statusId.Value);
@@ -119,21 +119,6 @@ namespace Api.Controllers.Purchase
                 return BadRequest(response.Errors);
 
         }
-        [Route("GetBetweenDates")]
-        [HttpPost]
-        public IActionResult GetBetweenDates(DateTime startDate, DateTime endDate)
-        {
-            var response =  _service.GetBetweenDates(startDate, endDate);
-            if (response is not null)
-            {
-                return Ok(response);
-            }
-            else
-            {
-                return NotFound();
-            }
-        }
-
 
         [HttpPut("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -159,6 +144,7 @@ namespace Api.Controllers.Purchase
             else return BadRequest(response.Errors);
         }
 
+        #region Imports
         [HttpPost("Import")]
         [SwaggerOperation("PurchaseInvoiceImportCreate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -194,6 +180,7 @@ namespace Api.Controllers.Purchase
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
         }
+        #endregion
 
     }
 }

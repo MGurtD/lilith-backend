@@ -1,5 +1,5 @@
 
-public static class ApplicationConfiguration
+public static class Configuration
 {
     private const string USER_SECRET_ID = "Lilith.Backend";
 

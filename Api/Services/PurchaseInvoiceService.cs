@@ -1,8 +1,6 @@
 using Application.Contracts;
-using Application.Contracts.Auth;
 using Application.Contracts.Purchase;
 using Application.Persistance;
-using Domain.Entities;
 using Domain.Entities.Purchase;
 
 namespace Application.Services

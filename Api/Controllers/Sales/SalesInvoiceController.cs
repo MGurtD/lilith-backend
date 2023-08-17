@@ -1,10 +1,9 @@
-﻿using Application.Persistance;
-using Application.Persistance.Repositories.Sales;
+﻿using Application.Contracts.Sales;
+using Application.Persistance;
 using Application.Services;
-using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
-using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Api.Controllers.Sales
 {
@@ -14,26 +13,24 @@ namespace Api.Controllers.Sales
     {
         private readonly ISalesInvoiceService _service;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IDueDateService _dueDateService;
 
-        public SalesInvoiceController(ISalesInvoiceService service, IUnitOfWork unitOfWork, IDueDateService dueDateService)
+        public SalesInvoiceController(ISalesInvoiceService service, IUnitOfWork unitOfWork)
         {
             _service = service;
             _unitOfWork = unitOfWork;
-            _dueDateService = dueDateService;
         }        
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create(SalesInvoice invoice)
+        public async Task<IActionResult> Create(CreateInvoiceRequest createInvoiceRequest)
         {
-            var response = await _service.Create(invoice);
+            var response = await _service.Create(createInvoiceRequest);
 
             if (response.Result)
-                return Ok();
+                return Ok(response);
             else
-                return BadRequest(response.Errors);
+                return BadRequest(response);
         }
 
         [HttpGet("{id:guid}")]
@@ -46,27 +43,96 @@ namespace Api.Controllers.Sales
                 return Ok(invoice);
         }
 
-        [HttpPost]
-        [Route("DueDates")]
-        public async Task<IActionResult> GetDueDates(SalesInvoice invoice)
+        [HttpGet]
+        public IActionResult GetInvoices(DateTime startTime, DateTime endTime, Guid? customerId, Guid? statusId, Guid? exerciceId)
         {
-            // Recuperar metode de pagament
-            var paymentMethod = await _unitOfWork.PaymentMethods.Get(invoice.PaymentMethodId);
-            if (paymentMethod == null || paymentMethod.Disabled)
-            {
-                return NotFound($"El métode de pagament amb ID {invoice.PaymentMethodId} no existeix o está desactivat");
-            }
+            IEnumerable<SalesInvoice> invoices = new List<SalesInvoice>();
+            if (exerciceId.HasValue)
+                invoices = _service.GetByExercise(exerciceId.Value);
+            else if (customerId.HasValue)
+                invoices = _service.GetBetweenDatesAndCustomer(startTime, endTime, customerId.Value);
+            else if (statusId.HasValue)
+                invoices = _service.GetBetweenDatesAndStatus(startTime, endTime, statusId.Value);
+            else
+                invoices = _service.GetBetweenDates(startTime, endTime);
 
-            var invoiceDueDates = new List<SalesInvoiceDueDate>();
-            _dueDateService.GenerateDueDates(paymentMethod, invoice.InvoiceDate, invoice.NetAmount)
-                .ForEach(dueDate => invoiceDueDates.Add(new SalesInvoiceDueDate()
-                {
-                    DueDate = dueDate.Date,
-                    Amount = dueDate.Amount,
-                    SalesInvoiceId = invoice.Id
-                }));
-            return Ok(invoiceDueDates);
+            if (invoices != null) return Ok(invoices);
+            else return BadRequest();
         }
+
+        [HttpPut("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Update(Guid id, [FromBody] SalesInvoice invoice)
+        {
+            var response = await _service.Update(invoice);
+
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
+        }
+
+        [HttpDelete("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Remove(Guid id)
+        {
+            var response = await _service.Remove(id);
+
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
+        }
+
+        #region Details
+        [HttpPost("Detail")]
+        [SwaggerOperation("AddSalesInvoiceDetail")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddSalesInvoiceDetail(SalesInvoiceDetail detail)
+        {
+            var response = await _service.AddDetail(detail);
+
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
+        }
+
+        [HttpPost("Detail/FromOrderDetails")]
+        [SwaggerOperation("CreateInvoiceDetailsFromOrderDetails")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddDetailsFromOrderDetails(CreateInvoiceDetailsFromOrderDetailsRequest request)
+        {
+            var invoice = await _unitOfWork.SalesInvoices.Get(request.InvoiceId);
+            if (invoice == null) return NotFound();
+
+            var response = await _service.AddDetailsFromOrderDetails(invoice, request.OrderDetails);
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
+        }
+
+        [HttpPut("Detail/{id:guid}")]
+        [SwaggerOperation("SalesInvoiceDetailUpdate")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateDetail(Guid id, [FromBody] SalesInvoiceDetail detail)
+        {
+            var response = await _service.UpdateDetail(detail);
+
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
+        }
+
+        [HttpDelete("Detail/{id:guid}")]
+        [SwaggerOperation("SalesInvoiceDetailDelete")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> RemoveDetail(Guid id)
+        {
+            var response = await _service.RemoveDetail(id);
+
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
+        }
+        #endregion
 
     }
 }

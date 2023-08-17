@@ -13,6 +13,14 @@
         public string Email { get; set; } = string.Empty;
         public string VatNumber { get; set; } = string.Empty;
 
+        public bool IsValidForSales()
+        {
+            var invalid = string.IsNullOrWhiteSpace(Address) || string.IsNullOrWhiteSpace(City) ||
+                          string.IsNullOrWhiteSpace(PostalCode) || string.IsNullOrWhiteSpace(Region) || 
+                          string.IsNullOrWhiteSpace(Country) || string.IsNullOrWhiteSpace(VatNumber);
+            return !invalid;
+        }
+
         public Guid EnterpriseId { get; set; }
         public Enterprise? Enterprise { get; set; }
     }

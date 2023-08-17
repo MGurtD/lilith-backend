@@ -8,6 +8,7 @@ namespace Domain.Entities.Sales
         public DateTime InvoiceDate { get; set; }
         public decimal BaseAmount { get; set; }
         public decimal TransportAmount { get; set; }
+        public decimal TaxAmount { get; set; }
         public decimal GrossAmount { get; set; }
         public decimal NetAmount { get; set; }
 
@@ -31,6 +32,26 @@ namespace Domain.Entities.Sales
         public string CustomerRegion { get; set; } = string.Empty;
         public string CustomerCountry { get; set; } = string.Empty;
 
+        public void SetCustomer(Customer customer)
+        {
+            CustomerId = customer.Id;
+            PaymentMethodId = customer.PaymentMethodId!.Value;
+            CustomerAccountNumber = customer.AccountNumber;
+            CustomerComercialName = customer.ComercialName;
+            CustomerTaxName = customer.TaxName;
+            CustomerVatNumber = customer.VatNumber;
+            
+            if (customer.MainAddress() != null)
+            {
+                var mainAddress = customer.MainAddress()!;
+                CustomerRegion = mainAddress.Region;
+                CustomerCountry = mainAddress.Country;
+                CustomerCity = mainAddress.City;
+                CustomerPostalCode = mainAddress.PostalCode;
+                CustomerAddress = mainAddress.Address;
+            }
+        }        
+
         public Site? Site { get; set; }
         public Guid? SiteId { get; set;}
         public string Name { get; set; } = string.Empty;
@@ -41,9 +62,39 @@ namespace Domain.Entities.Sales
         public string Country { get; set; } = string.Empty;
         public string VatNumber { get; set; } = string.Empty;
 
+        public void SetSite(Site site)
+        {
+            SiteId = site.Id;
+            Name = site.Name;
+            Address = site.Address;
+            City = site.City;
+            PostalCode = site.PostalCode;
+            Region = site.Region;
+            Country = site.Country;
+            VatNumber = site.VatNumber;
+        }
+
         public ICollection<SalesInvoiceDetail> SalesInvoiceDetails { get; set; } = new List<SalesInvoiceDetail>();
-        public ICollection<SalesInvoiceImport> SalesInvoiceImports { get; set; } = new List<SalesInvoiceImport>();
         public ICollection<SalesInvoiceDueDate> SalesInvoiceDueDates { get; set; } = new List<SalesInvoiceDueDate>();
+        public ICollection<SalesInvoiceImport> SalesInvoiceImports { get; set; } = new List<SalesInvoiceImport>();
+
+        public void CalculateAmountsFromImports()
+        {
+            BaseAmount = 0;
+            TaxAmount = 0;
+            GrossAmount = 0;
+            NetAmount = 0;
+
+            if (SalesInvoiceImports == null || SalesInvoiceImports.Count == 0) return;
+
+            foreach(var import in SalesInvoiceImports) 
+            {
+                BaseAmount += import.BaseAmount;
+                TaxAmount += import.TaxAmount;
+            }
+            GrossAmount = BaseAmount + TransportAmount + TaxAmount;
+            NetAmount = GrossAmount; // TODO > Aplicar descomptes
+        }
 
     }
 }

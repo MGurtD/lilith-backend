@@ -1,12 +1,12 @@
 using Application.Contracts;
-using Application.Contracts.Purchase;
+using Application.Contracts.Sales;
 using Domain.Entities.Sales;
 
 namespace Application.Services
 {
     public interface ISalesInvoiceService
     {
-        Task<GenericResponse> Create(SalesInvoice SalesInvoice);
+        Task<GenericResponse> Create(CreateInvoiceRequest createInvoiceRequest);        
 
         Task<SalesInvoice?> GetById(Guid id);
         IEnumerable<SalesInvoice> GetBetweenDates(DateTime startDate, DateTime endDate);
@@ -16,15 +16,10 @@ namespace Application.Services
         IEnumerable<SalesInvoice> GetByStatus(Guid statusId);
         IEnumerable<SalesInvoice> GetByExercise(Guid exerciseId);
 
-        Task<GenericResponse> RecreateDueDates(SalesInvoice SalesInvoice);
-        Task<GenericResponse> ChangeStatus(ChangeStatusRequest changeStatusRequest);
         Task<GenericResponse> Update(SalesInvoice SalesInvoice);
         Task<GenericResponse> Remove(Guid id);
 
-        Task<GenericResponse> AddImport(SalesInvoiceImport import);
-        Task<GenericResponse> UpdateImport(SalesInvoiceImport import);
-        Task<GenericResponse> RemoveImport(Guid id);
-
+        Task<GenericResponse> AddDetailsFromOrderDetails(SalesInvoice salesInvoice, IEnumerable<SalesOrderDetail> salesOrderDetails);
         Task<GenericResponse> AddDetail(SalesInvoiceDetail detail);
         Task<GenericResponse> UpdateDetail(SalesInvoiceDetail detail);
         Task<GenericResponse> RemoveDetail(Guid id);
