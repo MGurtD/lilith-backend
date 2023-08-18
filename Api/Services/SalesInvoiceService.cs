@@ -34,8 +34,8 @@ namespace Api.Services
             var invoiceEntities = (InvoiceEntities)response.Content!;
             var invoice = new SalesInvoice
             {
-                // Recuperar número de factura de l'exercici
-                InvoiceNumber = invoiceEntities.Exercise.SalesInvoiceCounter,
+                Id = createInvoiceRequest.Id,
+                InvoiceNumber = invoiceEntities.Exercise.SalesInvoiceCounter + 1,
                 InvoiceDate = createInvoiceRequest.InvoiceDate
             };
 
