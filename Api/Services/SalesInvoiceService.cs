@@ -128,14 +128,13 @@ namespace Api.Services
 
         public async Task<GenericResponse> Update(SalesInvoice invoice)
         {
-            await GenerateDueDates(invoice);
-
             // Netejar dependencies per evitar col·lisions de EF
             invoice.SalesInvoiceDetails.Clear();
             invoice.SalesInvoiceImports.Clear();
             invoice.SalesInvoiceDueDates.Clear();
 
             await _unitOfWork.SalesInvoices.Update(invoice);
+            await GenerateDueDates(invoice);
             return new GenericResponse(true, invoice);
         }
 
@@ -214,6 +213,7 @@ namespace Api.Services
             await _unitOfWork.SalesInvoices.InvoiceDetails.Add(invoiceDetail);
 
             // Generar imports i actualizar imports de la capçalera
+            invoice.SalesInvoiceDetails.Add(invoiceDetail);
             return await UpdateImportsAndHeaderAmounts(invoice);
         }
         public async Task<GenericResponse> UpdateDetail(SalesInvoiceDetail invoiceDetail)
@@ -258,9 +258,10 @@ namespace Api.Services
                 .GroupBy(d => d.TaxId)
                 .Select(d => new SalesInvoiceImport()
                 {
+                    SalesInvoiceId = invoice.Id,
                     TaxId = d.First().TaxId,
-                    BaseAmount = d.Sum(d => d.Amount)
-                });
+                    BaseAmount = d.Sum(d => d.Amount),
+                }).ToList();
             // Aplicar impostos
             foreach (var invoiceImport in invoiceImports)
             {

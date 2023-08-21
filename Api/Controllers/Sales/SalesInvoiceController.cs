@@ -46,7 +46,7 @@ namespace Api.Controllers.Sales
         [HttpGet]
         public IActionResult GetInvoices(DateTime startTime, DateTime endTime, Guid? customerId, Guid? statusId, Guid? exerciceId)
         {
-            IEnumerable<SalesInvoice> invoices = Enumerable.Empty<SalesInvoice>();
+            IEnumerable<SalesInvoice> invoices;
             if (exerciceId.HasValue)
                 invoices = _service.GetByExercise(exerciceId.Value);
             else if (customerId.HasValue)
