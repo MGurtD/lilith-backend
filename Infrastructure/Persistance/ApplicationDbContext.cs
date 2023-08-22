@@ -1,6 +1,6 @@
 ﻿using Application.Contracts.Purchase;
+using Application.Contracts.Sales;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection.Emit;
 
 namespace Infrastructure.Persistance
 {
@@ -27,6 +27,11 @@ namespace Infrastructure.Persistance
             builder
                 .Entity<ConsolidatedExpense>()
                 .ToView("vw_consolidatedExpenses")
+                .HasNoKey();
+
+            builder
+                .Entity<SalesOrderDetail>()
+                .ToView("vw_invoiceableOrderDetails")
                 .HasNoKey();
 
             builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);

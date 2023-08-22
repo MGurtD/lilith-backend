@@ -60,6 +60,13 @@ namespace Api.Controllers.Sales
             else return BadRequest();
         }
 
+        [HttpGet("InvoiceableOrderDetails")]
+        public IActionResult GetInvoiceableOrderDetails(DateTime startTime, DateTime endTime, Guid customerId)
+        {
+            var entities = _unitOfWork.SalesOrderDetailForInvoices.Find(d => d.SalesOrderDate >= startTime && d.SalesOrderDate <= endTime && d.CustomerId == customerId);
+            return Ok(entities);
+        }
+
         [HttpPut("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

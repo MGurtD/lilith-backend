@@ -185,7 +185,7 @@ namespace Api.Services
         #endregion
 
         #region Details
-        public async Task<GenericResponse> AddDetailsFromOrderDetails(SalesInvoice invoice, IEnumerable<SalesOrderDetail> salesOrderDetails)
+        public async Task<GenericResponse> AddDetailsFromOrderDetails(SalesInvoice invoice, IEnumerable<Domain.Entities.Sales.SalesOrderDetail> salesOrderDetails)
         {
             var salesInvoiceDetails = new List<SalesInvoiceDetail>();
             foreach (var salesOrderDetail in salesOrderDetails)

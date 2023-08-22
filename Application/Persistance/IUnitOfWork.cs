@@ -43,6 +43,7 @@ namespace Application.Persistance
         ISalesOrderHeaderRepository SalesOrderHeaders { get; }
         ISalesOrderDetailRepository SalesOrderDetails { get; }
         ISalesInvoiceRepository SalesInvoices { get; }
+        IContractReader<Contracts.Sales.SalesOrderDetail> SalesOrderDetailForInvoices { get; }
 
         // Production
         IRepository<Enterprise, Guid> Enterprises { get; }

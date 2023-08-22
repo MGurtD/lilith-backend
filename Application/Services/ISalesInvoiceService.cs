@@ -19,7 +19,7 @@ namespace Application.Services
         Task<GenericResponse> Update(SalesInvoice SalesInvoice);
         Task<GenericResponse> Remove(Guid id);
 
-        Task<GenericResponse> AddDetailsFromOrderDetails(SalesInvoice salesInvoice, IEnumerable<SalesOrderDetail> salesOrderDetails);
+        Task<GenericResponse> AddDetailsFromOrderDetails(SalesInvoice salesInvoice, IEnumerable<Domain.Entities.Sales.SalesOrderDetail> salesOrderDetails);
         Task<GenericResponse> AddDetail(SalesInvoiceDetail detail);
         Task<GenericResponse> UpdateDetail(SalesInvoiceDetail detail);
         Task<GenericResponse> RemoveDetail(Guid id);

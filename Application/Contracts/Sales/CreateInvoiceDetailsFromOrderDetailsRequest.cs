@@ -8,6 +8,6 @@ namespace Application.Contracts.Sales
         [Required]
         public Guid InvoiceId { get; set; }
         [Required]
-        public IEnumerable<SalesOrderDetail> OrderDetails { get; set; } = Enumerable.Empty<SalesOrderDetail>();
+        public IEnumerable<Domain.Entities.Sales.SalesOrderDetail> OrderDetails { get; set; } = Enumerable.Empty<Domain.Entities.Sales.SalesOrderDetail>();
     }
 }
