@@ -24,6 +24,15 @@ namespace Api.Controllers.Sales
             else { return Ok(salesOrder); }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetSalesOrders(DateTime startTime, DateTime endTime)
+        {
+            IEnumerable<SalesOrderHeader> salesOrderHeaders = new List<SalesOrderHeader>();
+            salesOrderHeaders = _service.GetBetweenDates(startTime, endTime);
+            if (salesOrderHeaders != null) return Ok(salesOrderHeaders.OrderBy(e => e.SalesOrderNumber));
+            else return BadRequest();
+        }
+
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
