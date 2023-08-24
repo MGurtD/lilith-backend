@@ -19,11 +19,13 @@ namespace Api.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IDueDateService _dueDateService;
+        private readonly ISalesOrderService _salesOrderService;
 
-        public SalesInvoiceService(IUnitOfWork unitOfWork, IDueDateService dueDateService)
+        public SalesInvoiceService(IUnitOfWork unitOfWork, IDueDateService dueDateService, ISalesOrderService salesOrderService)
         {
             _unitOfWork = unitOfWork;
             _dueDateService = dueDateService;
+            _salesOrderService = salesOrderService;
         }
 
         public async Task<GenericResponse> Create(CreateInvoiceRequest createInvoiceRequest)
@@ -194,14 +196,20 @@ namespace Api.Services
                 {
                     SalesInvoiceId = invoice.Id
                 };
+                var reference = await _unitOfWork.References.Get(salesOrderDetail.ReferenceId);
+                if (reference != null) salesInvoiceDetail.TaxId = reference.TaxId;
                 salesInvoiceDetail.SetOrderDetail(salesOrderDetail);
                 salesInvoiceDetails.Add(salesInvoiceDetail);
+
+                invoice.SalesInvoiceDetails.Add(salesInvoiceDetail);
+
+                salesOrderDetail.IsInvoiced = true;
+                await _salesOrderService.UpdateDetail(salesOrderDetail);
             }
 
             await _unitOfWork.SalesInvoices.InvoiceDetails.AddRange(salesInvoiceDetails);
 
             // TODO : Actualizar salesOrderDetails.IsInvoiced + Actualizar estat de la comanda (Programar-ho al servei de comandes)
-
             return await UpdateImportsAndHeaderAmounts(invoice);
         }
 
@@ -235,7 +243,16 @@ namespace Api.Services
             var invoice = await _unitOfWork.SalesInvoices.Get(detail.SalesInvoiceId);
             if (invoice == null) return new GenericResponse(false, new List<string>() { $"La factura amb ID {detail.SalesInvoiceId} no existeix" });
 
+            if (detail.SalesOrderDetailId != null)
+            {
+                var orderDetail = await _salesOrderService.GetDetailById(detail.SalesOrderDetailId.Value);
+                if (orderDetail == null) return new GenericResponse(false, new List<string>() { $"El detall de comanda amb ID {detail.SalesOrderDetailId} no existeix" });
+                orderDetail.IsInvoiced = false;
+                await _salesOrderService.UpdateDetail(orderDetail);
+            }
             await _unitOfWork.SalesInvoices.InvoiceDetails.Remove(detail);
+            var memoryDetail = invoice.SalesInvoiceDetails.First(d => d.Id == detail.Id);
+            invoice.SalesInvoiceDetails.Remove(memoryDetail);
 
             // Generar imports i actualizar imports de la capçalera
             return await UpdateImportsAndHeaderAmounts(invoice);

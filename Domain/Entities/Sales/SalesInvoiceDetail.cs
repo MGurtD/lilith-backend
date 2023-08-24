@@ -24,8 +24,8 @@
             Description = salesOrderDetail.Description;
             Quantity = salesOrderDetail.Quantity;
             UnitCost = salesOrderDetail.UnitCost;
-            UnitPrice = salesOrderDetail.UnitPrice;
-            TotalCost = salesOrderDetail.TotalCost;
+            UnitPrice = salesOrderDetail.UnitPrice == 0 ? salesOrderDetail.UnitCost : salesOrderDetail.UnitPrice;
+            TotalCost = UnitCost * UnitPrice;
             Amount = salesOrderDetail.Amount;
 
             if (salesOrderDetail.Reference != null)
