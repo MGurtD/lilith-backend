@@ -98,12 +98,12 @@ namespace Api.Services
         }
         public async Task<GenericResponse> RemoveDetail(Guid id)
         {
-            var orderDetail = await _unitOfWork.SalesOrderDetails.Get(id);
-            if (orderDetail == null) return new GenericResponse(false, new List<string>() { $"La línia de comanda amb ID '{id}' no existeix" });
-            await _unitOfWork.SalesOrderHeaders.RemoveDetail(orderDetail.Id);
+            var detail = _unitOfWork.SalesOrderDetails.Find(d => d.Id == id).FirstOrDefault();
+            if (detail == null) return new GenericResponse(false, new List<string> { $"El detall de comanda amb ID {id} no existeix" });
+            var deleted = await _unitOfWork.SalesOrderHeaders.RemoveDetail(detail);
 
-            await RecalculateOrderStatus(orderDetail.SalesOrderHeaderId);
-            return new GenericResponse(true, new List<string> { });
+            await RecalculateOrderStatus(detail!.SalesOrderHeaderId);
+            return new GenericResponse(true, detail);
         }
 
         private async Task<GenericResponse> RecalculateOrderStatus(Guid orderId)

@@ -1,11 +1,7 @@
 ﻿using Application.Persistance.Repositories.Sales;
 using Domain.Entities.Sales;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Linq.Expressions;
 
 namespace Infrastructure.Persistance.Repositories.Sales
 {
@@ -18,8 +14,19 @@ namespace Infrastructure.Persistance.Repositories.Sales
         }
         public override async Task<SalesOrderHeader?> Get(Guid id)
         {
-            return await dbSet.Include(s => s.SalesOrderDetails).AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
+            return await dbSet.Include(s => s.SalesOrderDetails)
+                                .AsNoTracking()
+                                .FirstOrDefaultAsync(e => e.Id == id);
         }
+        public override IEnumerable<SalesOrderHeader> Find(Expression<Func<SalesOrderHeader, bool>> predicate)
+        {
+            return dbSet
+                .AsNoTracking()                
+                .Include(d => d.SalesOrderDetails)
+                .Where(predicate)
+                .OrderBy(s => s.SalesOrderNumber);
+        }
+
         public SalesOrderDetail? GetDetailById(Guid id)
         {
             var salesOrderDetail = _salesOrderDetailRepository.Find(c => c.Id == id).FirstOrDefault();
@@ -33,15 +40,10 @@ namespace Infrastructure.Persistance.Repositories.Sales
         {
             await _salesOrderDetailRepository.Update(detail);
         }
-        public async Task RemoveDetail(Guid id)
-        {
-            var detail = _salesOrderDetailRepository.Find(d => d.Id == id).FirstOrDefault();
-            if(detail != null)
-            {
-                await _salesOrderDetailRepository.Remove(detail);
-               
-            }
-            
+        public async Task<bool> RemoveDetail(SalesOrderDetail detail)
+        {   
+            await _salesOrderDetailRepository.Remove(detail);
+            return true;            
             
         }
     }
