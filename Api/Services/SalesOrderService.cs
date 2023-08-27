@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.Contracts.Sales;
 using Application.Persistance;
 using Application.Services;
 using Domain.Entities.Sales;
@@ -31,28 +32,44 @@ namespace Api.Services
             return invoices;
         }
 
-        public async Task<GenericResponse> Create(SalesOrderHeader salesOrderHeader)
+        public async Task<GenericResponse> Create(CreateOrderOrInvoiceRequest createRequest)
         {
-            if (salesOrderHeader == null )
-            {
-                return new GenericResponse(false, new List<string> { $"Comanda invalida" });
-            }
-            if (!salesOrderHeader.ExerciseId.HasValue)
-            {
-                return new GenericResponse(false, new List<string> { $"Exercici invàlid" });
+            var response = await ValidateCreateInvoiceRequest(createRequest);
+            if (!response.Result) return response;
 
-            }
+            var invoiceEntities = (InvoiceEntities)response.Content!;
+            var order = new SalesOrderHeader
+            {
+                Id = createRequest.Id,
+                SalesOrderNumber = invoiceEntities.Exercise.SalesOrderCounter + 1,
+                SalesOrderDate = createRequest.Date
+            };
 
-            var exerciseId = salesOrderHeader.ExerciseId.Value;
-            var exercise = _unitOfWork.Exercices.Find(e => e.Id == exerciseId).FirstOrDefault();
-            salesOrderHeader.SalesOrderNumber = exercise.SalesOrderCounter;
-            await _unitOfWork.SalesOrderHeaders.Add(salesOrderHeader);
+            // Estat inicial
+            if (createRequest.InitialStatusId.HasValue)
+            {
+                order.StatusId = createRequest.InitialStatusId;
+            } else
+            {
+                var lifecycle = _unitOfWork.Lifecycles.Find(l => l.Name == "SalesOrder").FirstOrDefault();
+                if (lifecycle == null)
+                    return new GenericResponse(false, new List<string>() { "El cicle de vida 'SalesOrder' no existeix" });
+                if (!lifecycle.InitialStatusId.HasValue)
+                    return new GenericResponse(false, new List<string>() { "El cicle de vida 'SalesOrder' no té estat inicial" });
+                order.StatusId = lifecycle.InitialStatusId;
+            }            
+
+            order.ExerciseId = invoiceEntities.Exercise.Id;
+            order.SetCustomer(invoiceEntities.Customer);
+            order.SetSite(invoiceEntities.Site);
+
+            await _unitOfWork.SalesOrderHeaders.Add(order);
 
             // Incrementar el comptador de comandes de l'exercici
-            exercise.SalesOrderCounter += 1;
-            await _unitOfWork.Exercices.Update(exercise);
+            invoiceEntities.Exercise.SalesOrderCounter += 1;
+            await _unitOfWork.Exercices.Update(invoiceEntities.Exercise);
 
-            return new GenericResponse(true, new List<string> { });
+            return new GenericResponse(true, order);
         }
 
         public async Task<GenericResponse> Update(SalesOrderHeader salesOrderHeader)
@@ -139,11 +156,37 @@ namespace Api.Services
                     order.StatusId = lifecycle.Statuses!.First(s => s.Name == "Comanda Parcialment Servida").Id;
                 }
 
+                order.SalesOrderDetails.Clear();
                 if (initialStatusId != order.StatusId)
                     await _unitOfWork.SalesOrderHeaders.Update(order);
             }            
 
             return new GenericResponse(true, order);
+        }
+
+        private async Task<GenericResponse> ValidateCreateInvoiceRequest(CreateOrderOrInvoiceRequest createInvoiceRequest)
+        {
+            var exercise = await _unitOfWork.Exercices.Get(createInvoiceRequest.ExerciseId);
+            if (exercise == null) return new GenericResponse(false, new List<string>() { "L'exercici no existex" });
+
+            var customer = await _unitOfWork.Customers.Get(createInvoiceRequest.CustomerId);
+            if (customer == null) return new GenericResponse(false, new List<string>() { "El client no existeix" });
+            if (!customer.IsValidForSales())
+                return new GenericResponse(false, new List<string>() { "El client no és válid per a crear una factura. Revisa el nom fiscal, el número de compte i el NIF" });
+            if (customer.MainAddress() == null)
+                return new GenericResponse(false, new List<string>() { "El client no té direccions donades d'alta. Si us plau, creí una direcció." });
+
+            var site = _unitOfWork.Sites.Find(s => s.Name == "Local Torelló").FirstOrDefault();
+            if (site == null)
+                return new GenericResponse(false, new List<string>() { "La seu 'Temges' no existeix" });
+            if (!site.IsValidForSales())
+                return new GenericResponse(false, new List<string>() { "Seu 'Temges' no és válida per crear una factura. Revisi les dades de facturació." });
+
+            InvoiceEntities invoiceEntities;
+            invoiceEntities.Exercise = exercise;
+            invoiceEntities.Customer = customer;
+            invoiceEntities.Site = site;
+            return new GenericResponse(true, invoiceEntities);
         }
     }
 }
