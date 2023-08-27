@@ -9,6 +9,7 @@ using Domain.Entities.Auth;
 using Domain.Entities.Production;
 using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
+using Domain.Entities.Shared;
 using Infrastructure.Persistance.Repositories;
 using Infrastructure.Persistance.Repositories.Production;
 using Infrastructure.Persistance.Repositories.Purchase;
@@ -27,6 +28,7 @@ namespace Infrastructure.Persistance
 
         // Shared
         public IRepository<Domain.Entities.File, Guid> Files { get; private set; }
+        public IRepository<Parameter, Guid> Parameters { get; private set; }
         public IRepository<Exercise, Guid> Exercices { get; private set; }
         public IRepository<Tax, Guid> Taxes { get; private set; }
         public IRepository<PaymentMethod, Guid> PaymentMethods { get; private set; }
@@ -69,7 +71,8 @@ namespace Infrastructure.Persistance
             Users = new Repository<User, Guid>(context);
             UserRefreshTokens = new Repository<UserRefreshToken, Guid>(context);
 
-            Files = new Repository<Domain.Entities.File, Guid>(context);            
+            Files = new Repository<Domain.Entities.File, Guid>(context);    
+            Parameters = new Repository<Parameter, Guid>(context);
             PaymentMethods = new Repository<PaymentMethod, Guid>(context);
             Taxes = new Repository<Tax, Guid>(context);
             Exercices = new Repository<Exercise, Guid>(context);

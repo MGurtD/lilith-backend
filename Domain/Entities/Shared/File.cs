@@ -15,6 +15,7 @@
         Document,
         Image,
         Video,
-        Sound
+        Sound,
+        Report
     }
 }
