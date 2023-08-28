@@ -74,10 +74,10 @@ namespace Api.Services
 
         public async Task<GenericResponse> Update(SalesOrderHeader salesOrderHeader)
         {            
-            salesOrderHeader.SalesOrderDetails = null;
+            salesOrderHeader.SalesOrderDetails.Clear();
 
             await _unitOfWork.SalesOrderHeaders.Update(salesOrderHeader);
-            return new GenericResponse(true, new List<string> { });
+            return new GenericResponse(true);
         }
 
         public async Task<GenericResponse> Remove(Guid id)
