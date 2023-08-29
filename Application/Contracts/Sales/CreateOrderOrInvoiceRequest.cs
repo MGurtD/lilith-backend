@@ -2,15 +2,16 @@
 
 namespace Application.Contracts.Sales
 {
-    public class CreateInvoiceRequest
+    public class CreateOrderOrInvoiceRequest
     {
         [Required]
         public Guid Id { get; set; }
         [Required]
-        public DateTime InvoiceDate { get; set; }
+        public DateTime Date { get; set; }
         [Required]
         public Guid ExerciseId { get; set;}
         [Required]
         public Guid CustomerId { get; set; }
+        public Guid? InitialStatusId { get; set; }
     }
 }

@@ -1,9 +1,9 @@
-﻿using Application.Services;
-using Domain.Entities.Purchase;
+﻿using Application.Contracts.Sales;
+using Application.Services;
 using Domain.Entities.Sales;
-using Infrastructure.Migrations;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using SalesOrderDetail = Domain.Entities.Sales.SalesOrderDetail;
 
 namespace Api.Controllers.Sales
 {
@@ -46,12 +46,12 @@ namespace Api.Controllers.Sales
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create(SalesOrderHeader salesOrder)
+        public async Task<IActionResult> Create(CreateOrderOrInvoiceRequest salesOrder)
         {
             var response = await _service.Create(salesOrder);
 
             if (response.Result)
-                return Ok();
+                return Ok(response.Content);
             else
                 return BadRequest(response.Errors);
         }

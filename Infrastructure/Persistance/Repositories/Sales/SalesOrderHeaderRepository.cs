@@ -1,13 +1,7 @@
 ﻿using Application.Persistance.Repositories.Sales;
-using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.Repositories.Sales
 {
@@ -46,16 +40,10 @@ namespace Infrastructure.Persistance.Repositories.Sales
         {
             await _salesOrderDetailRepository.Update(detail);
         }
-        public async Task<bool> RemoveDetail(Guid id)
-        {
-            var detail = _salesOrderDetailRepository.Find(d => d.Id == id).FirstOrDefault();
-            if(detail != null)
-            {
-                await _salesOrderDetailRepository.Remove(detail);
-                return true;
-            }
-            return false;
-            
+        public async Task<bool> RemoveDetail(SalesOrderDetail detail)
+        {   
+            await _salesOrderDetailRepository.Remove(detail);
+            return true;            
             
         }
     }

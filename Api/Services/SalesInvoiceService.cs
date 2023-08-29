@@ -28,7 +28,7 @@ namespace Api.Services
             _salesOrderService = salesOrderService;
         }
 
-        public async Task<GenericResponse> Create(CreateInvoiceRequest createInvoiceRequest)
+        public async Task<GenericResponse> Create(CreateOrderOrInvoiceRequest createInvoiceRequest)
         {
             var response = await ValidateCreateInvoiceRequest(createInvoiceRequest);
             if (!response.Result) return response;
@@ -38,7 +38,7 @@ namespace Api.Services
             {
                 Id = createInvoiceRequest.Id,
                 InvoiceNumber = invoiceEntities.Exercise.SalesInvoiceCounter + 1,
-                InvoiceDate = createInvoiceRequest.InvoiceDate
+                InvoiceDate = createInvoiceRequest.Date
             };
 
             var lifecycle = _unitOfWork.Lifecycles.Find(l => l.Name == "SalesInvoice").FirstOrDefault();
@@ -61,7 +61,7 @@ namespace Api.Services
             return new GenericResponse(true, invoice);
         }
 
-        private async Task<GenericResponse> ValidateCreateInvoiceRequest(CreateInvoiceRequest createInvoiceRequest)
+        private async Task<GenericResponse> ValidateCreateInvoiceRequest(CreateOrderOrInvoiceRequest createInvoiceRequest)
         {
             var exercise = await _unitOfWork.Exercices.Get(createInvoiceRequest.ExerciseId);
             if (exercise == null) return new GenericResponse(false, new List<string>() { "L'exercici no existex" });
@@ -190,21 +190,21 @@ namespace Api.Services
         public async Task<GenericResponse> AddDetailsFromOrderDetails(SalesInvoice invoice, IEnumerable<Domain.Entities.Sales.SalesOrderDetail> salesOrderDetails)
         {
             var salesInvoiceDetails = new List<SalesInvoiceDetail>();
-            foreach (var salesOrderDetail in salesOrderDetails)
+            foreach (var salesOrderDetail in salesOrderDetails.ToList())
             {
+                // Marcar detall de la comanda com a part d'una factura
+                await _salesOrderService.UpdateDetail(salesOrderDetail);
+
                 var salesInvoiceDetail = new SalesInvoiceDetail()
                 {
                     SalesInvoiceId = invoice.Id
                 };
                 var reference = await _unitOfWork.References.Get(salesOrderDetail.ReferenceId);
-                if (reference != null) salesInvoiceDetail.TaxId = reference.TaxId;
+                if (reference != null) salesInvoiceDetail.TaxId = reference.TaxId;                
+
                 salesInvoiceDetail.SetOrderDetail(salesOrderDetail);
                 salesInvoiceDetails.Add(salesInvoiceDetail);
-
                 invoice.SalesInvoiceDetails.Add(salesInvoiceDetail);
-
-                salesOrderDetail.IsInvoiced = true;
-                await _salesOrderService.UpdateDetail(salesOrderDetail);
             }
 
             await _unitOfWork.SalesInvoices.InvoiceDetails.AddRange(salesInvoiceDetails);
