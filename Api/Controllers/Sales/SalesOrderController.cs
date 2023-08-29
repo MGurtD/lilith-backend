@@ -28,10 +28,17 @@ namespace Api.Controllers.Sales
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetSalesOrders(DateTime startTime, DateTime endTime)
+        public async Task<IActionResult> GetSalesOrders(DateTime startTime, DateTime endTime, Guid? customerId)
         {
             IEnumerable<SalesOrderHeader> salesOrderHeaders = new List<SalesOrderHeader>();
-            salesOrderHeaders = _service.GetBetweenDates(startTime, endTime);
+            if (customerId.HasValue)
+            {
+                salesOrderHeaders = _service.GetBetweenDatesAndCustomer(startTime, endTime, customerId.Value);
+            }
+            else
+            {
+                salesOrderHeaders = _service.GetBetweenDates(startTime, endTime);
+            }            
             if (salesOrderHeaders != null) return Ok(salesOrderHeaders.OrderBy(e => e.SalesOrderNumber));
             else return BadRequest();
         }
