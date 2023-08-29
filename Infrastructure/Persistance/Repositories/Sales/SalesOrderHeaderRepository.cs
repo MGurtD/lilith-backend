@@ -32,6 +32,7 @@ namespace Infrastructure.Persistance.Repositories.Sales
             var salesOrderDetail = _salesOrderDetailRepository.Find(c => c.Id == id).FirstOrDefault();
             return salesOrderDetail;
         }
+        
         public async Task AddDetail(SalesOrderDetail detail)
         {
             await _salesOrderDetailRepository.Add(detail);
