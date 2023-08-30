@@ -53,7 +53,7 @@ namespace Api.Controllers.Sales
             if (response.Result)
                 return Ok(response.Content);
             else
-                return BadRequest(response.Errors);
+                return BadRequest(response);
         }
 
         [HttpPut("{id:guid}")]
