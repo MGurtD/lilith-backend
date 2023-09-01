@@ -26,20 +26,27 @@ namespace Api.Services
             for (var i = 0; i < paymentMethod.NumberOfPayments; i++)
             {
                 var dueDateAmount = netAmount / paymentMethod.NumberOfPayments;
-                var dueDate = date.AddDays(paymentMethod.Frequency > 0 ? paymentMethod.Frequency : paymentMethod.DueDays);
+                date = date.AddDays(paymentMethod.Frequency > 0 ? paymentMethod.Frequency : paymentMethod.DueDays);
 
-                if (paymentMethod.PaymentDay > 0 && dueDate.Month > date.Month)
+                if (paymentMethod.PaymentDay > 0)
                 {
-                    // Al passar-nos al dia de pagament, ens anem al mes següent
-                    dueDate = new DateTime(dueDate.Month == 12 ? dueDate.Year + 1 : dueDate.Year,
-                                           dueDate.Month == 12 ? 1 : dueDate.Month + 1,
-                                           paymentMethod.PaymentDay);
+                    if (paymentMethod.PaymentDay >= date.Day)
+                    {
+                        // Mentre no ens passem el día de pagament, ens quedem al mateix mes associant el dia de pagament
+                        date = new DateTime(date.Year, date.Month, paymentMethod.PaymentDay);
+                    } else
+                    {
+                        // Al passar-nos al dia de pagament, ens anem al mes següent
+                        date = new DateTime(date.Month == 12 ? date.Year + 1 : date.Year,
+                                            date.Month == 12 ? 1 : date.Month + 1,
+                                            paymentMethod.PaymentDay);
+                    }                    
                 }
 
                 var due = new DueDate()
                 {
                     Amount = decimal.Round(dueDateAmount, 2),
-                    Date = dueDate,
+                    Date = date,
                 };
                 dueDates.Add(due);
             }

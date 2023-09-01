@@ -75,25 +75,22 @@ namespace Application.Services
 
         public async Task<GenericResponse> Update(PurchaseInvoice purchaseInvoice)
         {
-            purchaseInvoice.PurchaseInvoiceDueDates = null;
-
+            await RecreateDueDates(purchaseInvoice);
+            purchaseInvoice.PurchaseInvoiceDueDates!.Clear();
+            purchaseInvoice.PurchaseInvoiceImports!.Clear();
             await _unitOfWork.PurchaseInvoices.Update(purchaseInvoice);
+            
             return new GenericResponse(true, new List<string> { });
         }
 
         public async Task<GenericResponse> RecreateDueDates(PurchaseInvoice requestInvoice)
         {
-            var dbInvoice = await _unitOfWork.PurchaseInvoices.Get(requestInvoice.Id);
-            if (dbInvoice != null && dbInvoice.PurchaseInvoiceDueDates != null && dbInvoice.PurchaseInvoiceDueDates.Count > 0)
-            {
-                await _unitOfWork.PurchaseInvoiceDueDates.RemoveRange(dbInvoice.PurchaseInvoiceDueDates);
-            }
+            var dbDueDates = _unitOfWork.PurchaseInvoiceDueDates.Find(dd => dd.PurchaseInvoiceId == requestInvoice.Id);
+            if (dbDueDates.Any())
+                await _unitOfWork.PurchaseInvoiceDueDates.RemoveRange(dbDueDates);
 
             if (requestInvoice.PurchaseInvoiceDueDates != null)
-            {
-                foreach (var purchaseInvoiceDueDate in requestInvoice.PurchaseInvoiceDueDates)
-                    await _unitOfWork.PurchaseInvoiceDueDates.Add(purchaseInvoiceDueDate);
-            }
+               await _unitOfWork.PurchaseInvoiceDueDates.AddRange(requestInvoice.PurchaseInvoiceDueDates);
 
             return new GenericResponse(true, new List<string> { });
         }

@@ -64,13 +64,13 @@ namespace Api.Controllers.Purchase
                 return NotFound($"El métode de pagament amb ID {invoice.PaymentMethodId} no existeix o está desactivat");
             }
 
-            var invoiceDueDates = new List<SalesInvoiceDueDate>();
+            var invoiceDueDates = new List<PurchaseInvoiceDueDate>();
             _dueDateService.GenerateDueDates(paymentMethod, invoice.PurchaseInvoiceDate, invoice.NetAmount)
-                .ForEach(dueDate => invoiceDueDates.Add(new SalesInvoiceDueDate()
+                .ForEach(dueDate => invoiceDueDates.Add(new PurchaseInvoiceDueDate()
                 {
                     DueDate = dueDate.Date,
                     Amount = dueDate.Amount,
-                    SalesInvoiceId = invoice.Id
+                    PurchaseInvoiceId = invoice.Id
                 }));
             return Ok(invoiceDueDates);
         }
