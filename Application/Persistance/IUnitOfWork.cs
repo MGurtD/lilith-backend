@@ -9,6 +9,7 @@ using Domain.Entities.Production;
 using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
 using Domain.Entities.Shared;
+using Domain.Entities.Warehouse;
 
 namespace Application.Persistance
 {
@@ -35,7 +36,7 @@ namespace Application.Persistance
         IRepository<PurchaseInvoiceDueDate, Guid> PurchaseInvoiceDueDates { get; }
         IRepository<PurchaseInvoiceSerie, Guid> PurchaseInvoiceSeries { get; }
         IRepository<ExpenseType, Guid> ExpenseTypes { get; }
-        IRepository<Expenses, Guid> Expenses { get; }
+        IExpenseRepository Expenses { get; }
         IContractReader<ConsolidatedExpense> ConsolidatedExpenses { get; }
 
         // Sales
@@ -53,6 +54,16 @@ namespace Application.Persistance
         IRepository<Area, Guid> Areas { get; }
         IRepository<WorkcenterType, Guid> WorkcenterTypes { get; }
         IWorkcenterRepository Workcenters { get; }
+        IRepository<WorkCenterCost, Guid> WorkcenterCosts { get; }
+        IRepository<Operator, Guid> Operators { get;  }
+        IRepository<OperatorType, Guid> OperatorTypes { get; }
+        IRepository<OperatorCost, Guid> OperatorCosts { get; }
+        IRepository<MachineStatus, Guid> MachineStatuses { get; }
+        IRepository<Shift, Guid> Shifts { get; }
+
+        //Warehouse
+        IRepository<Warehouse, Guid> Warehouses { get; }
+        IRepository<RawMaterialType, Guid> RawMaterialTypes { get; }
 
         Task<int> CompleteAsync();
     }

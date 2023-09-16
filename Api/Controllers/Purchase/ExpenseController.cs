@@ -51,6 +51,13 @@ namespace Api.Controllers.Purchase
             var entities = await _unitOfWork.Expenses.GetAll();
             return Ok(entities.OrderBy(e => e.PaymentDay));
         }
+        [Route("ExpenseType/{id:guid}")]
+        [HttpGet]        
+        public async Task<IActionResult> GetByType(Guid id)
+        {
+            var expenses =  _unitOfWork.Expenses.Find(p => p.ExpenseTypeId == id);
+            return Ok(expenses);
+        }
 
         [HttpGet]
         [Route("Consolidated")]

@@ -7,6 +7,7 @@ namespace Application.Persistance.Repositories
     {
         Task<TEntity?> Get(TId id);
         Task<IEnumerable<TEntity>> GetAll();
+        
         IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate);
         Task<bool> Exists(Guid id);
 

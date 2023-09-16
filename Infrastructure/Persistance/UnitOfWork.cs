@@ -10,6 +10,7 @@ using Domain.Entities.Production;
 using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
 using Domain.Entities.Shared;
+using Domain.Entities.Warehouse;
 using Infrastructure.Persistance.Repositories;
 using Infrastructure.Persistance.Repositories.Production;
 using Infrastructure.Persistance.Repositories.Purchase;
@@ -42,7 +43,7 @@ namespace Infrastructure.Persistance
         public IRepository<PurchaseInvoiceDueDate, Guid> PurchaseInvoiceDueDates { get; private set; }
         public IRepository<PurchaseInvoiceSerie, Guid> PurchaseInvoiceSeries { get; private set; }
         public IRepository<ExpenseType, Guid> ExpenseTypes { get; private set; }
-        public IRepository<Expenses, Guid> Expenses { get; private set; }
+        public IExpenseRepository Expenses { get; private set; }
         public IContractReader<ConsolidatedExpense> ConsolidatedExpenses { get; private set; }
         
 
@@ -61,8 +62,16 @@ namespace Infrastructure.Persistance
         public IRepository<Area, Guid> Areas { get; private set; }
         public IRepository<WorkcenterType, Guid> WorkcenterTypes { get; private set; }
         public IWorkcenterRepository Workcenters { get; private set; }
+        public IRepository<WorkCenterCost, Guid> WorkcenterCosts { get; private set; }
+        public IRepository<Operator, Guid> Operators { get; private set; }
+        public IRepository<OperatorType, Guid> OperatorTypes { get; private set; }
+        public IRepository<OperatorCost, Guid> OperatorCosts { get; private set; }
+        public IRepository<MachineStatus, Guid> MachineStatuses { get; private set; }
+        public IRepository<Shift, Guid> Shifts { get; private set; }
 
 
+        public IRepository<Warehouse, Guid> Warehouses { get; private set; }
+        public IRepository<RawMaterialType, Guid> RawMaterialTypes { get; private set; }
         public UnitOfWork(ApplicationDbContext context)
         {
             this.context = context;
@@ -84,7 +93,7 @@ namespace Infrastructure.Persistance
             PurchaseInvoiceDueDates = new Repository<PurchaseInvoiceDueDate, Guid>(context);
             PurchaseInvoiceSeries = new Repository<PurchaseInvoiceSerie, Guid>(context);
             ExpenseTypes = new Repository<ExpenseType, Guid>(context);
-            Expenses = new Repository<Expenses, Guid>(context);
+            Expenses = new ExpenseRepository(context);
             ConsolidatedExpenses = new ContractReader<ConsolidatedExpense>(context);
 
             CustomerTypes = new Repository<CustomerType, Guid>(context);
@@ -101,6 +110,15 @@ namespace Infrastructure.Persistance
             Areas = new Repository<Area, Guid>(context);
             WorkcenterTypes = new Repository<WorkcenterType, Guid>(context);
             Workcenters = new WorkcenterRepository(context);
+            WorkcenterCosts = new Repository<WorkCenterCost, Guid>(context);
+            Operators = new Repository<Operator, Guid>(context);
+            OperatorTypes = new Repository<OperatorType, Guid>(context);
+            OperatorCosts = new Repository<OperatorCost, Guid>(context);
+            MachineStatuses = new Repository<MachineStatus, Guid>(context);
+            Shifts = new Repository<Shift, Guid>(context);
+
+            Warehouses = new Repository<Warehouse, Guid>(context);
+            RawMaterialTypes = new Repository<RawMaterialType, Guid>(context);
         }
 
         public async Task<int> CompleteAsync()

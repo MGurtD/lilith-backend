@@ -13,6 +13,7 @@
         public string RelatedExpenseId { get; set; } = string.Empty;
         public Guid ExpenseTypeId { get; set; }
 
+        public ExpenseType? ExpenseType { get; set; }
 
 
     }

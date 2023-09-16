@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230913174056_ProductionEntities")]
+    partial class ProductionEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -508,15 +510,13 @@ namespace Infrastructure.Migrations
                         .HasDefaultValueSql("NOW()");
 
                     b.HasKey("Id")
-                        .HasName("PK_Warehouse");
+                        .HasName("PK_Area");
 
                     b.HasIndex("SiteId");
 
                     b.HasIndex(new[] { "Name" }, "UK_Area_Name");
 
-                    b.HasIndex(new[] { "Name" }, "UK_Warehouse_Name");
-
-                    b.ToTable("Warehouses", (string)null);
+                    b.ToTable("Areas", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Production.Enterprise", b =>
@@ -2553,44 +2553,6 @@ namespace Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Taxes", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.Warehouse.RawMaterialType", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.HasKey("Id")
-                        .HasName("PK_RawMaterialType");
-
-                    b.HasIndex(new[] { "Name" }, "UK_RawMaterialType_Name");
-
-                    b.ToTable("RawMaterialTypes", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Auth.User", b =>
