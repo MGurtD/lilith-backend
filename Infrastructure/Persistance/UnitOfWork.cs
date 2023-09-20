@@ -69,9 +69,10 @@ namespace Infrastructure.Persistance
         public IRepository<MachineStatus, Guid> MachineStatuses { get; private set; }
         public IRepository<Shift, Guid> Shifts { get; private set; }
 
-
+        // Warehouse
         public IRepository<Warehouse, Guid> Warehouses { get; private set; }
         public IRepository<RawMaterialType, Guid> RawMaterialTypes { get; private set; }
+
         public UnitOfWork(ApplicationDbContext context)
         {
             this.context = context;

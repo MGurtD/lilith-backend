@@ -1,9 +1,8 @@
 ﻿using Application.Persistance;
 using Domain.Entities.Warehouse;
-using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers.Production
+namespace Api.Controllers.Warehouse
 {
     [ApiController]
     [Route("api/[controller]")]

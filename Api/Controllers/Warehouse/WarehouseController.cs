@@ -3,7 +3,7 @@ using Domain.Entities.Warehouse;
 using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers.Production
+namespace Api.Controllers.Warehouse
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -17,7 +17,7 @@ namespace Api.Controllers.Production
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Warehouse request)
+        public async Task<IActionResult> Create(Domain.Entities.Warehouse.Warehouse request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
@@ -55,7 +55,7 @@ namespace Api.Controllers.Production
             }
         }
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid Id, Warehouse request)
+        public async Task<IActionResult> Update(Guid Id, Domain.Entities.Warehouse.Warehouse request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
