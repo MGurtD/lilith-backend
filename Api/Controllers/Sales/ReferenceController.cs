@@ -19,7 +19,7 @@ namespace Api.Controllers.Sales
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.References.Find(r => request.Code == r.Code).Any();
+            var exists = _unitOfWork.References.Find(r => request.Code == r.Code && request.Version == r.Version).Any();
             if (!exists)
             {
                 await _unitOfWork.References.Add(request);
