@@ -11,6 +11,7 @@ namespace Domain.Entities.Sales
 
         public Customer? Customer { get; set; }
         public Guid? CustomerId { get; set; }
+        public string CustomerSalesOrderNumber { get; set; } = string.Empty;
         public string CustomerCode { get; set; } = string.Empty;
         public string CustomerComercialName { get; set; } = string.Empty;
         public string CustomerTaxName { get; set; } = string.Empty; 

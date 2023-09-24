@@ -30,6 +30,11 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .HasMaxLength(10);
 
             builder
+                .Property(b => b.CustomerSalesOrderNumber)
+                .IsRequired()
+                .HasColumnType("varchar")
+                .HasMaxLength(50);
+            builder
                 .Property(b => b.CustomerComercialName)
                 .IsRequired()
                 .HasColumnType("varchar")
