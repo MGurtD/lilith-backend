@@ -23,7 +23,7 @@ namespace Infrastructure.Persistance.Repositories.Sales
         public override async Task<SalesInvoice?> Get(Guid id)
         {
             return await dbSet
-                        .Include(s => s.SalesInvoiceDetails)
+                        .Include("SalesInvoiceDetails.Reference")
                         .Include(s => s.SalesInvoiceImports)
                         .Include(s => s.SalesInvoiceDueDates)
                         .AsNoTracking()

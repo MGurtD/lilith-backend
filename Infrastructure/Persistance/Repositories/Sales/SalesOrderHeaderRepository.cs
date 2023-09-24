@@ -14,15 +14,16 @@ namespace Infrastructure.Persistance.Repositories.Sales
         }
         public override async Task<SalesOrderHeader?> Get(Guid id)
         {
-            return await dbSet.Include(s => s.SalesOrderDetails)
-                                .AsNoTracking()
-                                .FirstOrDefaultAsync(e => e.Id == id);
+            return await dbSet
+                    .Include("SalesOrderDetails.Reference")
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(e => e.Id == id);
         }
         public override IEnumerable<SalesOrderHeader> Find(Expression<Func<SalesOrderHeader, bool>> predicate)
         {
             return dbSet
                 .AsNoTracking()                
-                .Include(d => d.SalesOrderDetails)
+                .Include("SalesOrderDetails.Reference")
                 .Where(predicate)
                 .OrderBy(s => s.SalesOrderNumber);
         }
