@@ -1,4 +1,5 @@
-﻿using Application.Persistance;
+﻿using Application.Contracts.Purchase;
+using Application.Persistance;
 using Domain.Entities.Purchase;
 using Microsoft.AspNetCore.Mvc;
 
@@ -51,9 +52,10 @@ namespace Api.Controllers.Purchase
             var entities = await _unitOfWork.Expenses.GetAll();
             return Ok(entities.OrderBy(e => e.PaymentDay));
         }
+
         [Route("ExpenseType/{id:guid}")]
         [HttpGet]        
-        public async Task<IActionResult> GetByType(Guid id)
+        public IActionResult GetByType(Guid id)
         {
             var expenses =  _unitOfWork.Expenses.Find(p => p.ExpenseTypeId == id);
             return Ok(expenses);
@@ -61,9 +63,15 @@ namespace Api.Controllers.Purchase
 
         [HttpGet]
         [Route("Consolidated")]
-        public IActionResult GetAllConsolidation(DateTime startTime, DateTime endTime)
+        public IActionResult GetAllConsolidation(DateTime startTime, DateTime endTime, string? type = "", string? typeDetail = "")
         {
-            var entities = _unitOfWork.ConsolidatedExpenses.Find(c => c.PaymentDate >= startTime && c.PaymentDate <= endTime);
+            IEnumerable<ConsolidatedExpense> entities = Enumerable.Empty<ConsolidatedExpense>();
+            if (!string.IsNullOrWhiteSpace(type) && !string.IsNullOrWhiteSpace(typeDetail))
+                entities = _unitOfWork.ConsolidatedExpenses.Find(c => c.PaymentDate >= startTime && c.PaymentDate <= endTime && c.Type == type && c.TypeDetail == typeDetail);
+            else if (!string.IsNullOrWhiteSpace(type))
+                entities = _unitOfWork.ConsolidatedExpenses.Find(c => c.PaymentDate >= startTime && c.PaymentDate <= endTime && c.Type == type);
+            else 
+                entities = _unitOfWork.ConsolidatedExpenses.Find(c => c.PaymentDate >= startTime && c.PaymentDate <= endTime);            
             return Ok(entities);
         }
 

@@ -6,11 +6,16 @@ EXPOSE 443
 
 RUN ln -s /lib/x86_64-linux-gnu/libdl-2.24.so /lib/x86_64-linux-gnu/libdl.so
 RUN apt-get update \
- && apt-get install -y --allow-unauthenticated \
- libc6-dev \
- libgdiplus \
- libx11-dev \
- && rm -rf /var/lib/apt/lists/*
+    && apt-get install -y --no-install-recommends libpango1.0-dev libc6-dev libx11-dev fontconfig libgif-dev autoconf libtool automake build-essential gettext libglib2.0-dev libcairo2-dev libtiff-dev libexif-dev git \
+    && git clone --depth 1 --branch 6.1 https://github.com/mono/libgdiplus.git \
+    && cd libgdiplus \
+    && ./autogen.sh --with-pango --prefix=/usr \
+    && make \
+    && make install \
+    && cd .. \
+    && apt-get clean \
+    && fc-cache -f -v \
+    && rm -rf /var/lib/apt/lists/*
 ENV DISPLAY :99
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
