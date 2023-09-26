@@ -1,17 +1,11 @@
-﻿using Domain.Entities.Production;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.EntityConfiguration.Warehouse
 {
-    public class WarehouseBuilder : IEntityTypeConfiguration<Area>
+    public class WarehouseBuilder : IEntityTypeConfiguration<Domain.Entities.Warehouse.Warehouse>
     {
-        public void Configure(EntityTypeBuilder<Area> builder)
+        public void Configure(EntityTypeBuilder<Domain.Entities.Warehouse.Warehouse> builder)
         {
             builder.ConfigureBase();
             builder
