@@ -34,6 +34,11 @@ namespace Infrastructure.Persistance
                 .ToView("vw_invoiceableOrderDetails")
                 .HasNoKey();
 
+            builder
+               .Entity<SalesInvoiceDetailReport>()
+               .ToView("vw_report_salesInvoiceDetails")
+               .HasNoKey();
+
             builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
 
