@@ -74,6 +74,7 @@ namespace Infrastructure.Persistance
         // Warehouse
         public IRepository<Warehouse, Guid> Warehouses { get; private set; }
         public IRepository<ProductType, Guid> ProductTypes { get; private set; }
+        public IRepository<Location, Guid> Locations {get; private set; }
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -123,6 +124,7 @@ namespace Infrastructure.Persistance
 
             Warehouses = new Repository<Warehouse, Guid>(context);
             ProductTypes = new Repository<ProductType, Guid>(context);
+            Locations = new Repository<Location, Guid>(context);
         }
 
         public async Task<int> CompleteAsync()

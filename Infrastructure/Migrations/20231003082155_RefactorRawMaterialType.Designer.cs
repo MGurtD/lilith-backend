@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231003082155_RefactorRawMaterialType")]
+    partial class RefactorRawMaterialType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2588,52 +2590,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Taxes", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.Warehouse.Location", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<bool>("Default")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<Guid>("WarehouseId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id")
-                        .HasName("PK_Location");
-
-                    b.HasIndex("WarehouseId");
-
-                    b.HasIndex(new[] { "Name", "WarehouseId" }, "UK_Location_Warehouse");
-
-                    b.ToTable("Locations", (string)null);
-                });
-
             modelBuilder.Entity("Domain.Entities.Warehouse.ProductType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3149,17 +3105,6 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("StatusId");
 
                     b.Navigation("Status");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Warehouse.Location", b =>
-                {
-                    b.HasOne("Domain.Entities.Warehouse.Warehouse", "warehouse")
-                        .WithMany()
-                        .HasForeignKey("WarehouseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("warehouse");
                 });
 
             modelBuilder.Entity("Domain.Entities.Warehouse.Warehouse", b =>
