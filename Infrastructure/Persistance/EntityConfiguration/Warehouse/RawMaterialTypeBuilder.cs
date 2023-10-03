@@ -10,9 +10,9 @@ using Domain.Entities.Warehouse;
 
 namespace Infrastructure.Persistance.EntityConfiguration.Warehouse
 {
-    public class RawMaterialTypeBuilder : IEntityTypeConfiguration<RawMaterialType>
+    public class ProdcutTypeBuilder : IEntityTypeConfiguration<ProductType>
     {
-        public void Configure(EntityTypeBuilder<RawMaterialType> builder)
+        public void Configure(EntityTypeBuilder<ProductType> builder)
         {
             builder.ConfigureBase();
             builder
@@ -26,11 +26,21 @@ namespace Infrastructure.Persistance.EntityConfiguration.Warehouse
                 .HasColumnType("varchar")
                 .HasMaxLength(250);
             builder
+                .Property(b => b.primaryColor)
+                .IsRequired()
+                .HasColumnType("varchar")
+                .HasMaxLength(25);
+            builder
+                .Property(b => b.secondaryColor)
+                .IsRequired()
+                .HasColumnType("varchar")
+                .HasMaxLength(25);
+            builder
                 .HasKey(b => b.Id)
-                .HasName("PK_RawMaterialType");
-            builder.HasIndex(builder => builder.Name, "UK_RawMaterialType_Name");
+                .HasName("PK_ProductType");
+            builder.HasIndex(builder => builder.Name, "UK_ProductType_Name");
 
-            builder.ToTable("RawMaterialTypes");
+            builder.ToTable("ProductTypes");
         }
     }
 }

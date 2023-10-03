@@ -73,7 +73,7 @@ namespace Infrastructure.Persistance
 
         // Warehouse
         public IRepository<Warehouse, Guid> Warehouses { get; private set; }
-        public IRepository<RawMaterialType, Guid> RawMaterialTypes { get; private set; }
+        public IRepository<ProductType, Guid> ProductTypes { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -122,7 +122,7 @@ namespace Infrastructure.Persistance
             Shifts = new Repository<Shift, Guid>(context);
 
             Warehouses = new Repository<Warehouse, Guid>(context);
-            RawMaterialTypes = new Repository<RawMaterialType, Guid>(context);
+            ProductTypes = new Repository<ProductType, Guid>(context);
         }
 
         public async Task<int> CompleteAsync()

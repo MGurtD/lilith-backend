@@ -16,14 +16,14 @@ namespace Api.Controllers.Warehouse
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(RawMaterialType request)
+        public async Task<IActionResult> Create(ProductType request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.RawMaterialTypes.Find(r => request.Name == r.Name).Any();
+            var exists = _unitOfWork.ProductTypes.Find(r => request.Name == r.Name).Any();
             if (!exists)
             {
-                await _unitOfWork.RawMaterialTypes.Add(request);
+                await _unitOfWork.ProductTypes.Add(request);
                 var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
                 return Created(location, request);
             }
@@ -35,7 +35,7 @@ namespace Api.Controllers.Warehouse
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.RawMaterialTypes.GetAll();
+            var entities = await _unitOfWork.ProductTypes.GetAll();
 
             return Ok(entities);
         }
@@ -43,7 +43,7 @@ namespace Api.Controllers.Warehouse
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.RawMaterialTypes.Get(id);
+            var entity = await _unitOfWork.ProductTypes.Get(id);
             if (entity is not null)
             {
                 return Ok(entity);
@@ -54,18 +54,18 @@ namespace Api.Controllers.Warehouse
             }
         }
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid Id, RawMaterialType request)
+        public async Task<IActionResult> Update(Guid Id, ProductType request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.RawMaterialTypes.Exists(request.Id);
+            var exists = await _unitOfWork.ProductTypes.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.RawMaterialTypes.Update(request);
+            await _unitOfWork.ProductTypes.Update(request);
             return Ok(request);
         }
 
@@ -75,11 +75,11 @@ namespace Api.Controllers.Warehouse
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.RawMaterialTypes.Find(e => e.Id == id).FirstOrDefault();
+            var entity = _unitOfWork.ProductTypes.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.RawMaterialTypes.Remove(entity);
+            await _unitOfWork.ProductTypes.Remove(entity);
             return Ok(entity);
         }
     }
