@@ -1,18 +1,12 @@
-﻿using Domain.Entities.Production;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Domain.Entities.Warehouse;
 
 namespace Infrastructure.Persistance.EntityConfiguration.Warehouse
 {
-    public class ProdcutTypeBuilder : IEntityTypeConfiguration<ProductType>
+    public class MaterialTypeBuilder : IEntityTypeConfiguration<MaterialType>
     {
-        public void Configure(EntityTypeBuilder<ProductType> builder)
+        public void Configure(EntityTypeBuilder<MaterialType> builder)
         {
             builder.ConfigureBase();
             builder
@@ -26,21 +20,21 @@ namespace Infrastructure.Persistance.EntityConfiguration.Warehouse
                 .HasColumnType("varchar")
                 .HasMaxLength(250);
             builder
-                .Property(b => b.primaryColor)
+                .Property(b => b.PrimaryColor)
                 .IsRequired()
                 .HasColumnType("varchar")
                 .HasMaxLength(25);
             builder
-                .Property(b => b.secondaryColor)
+                .Property(b => b.SecondaryColor)
                 .IsRequired()
                 .HasColumnType("varchar")
                 .HasMaxLength(25);
             builder
                 .HasKey(b => b.Id)
-                .HasName("PK_ProductType");
-            builder.HasIndex(builder => builder.Name, "UK_ProductType_Name");
+                .HasName("PK_MaterialType");
+            builder.HasIndex(builder => builder.Name, "UK_MaterialType_Name");
 
-            builder.ToTable("ProductTypes");
+            builder.ToTable("MaterialTypes");
         }
     }
 }

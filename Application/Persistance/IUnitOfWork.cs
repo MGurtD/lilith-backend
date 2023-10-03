@@ -65,7 +65,7 @@ namespace Application.Persistance
 
         //Warehouse
         IRepository<Warehouse, Guid> Warehouses { get; }
-        IRepository<ProductType, Guid> ProductTypes { get; }
+        IRepository<MaterialType, Guid> MaterialTypes { get; }
         IRepository<Location, Guid> Locations { get; }
 
         Task<int> CompleteAsync();

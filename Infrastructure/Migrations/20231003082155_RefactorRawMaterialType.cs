@@ -9,12 +9,9 @@ namespace Infrastructure.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            
 
             migrationBuilder.DropTable(
-                name: "RawMaterialTypes");
-
-            
+                name: "RawMaterialTypes");            
 
             migrationBuilder.CreateTable(
                 name: "ProductTypes",
@@ -40,18 +37,10 @@ namespace Infrastructure.Migrations
                 table: "ProductTypes",
                 column: "Name");
 
-
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Workcenters_Areas_AreaId",
-                table: "Workcenters");
-
-            migrationBuilder.DropTable(
-                name: "Areas");
-
             migrationBuilder.DropTable(
                 name: "ProductTypes");
 
@@ -71,23 +60,6 @@ namespace Infrastructure.Migrations
                     table.PrimaryKey("PK_RawMaterialType", x => x.Id);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "UK_Area_Name",
-                table: "Warehouses",
-                column: "Name");
-
-            migrationBuilder.CreateIndex(
-                name: "UK_RawMaterialType_Name",
-                table: "RawMaterialTypes",
-                column: "Name");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Workcenters_Warehouses_AreaId",
-                table: "Workcenters",
-                column: "AreaId",
-                principalTable: "Warehouses",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
         }
     }
 }
