@@ -510,15 +510,13 @@ namespace Infrastructure.Migrations
                         .HasDefaultValueSql("NOW()");
 
                     b.HasKey("Id")
-                        .HasName("PK_Warehouse");
+                        .HasName("PK_Area");
 
                     b.HasIndex("SiteId");
 
                     b.HasIndex(new[] { "Name" }, "UK_Area_Name");
 
-                    b.HasIndex(new[] { "Name" }, "UK_Warehouse_Name");
-
-                    b.ToTable("Warehouses", (string)null);
+                    b.ToTable("Areas", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Production.Enterprise", b =>

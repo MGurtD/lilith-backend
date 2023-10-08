@@ -73,7 +73,7 @@ namespace Infrastructure.Persistance
 
         // Warehouse
         public IRepository<Warehouse, Guid> Warehouses { get; private set; }
-        public IRepository<MaterialType, Guid> MaterialTypes { get; private set; }
+        public IRepository<ReferenceType, Guid> MaterialTypes { get; private set; }
         public IRepository<Location, Guid> Locations {get; private set; }
 
         public UnitOfWork(ApplicationDbContext context)
@@ -123,7 +123,7 @@ namespace Infrastructure.Persistance
             Shifts = new Repository<Shift, Guid>(context);
 
             Warehouses = new Repository<Warehouse, Guid>(context);
-            MaterialTypes = new Repository<MaterialType, Guid>(context);
+            MaterialTypes = new Repository<ReferenceType, Guid>(context);
             Locations = new Repository<Location, Guid>(context);
         }
 

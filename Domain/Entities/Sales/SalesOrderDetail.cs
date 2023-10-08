@@ -1,4 +1,6 @@
-﻿namespace Domain.Entities.Sales
+﻿using Domain.Entities.Shared;
+
+namespace Domain.Entities.Sales
 {
     public class SalesOrderDetail : Entity
     {

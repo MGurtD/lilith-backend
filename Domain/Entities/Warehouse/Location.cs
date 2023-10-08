@@ -6,8 +6,7 @@ namespace Domain.Entities.Warehouse
         public string Description {get; set;} = string.Empty;
         public bool Default { get; set; } = false;
 
-        public Warehouse? warehouse { get; set; }
-
+        public Warehouse? Warehouse { get; set; }
         public Guid WarehouseId { get; set; }
 
     }
