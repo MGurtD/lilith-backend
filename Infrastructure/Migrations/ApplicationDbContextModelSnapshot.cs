@@ -1872,62 +1872,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("CustomerTypes", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.Sales.Reference", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar");
-
-                    b.Property<decimal>("Cost")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<decimal>("Price")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.Property<Guid>("TaxId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<string>("Version")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("varchar");
-
-                    b.HasKey("Id")
-                        .HasName("PK_Reference");
-
-                    b.HasIndex("TaxId");
-
-                    b.HasIndex(new[] { "Code", "Version" }, "UK_Reference_Code_Version");
-
-                    b.ToTable("References", (string)null);
-                });
-
             modelBuilder.Entity("Domain.Entities.Sales.SalesInvoice", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2466,6 +2410,71 @@ namespace Infrastructure.Migrations
                     b.ToTable("Parameters", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.Shared.Reference", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar");
+
+                    b.Property<decimal>("Cost")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar");
+
+                    b.Property<bool>("Disabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<bool>("Production")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("Purchase")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("Sales")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("TaxId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar");
+
+                    b.HasKey("Id")
+                        .HasName("PK_Reference");
+
+                    b.HasIndex("TaxId");
+
+                    b.HasIndex(new[] { "Code", "Version" }, "UK_Reference_Code_Version");
+
+                    b.ToTable("References", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.Status", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2634,7 +2643,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("Locations", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.Warehouse.ProductType", b =>
+            modelBuilder.Entity("Domain.Entities.Warehouse.ReferenceType", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -2659,27 +2668,27 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar");
 
+                    b.Property<string>("PrimaryColor")
+                        .IsRequired()
+                        .HasMaxLength(25)
+                        .HasColumnType("varchar");
+
+                    b.Property<string>("SecondaryColor")
+                        .IsRequired()
+                        .HasMaxLength(25)
+                        .HasColumnType("varchar");
+
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp without time zone")
                         .HasDefaultValueSql("NOW()");
 
-                    b.Property<string>("primaryColor")
-                        .IsRequired()
-                        .HasMaxLength(25)
-                        .HasColumnType("varchar");
-
-                    b.Property<string>("secondaryColor")
-                        .IsRequired()
-                        .HasMaxLength(25)
-                        .HasColumnType("varchar");
-
                     b.HasKey("Id")
-                        .HasName("PK_ProductType");
+                        .HasName("PK_ReferenceType");
 
-                    b.HasIndex(new[] { "Name" }, "UK_ProductType_Name");
+                    b.HasIndex(new[] { "Name" }, "UK_ReferenceType_Name");
 
-                    b.ToTable("ProductTypes", (string)null);
+                    b.ToTable("ReferenceTypes", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Warehouse.Warehouse", b =>
@@ -2986,17 +2995,6 @@ namespace Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Domain.Entities.Sales.Reference", b =>
-                {
-                    b.HasOne("Domain.Entities.Tax", "Tax")
-                        .WithMany()
-                        .HasForeignKey("TaxId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Tax");
-                });
-
             modelBuilder.Entity("Domain.Entities.Sales.SalesInvoice", b =>
                 {
                     b.HasOne("Domain.Entities.Sales.Customer", "Customer")
@@ -3089,7 +3087,7 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Sales.SalesOrderDetail", b =>
                 {
-                    b.HasOne("Domain.Entities.Sales.Reference", "Reference")
+                    b.HasOne("Domain.Entities.Shared.Reference", "Reference")
                         .WithMany()
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3133,6 +3131,17 @@ namespace Infrastructure.Migrations
                     b.Navigation("Status");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Shared.Reference", b =>
+                {
+                    b.HasOne("Domain.Entities.Tax", "Tax")
+                        .WithMany()
+                        .HasForeignKey("TaxId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tax");
+                });
+
             modelBuilder.Entity("Domain.Entities.Status", b =>
                 {
                     b.HasOne("Domain.Entities.Lifecycle", "Lifecycle")
@@ -3153,13 +3162,13 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Warehouse.Location", b =>
                 {
-                    b.HasOne("Domain.Entities.Warehouse.Warehouse", "warehouse")
+                    b.HasOne("Domain.Entities.Warehouse.Warehouse", "Warehouse")
                         .WithMany()
                         .HasForeignKey("WarehouseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("warehouse");
+                    b.Navigation("Warehouse");
                 });
 
             modelBuilder.Entity("Domain.Entities.Warehouse.Warehouse", b =>
