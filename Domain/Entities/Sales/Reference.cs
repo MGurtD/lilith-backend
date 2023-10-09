@@ -1,4 +1,6 @@
-﻿namespace Domain.Entities.Sales
+﻿using Domain.Entities.Warehouse;
+
+namespace Domain.Entities.Sales
 {
     public class Reference : Entity
     {
