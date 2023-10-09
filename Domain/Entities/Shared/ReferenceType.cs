@@ -1,4 +1,4 @@
-﻿namespace Domain.Entities.Warehouse
+namespace Domain.Entities.Shared
 {
     public class ReferenceType : Entity
     {

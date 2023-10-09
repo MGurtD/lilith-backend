@@ -1,4 +1,4 @@
-﻿using Domain.Entities.Shared;
+using Domain.Entities.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -36,7 +36,41 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .IsRequired()
                 .HasColumnType("varchar")
                 .HasMaxLength(10);
-                
+
+            builder
+                .Property(b => b.FormatId)
+                .IsRequired()
+                .HasColumnType("integer");
+            
+            builder
+                .Property(b => b.LastPurchaseCost)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            
+            builder
+                .Property(b => b.Density)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+                    
+            builder
+                .Property(b => b.Sales)
+                .IsRequired()
+                .HasColumnType("boolean");
+
+            builder
+                .Property(b => b.Purchase)
+                .IsRequired()
+                .HasColumnType("boolean");
+
+            builder
+                .Property(b => b.Production)
+                .IsRequired()
+                .HasColumnType("boolean");
+
             builder
                 .HasKey(b => b.Id)
                 .HasName("PK_Reference");
