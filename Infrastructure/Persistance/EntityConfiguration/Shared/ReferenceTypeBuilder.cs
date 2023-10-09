@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using Domain.Entities.Warehouse;
+using Domain.Entities.Shared;
 
 namespace Infrastructure.Persistance.EntityConfiguration.Warehouse
 {
