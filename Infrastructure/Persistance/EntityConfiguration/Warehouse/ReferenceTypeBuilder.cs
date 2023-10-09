@@ -4,9 +4,9 @@ using Domain.Entities.Warehouse;
 
 namespace Infrastructure.Persistance.EntityConfiguration.Warehouse
 {
-    public class MaterialTypeBuilder : IEntityTypeConfiguration<MaterialType>
+    public class ReferenceTypeBuilder : IEntityTypeConfiguration<ReferenceType>
     {
-        public void Configure(EntityTypeBuilder<MaterialType> builder)
+        public void Configure(EntityTypeBuilder<ReferenceType> builder)
         {
             builder.ConfigureBase();
             builder
@@ -31,10 +31,10 @@ namespace Infrastructure.Persistance.EntityConfiguration.Warehouse
                 .HasMaxLength(25);
             builder
                 .HasKey(b => b.Id)
-                .HasName("PK_MaterialType");
-            builder.HasIndex(builder => builder.Name, "UK_MaterialType_Name");
+                .HasName("PK_ReferenceType");
+            builder.HasIndex(builder => builder.Name, "UK_ReferenceType_Name");
 
-            builder.ToTable("MaterialTypes");
+            builder.ToTable("ReferenceTypes");
         }
     }
 }

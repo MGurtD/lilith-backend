@@ -1,41 +1,41 @@
 ﻿using Application.Persistance;
-using Domain.Entities.Sales;
+using Domain.Entities.Warehouse;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers.Sales
+namespace Api.Controllers.Warehouse
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ReferenceController : ControllerBase
+    public class ReferenceTypeController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
 
-        public ReferenceController(IUnitOfWork unitOfWork)
+        public ReferenceTypeController(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
+
         [HttpPost]
-        public async Task<IActionResult> Create(Reference request)
+        public async Task<IActionResult> Create(ReferenceType request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.References.Find(r => request.Code == r.Code && request.Version == r.Version).Any();
+            var exists = _unitOfWork.MaterialTypes.Find(r => request.Name == r.Name).Any();
             if (!exists)
             {
-                await _unitOfWork.References.Add(request);
-
+                await _unitOfWork.MaterialTypes.Add(request);
                 var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
                 return Created(location, request);
             }
             else
             {
-                return Conflict($"Referencia {request.Code} existent");
+                return Conflict($"Area {request.Name} existent");
             }
         }
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.References.GetAll();
+            var entities = await _unitOfWork.MaterialTypes.GetAll();
 
             return Ok(entities);
         }
@@ -43,7 +43,7 @@ namespace Api.Controllers.Sales
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.References.Get(id);
+            var entity = await _unitOfWork.MaterialTypes.Get(id);
             if (entity is not null)
             {
                 return Ok(entity);
@@ -53,20 +53,19 @@ namespace Api.Controllers.Sales
                 return NotFound();
             }
         }
-
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid Id, Reference request)
+        public async Task<IActionResult> Update(Guid Id, ReferenceType request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.References.Exists(request.Id);
+            var exists = await _unitOfWork.MaterialTypes.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.References.Update(request);
+            await _unitOfWork.MaterialTypes.Update(request);
             return Ok(request);
         }
 
@@ -76,11 +75,11 @@ namespace Api.Controllers.Sales
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.References.Find(e => e.Id == id).FirstOrDefault();
+            var entity = _unitOfWork.MaterialTypes.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.References.Remove(entity);
+            await _unitOfWork.MaterialTypes.Remove(entity);
             return Ok(entity);
         }
     }
