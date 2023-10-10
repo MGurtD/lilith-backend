@@ -29,7 +29,7 @@ namespace Api.Controllers.Warehouse
             }
             else
             {
-                return Conflict($"Area {request.Name} existent");
+                return Conflict($"ReferenceType {request.Name} existent");
             }
         }
         [HttpGet]

@@ -8,6 +8,7 @@
         public DateTime EndDate { get; set; }
 
         public int PurchaseInvoiceCounter { get; set; }
+        public int ReceiptCounter { get; set; }
         public int SalesOrderCounter { get; set; }
         public int SalesInvoiceCounter { get; set; }
 
