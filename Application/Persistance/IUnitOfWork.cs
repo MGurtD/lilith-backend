@@ -38,6 +38,7 @@ namespace Application.Persistance
         IRepository<PurchaseInvoiceSerie, Guid> PurchaseInvoiceSeries { get; }
         IRepository<ExpenseType, Guid> ExpenseTypes { get; }
         IExpenseRepository Expenses { get; }
+        IReceiptRepository Receipts { get; }
         IContractReader<ConsolidatedExpense> ConsolidatedExpenses { get; }
 
         // Sales
@@ -69,5 +70,6 @@ namespace Application.Persistance
         IRepository<Location, Guid> Locations { get; }
 
         Task<int> CompleteAsync();
+        void Dispose();
     }
 }

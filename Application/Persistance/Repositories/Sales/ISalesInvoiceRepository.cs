@@ -6,9 +6,7 @@ namespace Application.Persistance.Repositories.Sales
     {
         IRepository<SalesInvoiceDetail, Guid> InvoiceDetails { get; }
         IRepository<SalesInvoiceImport, Guid> InvoiceImports { get; }
-        IRepository<SalesInvoiceDueDate, Guid> InvoiceDueDates { get; }
-
-        
+        IRepository<SalesInvoiceDueDate, Guid> InvoiceDueDates { get; }        
 
     }
 }

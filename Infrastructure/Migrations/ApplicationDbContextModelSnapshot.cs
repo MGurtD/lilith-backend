@@ -2159,7 +2159,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex(new[] { "ExerciseId" }, "IX_SalesInvoices_Exercise");
 
-                    b.ToTable("SalesInvoice");
+                    b.ToTable("SalesInvoice", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Sales.SalesInvoiceDetail", b =>
@@ -2380,7 +2380,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("SalesOrderHeaderId");
 
-                    b.ToTable("SalesOrderDetail");
+                    b.ToTable("SalesOrderDetail", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Sales.SalesOrderHeader", b =>
@@ -2497,7 +2497,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex(new[] { "ExerciseId" }, "IDX_SalesOrderHeader_Exercise");
 
-                    b.ToTable("SalesOrderHeader");
+                    b.ToTable("SalesOrderHeader", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Shared.Parameter", b =>

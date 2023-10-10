@@ -1,5 +1,5 @@
 ﻿using Application.Persistance;
-using Domain.Entities.Warehouse;
+using Domain.Entities.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Warehouse
@@ -20,10 +20,10 @@ namespace Api.Controllers.Warehouse
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.MaterialTypes.Find(r => request.Name == r.Name).Any();
+            var exists = _unitOfWork.ReferenceTypes.Find(r => request.Name == r.Name).Any();
             if (!exists)
             {
-                await _unitOfWork.MaterialTypes.Add(request);
+                await _unitOfWork.ReferenceTypes.Add(request);
                 var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
                 return Created(location, request);
             }
@@ -35,7 +35,7 @@ namespace Api.Controllers.Warehouse
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.MaterialTypes.GetAll();
+            var entities = await _unitOfWork.ReferenceTypes.GetAll();
 
             return Ok(entities);
         }
@@ -43,7 +43,7 @@ namespace Api.Controllers.Warehouse
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.MaterialTypes.Get(id);
+            var entity = await _unitOfWork.ReferenceTypes.Get(id);
             if (entity is not null)
             {
                 return Ok(entity);
@@ -61,11 +61,11 @@ namespace Api.Controllers.Warehouse
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.MaterialTypes.Exists(request.Id);
+            var exists = await _unitOfWork.ReferenceTypes.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.MaterialTypes.Update(request);
+            await _unitOfWork.ReferenceTypes.Update(request);
             return Ok(request);
         }
 
@@ -75,11 +75,11 @@ namespace Api.Controllers.Warehouse
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.MaterialTypes.Find(e => e.Id == id).FirstOrDefault();
+            var entity = _unitOfWork.ReferenceTypes.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.MaterialTypes.Remove(entity);
+            await _unitOfWork.ReferenceTypes.Remove(entity);
             return Ok(entity);
         }
     }
