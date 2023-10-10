@@ -4,7 +4,7 @@ namespace Domain.Entities.Purchase
 {
     public class ReceiptDetail : Entity
     {
-        public Guid RecipeId { get; set; }
+        public Guid ReceiptId { get; set; }
         public Receipt? Receipt { get; set; }
 
         public Guid ReferenceId { get; set; }

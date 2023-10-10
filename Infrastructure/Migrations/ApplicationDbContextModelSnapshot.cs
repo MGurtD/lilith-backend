@@ -1420,6 +1420,135 @@ namespace Infrastructure.Migrations
                     b.ToTable("PurchaseInvoiceStatusTransitions", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.Purchase.Receipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("Disabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SupplierNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.HasKey("Id")
+                        .HasName("PK_Receipt");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Receipt_Number");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("Receipts", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.Purchase.ReceiptDetail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<decimal>("Diameter")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<bool>("Disabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<decimal>("Height")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal>("KilogramPrice")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal>("Lenght")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<int>("Quantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<Guid>("ReceiptId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ReferenceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Thickness")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal>("TotalWeight")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal>("UnitWeight")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<decimal>("Width")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.HasKey("Id")
+                        .HasName("PK_ReceiptDetails");
+
+                    b.HasIndex("ReceiptId");
+
+                    b.HasIndex("ReferenceId");
+
+                    b.ToTable("ReceiptDetails", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.Purchase.Supplier", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2429,6 +2558,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasDefaultValueSql("NOW()");
 
+                    b.Property<decimal>("Density")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -2439,6 +2572,13 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bool")
                         .HasDefaultValue(false);
 
+                    b.Property<int>("FormatId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("LastPurchaseCost")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
                     b.Property<decimal>("Price")
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)");
@@ -2448,6 +2588,9 @@ namespace Infrastructure.Migrations
 
                     b.Property<bool>("Purchase")
                         .HasColumnType("boolean");
+
+                    b.Property<Guid>("ReferenceTypeId")
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("Sales")
                         .HasColumnType("boolean");
@@ -2468,11 +2611,61 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("PK_Reference");
 
+                    b.HasIndex("ReferenceTypeId");
+
                     b.HasIndex("TaxId");
 
                     b.HasIndex(new[] { "Code", "Version" }, "UK_Reference_Code_Version");
 
                     b.ToTable("References", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.Shared.ReferenceType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar");
+
+                    b.Property<bool>("Disabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar");
+
+                    b.Property<string>("PrimaryColor")
+                        .IsRequired()
+                        .HasMaxLength(25)
+                        .HasColumnType("varchar");
+
+                    b.Property<string>("SecondaryColor")
+                        .IsRequired()
+                        .HasMaxLength(25)
+                        .HasColumnType("varchar");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.HasKey("Id")
+                        .HasName("PK_ReferenceType");
+
+                    b.HasIndex(new[] { "Name" }, "UK_ReferenceType_Name");
+
+                    b.ToTable("ReferenceTypes", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Status", b =>
@@ -2641,54 +2834,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "Name", "WarehouseId" }, "UK_Location_Warehouse");
 
                     b.ToTable("Locations", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.Warehouse.ReferenceType", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar");
-
-                    b.Property<string>("PrimaryColor")
-                        .IsRequired()
-                        .HasMaxLength(25)
-                        .HasColumnType("varchar");
-
-                    b.Property<string>("SecondaryColor")
-                        .IsRequired()
-                        .HasMaxLength(25)
-                        .HasColumnType("varchar");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.HasKey("Id")
-                        .HasName("PK_ReferenceType");
-
-                    b.HasIndex(new[] { "Name" }, "UK_ReferenceType_Name");
-
-                    b.ToTable("ReferenceTypes", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Warehouse.Warehouse", b =>
@@ -2934,6 +3079,36 @@ namespace Infrastructure.Migrations
                     b.Navigation("ToStatus");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Purchase.Receipt", b =>
+                {
+                    b.HasOne("Domain.Entities.Purchase.Supplier", "Supplier")
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Supplier");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Purchase.ReceiptDetail", b =>
+                {
+                    b.HasOne("Domain.Entities.Purchase.Receipt", "Receipt")
+                        .WithMany("Details")
+                        .HasForeignKey("ReceiptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Shared.Reference", "Reference")
+                        .WithMany()
+                        .HasForeignKey("ReferenceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Receipt");
+
+                    b.Navigation("Reference");
+                });
+
             modelBuilder.Entity("Domain.Entities.Purchase.Supplier", b =>
                 {
                     b.HasOne("Domain.Entities.PaymentMethod", "PaymentMethod")
@@ -3133,11 +3308,19 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Shared.Reference", b =>
                 {
+                    b.HasOne("Domain.Entities.Shared.ReferenceType", "ReferenceType")
+                        .WithMany()
+                        .HasForeignKey("ReferenceTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Domain.Entities.Tax", "Tax")
                         .WithMany()
                         .HasForeignKey("TaxId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ReferenceType");
 
                     b.Navigation("Tax");
                 });
@@ -3197,6 +3380,11 @@ namespace Infrastructure.Migrations
                     b.Navigation("PurchaseInvoiceDueDates");
 
                     b.Navigation("PurchaseInvoiceImports");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Purchase.Receipt", b =>
+                {
+                    b.Navigation("Details");
                 });
 
             modelBuilder.Entity("Domain.Entities.Purchase.Supplier", b =>

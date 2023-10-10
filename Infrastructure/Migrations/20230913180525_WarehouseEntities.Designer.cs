@@ -2555,6 +2555,49 @@ namespace Infrastructure.Migrations
                     b.ToTable("Taxes", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.Warehouse.Warehouse", b =>
+            {
+                b.Property<Guid>("Id")
+                    .HasColumnType("uuid");
+
+                b.Property<DateTime>("CreatedOn")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("timestamp without time zone")
+                    .HasDefaultValueSql("NOW()");
+
+                b.Property<string>("Description")
+                    .IsRequired()
+                    .HasMaxLength(250)
+                    .HasColumnType("varchar");
+
+                b.Property<bool>("Disabled")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("bool")
+                    .HasDefaultValue(false);
+
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnType("varchar");
+
+                b.Property<Guid>("SiteId")
+                    .HasColumnType("uuid");
+
+                b.Property<DateTime>("UpdatedOn")
+                    .ValueGeneratedOnAddOrUpdate()
+                    .HasColumnType("timestamp without time zone")
+                    .HasDefaultValueSql("NOW()");
+
+                b.HasKey("Id")
+                    .HasName("PK_Warehouse");
+
+                b.HasIndex("SiteId");
+
+                b.HasIndex(new[] { "Name" }, "UK_Warehouse_Name");
+
+                b.ToTable("Warehouses", (string)null);
+            });
+
             modelBuilder.Entity("Domain.Entities.Warehouse.RawMaterialType", b =>
                 {
                     b.Property<Guid>("Id")
