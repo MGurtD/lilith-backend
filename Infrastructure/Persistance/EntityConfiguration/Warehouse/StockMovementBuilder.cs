@@ -31,6 +31,10 @@ namespace Infrastructure.Persistance.EntityConfiguration.Warehouse
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                               ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.MovementDate)
+                .IsRequired()
+                .HasColumnType("timestamp without time zone");
            
             builder
                 .HasKey(b => b.Id)
