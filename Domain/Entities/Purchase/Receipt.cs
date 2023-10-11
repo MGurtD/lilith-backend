@@ -6,6 +6,10 @@
         public DateTime Date { get; set; }
         public Guid SupplierId { get; set; }
         public Supplier? Supplier { get; set; }
+        public Guid ExerciseId { get; set; }
+        public Exercise? Exercise { get; set; }
+        public Guid StatusId { get; set; }
+        public Status? Status { get; set; }
         public string SupplierNumber { get; set; } = string.Empty;
 
         public ICollection<ReceiptDetail>? Details { get; set; }

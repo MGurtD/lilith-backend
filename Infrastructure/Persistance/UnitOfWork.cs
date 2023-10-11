@@ -55,6 +55,7 @@ namespace Infrastructure.Persistance
         public ISalesOrderHeaderRepository SalesOrderHeaders { get; private set; }
         public ISalesOrderDetailRepository SalesOrderDetails { get; private set; }
         public ISalesInvoiceRepository SalesInvoices { get; private set; }
+        public IReceiptRepository Receipts { get; private set; }
         public IContractReader<Application.Contracts.Sales.SalesOrderDetail> SalesOrderDetailForInvoices { get; private set; }
         public IContractReader<SalesInvoiceDetailReport> SalesInvoiceDetailWithOrder { get; private set; }
 
@@ -96,6 +97,7 @@ namespace Infrastructure.Persistance
             PurchaseInvoices = new PurchaseInvoiceRepository(context);
             PurchaseInvoiceDueDates = new Repository<PurchaseInvoiceDueDate, Guid>(context);
             PurchaseInvoiceSeries = new Repository<PurchaseInvoiceSerie, Guid>(context);
+            Receipts = new ReceiptRepository(context);
             ExpenseTypes = new Repository<ExpenseType, Guid>(context);
             Expenses = new ExpenseRepository(context);
             ConsolidatedExpenses = new ContractReader<ConsolidatedExpense>(context);
@@ -132,7 +134,10 @@ namespace Infrastructure.Persistance
             return await context.SaveChangesAsync();
         }
 
-        public void Dispose() => context.Dispose();
+        public void Dispose()
+        {
+            context.Dispose();
+        }
     }
 }
 

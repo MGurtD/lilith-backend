@@ -1,6 +1,5 @@
 ﻿using Application.Persistance.Repositories;
 using Application.Persistance.Repositories.Sales;
-using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
