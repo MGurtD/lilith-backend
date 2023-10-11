@@ -68,6 +68,8 @@ namespace Application.Persistance
         IRepository<Warehouse, Guid> Warehouses { get; }
         IRepository<ReferenceType, Guid> ReferenceTypes { get; }
         IRepository<Location, Guid> Locations { get; }
+        IRepository<Stock, Guid> Stocks { get; }
+        IRepository<StockMovement, Guid> StockMovements {get; }
 
         Task<int> CompleteAsync();
         void Dispose();
