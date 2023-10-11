@@ -76,6 +76,8 @@ namespace Infrastructure.Persistance
         public IRepository<Warehouse, Guid> Warehouses { get; private set; }
         public IRepository<ReferenceType, Guid> ReferenceTypes { get; private set; }
         public IRepository<Location, Guid> Locations {get; private set; }
+        public IRepository<Stock, Guid> Stocks{ get; private set;}
+        public IRepository<StockMovement, Guid> StockMovements {get; private set;}
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -127,6 +129,8 @@ namespace Infrastructure.Persistance
             Warehouses = new Repository<Warehouse, Guid>(context);
             ReferenceTypes = new Repository<ReferenceType, Guid>(context);
             Locations = new Repository<Location, Guid>(context);
+            Stocks = new Repository<Stock, Guid>(context);
+            StockMovements = new Repository<StockMovement, Guid>(context);
         }
 
         public async Task<int> CompleteAsync()

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231010055620_AddReceiptAndReceiptDetails")]
-    partial class AddReceiptAndReceiptDetails
+    [Migration("20231011093428_StockEntity")]
+    partial class StockEntity
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -330,6 +330,9 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasDefaultValue(0);
+
+                    b.Property<int>("ReceiptCounter")
+                        .HasColumnType("integer");
 
                     b.Property<int>("SalesInvoiceCounter")
                         .ValueGeneratedOnAdd()
@@ -1440,10 +1443,16 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bool")
                         .HasDefaultValue(false);
 
+                    b.Property<Guid>("ExerciseId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Number")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar");
+
+                    b.Property<Guid>("StatusId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("SupplierId")
                         .HasColumnType("uuid");
@@ -1461,9 +1470,13 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("PK_Receipt");
 
+                    b.HasIndex("ExerciseId");
+
                     b.HasIndex("Number")
                         .IsUnique()
                         .HasDatabaseName("IX_Receipt_Number");
+
+                    b.HasIndex("StatusId");
 
                     b.HasIndex("SupplierId");
 
@@ -2838,6 +2851,65 @@ namespace Infrastructure.Migrations
                     b.ToTable("Locations", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.Warehouse.Stock", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<decimal>("Diameter")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<bool>("Disabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<decimal>("Height")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal>("Length")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("ReferenceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Thickness")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<decimal>("Width")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.HasKey("Id")
+                        .HasName("PK_Stocks");
+
+                    b.HasIndex("ReferenceId");
+
+                    b.HasIndex(new[] { "LocationId", "ReferenceId" }, "idx_Location_Reference");
+
+                    b.ToTable("Stocks", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.Warehouse.Warehouse", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3083,11 +3155,27 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Purchase.Receipt", b =>
                 {
+                    b.HasOne("Domain.Entities.Exercise", "Exercise")
+                        .WithMany()
+                        .HasForeignKey("ExerciseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Status", "Status")
+                        .WithMany()
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Domain.Entities.Purchase.Supplier", "Supplier")
                         .WithMany()
                         .HasForeignKey("SupplierId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Exercise");
+
+                    b.Navigation("Status");
 
                     b.Navigation("Supplier");
                 });
@@ -3354,6 +3442,25 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Warehouse.Stock", b =>
+                {
+                    b.HasOne("Domain.Entities.Warehouse.Location", "Location")
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Shared.Reference", "Reference")
+                        .WithMany()
+                        .HasForeignKey("ReferenceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Location");
+
+                    b.Navigation("Reference");
                 });
 
             modelBuilder.Entity("Domain.Entities.Warehouse.Warehouse", b =>
