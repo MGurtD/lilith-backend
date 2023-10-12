@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231011093428_StockEntity")]
+    partial class StockEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2908,63 +2910,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Stocks", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.Warehouse.StockMovement", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<decimal>("Height")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.Property<decimal>("Length")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.Property<DateTime>("MovementDate")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("MovementType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("StockId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<decimal>("Width")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.HasKey("Id")
-                        .HasName("PK_StockMovements");
-
-                    b.HasIndex(new[] { "MovementType" }, "idx_movementtype");
-
-                    b.HasIndex(new[] { "StockId" }, "idx_stockid");
-
-                    b.HasIndex(new[] { "StockId", "MovementType" }, "idx_stockid_movementtype");
-
-                    b.ToTable("StockMovements", (string)null);
-                });
-
             modelBuilder.Entity("Domain.Entities.Warehouse.Warehouse", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3516,17 +3461,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Location");
 
                     b.Navigation("Reference");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Warehouse.StockMovement", b =>
-                {
-                    b.HasOne("Domain.Entities.Warehouse.Stock", "Stock")
-                        .WithMany()
-                        .HasForeignKey("StockId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Stock");
                 });
 
             modelBuilder.Entity("Domain.Entities.Warehouse.Warehouse", b =>
