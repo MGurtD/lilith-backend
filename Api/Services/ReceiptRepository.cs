@@ -51,15 +51,19 @@ namespace Application.Services
             if (status == null) return new GenericResponse(false, new List<string>() { "Cicle de vida 'Receipts' inexistent" });
             if (!status.InitialStatusId.HasValue) return new GenericResponse(false, new List<string>() { "El cicle de vida 'Receipts' no té un estat inicial" });
 
+            var receiptCounter = exercise.ReceiptCounter == 0 ? 1 : exercise.ReceiptCounter;
             var receipt = new Receipt()
             {
                 ExerciseId = createRequest.ExerciseId,
                 SupplierId = createRequest.SupplierId,
                 Date = createRequest.Date,
-                Number = $"{exercise.Name}-{exercise.ReceiptCounter.ToString().PadLeft(3, '0')}",
+                Number = $"{exercise.Name}-{receiptCounter.ToString().PadLeft(3, '0')}",
                 StatusId = status.InitialStatusId.Value
             };
             await _unitOfWork.Receipts.Add(receipt);
+
+            exercise.ReceiptCounter = receiptCounter + 1;
+            await _unitOfWork.Exercices.Update(exercise);
 
             return new GenericResponse(true);
         }

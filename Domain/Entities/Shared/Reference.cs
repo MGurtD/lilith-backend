@@ -9,7 +9,7 @@
         public string Version { get; set; } = string.Empty;
         public Guid TaxId { get; set; }
         public Tax? Tax { get; set; }
-        public Guid ReferenceTypeId { get; set;}
+        public Guid? ReferenceTypeId { get; set;}
         public ReferenceType? ReferenceType {get; set;}
         public int FormatId {get; set; }
         public decimal LastPurchaseCost {get; set;}
