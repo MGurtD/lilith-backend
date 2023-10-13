@@ -54,6 +54,7 @@ namespace Application.Services
             var receiptCounter = exercise.ReceiptCounter == 0 ? 1 : exercise.ReceiptCounter;
             var receipt = new Receipt()
             {
+                Id = createRequest.Id,
                 ExerciseId = createRequest.ExerciseId,
                 SupplierId = createRequest.SupplierId,
                 Date = createRequest.Date,
