@@ -2,9 +2,9 @@
 {
     public class GenericResponse
     {
-        public readonly bool Result;
-        public readonly IList<string> Errors;
-        public readonly object? Content;
+        public bool Result { get; }
+        public IList<string> Errors { get; }
+        public object? Content { get; }
 
         public GenericResponse(bool result, object? content = null)
         {

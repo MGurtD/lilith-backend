@@ -71,7 +71,7 @@ namespace Api.Controllers.Purchase
             var response = await _service.Update(receipt);
 
             if (response.Result) return Ok();
-            else return BadRequest(response.Errors);
+            else return BadRequest(response);
         }
 
         [HttpDelete("{id:guid}")]
@@ -82,7 +82,7 @@ namespace Api.Controllers.Purchase
             var response = await _service.Remove(id);
 
             if (response.Result) return Ok();
-            else return BadRequest(response.Errors);
+            else return BadRequest(response);
         }
 
         #region Details

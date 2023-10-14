@@ -1,4 +1,5 @@
 ﻿using Api.Exceptions;
+using Application.Contracts;
 using System.Net;
 using System.Text.Json;
 
@@ -36,7 +37,8 @@ namespace Api.Middlewares
 
                 _logger.LogError(error, $"Path: {context.Request.Path} | Method: {context.Request.Method}");
 
-                var result = JsonSerializer.Serialize(new { message = error?.Message });
+                var genericResponse = new GenericResponse(false, new List<string>() { error.Message });
+                var result = JsonSerializer.Serialize(genericResponse);
                 await response.WriteAsync(result);
             }
         }
