@@ -9,7 +9,6 @@ namespace Application.Services
         Task<GenericResponse> Update(Stock request);
         IEnumerable<Stock> GetByLocation(Guid locationId);
         IEnumerable<Stock> GetByReference(Guid referenceId);
-        //IEnumerable<Stock> GetByReferenceType(Guid referenceTypeId);
-        IEnumerable<Stock> GetAll();
+        Task<IEnumerable<Stock>> GetAll();
     }
 }

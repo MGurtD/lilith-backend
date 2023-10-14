@@ -23,21 +23,23 @@ namespace Api.Middlewares
             {
                 await _next(context);
             }
-            catch (Exception error)
+            catch (Exception exception)
             {
+                _logger.LogError(exception, $"Path: {context.Request.Path} | Method: {context.Request.Method}");
+
                 var response = context.Response;
                 response.ContentType = "application/json";
-
-                response.StatusCode = error switch
+                response.StatusCode = exception switch
                 {
                     ApiException => (int)HttpStatusCode.BadRequest,// custom application error
                     KeyNotFoundException => (int)HttpStatusCode.NotFound,// not found error
                     _ => (int)HttpStatusCode.InternalServerError,// unhandled error
                 };
 
-                _logger.LogError(error, $"Path: {context.Request.Path} | Method: {context.Request.Method}");
+                var errors = new List<string>() { exception.Message };
+                if (exception.InnerException != null) errors.Add(exception.InnerException.Message);
 
-                var genericResponse = new GenericResponse(false, new List<string>() { error.Message });
+                var genericResponse = new GenericResponse(false, errors);
                 var result = JsonSerializer.Serialize(genericResponse);
                 await response.WriteAsync(result);
             }

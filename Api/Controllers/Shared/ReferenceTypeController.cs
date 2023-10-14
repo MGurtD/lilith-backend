@@ -2,7 +2,7 @@
 using Domain.Entities.Shared;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers.Warehouse
+namespace Api.Controllers.Shared
 {
     [ApiController]
     [Route("api/[controller]")]
