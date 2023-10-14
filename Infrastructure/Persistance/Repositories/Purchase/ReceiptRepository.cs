@@ -17,7 +17,7 @@ namespace Infrastructure.Persistance.Repositories.Purchase
         public override async Task<Receipt?> Get(Guid id)
         {
             return await dbSet
-                        .Include(s => s.Details)
+                        .Include("Details.Reference")
                         .AsNoTracking()
                         .FirstOrDefaultAsync(e => e.Id == id);
         }

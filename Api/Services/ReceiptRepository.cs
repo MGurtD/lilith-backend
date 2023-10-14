@@ -99,6 +99,7 @@ namespace Application.Services
             var exists = await _unitOfWork.Receipts.Details.Exists(detail.Id);
             if (!exists) return new GenericResponse(false, new List<string>() { $"Id {detail.Id} inexistent" });
 
+            detail.Reference = null;
             await _unitOfWork.Receipts.Details.Update(detail);
             return new GenericResponse(true);
         }
