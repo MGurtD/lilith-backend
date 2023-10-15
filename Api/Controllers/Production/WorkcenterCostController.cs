@@ -28,7 +28,7 @@ namespace Api.Controllers.Production
             }
             else
             {
-                return Conflict($"Cost per l'estat: {request.MachineStatus.Name} existent");
+                return Conflict($"Cost existent");
             }
         }
         [HttpGet]

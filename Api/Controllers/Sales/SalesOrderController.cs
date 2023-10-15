@@ -28,7 +28,7 @@ namespace Api.Controllers.Sales
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetSalesOrders(DateTime startTime, DateTime endTime, Guid? customerId)
+        public IActionResult GetSalesOrders(DateTime startTime, DateTime endTime, Guid? customerId)
         {
             IEnumerable<SalesOrderHeader> salesOrderHeaders = new List<SalesOrderHeader>();
             if (customerId.HasValue)

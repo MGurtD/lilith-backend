@@ -40,6 +40,28 @@ namespace Api.Controllers.Sales
             return Ok(entities);
         }
 
+        [Route("Sales")]
+        [HttpGet]
+        public IActionResult GetAllSales()
+        {
+            var entities = _unitOfWork.References.Find(r => r.Sales);
+            return Ok(entities);
+        }
+        [Route("Purchase")]
+        [HttpGet]
+        public IActionResult GetAllPurchase()
+        {
+            var entities = _unitOfWork.References.Find(r => r.Purchase);
+            return Ok(entities);
+        }
+        [Route("Production")]
+        [HttpGet]
+        public IActionResult GetAllProduction()
+        {
+            var entities = _unitOfWork.References.Find(r => r.Production);
+            return Ok(entities);
+        }
+
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {

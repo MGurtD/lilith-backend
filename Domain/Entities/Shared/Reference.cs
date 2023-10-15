@@ -5,7 +5,7 @@
         public string Code { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string Version { get; set; } = string.Empty;
-        public Guid TaxId { get; set; }
+        public Guid? TaxId { get; set; }
         public Tax? Tax { get; set; }
         public Guid? ReferenceTypeId { get; set;}
         public ReferenceType? ReferenceType { get; set;}
