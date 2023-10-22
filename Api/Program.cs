@@ -46,6 +46,7 @@ try
         builder.Services.AddScoped<ISalesInvoiceService, SalesInvoiceService>();
         builder.Services.AddScoped<IDueDateService, DueDateService>();
         builder.Services.AddScoped<IStockService, StockService>();
+        builder.Services.AddScoped<IStockMovementService, StockMovementService>();
         builder.Services.AddScoped<IReceiptService, ReceiptService>();
 
         // JWT Service    

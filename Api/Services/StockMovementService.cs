@@ -1,4 +1,3 @@
-using System.Security.Cryptography.Xml;
 using Application.Contracts;
 using Application.Persistance;
 using Application.Services;
@@ -24,26 +23,38 @@ namespace Api.Services
             //Si existeix update de la quantitat
             //Si no existeix add stock
             
-            var stock = _stockService.GetByDimensions(request.LocationId, request.ReferenceId, 
+            var stock = await _stockService.GetByDimensions(request.LocationId, request.ReferenceId, 
                                                     request.Width, request.Length, request.Height,
                                                     request.Diameter, request.Thickness);
             
             await _unitOfWork.StockMovements.Add(request);
+            
             if (stock != null )
             {
-                
+                var oldStock = new Stock{
+                    Id = stock.Id,
+                    ReferenceId = request.ReferenceId,
+                    LocationId = request.LocationId,
+                    Quantity = stock.Quantity + request.Quantity,
+                    Width = request.Width,
+                    Length = request.Length,
+                    Height = request.Height,
+                    Diameter = request.Diameter,
+                    Thickness = request.Thickness 
+                };
+                await _stockService.Update(oldStock);
             }else{            
-            var newStock = new Stock{
-                ReferenceId = request.ReferenceId,
-                LocationId = request.LocationId,
-                Quantity = request.Quantity,
-                Width = request.Width,
-                Length = request.Length,
-                Height = request.Height,
-                Diameter = request.Diameter,
-                Thickness = request.Thickness
-            };
-            await _stockService.Create(newStock);
+                var newStock = new Stock{
+                    ReferenceId = request.ReferenceId,
+                    LocationId = request.LocationId,
+                    Quantity = request.Quantity,
+                    Width = request.Width,
+                    Length = request.Length,
+                    Height = request.Height,
+                    Diameter = request.Diameter,
+                    Thickness = request.Thickness
+                };
+                await _stockService.Create(newStock);
             };
             return new GenericResponse(true, request);
         }
