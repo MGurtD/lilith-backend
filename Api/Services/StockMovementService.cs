@@ -8,10 +8,9 @@ namespace Api.Services
     public class StockMovementService : IStockMovementService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly StockService _stockService;
-        
+        private readonly IStockService _stockService;        
 
-        public StockMovementService(IUnitOfWork unitOfWork, StockService stockService)
+        public StockMovementService(IUnitOfWork unitOfWork, IStockService stockService)
         {
             _unitOfWork = unitOfWork;
             _stockService = stockService;
