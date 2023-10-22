@@ -58,6 +58,19 @@ namespace Api.Services
             return stocks;
         }
 
+        public async Task <Stock> GetByDimensions(Guid locationId, Guid referenceId, decimal width, decimal length, decimal height, decimal diameter, decimal thickness)
+        {
+            var stocks = _unitOfWork.Stocks.Find(
+                p => p.LocationId == locationId && 
+                    p.ReferenceId == referenceId &&
+                    p.Width == width &&
+                    p.Length == length &&
+                    p.Height == height &&
+                    p.Diameter == diameter &&
+                    p.Thickness == thickness
+            ).FirstOrDefault();
+            return stocks;
+        }
         public async Task<IEnumerable<Stock>> GetAll()
         {
             var stock = await _unitOfWork.Stocks.GetAll();

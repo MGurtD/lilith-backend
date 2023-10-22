@@ -12,7 +12,12 @@ namespace Infrastructure.Persistance.EntityConfiguration.Warehouse
             builder
                 .Property(b => b.Quantity)
                 .IsRequired()
-                .HasColumnType("integer");                
+                .HasColumnType("integer");     
+            builder
+                .Property(b => b.Description)
+                .IsRequired()
+                .HasColumnType("varchar")
+                .HasMaxLength(250);             
             builder
                 .Property(b => b.Width)
                 .IsRequired()                
@@ -35,6 +40,19 @@ namespace Infrastructure.Persistance.EntityConfiguration.Warehouse
                 .Property(b => b.MovementDate)
                 .IsRequired()
                 .HasColumnType("timestamp without time zone");
+            builder
+                .Property(b => b.Diameter)
+                .IsRequired()                
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            
+            builder
+                .Property(b => b.Thickness)
+                .IsRequired()                
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
            
             builder
                 .HasKey(b => b.Id)
