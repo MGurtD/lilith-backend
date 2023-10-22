@@ -200,7 +200,7 @@ namespace Api.Services
                     SalesInvoiceId = invoice.Id
                 };
                 var reference = await _unitOfWork.References.Get(salesOrderDetail.ReferenceId);
-                if (reference != null) salesInvoiceDetail.TaxId = reference.TaxId;                
+                if (reference != null && reference!.TaxId.HasValue) salesInvoiceDetail.TaxId = reference.TaxId.Value;                
 
                 salesInvoiceDetail.SetOrderDetail(salesOrderDetail);
                 salesInvoiceDetails.Add(salesInvoiceDetail);

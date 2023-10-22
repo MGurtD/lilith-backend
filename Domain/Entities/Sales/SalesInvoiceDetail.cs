@@ -28,8 +28,8 @@
             TotalCost = UnitCost * UnitPrice;
             Amount = salesOrderDetail.Amount;
 
-            if (salesOrderDetail.Reference != null)
-                TaxId = salesOrderDetail.Reference!.TaxId;
+            if (salesOrderDetail.Reference != null && salesOrderDetail.Reference.TaxId.HasValue)
+                TaxId = salesOrderDetail.Reference!.TaxId!.Value;
         }
 
     }
