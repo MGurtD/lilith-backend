@@ -39,6 +39,7 @@ namespace Application.Persistance
         IRepository<ExpenseType, Guid> ExpenseTypes { get; }
         IExpenseRepository Expenses { get; }
         IReceiptRepository Receipts { get; }
+        IRepository<ReferenceFormat, Guid> ReferenceFormats { get; }
         IContractReader<ConsolidatedExpense> ConsolidatedExpenses { get; }
 
         // Sales

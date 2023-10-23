@@ -36,11 +36,6 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .IsRequired()
                 .HasColumnType("varchar")
                 .HasMaxLength(10);
-
-            builder
-                .Property(b => b.FormatId)
-                .IsRequired()
-                .HasColumnType("integer");
             
             builder
                 .Property(b => b.LastPurchaseCost)

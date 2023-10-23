@@ -1,4 +1,6 @@
-﻿namespace Domain.Entities.Shared
+﻿using Domain.Entities.Purchase;
+
+namespace Domain.Entities.Shared
 {
     public class Reference : Entity
     {
@@ -13,7 +15,8 @@
         public decimal Cost { get; set; } = decimal.Zero;
         public decimal Price { get; set; } = decimal.Zero;
         public bool Purchase { get; set; }
-        public int FormatId { get; set; }
+        public Guid? ReferenceFormatId { get; set; }
+        public ReferenceFormat? ReferenceFormat { get; set; }
         public decimal LastPurchaseCost {get; set;}
         public decimal Density {get; set;}
         public bool Production { get; set; }

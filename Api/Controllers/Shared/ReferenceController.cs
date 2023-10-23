@@ -105,5 +105,14 @@ namespace Api.Controllers.Sales
             await _unitOfWork.References.Remove(entity);
             return Ok(entity);
         }
+
+
+        [Route("Formats")]
+        [HttpGet]
+        public async Task<IActionResult> GetReferenceFormats()
+        {
+            var entities = await _unitOfWork.ReferenceFormats.GetAll();
+            return Ok(entities);
+        }
     }
 }
