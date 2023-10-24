@@ -1,8 +1,6 @@
 using Application.Contracts;
 using Application.Contracts.Purchase;
-using Application.Contracts.Sales;
 using Domain.Entities.Purchase;
-using Domain.Entities.Sales;
 
 namespace Application.Services
 {
