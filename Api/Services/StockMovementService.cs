@@ -76,18 +76,22 @@ namespace Api.Services
         {
             var stockMovement = await _unitOfWork.StockMovements.Get(id);
             if ( stockMovement == null) return new GenericResponse(false, new List<string>() { $"Id {id} inexistent" });
-            var stock = new Stock {
+            var stock = await _stockService.GetByDimensions(stockMovement.LocationId, stockMovement.ReferenceId, 
+                                                            stockMovement.Width, stockMovement.Length, stockMovement.Height,
+                                                            stockMovement.Diameter, stockMovement.Thickness);            
+            
+            var nstock = new Stock {
                 Id = stockMovement.StockId,
                 ReferenceId = stockMovement.ReferenceId,
                 LocationId = stockMovement.LocationId,
-                Quantity = (-1)*stockMovement.Quantity,
+                Quantity = stock.Quantity + (-1)*stockMovement.Quantity,
                 Width = stockMovement.Width,
                 Length = stockMovement.Length,
                 Height = stockMovement.Height,
                 Diameter = stockMovement.Diameter,
                 Thickness = stockMovement.Thickness
             };
-            await _stockService.Update(stock);
+            await _stockService.Update(nstock);
 
             await _unitOfWork.StockMovements.Remove(stockMovement);
             return new GenericResponse(true);

@@ -160,9 +160,11 @@ namespace Application.Services
             var detailsToRetrive = receipt.Details!.Where(d => d.StockMovementId != null);
             foreach (var detail in detailsToRetrive)
             {
-                await _stockMovementService.Remove(detail.Id);
+                Guid oldStockMovementId = detail.StockMovementId!.Value;
+                
                 detail.StockMovementId = null;
                 await _unitOfWork.Receipts.Details.Update(detail);
+                await _stockMovementService.Remove(oldStockMovementId);
             }
 
             return new GenericResponse(true, detailsToRetrive);
