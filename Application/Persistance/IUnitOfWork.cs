@@ -4,6 +4,7 @@ using Application.Persistance.Repositories;
 using Application.Persistance.Repositories.Production;
 using Application.Persistance.Repositories.Purchase;
 using Application.Persistance.Repositories.Sales;
+using Application.Persistance.Repositories.Warehouse;
 using Domain.Entities;
 using Domain.Entities.Auth;
 using Domain.Entities.Production;
@@ -66,9 +67,8 @@ namespace Application.Persistance
         IRepository<Shift, Guid> Shifts { get; }
 
         //Warehouse
-        IRepository<Warehouse, Guid> Warehouses { get; }
+        IWarehouseRepository Warehouses { get; }
         IRepository<ReferenceType, Guid> ReferenceTypes { get; }
-        IRepository<Location, Guid> Locations { get; }
         IRepository<Stock, Guid> Stocks { get; }
         IRepository<StockMovement, Guid> StockMovements {get; }
 
