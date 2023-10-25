@@ -74,15 +74,18 @@ namespace Api.Controllers.Purchase
             var moveToWarehouseStatus = _unitOfWork.Lifecycles.StatusRepository.Find(s => s.Name == "Recepcionat").FirstOrDefault();
             if (moveToWarehouseStatus == null) return NotFound(new GenericResponse(false, new List<string>() { $"Estat recepcionat inexistent" }));
 
-            if (receipt.StatusId != moveToWarehouseStatus.Id && request.StatusId == moveToWarehouseStatus.Id)
-            {
-                await _service.MoveToWarehose(request);
-            }
+            var warehouseResponse = new GenericResponse(true);
+            if (receipt.StatusId != moveToWarehouseStatus.Id && request.StatusId == moveToWarehouseStatus.Id) { }
+                warehouseResponse = await _service.MoveToWarehose(request);
+            if (receipt.StatusId == moveToWarehouseStatus.Id && request.StatusId != moveToWarehouseStatus.Id)
+                warehouseResponse = await _service.RetriveFromWarehose(request);
 
-            var response = await _service.Update(receipt);
+            var globalResponse = new GenericResponse(true);
+            if (warehouseResponse.Result)
+                globalResponse = await _service.Update(request);
 
-            if (response.Result) return Ok();
-            else return BadRequest(response);
+            if (globalResponse.Result && warehouseResponse.Result) return Ok(globalResponse);
+            else return BadRequest(globalResponse);
         }
 
         [HttpDelete("{id:guid}")]

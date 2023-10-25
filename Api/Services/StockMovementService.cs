@@ -54,8 +54,7 @@ namespace Api.Services
                     Length = request.Length,
                     Height = request.Height,
                     Diameter = request.Diameter,
-                    Thickness = request.Thickness,
-                    Id = request.StockId
+                    Thickness = request.Thickness
                 };
                 
                 await _stockService.Create(newStock);

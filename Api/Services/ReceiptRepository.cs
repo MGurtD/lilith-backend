@@ -100,7 +100,7 @@ namespace Application.Services
         public async Task<GenericResponse> UpdateDetail(ReceiptDetail detail)
         {
             var exists = await _unitOfWork.Receipts.Details.Exists(detail.Id);
-            if (!exists) return new GenericResponse(false, new List<string>() { $"Id {detail.Id} inexistent" });
+            if (!exists) return new GenericResponse(false, $"Id {detail.Id} inexistent" );
 
             detail.Reference = null;
             await _unitOfWork.Receipts.Details.Update(detail);
@@ -110,7 +110,7 @@ namespace Application.Services
         public async Task<GenericResponse> RemoveDetail(Guid id)
         {
             var detail = await _unitOfWork.Receipts.Details.Get(id);
-            if (detail == null) return new GenericResponse(false, new List<string>() { $"Id {id} inexistent" });
+            if (detail == null) return new GenericResponse(false, $"Id {id} inexistent");
 
             await _unitOfWork.Receipts.Details.Remove(detail);
             return new GenericResponse(true);
@@ -118,22 +118,26 @@ namespace Application.Services
 
         public async Task<GenericResponse> MoveToWarehose(Receipt receipt)
         {
+            var defaultLocation = _unitOfWork.Locations.Find(l => l.Default == true).FirstOrDefault();
+            if (defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte");
+
             var detailsToMove = receipt.Details!.Where(d => d.StockMovementId == null);
             foreach (var detail in detailsToMove) 
             {
                 var stockMovement = new StockMovement
                 {
+                    LocationId = defaultLocation.Id,
                     MovementDate = DateTime.Now,
                     CreatedOn = DateTime.Now,
                     MovementType = StockMovementType.INPUT,
                     Description = $"Albará {receipt.Number}"
                 };
                 stockMovement.SetFromReceiptDetail(detail);
+                detail.StockMovementId = stockMovement.Id;
 
                 await _stockMovementService.Create(stockMovement);
+                await _unitOfWork.Receipts.Details.Update(detail);
             }
-
-            await ChangeStatus("Recepcionat", receipt);
 
             return new GenericResponse(true, detailsToMove);
         }
@@ -141,10 +145,10 @@ namespace Application.Services
         private async Task<GenericResponse> ChangeStatus(string StatusName, Receipt receipt)
         {
             var lifecycle = await _unitOfWork.Lifecycles.GetByName("Receipts");
-            if (lifecycle == null) return new GenericResponse(false, new List<string> { $"Cicle de vida 'Receipts' inexistent" });
+            if (lifecycle == null) return new GenericResponse(false, $"Cicle de vida 'Receipts' inexistent" );
 
             var status = lifecycle.Statuses!.FirstOrDefault(s => s.Name == StatusName);
-            if (status == null) return new GenericResponse(false, new List<string> { $"Estat {StatusName} inexistent al cicle de vida 'Receipts'" });
+            if (status == null) return new GenericResponse(false, $"Estat {StatusName} inexistent al cicle de vida 'Receipts'");
                 
             receipt.StatusId = status.Id;
             await _unitOfWork.Receipts.Update(receipt);
@@ -153,17 +157,15 @@ namespace Application.Services
 
         public async Task<GenericResponse> RetriveFromWarehose(Receipt receipt)
         {
-            var stockMovementIdsToRetrive = 
-                from detail in receipt.Details
-                where detail.StockMovementId != null
-                select detail.StockMovementId;
+            var detailsToRetrive = receipt.Details!.Where(d => d.StockMovementId != null);
+            foreach (var detail in detailsToRetrive)
+            {
+                await _stockMovementService.Remove(detail.Id);
+                detail.StockMovementId = null;
+                await _unitOfWork.Receipts.Details.Update(detail);
+            }
 
-            var stockMovements = _unitOfWork.StockMovements.Find(s => stockMovementIdsToRetrive.Contains(s.Id));
-            await _unitOfWork.StockMovements.RemoveRange(stockMovements);
-
-            await ChangeStatus("Pendent Recepcionar", receipt);
-
-            return new GenericResponse(true, stockMovements);
+            return new GenericResponse(true, detailsToRetrive);
         }
     }
 }

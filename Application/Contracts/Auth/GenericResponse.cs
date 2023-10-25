@@ -13,11 +13,18 @@
             Content = content;
         }
 
+        public GenericResponse(bool result, string error, object? content = null)
+        {
+            Result = result;
+            Errors = new List<string> { error };
+            Content = content;
+        }
+
         public GenericResponse(bool result, IList<string> errors, object? content = null)
         {
             Result = result;
-            Content = content;
             Errors = errors;
+            Content = content;
         }
     }
 }
