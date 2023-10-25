@@ -7,5 +7,6 @@ namespace Application.Services
     {
         Task<GenericResponse> Create(StockMovement stockMovement);
         IEnumerable<StockMovement> GetBetweenDates(DateTime startDate, DateTime endDate);
+        Task<GenericResponse> Remove(Guid id);
     }
 }

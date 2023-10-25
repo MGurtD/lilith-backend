@@ -37,8 +37,9 @@ namespace Api.Services
                     Length = request.Length,
                     Height = request.Height,
                     Diameter = request.Diameter,
-                    Thickness = request.Thickness 
+                    Thickness = request.Thickness,                    
                 };
+                request.StockId = stock.Id;                
                 await _stockService.Update(oldStock);
 
                 request.StockId = oldStock.Id;
@@ -53,8 +54,10 @@ namespace Api.Services
                     Length = request.Length,
                     Height = request.Height,
                     Diameter = request.Diameter,
-                    Thickness = request.Thickness
+                    Thickness = request.Thickness,
+                    Id = request.StockId
                 };
+                
                 await _stockService.Create(newStock);
 
                 request.StockId = newStock.Id;
@@ -68,6 +71,27 @@ namespace Api.Services
         {
             var stockMovements = _unitOfWork.StockMovements.Find(p => p.MovementDate >= startDate && p.MovementDate <= endDate);
             return stockMovements;
+        }
+
+        public async Task<GenericResponse> Remove(Guid id)
+        {
+            var stockMovement = await _unitOfWork.StockMovements.Get(id);
+            if ( stockMovement == null) return new GenericResponse(false, new List<string>() { $"Id {id} inexistent" });
+            var stock = new Stock {
+                Id = stockMovement.StockId,
+                ReferenceId = stockMovement.ReferenceId,
+                LocationId = stockMovement.LocationId,
+                Quantity = (-1)*stockMovement.Quantity,
+                Width = stockMovement.Width,
+                Length = stockMovement.Length,
+                Height = stockMovement.Height,
+                Diameter = stockMovement.Diameter,
+                Thickness = stockMovement.Thickness
+            };
+            await _stockService.Update(stock);
+
+            await _unitOfWork.StockMovements.Remove(stockMovement);
+            return new GenericResponse(true);
         }
     }
 }
