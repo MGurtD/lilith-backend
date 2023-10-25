@@ -5,6 +5,7 @@ using Application.Persistance.Repositories;
 using Application.Persistance.Repositories.Production;
 using Application.Persistance.Repositories.Purchase;
 using Application.Persistance.Repositories.Sales;
+using Application.Persistance.Repositories.Warehouse;
 using Domain.Entities;
 using Domain.Entities.Auth;
 using Domain.Entities.Production;
@@ -16,6 +17,7 @@ using Infrastructure.Persistance.Repositories;
 using Infrastructure.Persistance.Repositories.Production;
 using Infrastructure.Persistance.Repositories.Purchase;
 using Infrastructure.Persistance.Repositories.Sales;
+using Infrastructure.Persistance.Repositories.Warehouse;
 
 namespace Infrastructure.Persistance
 {
@@ -74,9 +76,8 @@ namespace Infrastructure.Persistance
         public IRepository<Shift, Guid> Shifts { get; private set; }
 
         // Warehouse
-        public IRepository<Warehouse, Guid> Warehouses { get; private set; }
+        public IWarehouseRepository Warehouses { get; private set; }
         public IRepository<ReferenceType, Guid> ReferenceTypes { get; private set; }
-        public IRepository<Location, Guid> Locations {get; private set; }
         public IRepository<Stock, Guid> Stocks{ get; private set;}
         public IRepository<StockMovement, Guid> StockMovements {get; private set;}
 
@@ -128,9 +129,8 @@ namespace Infrastructure.Persistance
             MachineStatuses = new Repository<MachineStatus, Guid>(context);
             Shifts = new Repository<Shift, Guid>(context);
 
-            Warehouses = new Repository<Warehouse, Guid>(context);
+            Warehouses = new WarehouseRepository(context);
             ReferenceTypes = new Repository<ReferenceType, Guid>(context);
-            Locations = new Repository<Location, Guid>(context);
             Stocks = new Repository<Stock, Guid>(context);
             StockMovements = new Repository<StockMovement, Guid>(context);
         }

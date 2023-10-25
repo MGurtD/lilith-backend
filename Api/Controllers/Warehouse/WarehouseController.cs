@@ -2,6 +2,8 @@
 using Domain.Entities.Warehouse;
 using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Query.Internal;
+using Application.Contracts;
 
 namespace Api.Controllers.Warehouse
 {
@@ -30,7 +32,7 @@ namespace Api.Controllers.Warehouse
             }
             else
             {
-                return Conflict($"Area {request.Name} existent");
+                return Conflict($"Magatzem {request.Name} existent");
             }
         }
         [HttpGet]
@@ -45,15 +47,11 @@ namespace Api.Controllers.Warehouse
         public async Task<IActionResult> GetById(Guid id)
         {
             var entity = await _unitOfWork.Warehouses.Get(id);
-            if (entity is not null)
-            {
-                return Ok(entity);
-            }
-            else
-            {
-                return NotFound();
-            }
+            if (entity is null) return NotFound();
+         
+            return Ok(entity);
         }
+
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid Id, Domain.Entities.Warehouse.Warehouse request)
         {
@@ -82,6 +80,57 @@ namespace Api.Controllers.Warehouse
 
             await _unitOfWork.Warehouses.Remove(entity);
             return Ok(entity);
+        }
+
+        [HttpPost("Location")]
+        public async Task<IActionResult> CreateLocation(Location request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+
+            var exists = _unitOfWork.Warehouses.Locations.Find(r => request.Name == r.Name && request.WarehouseId == r.WarehouseId).Any();
+            if (!exists)
+            {
+                await _unitOfWork.Warehouses.Locations.Add(request);
+                return Ok(new GenericResponse(true, request));
+            }
+            else
+            {
+                return Conflict(new GenericResponse(false, $"Ubicació {request.Name} existent"));
+            }
+        }
+
+        [HttpPut("Location")]
+        public async Task<IActionResult> UpdateLocation(Location request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+
+            var exists = _unitOfWork.Warehouses.Locations.Find(r => request.Id == r.Id).Any();
+            if (exists)
+            {
+                await _unitOfWork.Warehouses.Locations.Update(request);
+                return Ok(new GenericResponse(true, request));
+            }
+            else
+            {
+                return NotFound(new GenericResponse(false, $"Ubicació amb ID {request.Id} no existeix"));
+            }
+        }
+
+        [HttpDelete("Location")]
+        public async Task<IActionResult> DeleteLocation(Guid id)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+
+            var location = _unitOfWork.Warehouses.Locations.Find(r => id == r.Id).FirstOrDefault();
+            if (location is not null)
+            {
+                await _unitOfWork.Warehouses.Locations.Remove(location);
+                return Ok(new GenericResponse(true, location));
+            }
+            else
+            {
+                return NotFound(new GenericResponse(false, $"Ubicació amb ID {id} no existeix"));
+            }
         }
     }
 }

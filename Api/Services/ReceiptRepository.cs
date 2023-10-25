@@ -118,7 +118,7 @@ namespace Application.Services
 
         public async Task<GenericResponse> MoveToWarehose(Receipt receipt)
         {
-            var defaultLocation = _unitOfWork.Locations.Find(l => l.Default == true).FirstOrDefault();
+            var defaultLocation = _unitOfWork.Warehouses.Locations.Find(l => l.Default == true).FirstOrDefault();
             if (defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte");
 
             var detailsToMove = receipt.Details!.Where(d => d.StockMovementId == null);
