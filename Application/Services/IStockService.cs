@@ -11,5 +11,6 @@ namespace Application.Services
         IEnumerable<Stock> GetByReference(Guid referenceId);
         Task<Stock>GetByDimensions(Guid locationId, Guid referenceId, decimal width, decimal length, decimal height, decimal diameter, decimal thickness);
         Task<IEnumerable<Stock>> GetAll();
+        Task<GenericResponse> Remove(Guid id);
     }
 }
