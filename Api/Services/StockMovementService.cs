@@ -23,12 +23,10 @@ namespace Api.Services
             //Si no existeix add stock
             
             var stock = await _stockService.GetByDimensions(request.LocationId, request.ReferenceId, 
-                                                    request.Width, request.Length, request.Height,
-                                                    request.Diameter, request.Thickness);
+                                                            request.Width, request.Length, request.Height,
+                                                            request.Diameter, request.Thickness);            
             
-            await _unitOfWork.StockMovements.Add(request);
-            
-            if (stock != null )
+            if (stock != null)
             {
                 var oldStock = new Stock{
                     Id = stock.Id,
@@ -42,7 +40,11 @@ namespace Api.Services
                     Thickness = request.Thickness 
                 };
                 await _stockService.Update(oldStock);
-            }else{            
+
+                request.StockId = oldStock.Id;
+            }
+            else
+            {            
                 var newStock = new Stock{
                     ReferenceId = request.ReferenceId,
                     LocationId = request.LocationId,
@@ -54,7 +56,11 @@ namespace Api.Services
                     Thickness = request.Thickness
                 };
                 await _stockService.Create(newStock);
+
+                request.StockId = newStock.Id;
             };
+
+            await _unitOfWork.StockMovements.Add(request);
             return new GenericResponse(true, request);
         }
 

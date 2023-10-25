@@ -16,6 +16,9 @@ namespace Application.Services
         Task<GenericResponse> Update(Receipt receipt);
         Task<GenericResponse> Remove(Guid id);
 
+        Task<GenericResponse> MoveToWarehose(Receipt receipt);
+        Task<GenericResponse> RetriveFromWarehose(Receipt receipt);
+
         Task<GenericResponse> AddDetail(ReceiptDetail detail);
         Task<GenericResponse> UpdateDetail(ReceiptDetail detail);
         Task<GenericResponse> RemoveDetail(Guid id);

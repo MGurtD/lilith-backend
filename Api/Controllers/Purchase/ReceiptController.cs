@@ -1,4 +1,5 @@
 ﻿using Api.Services;
+using Application.Contracts;
 using Application.Contracts.Purchase;
 using Application.Persistance;
 using Application.Services;
@@ -64,9 +65,19 @@ namespace Api.Controllers.Purchase
         [HttpPut("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] Receipt receipt)
+        public async Task<IActionResult> Update(Guid id, [FromBody] Receipt request)
         {
-            if (id != receipt.Id) return BadRequest();
+            if (id != request.Id) return BadRequest();
+            var receipt = _unitOfWork.Receipts.Find(r => r.Id == request.Id).FirstOrDefault();
+            if (receipt == null) return NotFound(new GenericResponse(false, new List<string>() { $"Albará amb ID {request.Id} inexistent" }));
+
+            var moveToWarehouseStatus = _unitOfWork.Lifecycles.StatusRepository.Find(s => s.Name == "Recepcionat").FirstOrDefault();
+            if (moveToWarehouseStatus == null) return NotFound(new GenericResponse(false, new List<string>() { $"Estat recepcionat inexistent" }));
+
+            if (receipt.StatusId != moveToWarehouseStatus.Id && request.StatusId == moveToWarehouseStatus.Id)
+            {
+                await _service.MoveToWarehose(request);
+            }
 
             var response = await _service.Update(receipt);
 
@@ -82,6 +93,30 @@ namespace Api.Controllers.Purchase
             var response = await _service.Remove(id);
 
             if (response.Result) return Ok();
+            else return BadRequest(response);
+        }
+
+        [HttpPost("MoveToWarehouse")]
+        [SwaggerOperation("ReceiptMoveToWarehouse")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> MoveToWarehouse(Receipt receipt)
+        {
+            var response = await _service.MoveToWarehose(receipt);
+
+            if (response.Result) return Ok(response);
+            else return BadRequest(response);
+        }
+
+        [HttpPost("RetriveFromWarehose")]
+        [SwaggerOperation("ReceiptRetriveFromWarehose")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> RetriveFromWarehouse(Receipt receipt)
+        {
+            var response = await _service.RetriveFromWarehose(receipt);
+
+            if (response.Result) return Ok(response);
             else return BadRequest(response);
         }
 

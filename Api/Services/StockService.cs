@@ -25,11 +25,18 @@ namespace Api.Services
             return new GenericResponse(true, request);
         }
 
+        public async Task<GenericResponse> Delete(Stock request)
+        {
+            await _unitOfWork.Stocks.Remove(request);
+            return new GenericResponse(true, request);
+        }
+
         public IEnumerable<Stock> GetByLocation(Guid locationId)
         {
             var stocks = _unitOfWork.Stocks.Find(p => p.LocationId == locationId)
                             .GroupBy(p => new { p.Width, p.Length, p.Height, p.Diameter, p.Thickness})
-                            .Select(b => new Stock {  
+                            .Select(b => new Stock 
+                            {  
                                 LocationId = locationId,
                                 Width = b.Key.Width, 
                                 Length = b.Key.Length,
@@ -71,6 +78,7 @@ namespace Api.Services
             ).FirstOrDefault();
             return stocks;
         }
+
         public async Task<IEnumerable<Stock>> GetAll()
         {
             var stock = await _unitOfWork.Stocks.GetAll();

@@ -1,7 +1,14 @@
+using Domain.Entities.Purchase;
 using Domain.Entities.Shared;
 
 namespace Domain.Entities.Warehouse
 {
+    public struct StockMovementType
+    {
+        public static string INPUT = "INPUT";
+        public static string OUTPUT = "OUTPUT";
+    }
+
     public class StockMovement : Entity
     {
         public Guid StockId {get; set;}
@@ -18,7 +25,18 @@ namespace Domain.Entities.Warehouse
         public decimal Height {get; set; }
         public DateTime MovementDate {get; set;}
         public decimal Diameter {get; set;}
-        public decimal Thickness{get; set;}
-        
+        public decimal Thickness {get; set;}
+
+        public void SetFromReceiptDetail(ReceiptDetail receiptDetail)
+        {
+            ReferenceId = receiptDetail.ReferenceId;
+
+            Quantity = receiptDetail.Quantity;
+            Width = receiptDetail.Width;
+            Diameter = receiptDetail.Diameter;
+            Length = receiptDetail.Lenght;
+            Height = receiptDetail.Height;
+            Thickness = receiptDetail.Thickness;
+        }
     }
 }

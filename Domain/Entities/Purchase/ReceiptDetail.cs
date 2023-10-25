@@ -1,4 +1,5 @@
 ﻿using Domain.Entities.Shared;
+using Domain.Entities.Warehouse;
 
 namespace Domain.Entities.Purchase
 {
@@ -9,6 +10,9 @@ namespace Domain.Entities.Purchase
 
         public Guid ReferenceId { get; set; }
         public Reference? Reference { get; set; }
+
+        public Guid? StockMovementId { get; set; }
+        public StockMovement? StockMovement { get; set; }
 
         public int Quantity { get; set; }
         public decimal Width { get; set; } = decimal.Zero;
