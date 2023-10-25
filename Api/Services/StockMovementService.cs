@@ -60,7 +60,7 @@ namespace Api.Services
                 await _stockService.Create(newStock);
 
                 request.StockId = newStock.Id;
-            };
+            }
 
             await _unitOfWork.StockMovements.Add(request);
             return new GenericResponse(true, request);
