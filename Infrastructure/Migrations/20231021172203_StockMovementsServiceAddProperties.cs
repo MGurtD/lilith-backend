@@ -9,9 +9,6 @@ namespace Infrastructure.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_References_ReferenceTypes_ReferenceTypeId",
-                table: "References");
 
             migrationBuilder.DropForeignKey(
                 name: "FK_References_Taxes_TaxId",

@@ -9,9 +9,6 @@ namespace Infrastructure.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "FormatId",
-                table: "References");
 
             migrationBuilder.AddColumn<Guid>(
                 name: "ReferenceFormatId",

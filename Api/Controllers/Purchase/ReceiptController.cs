@@ -75,7 +75,7 @@ namespace Api.Controllers.Purchase
             if (moveToWarehouseStatus == null) return NotFound(new GenericResponse(false, new List<string>() { $"Estat recepcionat inexistent" }));
 
             var warehouseResponse = new GenericResponse(true);
-            if (receipt.StatusId != moveToWarehouseStatus.Id && request.StatusId == moveToWarehouseStatus.Id) { }
+            if (receipt.StatusId != moveToWarehouseStatus.Id && request.StatusId == moveToWarehouseStatus.Id)
                 warehouseResponse = await _service.MoveToWarehose(request);
             if (receipt.StatusId == moveToWarehouseStatus.Id && request.StatusId != moveToWarehouseStatus.Id)
                 warehouseResponse = await _service.RetriveFromWarehose(request);

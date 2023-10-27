@@ -133,6 +133,7 @@ namespace Application.Services
                     Description = $"Albará {receipt.Number}"
                 };
                 stockMovement.SetFromReceiptDetail(detail);
+                detail.Reference = null;
                 detail.StockMovementId = stockMovement.Id;
 
                 await _stockMovementService.Create(stockMovement);
@@ -161,7 +162,8 @@ namespace Application.Services
             foreach (var detail in detailsToRetrive)
             {
                 Guid oldStockMovementId = detail.StockMovementId!.Value;
-                
+
+                detail.Reference = null;
                 detail.StockMovementId = null;
                 await _unitOfWork.Receipts.Details.Update(detail);
                 await _stockMovementService.Remove(oldStockMovementId);
