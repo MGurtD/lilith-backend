@@ -36,7 +36,7 @@ namespace Api.Controllers.Production
         {
             var entities = await _unitOfWork.OperatorTypes.GetAll();
 
-            return Ok(entities);
+            return Ok(entities.OrderBy(w => w.Name));
         }
 
         [HttpGet("{id:guid}")]
