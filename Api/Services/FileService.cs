@@ -109,11 +109,11 @@ namespace Api.Services
                     await unitOfWork.Files.Remove(file);
                 }
 
-                return new GenericResponse(false, new List<string>(), file);
+                return new GenericResponse(true, file);
             }
             catch (Exception ex)
             {
-                return new GenericResponse(false, new List<string>() { ex.Message });
+                return new GenericResponse(false, ex.Message);
             }
         }
 
