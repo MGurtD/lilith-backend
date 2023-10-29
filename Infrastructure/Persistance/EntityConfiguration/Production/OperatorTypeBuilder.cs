@@ -25,6 +25,12 @@ namespace Infrastructure.Persistance.EntityConfiguration.Production
                 .HasColumnType("varchar")
                 .HasMaxLength(250);
             builder
+               .Property(b => b.Cost)
+               .IsRequired()
+               .HasColumnType("decimal")
+               .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                             ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
                 .HasKey(b => b.Id)
                 .HasName("PK_OperatorType");
             builder.HasIndex(builder => builder.Name, "UK_OperatorType_Name");

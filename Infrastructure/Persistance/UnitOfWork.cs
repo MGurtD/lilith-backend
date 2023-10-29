@@ -70,8 +70,7 @@ namespace Infrastructure.Persistance
         public IWorkcenterRepository Workcenters { get; private set; }
         public IRepository<WorkCenterCost, Guid> WorkcenterCosts { get; private set; }
         public IRepository<Operator, Guid> Operators { get; private set; }
-        public IRepository<OperatorType, Guid> OperatorTypes { get; private set; }
-        public IRepository<OperatorCost, Guid> OperatorCosts { get; private set; }
+        public IRepository<OperatorType, Guid> OperatorTypes { get; private set; }        
         public IRepository<MachineStatus, Guid> MachineStatuses { get; private set; }
         public IRepository<Shift, Guid> Shifts { get; private set; }
 
@@ -124,8 +123,7 @@ namespace Infrastructure.Persistance
             Workcenters = new WorkcenterRepository(context);
             WorkcenterCosts = new Repository<WorkCenterCost, Guid>(context);
             Operators = new Repository<Operator, Guid>(context);
-            OperatorTypes = new Repository<OperatorType, Guid>(context);
-            OperatorCosts = new Repository<OperatorCost, Guid>(context);
+            OperatorTypes = new Repository<OperatorType, Guid>(context);            
             MachineStatuses = new Repository<MachineStatus, Guid>(context);
             Shifts = new Repository<Shift, Guid>(context);
 
