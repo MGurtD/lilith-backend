@@ -50,7 +50,7 @@ namespace Api.Controllers.Purchase
         public async Task<IActionResult> GetAll()
         {
             var entities = await _unitOfWork.Expenses.GetAll();
-            return Ok(entities.OrderBy(e => e.PaymentDay));
+            return Ok(entities.OrderBy(e => e.PaymentDate));
         }
 
         [Route("ExpenseType/{id:guid}")]
