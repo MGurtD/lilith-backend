@@ -1,21 +1,17 @@
 ﻿using Domain.Entities.Sales;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistance.EntityConfiguration.Sales
 {
-    public class SalesOrderDetailBuilder : IEntityTypeConfiguration<SalesOrderDetail>
+    public class DeliveryNoteDetailBuilder : IEntityTypeConfiguration<DeliveryNoteDetail>
     {
-        public void Configure(EntityTypeBuilder<SalesOrderDetail> builder)
+        public const string TABLE_NAME = "DeliveryNoteDetails";
+
+        public void Configure(EntityTypeBuilder<DeliveryNoteDetail> builder)
         {
             builder.ConfigureBase();
+
             builder
                 .Property(b => b.Description)
                 .IsRequired()
@@ -49,18 +45,12 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                               ApplicationDbContextConstants.DECIMAL_SCALE);
+
             builder
-                .Property(b => b.EstimatedDeliveryDate)
-                .IsRequired()
-                .HasColumnType("timestamp without time zone");
-            builder
-                .Property(b => b.IsDelivered)
-                .IsRequired()
-                .HasColumnType("boolean");
-            builder
-                .Property(b => b.IsInvoiced)
-                .IsRequired()
-                .HasColumnType("boolean");
+                .HasKey(b => b.Id)
+                .HasName($"PK_{TABLE_NAME}");
+
+            builder.ToTable(TABLE_NAME);
         }
     }
 }

@@ -11,6 +11,7 @@
         public int ReceiptCounter { get; set; }
         public int SalesOrderCounter { get; set; }
         public int SalesInvoiceCounter { get; set; }
+        public int DeliveryNoteCounter { get; set; }
 
     }
 }

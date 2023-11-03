@@ -133,7 +133,7 @@ namespace Api.Services
             if (numberOfDetails > 0)
             {
                 var numberOfInvoicedDetails = order.SalesOrderDetails.Where(d => d.IsInvoiced).Count();
-                var numberOfServedDetails = order.SalesOrderDetails.Where(d => d.IsServed).Count();
+                var numberOfServedDetails = order.SalesOrderDetails.Where(d => d.IsDelivered).Count();
 
                 var lifecycle = await _unitOfWork.Lifecycles.GetByName("SalesOrder");
                 if (lifecycle == null) return new GenericResponse(false, new List<string>());

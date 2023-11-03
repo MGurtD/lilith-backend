@@ -30,23 +30,27 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .Property(b => b.EndDate)
                 .IsRequired()
                 .HasColumnType("timestamp without time zone");
+
             builder
                 .Property(b => b.PurchaseInvoiceCounter)
                 .IsRequired()
                 .HasDefaultValue(0)
                 .HasColumnType("integer");
-
             builder
                 .Property(b => b.SalesInvoiceCounter)
                 .IsRequired()
                 .HasDefaultValue(0)
                 .HasColumnType("integer");
-
             builder
                 .Property(b => b.SalesOrderCounter)
                 .IsRequired()
                 .HasDefaultValue(0)
                 .HasColumnType("integer");
+            builder
+                .Property(b => b.DeliveryNoteCounter)
+                .IsRequired()
+                .HasDefaultValue(0)
+                .HasColumnType("integer");            
 
             builder
                 .HasKey(b => b.Id)
