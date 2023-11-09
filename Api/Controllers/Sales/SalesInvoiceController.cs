@@ -23,7 +23,7 @@ namespace Api.Controllers.Sales
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create(CreateOrderOrInvoiceRequest createInvoiceRequest)
+        public async Task<IActionResult> Create(CreateHeaderRequest createInvoiceRequest)
         {
             var response = await _service.Create(createInvoiceRequest);
 

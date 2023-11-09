@@ -32,7 +32,7 @@ namespace Api.Services
             return invoices;
         }
 
-        public async Task<GenericResponse> Create(CreateOrderOrInvoiceRequest createRequest)
+        public async Task<GenericResponse> Create(CreateHeaderRequest createRequest)
         {
             var response = await ValidateCreateInvoiceRequest(createRequest);
             if (!response.Result) return response;
@@ -164,7 +164,7 @@ namespace Api.Services
             return new GenericResponse(true, order);
         }
 
-        private async Task<GenericResponse> ValidateCreateInvoiceRequest(CreateOrderOrInvoiceRequest createInvoiceRequest)
+        private async Task<GenericResponse> ValidateCreateInvoiceRequest(CreateHeaderRequest createInvoiceRequest)
         {
             var exercise = await _unitOfWork.Exercices.Get(createInvoiceRequest.ExerciseId);
             if (exercise == null) return new GenericResponse(false, new List<string>() { "L'exercici no existex" });

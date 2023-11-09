@@ -50,6 +50,7 @@ namespace Application.Persistance
         ISalesOrderHeaderRepository SalesOrderHeaders { get; }
         ISalesOrderDetailRepository SalesOrderDetails { get; }
         ISalesInvoiceRepository SalesInvoices { get; }
+        IDeliveryNoteRepository DeliveryNotes { get; }
         IContractReader<Contracts.Sales.SalesOrderDetail> SalesOrderDetailForInvoices { get; }
         IContractReader<SalesInvoiceDetailReport> SalesInvoiceDetailWithOrder { get; }
 

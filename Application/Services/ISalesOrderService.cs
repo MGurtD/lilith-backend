@@ -7,7 +7,7 @@ namespace Application.Services
 {
     public interface ISalesOrderService
     {
-        Task<GenericResponse> Create(CreateOrderOrInvoiceRequest createRequest);
+        Task<GenericResponse> Create(CreateHeaderRequest createRequest);
 
         Task<SalesOrderHeader?> GetById(Guid id);
         IEnumerable<SalesOrderHeader> GetBetweenDates(DateTime startDate, DateTime endDate);
