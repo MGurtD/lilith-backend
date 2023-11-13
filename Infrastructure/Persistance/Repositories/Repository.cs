@@ -27,7 +27,10 @@ namespace Infrastructure.Persistance.Repositories
 
         public virtual IEnumerable<Entity> Find(Expression<Func<Entity, bool>> predicate)
         {
-            return dbSet.AsNoTracking().Where(predicate);
+            var entities = dbSet.AsNoTracking().Where(predicate).AsNoTracking();
+            foreach (var entity in entities)
+                context.Entry(entity).State = EntityState.Detached;
+            return entities;
         }
 
         public virtual async Task<bool> Exists(Guid Id)
@@ -39,6 +42,8 @@ namespace Infrastructure.Persistance.Repositories
         {
             await dbSet.AddAsync(entity);
             await context.SaveChangesAsync();
+
+            context.Entry(entity).State = EntityState.Detached;
         }
 
         public async Task AddRange(IEnumerable<Entity> entities)
@@ -51,8 +56,10 @@ namespace Infrastructure.Persistance.Repositories
         {
             entity.UpdatedOn = DateTime.Now;
 
-            dbSet.Update(entity); 
+            dbSet.Update(entity);            
             await context.SaveChangesAsync();
+
+            context.Entry(entity).State = EntityState.Detached;
         }
 
         public bool UpdateWithoutSave(Entity entity)

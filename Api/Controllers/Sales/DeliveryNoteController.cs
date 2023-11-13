@@ -69,14 +69,14 @@ namespace Api.Controllers.Purchase
             var deliveryNote = _unitOfWork.DeliveryNotes.Find(r => r.Id == request.Id).FirstOrDefault();
             if (deliveryNote == null) return NotFound(new GenericResponse(false, new List<string>() { $"Albará amb ID {request.Id} inexistent" }));
 
-            var moveToWarehouseStatus = _unitOfWork.Lifecycles.StatusRepository.Find(s => s.Name == "Entregat").FirstOrDefault();
-            if (moveToWarehouseStatus == null) return NotFound(new GenericResponse(false, $"Estat 'Entregat' inexistent" ));
+            var deliveredStatus = _unitOfWork.Lifecycles.StatusRepository.Find(s => s.Name == "Entregat").FirstOrDefault();
+            if (deliveredStatus == null) return NotFound(new GenericResponse(false, $"Estat 'Entregat' inexistent" ));
 
             var warehouseResponse = new GenericResponse(true);
-            if (deliveryNote.StatusId != moveToWarehouseStatus.Id && request.StatusId == moveToWarehouseStatus.Id)
-                warehouseResponse = await _service.MoveToWarehose(request);
-            if (deliveryNote.StatusId == moveToWarehouseStatus.Id && request.StatusId != moveToWarehouseStatus.Id)
-                warehouseResponse = await _service.RetriveFromWarehose(request);
+            if (deliveryNote.StatusId != deliveredStatus.Id && request.StatusId == deliveredStatus.Id)
+                warehouseResponse = await _service.Deliver(request);
+            if (deliveryNote.StatusId == deliveredStatus.Id && request.StatusId != deliveredStatus.Id)
+                warehouseResponse = await _service.UnDeliver(request);
 
             var globalResponse = new GenericResponse(true);
             if (warehouseResponse.Result)

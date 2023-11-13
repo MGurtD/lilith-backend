@@ -5,6 +5,9 @@ using Application.Persistance;
 using Domain.Entities;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
+using Domain.Entities.Warehouse;
+using Infrastructure.Persistance;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Application.Services
 {
@@ -102,77 +105,84 @@ namespace Application.Services
             return new GenericResponse(true);
         }
 
-        public async Task<GenericResponse> MoveToWarehose(DeliveryNote deliveryNote)
+        public async Task<GenericResponse> Deliver(DeliveryNote deliveryNote)
+        {
+            var warehouseResponse = await RetriveFromWarehose(deliveryNote);
+            if (!warehouseResponse.Result) return warehouseResponse;
+
+            var orderServiceResponse = await _salesOrderService.Deliver(deliveryNote.Id);
+            if (!orderServiceResponse.Result) return orderServiceResponse;
+
+            deliveryNote.DeliveryDate = DateTime.Now;
+            await Update(deliveryNote);
+
+            return new GenericResponse(true);
+        }
+
+        public async Task<GenericResponse> UnDeliver(DeliveryNote deliveryNote)
+        {
+            var warehouseResponse = await ReturnToWarehose(deliveryNote);
+            if (!warehouseResponse.Result) return warehouseResponse;
+
+            var orderServiceResponse = await _salesOrderService.UnDeliver(deliveryNote.Id);
+            if (!orderServiceResponse.Result) return orderServiceResponse;
+
+            deliveryNote.DeliveryDate = null;
+            await Update(deliveryNote);
+
+            return new GenericResponse(true);
+        }
+
+        private async Task<GenericResponse> RetriveFromWarehose(DeliveryNote deliveryNote)
         {
             var defaultLocation = _unitOfWork.Warehouses.Locations.Find(l => l.Default == true).FirstOrDefault();
             if (defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte");
 
-            //var detailsToMove = deliveryNote.Details!.Where(d => d.StockMovementId == null);
-            //foreach (var detail in detailsToMove)
-            //{
-            //    var stockMovement = new StockMovement
-            //    {
-            //        LocationId = defaultLocation.Id,
-            //        MovementDate = DateTime.Now,
-            //        CreatedOn = DateTime.Now,
-            //        MovementType = StockMovementType.INPUT,
-            //        Description = $"Albará {deliveryNote.Number}"
-            //    };
-            //    stockMovement.SetFromReceiptDetail(detail);
-            //    detail.Reference = null;
-            //    detail.StockMovementId = stockMovement.Id;
+            foreach (var detail in deliveryNote.Details)
+            {
+                detail.Reference = null;
 
-            //    await _stockMovementService.Create(stockMovement);
-            //    await _unitOfWork.Receipts.Details.Update(detail);
-            //}
-
-            return new GenericResponse(true);
-        }
-
-        public async Task<GenericResponse> RetriveFromWarehose(DeliveryNote deliveryNote)
-        {
-            //var detailsToRetrive = deliveryNote.Details!.Where(d => d.StockMovementId != null);
-            //foreach (var detail in detailsToRetrive)
-            //{
-            //    Guid oldStockMovementId = detail.StockMovementId!.Value;
-
-            //    detail.Reference = null;
-            //    detail.StockMovementId = null;
-            //    await _unitOfWork.Receipts.Details.Update(detail);
-            //    await _stockMovementService.Remove(oldStockMovementId);
-            //}
+                var stockMovement = new StockMovement
+                {
+                    LocationId = defaultLocation.Id,
+                    MovementDate = DateTime.Now,
+                    CreatedOn = DateTime.Now,
+                    MovementType = StockMovementType.OUTPUT,
+                    Description = $"Albará {deliveryNote.Number}",
+                    ReferenceId = detail.ReferenceId,
+                    Quantity = detail.Quantity,
+                };
+                var response = await _stockMovementService.Create(stockMovement);
+                if (!response.Result) return response;
+            }
 
             return new GenericResponse(true);
         }
 
-        private async Task<GenericResponse> ValidateCreateInvoiceRequest(CreateHeaderRequest createInvoiceRequest)
+        private async Task<GenericResponse> ReturnToWarehose(DeliveryNote deliveryNote)
         {
-            var exercise = await _unitOfWork.Exercices.Get(createInvoiceRequest.ExerciseId);
-            if (exercise == null) return new GenericResponse(false, new List<string>() { "L'exercici no existex" });
+            var defaultLocation = _unitOfWork.Warehouses.Locations.Find(l => l.Default == true).FirstOrDefault();
+            if (defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte");
 
-            var customer = await _unitOfWork.Customers.Get(createInvoiceRequest.CustomerId);
-            if (customer == null) return new GenericResponse(false, new List<string>() { "El client no existeix" });
-            if (!customer.IsValidForSales())
-                return new GenericResponse(false, new List<string>() { "El client no és válid per a crear una factura. Revisa el nom fiscal, el número de compte i el NIF" });
-            if (customer.MainAddress() == null)
-                return new GenericResponse(false, new List<string>() { "El client no té direccions donades d'alta. Si us plau, creí una direcció." });
+            foreach (var detail in deliveryNote.Details)
+            {
+                detail.Reference = null;
 
-            var site = _unitOfWork.Sites.Find(s => s.Name == "Local Torelló").FirstOrDefault();
-            if (site == null)
-                return new GenericResponse(false, new List<string>() { "La seu 'Temges' no existeix" });
-            if (!site.IsValidForSales())
-                return new GenericResponse(false, new List<string>() { "Seu 'Temges' no és válida per crear una factura. Revisi les dades de facturació." });
+                var stockMovement = new StockMovement
+                {
+                    LocationId = defaultLocation.Id,
+                    MovementDate = DateTime.Now,
+                    CreatedOn = DateTime.Now,
+                    MovementType = StockMovementType.INPUT,
+                    Description = $"Retorn albará {deliveryNote.Number}",
+                    ReferenceId = detail.ReferenceId,
+                    Quantity = detail.Quantity,
+                };
+                var response = await _stockMovementService.Create(stockMovement);
+                if (!response.Result) return response;
+            }
 
-            var lifecycle = _unitOfWork.Lifecycles.Find(l => l.Name == lifecycleName).FirstOrDefault();
-            if (lifecycle == null) return new GenericResponse(false, $"Cicle de vida '{lifecycleName}' inexistent");
-            if (!lifecycle.InitialStatusId.HasValue) return new GenericResponse(false, $"El cicle de vida '{lifecycleName}' no té un estat inicial");
-
-            DeliveryNoteEntities entities;
-            entities.Exercise = exercise;
-            entities.Customer = customer;
-            entities.Site = site;
-            entities.Lifecycle = lifecycle;
-            return new GenericResponse(true, entities);
+            return new GenericResponse(true);
         }
 
         public async Task<GenericResponse> AddOrder(Guid deliveryNoteId, SalesOrderHeader order)
@@ -210,6 +220,36 @@ namespace Application.Services
             await _salesOrderService.Update(order);
 
             return new GenericResponse(true, deliveryNoteDetails);
+        }
+        
+        private async Task<GenericResponse> ValidateCreateInvoiceRequest(CreateHeaderRequest createInvoiceRequest)
+        {
+            var exercise = await _unitOfWork.Exercices.Get(createInvoiceRequest.ExerciseId);
+            if (exercise == null) return new GenericResponse(false, new List<string>() { "L'exercici no existex" });
+
+            var customer = await _unitOfWork.Customers.Get(createInvoiceRequest.CustomerId);
+            if (customer == null) return new GenericResponse(false, new List<string>() { "El client no existeix" });
+            if (!customer.IsValidForSales())
+                return new GenericResponse(false, new List<string>() { "El client no és válid per a crear una factura. Revisa el nom fiscal, el número de compte i el NIF" });
+            if (customer.MainAddress() == null)
+                return new GenericResponse(false, new List<string>() { "El client no té direccions donades d'alta. Si us plau, creí una direcció." });
+
+            var site = _unitOfWork.Sites.Find(s => s.Name == "Local Torelló").FirstOrDefault();
+            if (site == null)
+                return new GenericResponse(false, new List<string>() { "La seu 'Temges' no existeix" });
+            if (!site.IsValidForSales())
+                return new GenericResponse(false, new List<string>() { "Seu 'Temges' no és válida per crear una factura. Revisi les dades de facturació." });
+
+            var lifecycle = _unitOfWork.Lifecycles.Find(l => l.Name == lifecycleName).FirstOrDefault();
+            if (lifecycle == null) return new GenericResponse(false, $"Cicle de vida '{lifecycleName}' inexistent");
+            if (!lifecycle.InitialStatusId.HasValue) return new GenericResponse(false, $"El cicle de vida '{lifecycleName}' no té un estat inicial");
+
+            DeliveryNoteEntities entities;
+            entities.Exercise = exercise;
+            entities.Customer = customer;
+            entities.Site = site;
+            entities.Lifecycle = lifecycle;
+            return new GenericResponse(true, entities);
         }
     }
 }

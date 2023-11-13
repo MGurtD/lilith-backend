@@ -31,6 +31,7 @@ try
         // Database Context
         builder.Services.AddDbContext<ApplicationDbContext>(options => {
             options.UseNpgsql(Configuration.ConnectionString);
+            options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         builder.Services

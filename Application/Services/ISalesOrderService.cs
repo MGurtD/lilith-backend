@@ -15,6 +15,8 @@ namespace Application.Services
         IEnumerable<SalesOrderHeader> GetBetweenDatesAndCustomer(DateTime startDate, DateTime endDate, Guid customerId);   
         IEnumerable<SalesOrderHeader> GetOrdersToDeliver(Guid customerId);
 
+        Task<GenericResponse> Deliver(Guid deliveryNoteId);
+        Task<GenericResponse> UnDeliver(Guid deliveryNoteId);
         Task<GenericResponse> RecalculateStatus(Guid salesOrderHeaderId);
         Task<GenericResponse> Update(SalesOrderHeader salesOrderHeader);
         Task<GenericResponse> Remove(Guid id);

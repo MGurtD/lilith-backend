@@ -116,14 +116,17 @@ namespace Api.Services
         public async Task<GenericResponse>AddDetail(SalesOrderDetail salesOrderDetail)
         {
             await _unitOfWork.SalesOrderHeaders.AddDetail(salesOrderDetail);
-            await RecalculateStatus(salesOrderDetail.SalesOrderHeaderId);
+            //await RecalculateStatus(salesOrderDetail.SalesOrderHeaderId);
 
             return new GenericResponse(true, new List<string> { });
         }
         public async Task<GenericResponse> UpdateDetail(SalesOrderDetail salesOrderDetail)
         {
+            salesOrderDetail.Reference = null;
+            salesOrderDetail.SalesOrderHeader = null;
+
             await _unitOfWork.SalesOrderHeaders.UpdateDetail(salesOrderDetail);
-            await RecalculateStatus(salesOrderDetail.SalesOrderHeaderId);
+            //await RecalculateStatus(salesOrderDetail.SalesOrderHeaderId);
             return new GenericResponse(true, new List<string> { });
         }
         public async Task<GenericResponse> RemoveDetail(Guid id)
@@ -134,6 +137,17 @@ namespace Api.Services
 
             await RecalculateStatus(detail!.SalesOrderHeaderId);
             return new GenericResponse(true, detail);
+        }
+
+        private async Task<GenericResponse> GetStatusId(string statusName)
+        {
+            var lifecycle = await _unitOfWork.Lifecycles.GetByName("SalesOrder");
+            if (lifecycle == null) return new GenericResponse(false, "El cicle de vida 'SalesOrder' no existeix");
+
+            var status = lifecycle.Statuses!.FirstOrDefault(s => s.Name == statusName);
+            if (status == null) return new GenericResponse(false, $"L'estat {statusName} no existeix dins del cicle de vida 'SalesOrder'");
+
+            return new GenericResponse(true, status.Id);
         }
 
         public async Task<GenericResponse> RecalculateStatus(Guid orderId)
@@ -201,5 +215,38 @@ namespace Api.Services
             invoiceEntities.Site = site;
             return new GenericResponse(true, invoiceEntities);
         }
+
+        public async Task<GenericResponse> Deliver(Guid deliveryNoteId)
+        {
+            return await ChangeDeliveryStatus(deliveryNoteId, true);
+        }
+
+        public async Task<GenericResponse> UnDeliver(Guid deliveryNoteId)
+        {
+            return await ChangeDeliveryStatus(deliveryNoteId, false);
+        }
+
+        private async Task<GenericResponse> ChangeDeliveryStatus(Guid deliveryNoteId, bool isDelivered)
+        {
+            var orders = GetByDeliveryNoteId(deliveryNoteId);
+            if (orders == null) return new GenericResponse(true, "No existeixen comandes amb l'albarà associat");
+
+            var statusResponse = await GetStatusId(isDelivered ? "Comanda Servida" : "Comanda");
+            if (!statusResponse.Result) return statusResponse;
+
+            foreach (var order in orders.ToList())
+            {
+                foreach (var detail in order.SalesOrderDetails)
+                {
+                    detail.IsDelivered = isDelivered;
+                    await UpdateDetail(detail);
+                }
+                order.StatusId = (Guid) statusResponse.Content!;
+                await Update(order);
+            }
+
+            return new GenericResponse(true);
+        }
+
     }
 }

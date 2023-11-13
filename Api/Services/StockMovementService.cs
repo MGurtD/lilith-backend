@@ -18,35 +18,29 @@ namespace Api.Services
 
         public async Task<GenericResponse> Create(StockMovement request)
         {
+            request.Stock = null;
+            request.Reference = null;
+            request.Location = null;
+
             //Comprovar si existeix un stock id per les dimensions i producte
             //Si existeix update de la quantitat
-            //Si no existeix add stock
-            
-            var stock = await _stockService.GetByDimensions(request.LocationId, request.ReferenceId, 
-                                                            request.Width, request.Length, request.Height,
-                                                            request.Diameter, request.Thickness);            
-            
+            //Si no existeix add stock+
+            //
+            var stock = _stockService.GetByDimensions(request.LocationId, request.ReferenceId, 
+                                                      request.Width, request.Length, request.Height,
+                                                      request.Diameter, request.Thickness);
+
             if (stock != null)
             {
-                var oldStock = new Stock{
-                    Id = stock.Id,
-                    ReferenceId = request.ReferenceId,
-                    LocationId = request.LocationId,
-                    Quantity = stock.Quantity + request.Quantity,
-                    Width = request.Width,
-                    Length = request.Length,
-                    Height = request.Height,
-                    Diameter = request.Diameter,
-                    Thickness = request.Thickness,                    
-                };
-                request.StockId = stock.Id;                
-                await _stockService.Update(oldStock);
+                stock.Quantity += request.Quantity;
+                await _stockService.Update(stock);
 
-                request.StockId = oldStock.Id;
+                request.StockId = stock.Id;
             }
             else
             {            
-                var newStock = new Stock{
+                var newStock = new Stock
+                {
                     ReferenceId = request.ReferenceId,
                     LocationId = request.LocationId,
                     Quantity = request.Quantity,
@@ -55,8 +49,7 @@ namespace Api.Services
                     Height = request.Height,
                     Diameter = request.Diameter,
                     Thickness = request.Thickness
-                };
-                
+                };                
                 await _stockService.Create(newStock);
 
                 request.StockId = newStock.Id;
@@ -76,22 +69,12 @@ namespace Api.Services
         {
             var stockMovement = await _unitOfWork.StockMovements.Get(id);
             if ( stockMovement == null) return new GenericResponse(false, new List<string>() { $"Id {id} inexistent" });
-            var stock = await _stockService.GetByDimensions(stockMovement.LocationId, stockMovement.ReferenceId, 
-                                                            stockMovement.Width, stockMovement.Length, stockMovement.Height,
-                                                            stockMovement.Diameter, stockMovement.Thickness);            
-            
-            var nstock = new Stock {
-                Id = stockMovement.StockId,
-                ReferenceId = stockMovement.ReferenceId,
-                LocationId = stockMovement.LocationId,
-                Quantity = stock.Quantity + (-1)*stockMovement.Quantity,
-                Width = stockMovement.Width,
-                Length = stockMovement.Length,
-                Height = stockMovement.Height,
-                Diameter = stockMovement.Diameter,
-                Thickness = stockMovement.Thickness
-            };
-            await _stockService.Update(nstock);
+            var stock = _stockService.GetByDimensions(stockMovement.LocationId, stockMovement.ReferenceId, 
+                                                      stockMovement.Width, stockMovement.Length, stockMovement.Height,
+                                                      stockMovement.Diameter, stockMovement.Thickness);
+
+            stock.Quantity += (-1) * stockMovement.Quantity;
+            await _stockService.Update(stock);
 
             await _unitOfWork.StockMovements.Remove(stockMovement);
             return new GenericResponse(true);

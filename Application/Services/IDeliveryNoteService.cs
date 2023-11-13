@@ -14,9 +14,9 @@ namespace Application.Services
         Task<GenericResponse> Create(CreateHeaderRequest createRequest);
         Task<GenericResponse> Update(DeliveryNote deliveryNote);
         Task<GenericResponse> Remove(Guid id);
-        
-        Task<GenericResponse> MoveToWarehose(DeliveryNote deliveryNote);
-        Task<GenericResponse> RetriveFromWarehose(DeliveryNote deliveryNote);
+
+        Task<GenericResponse> Deliver(DeliveryNote deliveryNote);
+        Task<GenericResponse> UnDeliver(DeliveryNote deliveryNote);
 
         Task<GenericResponse> AddOrder(Guid deliveryNoteId, SalesOrderHeader order);
         Task<GenericResponse> RemoveOrder(Guid deliveryNoteId, SalesOrderHeader order);
