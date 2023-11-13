@@ -10,9 +10,12 @@ namespace Application.Services
         Task<GenericResponse> Create(CreateHeaderRequest createRequest);
 
         Task<SalesOrderHeader?> GetById(Guid id);
+        IEnumerable<SalesOrderHeader> GetByDeliveryNoteId(Guid deliveryNoteId);
         IEnumerable<SalesOrderHeader> GetBetweenDates(DateTime startDate, DateTime endDate);
-        IEnumerable<SalesOrderHeader> GetBetweenDatesAndCustomer(DateTime startDate, DateTime endDate, Guid customerId);      
+        IEnumerable<SalesOrderHeader> GetBetweenDatesAndCustomer(DateTime startDate, DateTime endDate, Guid customerId);   
+        IEnumerable<SalesOrderHeader> GetOrdersToDeliver(Guid customerId);
 
+        Task<GenericResponse> RecalculateStatus(Guid salesOrderHeaderId);
         Task<GenericResponse> Update(SalesOrderHeader salesOrderHeader);
         Task<GenericResponse> Remove(Guid id);
 

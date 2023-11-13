@@ -14,12 +14,11 @@ namespace Application.Services
         Task<GenericResponse> Create(CreateHeaderRequest createRequest);
         Task<GenericResponse> Update(DeliveryNote deliveryNote);
         Task<GenericResponse> Remove(Guid id);
-
+        
         Task<GenericResponse> MoveToWarehose(DeliveryNote deliveryNote);
         Task<GenericResponse> RetriveFromWarehose(DeliveryNote deliveryNote);
 
-        Task<GenericResponse> AddDetail(DeliveryNoteDetail detail);
-        Task<GenericResponse> UpdateDetail(DeliveryNoteDetail detail);
-        Task<GenericResponse> RemoveDetail(Guid id);
+        Task<GenericResponse> AddOrder(Guid deliveryNoteId, SalesOrderHeader order);
+        Task<GenericResponse> RemoveOrder(Guid deliveryNoteId, SalesOrderHeader order);
     }
 }

@@ -31,6 +31,20 @@ namespace Api.Services
             var invoices = _unitOfWork.SalesOrderHeaders.Find(p => p.SalesOrderDate >= startDate && p.SalesOrderDate <= endDate && p.CustomerId == customerId);
             return invoices;
         }
+        
+        public IEnumerable<SalesOrderHeader> GetByDeliveryNoteId(Guid deliveryNoteId)
+        {
+            var invoices = _unitOfWork.SalesOrderHeaders.Find(p => p.DeliveryNoteId == deliveryNoteId);
+            return invoices;
+        }
+
+        public IEnumerable<SalesOrderHeader> GetOrdersToDeliver(Guid customerId)
+        {
+            // TODO: Afegir estats
+
+            var invoices = _unitOfWork.SalesOrderHeaders.Find(p => p.CustomerId == customerId && p.DeliveryNoteId == null);
+            return invoices;
+        }
 
         public async Task<GenericResponse> Create(CreateHeaderRequest createRequest)
         {
@@ -85,14 +99,13 @@ namespace Api.Services
             var salesOrder = _unitOfWork.SalesOrderHeaders.Find(p => p.Id == id).FirstOrDefault();
             if (salesOrder == null)
             {
-                return new GenericResponse(false, new List<string> { $"La comanda amb ID {id} no existeix" });
+                return new GenericResponse(false, $"La comanda amb ID {id} no existeix");
             }
             else
             {
                 await _unitOfWork.SalesOrderHeaders.Remove(salesOrder);
                 return new GenericResponse(true, new List<string> { });
             }
-
         }
 
         public async Task<SalesOrderDetail?> GetDetailById(Guid id)
@@ -103,14 +116,14 @@ namespace Api.Services
         public async Task<GenericResponse>AddDetail(SalesOrderDetail salesOrderDetail)
         {
             await _unitOfWork.SalesOrderHeaders.AddDetail(salesOrderDetail);
-            await RecalculateOrderStatus(salesOrderDetail.SalesOrderHeaderId);
+            await RecalculateStatus(salesOrderDetail.SalesOrderHeaderId);
 
             return new GenericResponse(true, new List<string> { });
         }
         public async Task<GenericResponse> UpdateDetail(SalesOrderDetail salesOrderDetail)
         {
             await _unitOfWork.SalesOrderHeaders.UpdateDetail(salesOrderDetail);
-            await RecalculateOrderStatus(salesOrderDetail.SalesOrderHeaderId);
+            await RecalculateStatus(salesOrderDetail.SalesOrderHeaderId);
             return new GenericResponse(true, new List<string> { });
         }
         public async Task<GenericResponse> RemoveDetail(Guid id)
@@ -119,11 +132,11 @@ namespace Api.Services
             if (detail == null) return new GenericResponse(false, new List<string> { $"El detall de comanda amb ID {id} no existeix" });
             var deleted = await _unitOfWork.SalesOrderHeaders.RemoveDetail(detail);
 
-            await RecalculateOrderStatus(detail!.SalesOrderHeaderId);
+            await RecalculateStatus(detail!.SalesOrderHeaderId);
             return new GenericResponse(true, detail);
         }
 
-        private async Task<GenericResponse> RecalculateOrderStatus(Guid orderId)
+        public async Task<GenericResponse> RecalculateStatus(Guid orderId)
         {
             var order = _unitOfWork.SalesOrderHeaders.Find(o => o.Id == orderId).FirstOrDefault();
             if (order == null) return new GenericResponse(false, new List<string>() { $"La comanda amb ID '{orderId}' no existeix" });

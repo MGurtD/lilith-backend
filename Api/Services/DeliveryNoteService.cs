@@ -20,12 +20,14 @@ namespace Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IStockMovementService _stockMovementService;
+        private readonly ISalesOrderService _salesOrderService;
         private readonly string lifecycleName = "DeliveryNote";
 
-        public DeliveryNoteService(IUnitOfWork unitOfWork, IStockMovementService stockMovementService)
+        public DeliveryNoteService(IUnitOfWork unitOfWork, IStockMovementService stockMovementService, ISalesOrderService salesOrderService)
         {
             _unitOfWork = unitOfWork;
             _stockMovementService = stockMovementService;
+            _salesOrderService = salesOrderService;
         }
 
         public IEnumerable<DeliveryNote> GetBetweenDates(DateTime startDate, DateTime endDate)
@@ -100,33 +102,6 @@ namespace Application.Services
             return new GenericResponse(true);
         }
 
-        #region Detail        
-        public async Task<GenericResponse> AddDetail(DeliveryNoteDetail detail)
-        {
-            await _unitOfWork.DeliveryNotes.Details.Add(detail);
-            return new GenericResponse(true);
-        }
-
-        public async Task<GenericResponse> UpdateDetail(DeliveryNoteDetail detail)
-        {
-            var exists = await _unitOfWork.DeliveryNotes.Details.Exists(detail.Id);
-            if (!exists) return new GenericResponse(false, $"Id {detail.Id} inexistent");
-
-            detail.Reference = null;
-            await _unitOfWork.DeliveryNotes.Details.Update(detail);
-            return new GenericResponse(true);
-        }
-
-        public async Task<GenericResponse> RemoveDetail(Guid id)
-        {
-            var detail = await _unitOfWork.DeliveryNotes.Details.Get(id);
-            if (detail == null) return new GenericResponse(false, $"Id {id} inexistent");
-
-            await _unitOfWork.DeliveryNotes.Details.Remove(detail);
-            return new GenericResponse(true);
-        }
-        #endregion
-
         public async Task<GenericResponse> MoveToWarehose(DeliveryNote deliveryNote)
         {
             var defaultLocation = _unitOfWork.Warehouses.Locations.Find(l => l.Default == true).FirstOrDefault();
@@ -198,6 +173,43 @@ namespace Application.Services
             entities.Site = site;
             entities.Lifecycle = lifecycle;
             return new GenericResponse(true, entities);
+        }
+
+        public async Task<GenericResponse> AddOrder(Guid deliveryNoteId, SalesOrderHeader order)
+        {
+            // Crear lines de l'albarà segons les línies de la comanda
+            var deliveryNoteDetails = new List<DeliveryNoteDetail>();
+            foreach (var salesDetail in order.SalesOrderDetails)
+            {
+                var deliveryNoteDetail = new DeliveryNoteDetail
+                {
+                    DeliveryNoteId = deliveryNoteId
+                };
+                deliveryNoteDetail.SetFromOrderDetail(salesDetail);
+                deliveryNoteDetails.Add(deliveryNoteDetail);
+            }
+            await _unitOfWork.DeliveryNotes.Details.AddRange(deliveryNoteDetails);
+
+            // Associar albarà a comanda per evitar la selecció d'altres comandes
+            order.DeliveryNoteId = deliveryNoteId;
+            await _salesOrderService.Update(order);
+
+            return new GenericResponse(true, deliveryNoteDetails);
+        }
+
+        public async Task<GenericResponse> RemoveOrder(Guid deliveryNoteId, SalesOrderHeader order)
+        {
+            var detailIds = order.SalesOrderDetails.Select(d => d.Id).ToList();
+
+            var deliveryNoteDetails = _unitOfWork.DeliveryNotes.Details.Find(d => detailIds.Contains(d.SalesOrderDetailId));
+            // Eliminar en bloc
+            await _unitOfWork.DeliveryNotes.Details.RemoveRange(deliveryNoteDetails);
+
+            // Alliberar la comanda perquè sigui assignable de nou a un albarà
+            order.DeliveryNoteId = null;
+            await _salesOrderService.Update(order);
+
+            return new GenericResponse(true, deliveryNoteDetails);
         }
     }
 }

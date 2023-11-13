@@ -3,6 +3,7 @@ using Application.Contracts.Sales;
 using Application.Persistance;
 using Application.Services;
 using Domain.Entities.Sales;
+using FastReport;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -31,7 +32,7 @@ namespace Api.Controllers.Purchase
         }
 
         [HttpGet]
-        public IActionResult GetReceipts(DateTime startTime, DateTime endTime, Guid? customerId, Guid? statusId)
+        public IActionResult GetDeliveryNotes(DateTime startTime, DateTime endTime, Guid? customerId, Guid? statusId)
         {
             IEnumerable<DeliveryNote> receipts = new List<DeliveryNote>();
             if (customerId.HasValue)
@@ -97,38 +98,25 @@ namespace Api.Controllers.Purchase
         }
 
         #region Details
-        [HttpPost("Detail")]
-        [SwaggerOperation("DeliveryNoteDetailCreate")]
+        [HttpPost("{id:guid}/AddOrder")]
+        [SwaggerOperation("DeliveryNoteAddOrder")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddImport(DeliveryNoteDetail detail)
+        public async Task<IActionResult> AddOrder(Guid id, [FromBody] SalesOrderHeader order)
         {
-            var response = await _service.AddDetail(detail);
+            var response = await _service.AddOrder(id, order);
 
             if (response.Result) return Ok(response);
             else return BadRequest(response);
         }
 
-        [HttpPut("Detail/{id:guid}")]
-        [SwaggerOperation("DeliveryNoteDetailUpdate")]
+        [HttpPost("{id:guid}/RemoveOrder")]
+        [SwaggerOperation("DeliveryNoteRemoveOrder")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UpdateImport(Guid id, [FromBody] DeliveryNoteDetail detail)
+        public async Task<IActionResult> RemoveOrder(Guid id, [FromBody] SalesOrderHeader order)
         {
-            var response = await _service.UpdateDetail(detail);
-
-            if (response.Result) return Ok(response);
-            else return BadRequest(response);
-        }
-
-        [HttpDelete("Detail/{id:guid}")]
-        [SwaggerOperation("DeliveryNoteDetailDelete")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> RemoveImport(Guid id)
-        {
-            var response = await _service.RemoveDetail(id);
-
+            var response = await _service.RemoveOrder(id, order);
             if (response.Result) return Ok(response);
             else return BadRequest(response);
         }
