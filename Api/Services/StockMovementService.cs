@@ -2,6 +2,7 @@ using Application.Contracts;
 using Application.Persistance;
 using Application.Services;
 using Domain.Entities.Warehouse;
+using Microsoft.AspNetCore.Routing.Constraints;
 
 namespace Api.Services
 {
@@ -21,17 +22,25 @@ namespace Api.Services
             //Comprovar si existeix un stock id per les dimensions i producte
             //Si existeix update de la quantitat
             //Si no existeix add stock
-            
-            var stock = await _stockService.GetByDimensions(request.LocationId, request.ReferenceId, 
+            var defaultLocation = _unitOfWork.Warehouses.Locations.Find(l => l.Default == true).FirstOrDefault();
+            if (defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte");
+           
+            if (request.LocationId.Equals("00000000-0000-0000-0000-000000000000")) {                
+                request.LocationId = defaultLocation.Id;
+            }
+
+            var stock = await _stockService.GetByDimensions(defaultLocation.Id,
+                                                            request.ReferenceId, 
                                                             request.Width, request.Length, request.Height,
                                                             request.Diameter, request.Thickness);            
+            
             
             if (stock != null)
             {
                 var oldStock = new Stock{
                     Id = stock.Id,
                     ReferenceId = request.ReferenceId,
-                    LocationId = request.LocationId,
+                    LocationId = defaultLocation.Id,
                     Quantity = stock.Quantity + request.Quantity,
                     Width = request.Width,
                     Length = request.Length,
@@ -48,7 +57,7 @@ namespace Api.Services
             {            
                 var newStock = new Stock{
                     ReferenceId = request.ReferenceId,
-                    LocationId = request.LocationId,
+                    LocationId = defaultLocation.Id,
                     Quantity = request.Quantity,
                     Width = request.Width,
                     Length = request.Length,
@@ -76,14 +85,14 @@ namespace Api.Services
         {
             var stockMovement = await _unitOfWork.StockMovements.Get(id);
             if ( stockMovement == null) return new GenericResponse(false, new List<string>() { $"Id {id} inexistent" });
-            var stock = await _stockService.GetByDimensions(stockMovement.LocationId, stockMovement.ReferenceId, 
+            var stock = await _stockService.GetByDimensions(stockMovement.LocationId.Value, stockMovement.ReferenceId, 
                                                             stockMovement.Width, stockMovement.Length, stockMovement.Height,
                                                             stockMovement.Diameter, stockMovement.Thickness);            
             
             var nstock = new Stock {
                 Id = stockMovement.StockId,
                 ReferenceId = stockMovement.ReferenceId,
-                LocationId = stockMovement.LocationId,
+                LocationId = stockMovement.LocationId.Value,
                 Quantity = stock.Quantity + (-1)*stockMovement.Quantity,
                 Width = stockMovement.Width,
                 Length = stockMovement.Length,

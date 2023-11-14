@@ -13,7 +13,7 @@ namespace Domain.Entities.Warehouse
     {
         public Guid StockId {get; set;}
         public Stock? Stock {get; set;}
-        public Guid LocationId {get;set;}
+        public Guid? LocationId {get;set;}
         public Location? Location {get; set;}
         public Guid ReferenceId {get; set;}        
         public Reference? Reference {get; set;}
