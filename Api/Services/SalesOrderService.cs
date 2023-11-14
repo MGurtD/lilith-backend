@@ -216,6 +216,9 @@ namespace Api.Services
             return new GenericResponse(true, invoiceEntities);
         }
 
+        #region DeliveryNote
+        
+
         public async Task<GenericResponse> Deliver(Guid deliveryNoteId)
         {
             return await ChangeDeliveryStatus(deliveryNoteId, true);
@@ -241,12 +244,15 @@ namespace Api.Services
                     detail.IsDelivered = isDelivered;
                     await UpdateDetail(detail);
                 }
+                order.DeliveryNoteId = isDelivered ? deliveryNoteId : null;
                 order.StatusId = (Guid) statusResponse.Content!;
                 await Update(order);
             }
 
             return new GenericResponse(true);
         }
+
+        #endregion
 
     }
 }

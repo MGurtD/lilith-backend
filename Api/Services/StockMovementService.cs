@@ -18,17 +18,19 @@ namespace Api.Services
 
         public async Task<GenericResponse> Create(StockMovement request)
         {
-            request.Stock = null;
-            request.Reference = null;
-            request.Location = null;
-
-            //Comprovar si existeix un stock id per les dimensions i producte
-            //Si existeix update de la quantitat
-            //Si no existeix add stock+
-            //
+            // Comprovar si existeix un stock id per les dimensions i producte
             var stock = _stockService.GetByDimensions(request.LocationId, request.ReferenceId, 
                                                       request.Width, request.Length, request.Height,
                                                       request.Diameter, request.Thickness);
+
+            if (request.MovementType == StockMovementType.OUTPUT)
+            {
+                if (request.Quantity > 0) request.Quantity *= -1;
+            }
+            else if (request.MovementType == StockMovementType.INPUT)
+            {
+                if (request.Quantity < 0) request.Quantity *= -1;
+            }
 
             if (stock != null)
             {
