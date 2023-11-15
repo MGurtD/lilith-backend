@@ -2,7 +2,7 @@
 
 namespace Application.Contracts.Sales
 {
-    public class CreateOrderOrInvoiceRequest
+    public class CreateHeaderRequest
     {
         [Required]
         public Guid Id { get; set; }

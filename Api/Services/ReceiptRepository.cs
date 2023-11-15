@@ -143,19 +143,6 @@ namespace Application.Services
             return new GenericResponse(true, detailsToMove);
         }
 
-        private async Task<GenericResponse> ChangeStatus(string StatusName, Receipt receipt)
-        {
-            var lifecycle = await _unitOfWork.Lifecycles.GetByName("Receipts");
-            if (lifecycle == null) return new GenericResponse(false, $"Cicle de vida 'Receipts' inexistent" );
-
-            var status = lifecycle.Statuses!.FirstOrDefault(s => s.Name == StatusName);
-            if (status == null) return new GenericResponse(false, $"Estat {StatusName} inexistent al cicle de vida 'Receipts'");
-                
-            receipt.StatusId = status.Id;
-            await _unitOfWork.Receipts.Update(receipt);
-            return new GenericResponse(true);
-        }
-
         public async Task<GenericResponse> RetriveFromWarehose(Receipt receipt)
         {
             var detailsToRetrive = receipt.Details!.Where(d => d.StockMovementId != null);

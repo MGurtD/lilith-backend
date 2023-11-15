@@ -20,6 +20,7 @@ namespace Domain.Entities.Sales
 
         public void SetFromOrderDetail(SalesOrderDetail detail)
         {
+            SalesOrderDetailId = detail.Id;
             ReferenceId = detail.ReferenceId;
             Description = detail.Description;
             Quantity = detail.Quantity;

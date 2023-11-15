@@ -49,8 +49,30 @@ namespace Domain.Entities.Sales
 
         public Guid? StatusId { get; set; }
         public Status? Status { get; set; }
-        public ICollection<SalesOrderDetail> SalesOrderDetails { get; set; } = new List<SalesOrderDetail>();
 
+        public Guid? DeliveryNoteId { get; set; }
+        public DeliveryNote? DeliveryNote { get; set; }
+
+        public ICollection<SalesOrderDetail> SalesOrderDetails { get; set; } = new List<SalesOrderDetail>();
+        public void Deliver()
+        {
+            if (SalesOrderDetails != null)
+                foreach (var item in SalesOrderDetails)
+                    item.IsDelivered = true;
+        }
+        public void UnDeliver()
+        {
+            if (SalesOrderDetails != null)
+                foreach (var item in SalesOrderDetails)
+                    item.IsDelivered = false;
+        }
+
+        public void Invoice()
+        {
+            if (SalesOrderDetails != null)
+                foreach (var item in SalesOrderDetails)
+                    item.IsInvoiced = true;
+        }
 
     }
 }

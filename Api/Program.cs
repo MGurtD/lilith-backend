@@ -31,6 +31,7 @@ try
         // Database Context
         builder.Services.AddDbContext<ApplicationDbContext>(options => {
             options.UseNpgsql(Configuration.ConnectionString);
+            options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         builder.Services
@@ -47,6 +48,7 @@ try
         builder.Services.AddScoped<IDueDateService, DueDateService>();
         builder.Services.AddScoped<IStockService, StockService>();
         builder.Services.AddScoped<IStockMovementService, StockMovementService>();
+        builder.Services.AddScoped<IDeliveryNoteService, DeliveryNoteService>();
         builder.Services.AddScoped<IReceiptService, ReceiptService>();
 
         // JWT Service    

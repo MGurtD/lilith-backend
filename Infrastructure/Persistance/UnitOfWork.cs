@@ -59,6 +59,7 @@ namespace Infrastructure.Persistance
         public ISalesOrderDetailRepository SalesOrderDetails { get; private set; }
         public ISalesInvoiceRepository SalesInvoices { get; private set; }
         public IReceiptRepository Receipts { get; private set; }
+        public IDeliveryNoteRepository DeliveryNotes { get; private set; }
         public IContractReader<Application.Contracts.Sales.SalesOrderDetail> SalesOrderDetailForInvoices { get; private set; }
         public IContractReader<SalesInvoiceDetailReport> SalesInvoiceDetailWithOrder { get; private set; }
 
@@ -113,6 +114,7 @@ namespace Infrastructure.Persistance
             SalesOrderHeaders = new SalesOrderHeaderRepository(context, new SalesOrderDetailRepository(context));
             SalesOrderDetails = new SalesOrderDetailRepository(context);
             SalesInvoices = new SalesInvoiceRepository(context);
+            DeliveryNotes = new DeliveryNoteRepository(context);
             SalesOrderDetailForInvoices = new ContractReader<Application.Contracts.Sales.SalesOrderDetail>(context);
             SalesInvoiceDetailWithOrder = new ContractReader<SalesInvoiceDetailReport>(context);
 

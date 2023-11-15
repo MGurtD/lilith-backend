@@ -32,21 +32,31 @@ namespace Api.Controllers.Sales
         {
             IEnumerable<SalesOrderHeader> salesOrderHeaders = new List<SalesOrderHeader>();
             if (customerId.HasValue)
-            {
                 salesOrderHeaders = _service.GetBetweenDatesAndCustomer(startTime, endTime, customerId.Value);
-            }
             else
-            {
-                salesOrderHeaders = _service.GetBetweenDates(startTime, endTime);
-            }            
+                salesOrderHeaders = _service.GetBetweenDates(startTime, endTime);         
             if (salesOrderHeaders != null) return Ok(salesOrderHeaders.OrderBy(e => e.SalesOrderNumber));
             else return BadRequest();
+        }
+
+        [HttpGet("DeliveryNote/{id:guid}")]
+        public IActionResult GetDeliveryNoteOrders(Guid id)
+        {
+            var salesOrders = _service.GetByDeliveryNoteId(id);
+            return Ok(salesOrders);
+        }
+
+            [HttpGet("ToDeliver")]
+        public IActionResult GetOrdersToDeliver(Guid customerId)
+        {
+            var salesOrderHeaders = _service.GetOrdersToDeliver(customerId);
+            return Ok(salesOrderHeaders.OrderBy(e => e.SalesOrderNumber));
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create(CreateOrderOrInvoiceRequest salesOrder)
+        public async Task<IActionResult> Create(CreateHeaderRequest salesOrder)
         {
             var response = await _service.Create(salesOrder);
 
