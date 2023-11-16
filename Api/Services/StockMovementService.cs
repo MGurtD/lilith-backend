@@ -2,25 +2,30 @@ using Application.Contracts;
 using Application.Persistance;
 using Application.Services;
 using Domain.Entities.Warehouse;
-using Microsoft.AspNetCore.Routing.Constraints;
 
 namespace Api.Services
 {
     public class StockMovementService : IStockMovementService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IStockService _stockService;        
+        private readonly IStockService _stockService;
+        private readonly Location? _defaultLocation;
 
         public StockMovementService(IUnitOfWork unitOfWork, IStockService stockService)
         {
             _unitOfWork = unitOfWork;
             _stockService = stockService;
+
+            _defaultLocation = _unitOfWork.Warehouses.Locations.Find(l => l.Default).FirstOrDefault();
         }
 
         public async Task<GenericResponse> Create(StockMovement request)
         {
+            if (_defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte definida al projecte");
+            request.LocationId = _defaultLocation.Id;
+
             // Comprovar si existeix un stock id per les dimensions i producte
-            var stock = _stockService.GetByDimensions(request.LocationId.Value, request.ReferenceId, 
+            var stock = _stockService.GetByDimensions(_defaultLocation.Id, request.ReferenceId, 
                                                       request.Width, request.Length, request.Height,
                                                       request.Diameter, request.Thickness);
 
@@ -45,7 +50,7 @@ namespace Api.Services
                 var newStock = new Stock
                 {
                     ReferenceId = request.ReferenceId,
-                    LocationId = request.LocationId.Value,
+                    LocationId = _defaultLocation.Id,
                     Quantity = request.Quantity,
                     Width = request.Width,
                     Length = request.Length,
@@ -58,6 +63,7 @@ namespace Api.Services
                 request.StockId = newStock.Id;
             }
 
+            
             await _unitOfWork.StockMovements.Add(request);
             return new GenericResponse(true, request);
         }
@@ -70,9 +76,11 @@ namespace Api.Services
 
         public async Task<GenericResponse> Remove(Guid id)
         {
+            if (_defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte definida al projecte");
+
             var stockMovement = await _unitOfWork.StockMovements.Get(id);
             if ( stockMovement == null) return new GenericResponse(false, new List<string>() { $"Id {id} inexistent" });
-            var stock = _stockService.GetByDimensions(stockMovement.LocationId.Value, stockMovement.ReferenceId, 
+            var stock = _stockService.GetByDimensions(_defaultLocation.Id, stockMovement.ReferenceId, 
                                                       stockMovement.Width, stockMovement.Length, stockMovement.Height,
                                                       stockMovement.Diameter, stockMovement.Thickness);
 
