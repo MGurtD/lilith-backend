@@ -48,8 +48,7 @@ namespace Infrastructure.Persistance
         public IRepository<ExpenseType, Guid> ExpenseTypes { get; private set; }
         public IExpenseRepository Expenses { get; private set; }
         public IRepository<ReferenceFormat, Guid> ReferenceFormats { get; private set; }
-        public IContractReader<ConsolidatedExpense> ConsolidatedExpenses { get; private set; }
-        
+        public IContractReader<ConsolidatedExpense> ConsolidatedExpenses { get; private set; }        
 
         // Sales
         public IRepository<CustomerType, Guid> CustomerTypes { get; private set; }
@@ -60,7 +59,6 @@ namespace Infrastructure.Persistance
         public ISalesInvoiceRepository SalesInvoices { get; private set; }
         public IReceiptRepository Receipts { get; private set; }
         public IDeliveryNoteRepository DeliveryNotes { get; private set; }
-        public IContractReader<Application.Contracts.Sales.SalesOrderDetail> SalesOrderDetailForInvoices { get; private set; }
         public IContractReader<SalesInvoiceDetailReport> SalesInvoiceDetailWithOrder { get; private set; }
 
         // Production
@@ -115,7 +113,6 @@ namespace Infrastructure.Persistance
             SalesOrderDetails = new SalesOrderDetailRepository(context);
             SalesInvoices = new SalesInvoiceRepository(context);
             DeliveryNotes = new DeliveryNoteRepository(context);
-            SalesOrderDetailForInvoices = new ContractReader<Application.Contracts.Sales.SalesOrderDetail>(context);
             SalesInvoiceDetailWithOrder = new ContractReader<SalesInvoiceDetailReport>(context);
 
             Enterprises = new Repository<Enterprise, Guid>(context);

@@ -5,6 +5,7 @@ using Application.Services;
 using Domain.Entities;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
+using FastReport;
 
 namespace Api.Services
 {
@@ -19,13 +20,13 @@ namespace Api.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IDueDateService _dueDateService;
-        private readonly ISalesOrderService _salesOrderService;
+        private readonly IDeliveryNoteService _deliveryNoteService;
 
-        public SalesInvoiceService(IUnitOfWork unitOfWork, IDueDateService dueDateService, ISalesOrderService salesOrderService)
+        public SalesInvoiceService(IUnitOfWork unitOfWork, IDueDateService dueDateService, ISalesOrderService salesOrderService, IDeliveryNoteService deliveryNoteService)
         {
             _unitOfWork = unitOfWork;
             _dueDateService = dueDateService;
-            _salesOrderService = salesOrderService;
+            _deliveryNoteService = deliveryNoteService;
         }
 
         public async Task<GenericResponse> Create(CreateHeaderRequest createInvoiceRequest)
@@ -187,30 +188,53 @@ namespace Api.Services
         #endregion
 
         #region Details
-        public async Task<GenericResponse> AddDetailsFromOrderDetails(SalesInvoice invoice, IEnumerable<Domain.Entities.Sales.SalesOrderDetail> salesOrderDetails)
+        public async Task<GenericResponse> AddDeliveryNote(Guid id, DeliveryNote deliveryNote)
         {
-            var salesInvoiceDetails = new List<SalesInvoiceDetail>();
-            foreach (var salesOrderDetail in salesOrderDetails.ToList())
+            var invoice = _unitOfWork.SalesInvoices.Find(i => i.Id == id).FirstOrDefault();
+            if (invoice == null) return new GenericResponse(false, $"La factura amb ID {id} no existeix");
+
+            // Crear les lines de la factura segons les línes de l'albarà
+            var invoiceDetails = new List<SalesInvoiceDetail>();
+            foreach (var deliveryNoteDetail in deliveryNote.Details)
             {
-                // Marcar detall de la comanda com a part d'una factura
-                await _salesOrderService.UpdateDetail(salesOrderDetail);
-
-                var salesInvoiceDetail = new SalesInvoiceDetail()
+                var salesInvoiceDetail = new SalesInvoiceDetail
                 {
-                    SalesInvoiceId = invoice.Id
+                    SalesInvoiceId = id
                 };
-                var reference = await _unitOfWork.References.Get(salesOrderDetail.ReferenceId);
-                if (reference != null && reference!.TaxId.HasValue) salesInvoiceDetail.TaxId = reference.TaxId.Value;                
-
-                salesInvoiceDetail.SetOrderDetail(salesOrderDetail);
-                salesInvoiceDetails.Add(salesInvoiceDetail);
-                invoice.SalesInvoiceDetails.Add(salesInvoiceDetail);
+                salesInvoiceDetail.SetDeliveryNoteDetail(deliveryNoteDetail);
+                invoiceDetails.Add(salesInvoiceDetail);
             }
+            await _unitOfWork.SalesInvoices.InvoiceDetails.AddRange(invoiceDetails);
+            invoiceDetails = null;
 
-            await _unitOfWork.SalesInvoices.InvoiceDetails.AddRange(salesInvoiceDetails);
+            // Actualizar taules relacionades
+            await UpdateImportsAndHeaderAmounts(invoice);
 
-            // TODO : Actualizar salesOrderDetails.IsInvoiced + Actualizar estat de la comanda (Programar-ho al servei de comandes)
-            return await UpdateImportsAndHeaderAmounts(invoice);
+            // Associar la factura per evitar la selecció de l'albarà d'entrega a altre factures
+            deliveryNote.SalesInvoiceId = id;
+            await _deliveryNoteService.Update(deliveryNote);
+
+            return new GenericResponse(true, invoiceDetails);
+        }
+
+        public async Task<GenericResponse> RemoveDeliveryNote(Guid id, DeliveryNote deliveryNote)
+        {
+            var invoice = _unitOfWork.SalesInvoices.Find(i => i.Id == id).FirstOrDefault();
+            if (invoice == null) return new GenericResponse(false, $"La factura amb ID {id} no existeix");
+            var detailIds = deliveryNote.Details.Select(d => d.Id).ToList();
+
+            var deliveryNoteDetails = _unitOfWork.SalesInvoices.InvoiceDetails.Find(d => d.DeliveryNoteDetailId != null && detailIds.Contains(d.DeliveryNoteDetailId.Value));
+            // Eliminar els detalls associats a l'albarà
+            await _unitOfWork.SalesInvoices.InvoiceDetails.RemoveRange(deliveryNoteDetails);
+
+            // Actualizar taules relacionades
+            await UpdateImportsAndHeaderAmounts(invoice);
+
+            // Alliberar l'albarà perquè sigui assignable de nou a una factura
+            deliveryNote.SalesInvoiceId = null;
+            await _deliveryNoteService.Update(deliveryNote);
+
+            return new GenericResponse(true, deliveryNoteDetails);
         }
 
         public async Task<GenericResponse> AddDetail(SalesInvoiceDetail invoiceDetail)
@@ -243,13 +267,6 @@ namespace Api.Services
             var invoice = await _unitOfWork.SalesInvoices.Get(detail.SalesInvoiceId);
             if (invoice == null) return new GenericResponse(false, new List<string>() { $"La factura amb ID {detail.SalesInvoiceId} no existeix" });
 
-            if (detail.SalesOrderDetailId != null)
-            {
-                var orderDetail = await _salesOrderService.GetDetailById(detail.SalesOrderDetailId.Value);
-                if (orderDetail == null) return new GenericResponse(false, new List<string>() { $"El detall de comanda amb ID {detail.SalesOrderDetailId} no existeix" });
-                orderDetail.IsInvoiced = false;
-                await _salesOrderService.UpdateDetail(orderDetail);
-            }
             await _unitOfWork.SalesInvoices.InvoiceDetails.Remove(detail);
             var memoryDetail = invoice.SalesInvoiceDetails.First(d => d.Id == detail.Id);
             invoice.SalesInvoiceDetails.Remove(memoryDetail);

@@ -74,14 +74,6 @@ namespace Api.Controllers.Sales
             return Ok(details);
         }
 
-
-        [HttpGet("InvoiceableOrderDetails")]
-        public IActionResult GetInvoiceableOrderDetails(DateTime startTime, DateTime endTime, Guid customerId)
-        {
-            var entities = _unitOfWork.SalesOrderDetailForInvoices.Find(d => d.SalesOrderDate >= startTime && d.SalesOrderDate <= endTime && d.CustomerId == customerId);
-            return Ok(entities);
-        }
-
         [HttpPut("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -117,18 +109,28 @@ namespace Api.Controllers.Sales
             else return BadRequest(response.Errors);
         }
 
-        [HttpPost("Detail/FromOrderDetails")]
-        [SwaggerOperation("CreateInvoiceDetailsFromOrderDetails")]
+        [HttpPost("{id:guid}/AddDeliveryNote")]
+        [SwaggerOperation("SalesInvoiceAddDeliveryNote")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddDetailsFromOrderDetails(CreateInvoiceDetailsFromOrderDetailsRequest request)
+        public async Task<IActionResult> AddDetailsFromDeliveryNote(Guid id, [FromBody] DeliveryNote deliveryNote)
         {
-            var invoice = await _unitOfWork.SalesInvoices.Get(request.InvoiceId);
-            if (invoice == null) return NotFound();
+            var response = await _service.AddDeliveryNote(id, deliveryNote);
 
-            var response = await _service.AddDetailsFromOrderDetails(invoice, request.OrderDetails);
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
+        }
+
+        [HttpPost("{id:guid}/RemoveDeliveryNote")]
+        [SwaggerOperation("SalesInvoiceRemoveDeliveryNote")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> RemoveOrder(Guid id, [FromBody] DeliveryNote deliveryNote)
+        {
+            var response = await _service.RemoveDeliveryNote(id, deliveryNote);
+
+            if (response.Result) return Ok(response);
+            else return BadRequest(response);
         }
 
         [HttpPut("Detail/{id:guid}")]

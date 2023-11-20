@@ -16,7 +16,6 @@ namespace Domain.Entities.Sales
         public decimal Amount { get; set; } = decimal.Zero;
         public DateTime EstimatedDeliveryDate { get; set; }
         public bool IsDelivered { get; set; }
-        public bool IsInvoiced { get; set; }
 
         public void SetReference(Reference reference, int quantity)
         {

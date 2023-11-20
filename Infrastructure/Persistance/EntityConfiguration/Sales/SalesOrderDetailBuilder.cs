@@ -56,11 +56,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
             builder
                 .Property(b => b.IsDelivered)
                 .IsRequired()
-                .HasColumnType("boolean");
-            builder
-                .Property(b => b.IsInvoiced)
-                .IsRequired()
-                .HasColumnType("boolean");
+                .HasColumnType("boolean");            
         }
     }
 }

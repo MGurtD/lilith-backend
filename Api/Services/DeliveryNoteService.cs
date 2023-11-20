@@ -1,13 +1,10 @@
-﻿using Api.Services;
-using Application.Contracts;
+﻿using Application.Contracts;
 using Application.Contracts.Sales;
 using Application.Persistance;
 using Domain.Entities;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
 using Domain.Entities.Warehouse;
-using Infrastructure.Persistance;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Application.Services
 {
@@ -54,6 +51,30 @@ namespace Application.Services
         public IEnumerable<DeliveryNote> GetByStatus(Guid statusId)
         {
             var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.StatusId == statusId);
+            return deliveryNotes;
+        }
+
+        public IEnumerable<DeliveryNote> GetByCustomer(Guid customerId)
+        {
+            var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.CustomerId == customerId);
+            return deliveryNotes;
+        }
+
+        public IEnumerable<DeliveryNote> GetByStatusAndCustomer(Guid statusId, Guid customerId)
+        {
+            var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.StatusId == statusId && p.CustomerId == customerId);
+            return deliveryNotes;
+        }
+
+        public IEnumerable<DeliveryNote> GetBySalesInvoice(Guid salesInvoiceId)
+        {
+            var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.SalesInvoiceId == salesInvoiceId);
+            return deliveryNotes;
+        }
+
+        public IEnumerable<DeliveryNote> GetDeliveryNotesToInvoice(Guid customerId)
+        {
+            var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.SalesInvoiceId == null);
             return deliveryNotes;
         }
 
@@ -135,16 +156,12 @@ namespace Application.Services
 
         private async Task<GenericResponse> RetriveFromWarehose(DeliveryNote deliveryNote)
         {
-            var defaultLocation = _unitOfWork.Warehouses.Locations.Find(l => l.Default == true).FirstOrDefault();
-            if (defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte");
-
             foreach (var detail in deliveryNote.Details)
             {
                 detail.Reference = null;
 
                 var stockMovement = new StockMovement
                 {
-                    LocationId = defaultLocation.Id,
                     MovementDate = DateTime.Now,
                     CreatedOn = DateTime.Now,
                     MovementType = StockMovementType.OUTPUT,
@@ -161,16 +178,12 @@ namespace Application.Services
 
         private async Task<GenericResponse> ReturnToWarehose(DeliveryNote deliveryNote)
         {
-            var defaultLocation = _unitOfWork.Warehouses.Locations.Find(l => l.Default == true).FirstOrDefault();
-            if (defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte");
-
             foreach (var detail in deliveryNote.Details)
             {
                 detail.Reference = null;
 
                 var stockMovement = new StockMovement
                 {
-                    LocationId = defaultLocation.Id,
                     MovementDate = DateTime.Now,
                     CreatedOn = DateTime.Now,
                     MovementType = StockMovementType.INPUT,

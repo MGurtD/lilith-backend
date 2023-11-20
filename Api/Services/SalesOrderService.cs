@@ -42,8 +42,8 @@ namespace Api.Services
         {
             // TODO: Afegir estats
 
-            var invoices = _unitOfWork.SalesOrderHeaders.Find(p => p.CustomerId == customerId && p.DeliveryNoteId == null);
-            return invoices;
+            var orders = _unitOfWork.SalesOrderHeaders.Find(p => p.CustomerId == customerId && p.DeliveryNoteId == null);
+            return orders;
         }
 
         public async Task<GenericResponse> Create(CreateHeaderRequest createRequest)
@@ -116,7 +116,6 @@ namespace Api.Services
         public async Task<GenericResponse>AddDetail(SalesOrderDetail salesOrderDetail)
         {
             await _unitOfWork.SalesOrderHeaders.AddDetail(salesOrderDetail);
-            //await RecalculateStatus(salesOrderDetail.SalesOrderHeaderId);
 
             return new GenericResponse(true, new List<string> { });
         }
@@ -126,7 +125,6 @@ namespace Api.Services
             salesOrderDetail.SalesOrderHeader = null;
 
             await _unitOfWork.SalesOrderHeaders.UpdateDetail(salesOrderDetail);
-            //await RecalculateStatus(salesOrderDetail.SalesOrderHeaderId);
             return new GenericResponse(true, new List<string> { });
         }
         public async Task<GenericResponse> RemoveDetail(Guid id)
@@ -135,7 +133,6 @@ namespace Api.Services
             if (detail == null) return new GenericResponse(false, new List<string> { $"El detall de comanda amb ID {id} no existeix" });
             var deleted = await _unitOfWork.SalesOrderHeaders.RemoveDetail(detail);
 
-            await RecalculateStatus(detail!.SalesOrderHeaderId);
             return new GenericResponse(true, detail);
         }
 
@@ -148,47 +145,6 @@ namespace Api.Services
             if (status == null) return new GenericResponse(false, $"L'estat {statusName} no existeix dins del cicle de vida 'SalesOrder'");
 
             return new GenericResponse(true, status.Id);
-        }
-
-        public async Task<GenericResponse> RecalculateStatus(Guid orderId)
-        {
-            var order = _unitOfWork.SalesOrderHeaders.Find(o => o.Id == orderId).FirstOrDefault();
-            if (order == null) return new GenericResponse(false, new List<string>() { $"La comanda amb ID '{orderId}' no existeix" });
-
-            var initialStatusId = order.StatusId;
-            var numberOfDetails = order.SalesOrderDetails.Count();
-            if (numberOfDetails > 0)
-            {
-                var numberOfInvoicedDetails = order.SalesOrderDetails.Where(d => d.IsInvoiced).Count();
-                var numberOfServedDetails = order.SalesOrderDetails.Where(d => d.IsDelivered).Count();
-
-                var lifecycle = await _unitOfWork.Lifecycles.GetByName("SalesOrder");
-                if (lifecycle == null) return new GenericResponse(false, new List<string>());
-
-                var currentStatus = lifecycle.Statuses!.First(s => s.Id == order.StatusId!.Value);
-                if (numberOfDetails == numberOfInvoicedDetails)
-                {
-                    order.StatusId = lifecycle.Statuses!.First(s => s.Name == "Comanda Facturada").Id;
-                }
-                else if (numberOfInvoicedDetails > 0)
-                {
-                    order.StatusId = lifecycle.Statuses!.First(s => s.Name == "Comanda Parcialment Facturada").Id;
-                }
-                else if (numberOfDetails == numberOfServedDetails)
-                {
-                    order.StatusId = lifecycle.Statuses!.First(s => s.Name == "Comanda Servida").Id;
-                }
-                else if (numberOfServedDetails > 0)
-                {
-                    order.StatusId = lifecycle.Statuses!.First(s => s.Name == "Comanda Parcialment Servida").Id;
-                }
-
-                order.SalesOrderDetails.Clear();
-                if (initialStatusId != order.StatusId)
-                    await _unitOfWork.SalesOrderHeaders.Update(order);
-            }            
-
-            return new GenericResponse(true, order);
         }
 
         private async Task<GenericResponse> ValidateCreateInvoiceRequest(CreateHeaderRequest createInvoiceRequest)

@@ -1,6 +1,5 @@
 using Application.Contracts;
 using Application.Contracts.Sales;
-using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
 
 namespace Application.Services
@@ -9,7 +8,12 @@ namespace Application.Services
     {
         IEnumerable<DeliveryNote> GetBetweenDates(DateTime startDate, DateTime endDate);
         IEnumerable<DeliveryNote> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid statusId);
+        IEnumerable<DeliveryNote> GetByStatus(Guid statusId);
+        IEnumerable<DeliveryNote> GetByCustomer(Guid customerId);
+        IEnumerable<DeliveryNote> GetByStatusAndCustomer(Guid statusId, Guid customerId);
         IEnumerable<DeliveryNote> GetBetweenDatesAndCustomer(DateTime startDate, DateTime endDate, Guid customerId);
+        IEnumerable<DeliveryNote> GetBySalesInvoice(Guid salesInvoiceId);
+        IEnumerable<DeliveryNote> GetDeliveryNotesToInvoice(Guid customerId);
 
         Task<GenericResponse> Create(CreateHeaderRequest createRequest);
         Task<GenericResponse> Update(DeliveryNote deliveryNote);

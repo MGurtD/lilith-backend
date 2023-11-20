@@ -8,18 +8,24 @@ namespace Api.Services
     public class StockMovementService : IStockMovementService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IStockService _stockService;        
+        private readonly IStockService _stockService;
+        private readonly Location? _defaultLocation;
 
         public StockMovementService(IUnitOfWork unitOfWork, IStockService stockService)
         {
             _unitOfWork = unitOfWork;
             _stockService = stockService;
+
+            _defaultLocation = _unitOfWork.Warehouses.Locations.Find(l => l.Default).FirstOrDefault();
         }
 
         public async Task<GenericResponse> Create(StockMovement request)
         {
+            if (_defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte definida al projecte");
+            request.LocationId = _defaultLocation.Id;
+
             // Comprovar si existeix un stock id per les dimensions i producte
-            var stock = _stockService.GetByDimensions(request.LocationId, request.ReferenceId, 
+            var stock = _stockService.GetByDimensions(_defaultLocation.Id, request.ReferenceId,
                                                       request.Width, request.Length, request.Height,
                                                       request.Diameter, request.Thickness);
 
@@ -40,28 +46,29 @@ namespace Api.Services
                 request.StockId = stock.Id;
             }
             else
-            {            
+            {
                 var newStock = new Stock
                 {
                     ReferenceId = request.ReferenceId,
-                    LocationId = request.LocationId,
+                    LocationId = _defaultLocation.Id,
                     Quantity = request.Quantity,
                     Width = request.Width,
                     Length = request.Length,
                     Height = request.Height,
                     Diameter = request.Diameter,
                     Thickness = request.Thickness
-                };                
+                };
                 await _stockService.Create(newStock);
 
                 request.StockId = newStock.Id;
             }
 
+
             await _unitOfWork.StockMovements.Add(request);
             return new GenericResponse(true, request);
         }
 
-         public IEnumerable<StockMovement> GetBetweenDates(DateTime startDate, DateTime endDate)
+        public IEnumerable<StockMovement> GetBetweenDates(DateTime startDate, DateTime endDate)
         {
             var stockMovements = _unitOfWork.StockMovements.Find(p => p.MovementDate >= startDate && p.MovementDate <= endDate);
             return stockMovements;
@@ -69,9 +76,11 @@ namespace Api.Services
 
         public async Task<GenericResponse> Remove(Guid id)
         {
+            if (_defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte definida al projecte");
+
             var stockMovement = await _unitOfWork.StockMovements.Get(id);
-            if ( stockMovement == null) return new GenericResponse(false, new List<string>() { $"Id {id} inexistent" });
-            var stock = _stockService.GetByDimensions(stockMovement.LocationId, stockMovement.ReferenceId, 
+            if (stockMovement == null) return new GenericResponse(false, new List<string>() { $"Id {id} inexistent" });
+            var stock = _stockService.GetByDimensions(_defaultLocation.Id, stockMovement.ReferenceId,
                                                       stockMovement.Width, stockMovement.Length, stockMovement.Height,
                                                       stockMovement.Diameter, stockMovement.Thickness);
 

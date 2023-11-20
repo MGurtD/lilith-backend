@@ -17,6 +17,8 @@ namespace Domain.Entities.Sales
         public decimal UnitPrice { get; set; } = decimal.Zero;
         public decimal TotalCost { get; set; } = decimal.Zero;
         public decimal Amount { get; set; } = decimal.Zero;
+        public bool IsInvoiced { get; set; }
+
 
         public void SetFromOrderDetail(SalesOrderDetail detail)
         {
