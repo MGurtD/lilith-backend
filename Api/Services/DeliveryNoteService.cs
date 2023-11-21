@@ -154,6 +154,54 @@ namespace Application.Services
             return new GenericResponse(true);
         }
 
+        private async Task<GenericResponse> GetStatusId(string statusName)
+        {
+            var lifecycle = await _unitOfWork.Lifecycles.GetByName("SalesOrder");
+            if (lifecycle == null) return new GenericResponse(false, "El cicle de vida 'SalesOrder' no existeix");
+
+            var status = lifecycle.Statuses!.FirstOrDefault(s => s.Name == statusName);
+            if (status == null) return new GenericResponse(false, $"L'estat {statusName} no existeix dins del cicle de vida 'SalesOrder'");
+
+            return new GenericResponse(true, status.Id);
+        }
+
+        public async Task<GenericResponse> Invoice(Guid salesInvoiceId)
+        {
+            return await ChangeInvoiceableStatus(salesInvoiceId, true);
+        }
+
+        public async Task<GenericResponse> UnInvoice(Guid salesInvoiceId)
+        {
+            return await ChangeInvoiceableStatus(salesInvoiceId, false);
+        }
+
+        public async Task<GenericResponse> ChangeInvoiceableStatus(Guid salesInvoiceId, bool isInvoiced)
+        {
+            var deliveryNotes = GetBySalesInvoice(salesInvoiceId);
+            if (deliveryNotes != null && deliveryNotes.Any())
+            {
+                var statusResponse = await GetStatusId(isInvoiced ? "Facturat" : "Pendent facturar");
+                if (!statusResponse.Result) return statusResponse;
+
+                foreach (var deliveryNote in deliveryNotes.ToList())
+                {
+                    foreach (var detail in deliveryNote.Details)
+                    {
+                        detail.IsInvoiced = isInvoiced;
+                        _unitOfWork.DeliveryNotes.Details.UpdateWithoutSave(detail);
+                    }
+
+                    deliveryNote.SalesInvoiceId = isInvoiced ? salesInvoiceId : null;
+                    deliveryNote.StatusId = (Guid)statusResponse.Content!;
+                    _unitOfWork.DeliveryNotes.UpdateWithoutSave(deliveryNote);
+
+                    await _unitOfWork.CompleteAsync();
+                }
+            }
+
+            return new GenericResponse(true);
+        }
+
         private async Task<GenericResponse> RetriveFromWarehose(DeliveryNote deliveryNote)
         {
             foreach (var detail in deliveryNote.Details)
@@ -224,7 +272,7 @@ namespace Application.Services
         {
             var detailIds = order.SalesOrderDetails.Select(d => d.Id).ToList();
 
-            var deliveryNoteDetails = _unitOfWork.DeliveryNotes.Details.Find(d => detailIds.Contains(d.SalesOrderDetailId));
+            var deliveryNoteDetails = _unitOfWork.DeliveryNotes.Details.Find(d => d.SalesOrderDetailId != null && detailIds.Contains(d.SalesOrderDetailId.Value));
             // Eliminar en bloc
             await _unitOfWork.DeliveryNotes.Details.RemoveRange(deliveryNoteDetails);
 

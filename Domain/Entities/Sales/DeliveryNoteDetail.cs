@@ -7,7 +7,7 @@ namespace Domain.Entities.Sales
         public DeliveryNote? DeliveryNote { get; set; }
         public Guid DeliveryNoteId { get; set; }
         public SalesOrderDetail? SalesOrderDetail { get; set; }
-        public Guid SalesOrderDetailId { get; set; }
+        public Guid? SalesOrderDetailId { get; set; }
 
         public Guid ReferenceId { get; set; }
         public Reference? Reference { get; set; }

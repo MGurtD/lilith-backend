@@ -22,6 +22,9 @@ namespace Application.Services
         Task<GenericResponse> Deliver(DeliveryNote deliveryNote);
         Task<GenericResponse> UnDeliver(DeliveryNote deliveryNote);
 
+        Task<GenericResponse> Invoice(Guid salesOrderId);
+        Task<GenericResponse> UnInvoice(Guid salesOrderId);
+
         Task<GenericResponse> AddOrder(Guid deliveryNoteId, SalesOrderHeader order);
         Task<GenericResponse> RemoveOrder(Guid deliveryNoteId, SalesOrderHeader order);
     }

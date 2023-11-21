@@ -144,12 +144,21 @@ namespace Api.Services
         public async Task<GenericResponse> Remove(Guid id)
         {
             var invoice = _unitOfWork.SalesInvoices.Find(p => p.Id == id).FirstOrDefault();
-            if (invoice == null)
-                return new GenericResponse(false, new List<string> { $"La factura amb ID {id} no existeix" });
-            else
-                await _unitOfWork.SalesInvoices.Remove(invoice);
-                return new GenericResponse(true, new List<string> { });
+            if (invoice == null) return new GenericResponse(false, new List<string> { $"La factura amb ID {id} no existeix" });
 
+            var invoiceDeliveryNotes = _unitOfWork.DeliveryNotes.Find(d => d.SalesInvoiceId == id);
+            if (invoiceDeliveryNotes != null && invoiceDeliveryNotes.Any())
+            {
+                foreach(var note in invoiceDeliveryNotes)
+                {
+                    note.SalesInvoiceId = null;
+                    _unitOfWork.DeliveryNotes.UpdateWithoutSave(note);
+                }
+                await _unitOfWork.CompleteAsync();
+            }
+
+            await _unitOfWork.SalesInvoices.Remove(invoice);
+            return new GenericResponse(true, new List<string> { });
         }
 
         private async Task<GenericResponse> GenerateDueDates(SalesInvoice invoice)
@@ -192,19 +201,25 @@ namespace Api.Services
         {
             var invoice = _unitOfWork.SalesInvoices.Find(i => i.Id == id).FirstOrDefault();
             if (invoice == null) return new GenericResponse(false, $"La factura amb ID {id} no existeix");
+            var tax = _unitOfWork.Taxes.Find(t => t.Percentatge == 21).FirstOrDefault();
+            if (tax == null) return new GenericResponse(false, $"No existeix l'import IVA 21%");
 
             // Crear les lines de la factura segons les línes de l'albarà
+            var deliveryNoteDetails = _unitOfWork.DeliveryNotes.Details.Find(d => d.DeliveryNoteId == deliveryNote.Id);
             var invoiceDetails = new List<SalesInvoiceDetail>();
-            foreach (var deliveryNoteDetail in deliveryNote.Details)
+            foreach (var deliveryNoteDetail in deliveryNoteDetails.ToList())
             {
                 var salesInvoiceDetail = new SalesInvoiceDetail
                 {
                     SalesInvoiceId = id
                 };
+                salesInvoiceDetail.TaxId = tax.Id;
                 salesInvoiceDetail.SetDeliveryNoteDetail(deliveryNoteDetail);
+                invoice.SalesInvoiceDetails.Add(salesInvoiceDetail);
                 invoiceDetails.Add(salesInvoiceDetail);
             }
             await _unitOfWork.SalesInvoices.InvoiceDetails.AddRange(invoiceDetails);
+            deliveryNoteDetails = null;
             invoiceDetails = null;
 
             // Actualizar taules relacionades
@@ -221,7 +236,7 @@ namespace Api.Services
         {
             var invoice = _unitOfWork.SalesInvoices.Find(i => i.Id == id).FirstOrDefault();
             if (invoice == null) return new GenericResponse(false, $"La factura amb ID {id} no existeix");
-            var detailIds = deliveryNote.Details.Select(d => d.Id).ToList();
+            var detailIds = _unitOfWork.DeliveryNotes.Details.Find(d => d.DeliveryNoteId == deliveryNote.Id).Select(d => d.Id).ToList();
 
             var deliveryNoteDetails = _unitOfWork.SalesInvoices.InvoiceDetails.Find(d => d.DeliveryNoteDetailId != null && detailIds.Contains(d.DeliveryNoteDetailId.Value));
             // Eliminar els detalls associats a l'albarà

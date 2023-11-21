@@ -56,14 +56,16 @@ namespace Infrastructure.Migrations
                 table: "DeliveryNotes",
                 column: "SalesInvoiceId",
                 principalTable: "SalesInvoice",
-                principalColumn: "Id");
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetNull);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_SalesInvoiceDetails_DeliveryNoteDetails_DeliveryNoteDetailId",
                 table: "SalesInvoiceDetails",
                 column: "DeliveryNoteDetailId",
                 principalTable: "DeliveryNoteDetails",
-                principalColumn: "Id");
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetNull);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

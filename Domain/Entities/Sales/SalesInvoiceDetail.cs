@@ -6,7 +6,7 @@
         public SalesInvoice? SalesInvoice { get; set; }
 
         public Guid? DeliveryNoteDetailId { get; set; }
-        public DeliveryNoteDetail? DeliveryDetailNote { get; set; }
+        public DeliveryNoteDetail? DeliveryNoteDetail { get; set; }
 
         public Guid TaxId { get; set; }
         public Tax? Tax { get; set; }
@@ -24,8 +24,8 @@
             Description = deliveryNoteDetail.Description;
             Quantity = deliveryNoteDetail.Quantity;
             UnitCost = deliveryNoteDetail.UnitCost;
-            UnitPrice = deliveryNoteDetail.UnitPrice == 0 ? deliveryNoteDetail.UnitCost : deliveryNoteDetail.UnitPrice;
-            TotalCost = UnitCost * UnitPrice;
+            UnitPrice = deliveryNoteDetail.UnitPrice;
+            TotalCost = deliveryNoteDetail.TotalCost;
             Amount = deliveryNoteDetail.Amount;
 
             if (deliveryNoteDetail.Reference != null && deliveryNoteDetail.Reference.TaxId.HasValue)
