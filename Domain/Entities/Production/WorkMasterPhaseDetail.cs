@@ -18,6 +18,5 @@ public class WorkMasterPhaseDetail : Entity
     public bool IsCycleTime {get;set;}
     public bool IsExternalWork {get; set;}
     public decimal ExternalWorkCost {get; set; }
-    public Guid? PurchaseOrderId {get; set;}
     
 }
