@@ -23,6 +23,7 @@ namespace Infrastructure.Persistance.Repositories.Sales
         {
             return await dbSet
                         .Include(s => s.SalesInvoiceDetails)
+                            .ThenInclude(d => d.DeliveryNoteDetail)
                         .Include(s => s.SalesInvoiceImports)
                         .Include(s => s.SalesInvoiceDueDates)
                         .AsNoTracking()

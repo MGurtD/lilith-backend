@@ -17,7 +17,6 @@ namespace Application.Services
 
         Task<GenericResponse> Deliver(Guid deliveryNoteId);
         Task<GenericResponse> UnDeliver(Guid deliveryNoteId);
-        Task<GenericResponse> RecalculateStatus(Guid salesOrderHeaderId);
         Task<GenericResponse> Update(SalesOrderHeader salesOrderHeader);
         Task<GenericResponse> Remove(Guid id);
 

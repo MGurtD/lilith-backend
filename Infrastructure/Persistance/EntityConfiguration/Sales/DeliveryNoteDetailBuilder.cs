@@ -45,6 +45,11 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                               ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.IsInvoiced)
+                .IsRequired()
+                .HasDefaultValue(false)
+                .HasColumnType("boolean");
 
             builder
                 .HasKey(b => b.Id)

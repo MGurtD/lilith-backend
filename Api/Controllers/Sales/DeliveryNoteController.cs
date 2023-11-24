@@ -46,6 +46,19 @@ namespace Api.Controllers.Purchase
             else return BadRequest();
         }
 
+        [HttpGet("Invoice/{id:guid}")]
+        public IActionResult GetDeliveryNotesByInvoiceId(Guid id)
+        {
+            var salesOrders = _service.GetBySalesInvoice(id);
+            return Ok(salesOrders);
+        }
+
+        [HttpGet("ToInvoice")]
+        public IActionResult GetDeliveryNotesToInvoice(Guid customerId)
+        {
+            var salesOrderHeaders = _service.GetDeliveryNotesToInvoice(customerId);
+            return Ok(salesOrderHeaders.OrderBy(e => e.Number));
+        }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]

@@ -25,7 +25,7 @@ namespace Api.Services
             request.LocationId = _defaultLocation.Id;
 
             // Comprovar si existeix un stock id per les dimensions i producte
-            var stock = _stockService.GetByDimensions(_defaultLocation.Id, request.ReferenceId, 
+            var stock = _stockService.GetByDimensions(_defaultLocation.Id, request.ReferenceId,
                                                       request.Width, request.Length, request.Height,
                                                       request.Diameter, request.Thickness);
 
@@ -46,7 +46,7 @@ namespace Api.Services
                 request.StockId = stock.Id;
             }
             else
-            {            
+            {
                 var newStock = new Stock
                 {
                     ReferenceId = request.ReferenceId,
@@ -57,18 +57,18 @@ namespace Api.Services
                     Height = request.Height,
                     Diameter = request.Diameter,
                     Thickness = request.Thickness
-                };                
+                };
                 await _stockService.Create(newStock);
 
                 request.StockId = newStock.Id;
             }
 
-            
+
             await _unitOfWork.StockMovements.Add(request);
             return new GenericResponse(true, request);
         }
 
-         public IEnumerable<StockMovement> GetBetweenDates(DateTime startDate, DateTime endDate)
+        public IEnumerable<StockMovement> GetBetweenDates(DateTime startDate, DateTime endDate)
         {
             var stockMovements = _unitOfWork.StockMovements.Find(p => p.MovementDate >= startDate && p.MovementDate <= endDate);
             return stockMovements;
@@ -79,8 +79,8 @@ namespace Api.Services
             if (_defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte definida al projecte");
 
             var stockMovement = await _unitOfWork.StockMovements.Get(id);
-            if ( stockMovement == null) return new GenericResponse(false, new List<string>() { $"Id {id} inexistent" });
-            var stock = _stockService.GetByDimensions(_defaultLocation.Id, stockMovement.ReferenceId, 
+            if (stockMovement == null) return new GenericResponse(false, new List<string>() { $"Id {id} inexistent" });
+            var stock = _stockService.GetByDimensions(_defaultLocation.Id, stockMovement.ReferenceId,
                                                       stockMovement.Width, stockMovement.Length, stockMovement.Height,
                                                       stockMovement.Diameter, stockMovement.Thickness);
 

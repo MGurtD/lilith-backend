@@ -7,7 +7,7 @@ namespace Domain.Entities.Sales
         public DeliveryNote? DeliveryNote { get; set; }
         public Guid DeliveryNoteId { get; set; }
         public SalesOrderDetail? SalesOrderDetail { get; set; }
-        public Guid SalesOrderDetailId { get; set; }
+        public Guid? SalesOrderDetailId { get; set; }
 
         public Guid ReferenceId { get; set; }
         public Reference? Reference { get; set; }
@@ -17,6 +17,8 @@ namespace Domain.Entities.Sales
         public decimal UnitPrice { get; set; } = decimal.Zero;
         public decimal TotalCost { get; set; } = decimal.Zero;
         public decimal Amount { get; set; } = decimal.Zero;
+        public bool IsInvoiced { get; set; }
+
 
         public void SetFromOrderDetail(SalesOrderDetail detail)
         {

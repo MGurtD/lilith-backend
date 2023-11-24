@@ -1,13 +1,10 @@
-﻿using Api.Services;
-using Application.Contracts;
+﻿using Application.Contracts;
 using Application.Contracts.Sales;
 using Application.Persistance;
 using Domain.Entities;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
 using Domain.Entities.Warehouse;
-using Infrastructure.Persistance;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Application.Services
 {
@@ -54,6 +51,30 @@ namespace Application.Services
         public IEnumerable<DeliveryNote> GetByStatus(Guid statusId)
         {
             var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.StatusId == statusId);
+            return deliveryNotes;
+        }
+
+        public IEnumerable<DeliveryNote> GetByCustomer(Guid customerId)
+        {
+            var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.CustomerId == customerId);
+            return deliveryNotes;
+        }
+
+        public IEnumerable<DeliveryNote> GetByStatusAndCustomer(Guid statusId, Guid customerId)
+        {
+            var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.StatusId == statusId && p.CustomerId == customerId);
+            return deliveryNotes;
+        }
+
+        public IEnumerable<DeliveryNote> GetBySalesInvoice(Guid salesInvoiceId)
+        {
+            var deliveryNotes = _unitOfWork.DeliveryNotes.GetByInvoiceId(salesInvoiceId);
+            return deliveryNotes;
+        }
+
+        public IEnumerable<DeliveryNote> GetDeliveryNotesToInvoice(Guid customerId)
+        {
+            var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.SalesInvoiceId == null);
             return deliveryNotes;
         }
 
@@ -133,18 +154,55 @@ namespace Application.Services
             return new GenericResponse(true);
         }
 
+        private async Task<GenericResponse> GetStatusId(string statusName)
+        {
+            var lifecycle = await _unitOfWork.Lifecycles.GetByName("SalesOrder");
+            if (lifecycle == null) return new GenericResponse(false, "El cicle de vida 'SalesOrder' no existeix");
+
+            var status = lifecycle.Statuses!.FirstOrDefault(s => s.Name == statusName);
+            if (status == null) return new GenericResponse(false, $"L'estat {statusName} no existeix dins del cicle de vida 'SalesOrder'");
+
+            return new GenericResponse(true, status.Id);
+        }
+
+        public async Task<GenericResponse> Invoice(Guid salesInvoiceId)
+        {
+            return await ChangeInvoiceableStatus(salesInvoiceId, true);
+        }
+
+        public async Task<GenericResponse> UnInvoice(Guid salesInvoiceId)
+        {
+            return await ChangeInvoiceableStatus(salesInvoiceId, false);
+        }
+
+        public async Task<GenericResponse> ChangeInvoiceableStatus(Guid salesInvoiceId, bool isInvoiced)
+        {
+            var deliveryNotes = GetBySalesInvoice(salesInvoiceId);
+            if (deliveryNotes != null && deliveryNotes.Any())
+            {
+                foreach (var deliveryNote in deliveryNotes.ToList())
+                {
+                    foreach (var detail in deliveryNote.Details)
+                    {
+                        detail.IsInvoiced = isInvoiced;
+                        _unitOfWork.DeliveryNotes.Details.UpdateWithoutSave(detail);
+                    }                    
+
+                    await _unitOfWork.CompleteAsync();
+                }
+            }
+
+            return new GenericResponse(true);
+        }
+
         private async Task<GenericResponse> RetriveFromWarehose(DeliveryNote deliveryNote)
         {
-            var defaultLocation = _unitOfWork.Warehouses.Locations.Find(l => l.Default == true).FirstOrDefault();
-            if (defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte");
-
             foreach (var detail in deliveryNote.Details)
             {
                 detail.Reference = null;
 
                 var stockMovement = new StockMovement
                 {
-                    LocationId = defaultLocation.Id,
                     MovementDate = DateTime.Now,
                     CreatedOn = DateTime.Now,
                     MovementType = StockMovementType.OUTPUT,
@@ -161,16 +219,12 @@ namespace Application.Services
 
         private async Task<GenericResponse> ReturnToWarehose(DeliveryNote deliveryNote)
         {
-            var defaultLocation = _unitOfWork.Warehouses.Locations.Find(l => l.Default == true).FirstOrDefault();
-            if (defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte");
-
             foreach (var detail in deliveryNote.Details)
             {
                 detail.Reference = null;
 
                 var stockMovement = new StockMovement
                 {
-                    LocationId = defaultLocation.Id,
                     MovementDate = DateTime.Now,
                     CreatedOn = DateTime.Now,
                     MovementType = StockMovementType.INPUT,
@@ -211,7 +265,7 @@ namespace Application.Services
         {
             var detailIds = order.SalesOrderDetails.Select(d => d.Id).ToList();
 
-            var deliveryNoteDetails = _unitOfWork.DeliveryNotes.Details.Find(d => detailIds.Contains(d.SalesOrderDetailId));
+            var deliveryNoteDetails = _unitOfWork.DeliveryNotes.Details.Find(d => d.SalesOrderDetailId != null && detailIds.Contains(d.SalesOrderDetailId.Value));
             // Eliminar en bloc
             await _unitOfWork.DeliveryNotes.Details.RemoveRange(deliveryNoteDetails);
 

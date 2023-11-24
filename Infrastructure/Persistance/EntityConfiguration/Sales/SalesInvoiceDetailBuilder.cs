@@ -40,9 +40,6 @@ namespace Infrastructure.Persistance.EntityConfiguration.Purchase
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                               ApplicationDbContextConstants.DECIMAL_SCALE);
-            builder
-                .Property(e => e.EstimatedDeliveryDate)
-                .HasColumnType("timestamp without time zone");
 
             builder
                 .HasKey(b => b.Id)

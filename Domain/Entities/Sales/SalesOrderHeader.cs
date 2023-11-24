@@ -54,6 +54,7 @@ namespace Domain.Entities.Sales
         public DeliveryNote? DeliveryNote { get; set; }
 
         public ICollection<SalesOrderDetail> SalesOrderDetails { get; set; } = new List<SalesOrderDetail>();
+
         public void Deliver()
         {
             if (SalesOrderDetails != null)
@@ -65,13 +66,6 @@ namespace Domain.Entities.Sales
             if (SalesOrderDetails != null)
                 foreach (var item in SalesOrderDetails)
                     item.IsDelivered = false;
-        }
-
-        public void Invoice()
-        {
-            if (SalesOrderDetails != null)
-                foreach (var item in SalesOrderDetails)
-                    item.IsInvoiced = true;
         }
 
     }

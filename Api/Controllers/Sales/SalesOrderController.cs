@@ -46,7 +46,7 @@ namespace Api.Controllers.Sales
             return Ok(salesOrders);
         }
 
-            [HttpGet("ToDeliver")]
+        [HttpGet("ToDeliver")]
         public IActionResult GetOrdersToDeliver(Guid customerId)
         {
             var salesOrderHeaders = _service.GetOrdersToDeliver(customerId);

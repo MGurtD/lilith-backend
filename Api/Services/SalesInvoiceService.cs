@@ -5,6 +5,7 @@ using Application.Services;
 using Domain.Entities;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
+using FastReport;
 
 namespace Api.Services
 {
@@ -19,13 +20,54 @@ namespace Api.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IDueDateService _dueDateService;
-        private readonly ISalesOrderService _salesOrderService;
+        private readonly IDeliveryNoteService _deliveryNoteService;
+        private readonly string LifecycleName = "SalesInvoice";
 
-        public SalesInvoiceService(IUnitOfWork unitOfWork, IDueDateService dueDateService, ISalesOrderService salesOrderService)
+        public SalesInvoiceService(IUnitOfWork unitOfWork, IDueDateService dueDateService, ISalesOrderService salesOrderService, IDeliveryNoteService deliveryNoteService)
         {
             _unitOfWork = unitOfWork;
             _dueDateService = dueDateService;
-            _salesOrderService = salesOrderService;
+            _deliveryNoteService = deliveryNoteService;
+        }    
+
+        public async Task<SalesInvoice?> GetById(Guid id)
+        {
+            var invoices = await _unitOfWork.SalesInvoices.Get(id);
+            return invoices;
+        }
+        public IEnumerable<SalesInvoice> GetBetweenDates(DateTime startDate, DateTime endDate)
+        {
+            var invoice = _unitOfWork.SalesInvoices.Find(p => p.InvoiceDate >= startDate && p.InvoiceDate <= endDate);
+            return invoice;
+        }
+        public IEnumerable<SalesInvoice> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid statusId)
+        {
+            var invoices = _unitOfWork.SalesInvoices.Find(p => p.InvoiceDate >= startDate && p.InvoiceDate <= endDate && p.StatusId == statusId);
+            return invoices;
+        }
+
+        public IEnumerable<SalesInvoice> GetBetweenDatesAndCustomer(DateTime startDate, DateTime endDate, Guid customerId)
+        {
+            var invoices = _unitOfWork.SalesInvoices.Find(p => p.InvoiceDate >= startDate && p.InvoiceDate <= endDate && p.CustomerId == customerId);
+            return invoices;
+        }
+
+        public IEnumerable<SalesInvoice> GetByCustomer(Guid customerId)
+        {
+            var invoices = _unitOfWork.SalesInvoices.Find(p => p.CustomerId == customerId);
+            return invoices;
+        }
+
+        public IEnumerable<SalesInvoice> GetByStatus(Guid statusId)
+        {
+            var invoices = _unitOfWork.SalesInvoices.Find(p => p.StatusId == statusId);
+            return invoices;
+        }
+
+        public IEnumerable<SalesInvoice> GetByExercise(Guid exerciseId)
+        {
+            var invoices = _unitOfWork.SalesInvoices.Find(p => p.ExerciseId == exerciseId);
+            return invoices;
         }
 
         public async Task<GenericResponse> Create(CreateHeaderRequest createInvoiceRequest)
@@ -74,9 +116,9 @@ namespace Api.Services
                 return new GenericResponse(false, new List<string>() { "El client no té direccions donades d'alta. Si us plau, creí una direcció." });
 
             var site = _unitOfWork.Sites.Find(s => s.Name == "Local Torelló").FirstOrDefault();
-            if (site == null) 
+            if (site == null)
                 return new GenericResponse(false, new List<string>() { "La seu 'Temges' no existeix" });
-            if (!site.IsValidForSales()) 
+            if (!site.IsValidForSales())
                 return new GenericResponse(false, new List<string>() { "Seu 'Temges' no és válida per crear una factura. Revisi les dades de facturació." });
 
             InvoiceEntities invoiceEntities;
@@ -86,69 +128,64 @@ namespace Api.Services
             return new GenericResponse(true, invoiceEntities);
         }
 
-        #region Invoice        
-
-        public async Task<SalesInvoice?> GetById(Guid id)
-        {
-            var invoices = await _unitOfWork.SalesInvoices.Get(id);
-            return invoices;
-        }
-        public IEnumerable<SalesInvoice> GetBetweenDates(DateTime startDate, DateTime endDate)
-        {
-            var invoice = _unitOfWork.SalesInvoices.Find(p => p.InvoiceDate >= startDate && p.InvoiceDate <= endDate);
-            return invoice;
-        }
-        public IEnumerable<SalesInvoice> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid statusId)
-        {
-            var invoices = _unitOfWork.SalesInvoices.Find(p => p.InvoiceDate >= startDate && p.InvoiceDate <= endDate && p.StatusId == statusId);
-            return invoices;
-        }
-
-        public IEnumerable<SalesInvoice> GetBetweenDatesAndCustomer(DateTime startDate, DateTime endDate, Guid customerId)
-        {
-            var invoices = _unitOfWork.SalesInvoices.Find(p => p.InvoiceDate >= startDate && p.InvoiceDate <= endDate && p.CustomerId == customerId);
-            return invoices;
-        }
-
-        public IEnumerable<SalesInvoice> GetByCustomer(Guid customerId)
-        {
-            var invoices = _unitOfWork.SalesInvoices.Find(p => p.CustomerId == customerId);
-            return invoices;
-        }
-
-        public IEnumerable<SalesInvoice> GetByStatus(Guid statusId)
-        {
-            var invoices = _unitOfWork.SalesInvoices.Find(p => p.StatusId == statusId);
-            return invoices;
-        }
-
-        public IEnumerable<SalesInvoice> GetByExercise(Guid exerciseId)
-        {
-            var invoices = _unitOfWork.SalesInvoices.Find(p => p.ExerciseId == exerciseId);
-            return invoices;
-        }
-
         public async Task<GenericResponse> Update(SalesInvoice invoice)
         {
+            var currentInvoice = await _unitOfWork.SalesInvoices.Get(invoice.Id);
+            if (currentInvoice == null) return new GenericResponse(false, $"La factura amb ID {invoice.Id} no existeix");
+
+            // Recuperar estat actual y nou
+            var lifecycle = await _unitOfWork.Lifecycles.GetByName(LifecycleName);
+            var currentStatus = lifecycle!.Statuses!.FirstOrDefault(s => s.Id == currentInvoice.StatusId);
+            var updatedStatus = lifecycle!.Statuses!.FirstOrDefault(s => s.Id == invoice.StatusId);
+
             // Netejar dependencies per evitar col·lisions de EF
+            currentInvoice = null;
             invoice.SalesInvoiceDetails.Clear();
             invoice.SalesInvoiceImports.Clear();
             invoice.SalesInvoiceDueDates.Clear();
 
+            // Actualizar la factura y l'albarà d'entrega relacionat
             await _unitOfWork.SalesInvoices.Update(invoice);
             await GenerateDueDates(invoice);
+            await UpdateRelatedDeliveryNote(invoice.Id, currentStatus!, updatedStatus!);
+
             return new GenericResponse(true, invoice);
+        }
+
+        private async Task UpdateRelatedDeliveryNote(Guid invoiceId, Status currentStatus, Status updatedStatus)
+        {
+            // Accions relacionades amb l'albarà d'entrega
+            if (currentStatus != null && updatedStatus != null && currentStatus.Id != updatedStatus.Id)
+            {
+                if (updatedStatus.Name == "Cobrada")
+                {
+                    await _deliveryNoteService.Invoice(invoiceId);
+                }
+                else if (currentStatus.Name == "Cobrada")
+                {
+                    await _deliveryNoteService.UnInvoice(invoiceId);
+                }
+            }
         }
 
         public async Task<GenericResponse> Remove(Guid id)
         {
             var invoice = _unitOfWork.SalesInvoices.Find(p => p.Id == id).FirstOrDefault();
-            if (invoice == null)
-                return new GenericResponse(false, new List<string> { $"La factura amb ID {id} no existeix" });
-            else
-                await _unitOfWork.SalesInvoices.Remove(invoice);
-                return new GenericResponse(true, new List<string> { });
+            if (invoice == null) return new GenericResponse(false, new List<string> { $"La factura amb ID {id} no existeix" });
 
+            var invoiceDeliveryNotes = _unitOfWork.DeliveryNotes.Find(d => d.SalesInvoiceId == id);
+            if (invoiceDeliveryNotes != null && invoiceDeliveryNotes.Any())
+            {
+                foreach(var note in invoiceDeliveryNotes)
+                {
+                    note.SalesInvoiceId = null;
+                    _unitOfWork.DeliveryNotes.UpdateWithoutSave(note);
+                }
+                await _unitOfWork.CompleteAsync();
+            }
+
+            await _unitOfWork.SalesInvoices.Remove(invoice);
+            return new GenericResponse(true, new List<string> { });
         }
 
         private async Task<GenericResponse> GenerateDueDates(SalesInvoice invoice)
@@ -184,33 +221,61 @@ namespace Api.Services
 
             return new GenericResponse(true, newDueDates);
         }
-        #endregion
 
         #region Details
-        public async Task<GenericResponse> AddDetailsFromOrderDetails(SalesInvoice invoice, IEnumerable<Domain.Entities.Sales.SalesOrderDetail> salesOrderDetails)
+        public async Task<GenericResponse> AddDeliveryNote(Guid id, DeliveryNote deliveryNote)
         {
-            var salesInvoiceDetails = new List<SalesInvoiceDetail>();
-            foreach (var salesOrderDetail in salesOrderDetails.ToList())
+            var invoice = _unitOfWork.SalesInvoices.Find(i => i.Id == id).FirstOrDefault();
+            if (invoice == null) return new GenericResponse(false, $"La factura amb ID {id} no existeix");
+            var tax = _unitOfWork.Taxes.Find(t => t.Percentatge == 21).FirstOrDefault();
+            if (tax == null) return new GenericResponse(false, $"No existeix l'import IVA 21%");
+
+            // Crear les lines de la factura segons les línes de l'albarà
+            var deliveryNoteDetails = _unitOfWork.DeliveryNotes.Details.Find(d => d.DeliveryNoteId == deliveryNote.Id);
+            var invoiceDetails = new List<SalesInvoiceDetail>();
+            foreach (var deliveryNoteDetail in deliveryNoteDetails.ToList())
             {
-                // Marcar detall de la comanda com a part d'una factura
-                await _salesOrderService.UpdateDetail(salesOrderDetail);
-
-                var salesInvoiceDetail = new SalesInvoiceDetail()
+                var salesInvoiceDetail = new SalesInvoiceDetail
                 {
-                    SalesInvoiceId = invoice.Id
+                    SalesInvoiceId = id
                 };
-                var reference = await _unitOfWork.References.Get(salesOrderDetail.ReferenceId);
-                if (reference != null && reference!.TaxId.HasValue) salesInvoiceDetail.TaxId = reference.TaxId.Value;                
-
-                salesInvoiceDetail.SetOrderDetail(salesOrderDetail);
-                salesInvoiceDetails.Add(salesInvoiceDetail);
+                salesInvoiceDetail.TaxId = tax.Id;
+                salesInvoiceDetail.SetDeliveryNoteDetail(deliveryNoteDetail);
                 invoice.SalesInvoiceDetails.Add(salesInvoiceDetail);
+                invoiceDetails.Add(salesInvoiceDetail);
             }
+            await _unitOfWork.SalesInvoices.InvoiceDetails.AddRange(invoiceDetails);
+            deliveryNoteDetails = null;
+            invoiceDetails = null;
 
-            await _unitOfWork.SalesInvoices.InvoiceDetails.AddRange(salesInvoiceDetails);
+            // Actualizar taules relacionades
+            await UpdateImportsAndHeaderAmounts(invoice);
 
-            // TODO : Actualizar salesOrderDetails.IsInvoiced + Actualizar estat de la comanda (Programar-ho al servei de comandes)
-            return await UpdateImportsAndHeaderAmounts(invoice);
+            // Associar la factura per evitar la selecció de l'albarà d'entrega a altre factures
+            deliveryNote.SalesInvoiceId = id;
+            await _deliveryNoteService.Update(deliveryNote);
+
+            return new GenericResponse(true, invoiceDetails);
+        }
+
+        public async Task<GenericResponse> RemoveDeliveryNote(Guid id, DeliveryNote deliveryNote)
+        {
+            var invoice = _unitOfWork.SalesInvoices.Find(i => i.Id == id).FirstOrDefault();
+            if (invoice == null) return new GenericResponse(false, $"La factura amb ID {id} no existeix");
+            var detailIds = _unitOfWork.DeliveryNotes.Details.Find(d => d.DeliveryNoteId == deliveryNote.Id).Select(d => d.Id).ToList();
+
+            var deliveryNoteDetails = _unitOfWork.SalesInvoices.InvoiceDetails.Find(d => d.DeliveryNoteDetailId != null && detailIds.Contains(d.DeliveryNoteDetailId.Value));
+            // Eliminar els detalls associats a l'albarà
+            await _unitOfWork.SalesInvoices.InvoiceDetails.RemoveRange(deliveryNoteDetails);
+
+            // Actualizar taules relacionades
+            await UpdateImportsAndHeaderAmounts(invoice);
+
+            // Alliberar l'albarà perquè sigui assignable de nou a una factura
+            deliveryNote.SalesInvoiceId = null;
+            await _deliveryNoteService.Update(deliveryNote);
+
+            return new GenericResponse(true, deliveryNoteDetails);
         }
 
         public async Task<GenericResponse> AddDetail(SalesInvoiceDetail invoiceDetail)
@@ -243,13 +308,6 @@ namespace Api.Services
             var invoice = await _unitOfWork.SalesInvoices.Get(detail.SalesInvoiceId);
             if (invoice == null) return new GenericResponse(false, new List<string>() { $"La factura amb ID {detail.SalesInvoiceId} no existeix" });
 
-            if (detail.SalesOrderDetailId != null)
-            {
-                var orderDetail = await _salesOrderService.GetDetailById(detail.SalesOrderDetailId.Value);
-                if (orderDetail == null) return new GenericResponse(false, new List<string>() { $"El detall de comanda amb ID {detail.SalesOrderDetailId} no existeix" });
-                orderDetail.IsInvoiced = false;
-                await _salesOrderService.UpdateDetail(orderDetail);
-            }
             await _unitOfWork.SalesInvoices.InvoiceDetails.Remove(detail);
             var memoryDetail = invoice.SalesInvoiceDetails.First(d => d.Id == detail.Id);
             invoice.SalesInvoiceDetails.Remove(memoryDetail);

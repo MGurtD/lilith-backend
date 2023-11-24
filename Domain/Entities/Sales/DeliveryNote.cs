@@ -15,6 +15,8 @@ namespace Domain.Entities.Sales
         public Guid SiteId { get; set; }
         public Status? Status { get; set; }
         public Guid StatusId { get; set; }
+        public SalesInvoice? SalesInvoice { get; set; }
+        public Guid? SalesInvoiceId { get; set; }
 
         public ICollection<DeliveryNoteDetail> Details { get; set; } = new List<DeliveryNoteDetail>();
     }

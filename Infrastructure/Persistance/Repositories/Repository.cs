@@ -28,8 +28,6 @@ namespace Infrastructure.Persistance.Repositories
         public virtual IEnumerable<Entity> Find(Expression<Func<Entity, bool>> predicate)
         {
             var entities = dbSet.AsNoTracking().Where(predicate).AsNoTracking();
-            foreach (var entity in entities)
-                context.Entry(entity).State = EntityState.Detached;
             return entities;
         }
 

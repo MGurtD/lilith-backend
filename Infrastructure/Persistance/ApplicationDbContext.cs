@@ -30,11 +30,6 @@ namespace Infrastructure.Persistance
                 .HasNoKey();
 
             builder
-                .Entity<SalesOrderDetail>()
-                .ToView("vw_invoiceableOrderDetails")
-                .HasNoKey();
-
-            builder
                .Entity<SalesInvoiceDetailReport>()
                .ToView("vw_report_salesInvoiceDetails")
                .HasNoKey();
