@@ -2,6 +2,7 @@
 using Application.Persistance.Repositories.Sales;
 using Domain.Entities.Sales;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Infrastructure.Persistance.Repositories.Purchase
 {
@@ -21,6 +22,14 @@ namespace Infrastructure.Persistance.Repositories.Purchase
                         .Include(d => d.SalesInvoice)
                         .AsNoTracking()
                         .FirstOrDefaultAsync(e => e.Id == id);
+        }
+
+        public IEnumerable<DeliveryNote> GetByInvoiceId(Guid invoiceId)
+        {
+            return dbSet
+                    .Include(d => d.Details)
+                    .AsNoTracking()
+                    .Where(e => e.SalesInvoiceId == invoiceId);
         }
 
     }

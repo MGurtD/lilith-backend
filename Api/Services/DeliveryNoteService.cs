@@ -68,7 +68,7 @@ namespace Application.Services
 
         public IEnumerable<DeliveryNote> GetBySalesInvoice(Guid salesInvoiceId)
         {
-            var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.SalesInvoiceId == salesInvoiceId);
+            var deliveryNotes = _unitOfWork.DeliveryNotes.GetByInvoiceId(salesInvoiceId);
             return deliveryNotes;
         }
 
@@ -180,20 +180,13 @@ namespace Application.Services
             var deliveryNotes = GetBySalesInvoice(salesInvoiceId);
             if (deliveryNotes != null && deliveryNotes.Any())
             {
-                var statusResponse = await GetStatusId(isInvoiced ? "Facturat" : "Pendent facturar");
-                if (!statusResponse.Result) return statusResponse;
-
                 foreach (var deliveryNote in deliveryNotes.ToList())
                 {
                     foreach (var detail in deliveryNote.Details)
                     {
                         detail.IsInvoiced = isInvoiced;
                         _unitOfWork.DeliveryNotes.Details.UpdateWithoutSave(detail);
-                    }
-
-                    deliveryNote.SalesInvoiceId = isInvoiced ? salesInvoiceId : null;
-                    deliveryNote.StatusId = (Guid)statusResponse.Content!;
-                    _unitOfWork.DeliveryNotes.UpdateWithoutSave(deliveryNote);
+                    }                    
 
                     await _unitOfWork.CompleteAsync();
                 }
