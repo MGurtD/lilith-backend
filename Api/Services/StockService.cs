@@ -81,7 +81,7 @@ namespace Api.Services
 
         public async Task<IEnumerable<Stock>> GetAll()
         {
-            var stock = await _unitOfWork.Stocks.GetAll();
+            var stock = _unitOfWork.Stocks.Find(p => p.Quantity > 0);
             return stock;
         }
     }

@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231120110719_WorkMasterEntities")]
+    partial class WorkMasterEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -82,6 +84,73 @@ namespace Infrastructure.Migrations
                         .HasColumnType("numeric");
 
                     b.ToView("vw_report_salesInvoiceDetails");
+                });
+
+            modelBuilder.Entity("Application.Contracts.Sales.SalesOrderDetail", b =>
+                {
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsInvoiced")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsServed")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ReferenceCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReferenceDescription")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ReferenceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ReferenceVersion")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("SalesOrderDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("SalesOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SalesOrderNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("StatusId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("StatusName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("TotalCost")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("numeric");
+
+                    b.ToView("vw_invoiceableOrderDetails");
                 });
 
             modelBuilder.Entity("Domain.Entities.Auth.Role", b =>
@@ -2181,9 +2250,6 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(25)
                         .HasColumnType("varchar");
 
-                    b.Property<Guid?>("SalesInvoiceId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("SiteId")
                         .HasColumnType("uuid");
 
@@ -2201,8 +2267,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("ExerciseId");
-
-                    b.HasIndex("SalesInvoiceId");
 
                     b.HasIndex("SiteId");
 
@@ -2241,18 +2305,13 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bool")
                         .HasDefaultValue(false);
 
-                    b.Property<bool>("IsInvoiced")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
                     b.Property<Guid>("ReferenceId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("SalesOrderDetailId")
+                    b.Property<Guid>("SalesOrderDetailId")
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("TotalCost")
@@ -2459,9 +2518,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasDefaultValueSql("NOW()");
 
-                    b.Property<Guid?>("DeliveryNoteDetailId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
@@ -2471,10 +2527,16 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bool")
                         .HasDefaultValue(false);
 
+                    b.Property<DateTime>("EstimatedDeliveryDate")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
                     b.Property<Guid>("SalesInvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("SalesOrderDetailId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("TaxId")
@@ -2500,9 +2562,9 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("PK_SalesInvoiceDetails");
 
-                    b.HasIndex("DeliveryNoteDetailId");
-
                     b.HasIndex("SalesInvoiceId");
+
+                    b.HasIndex("SalesOrderDetailId");
 
                     b.HasIndex("TaxId");
 
@@ -2623,6 +2685,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("IsDelivered")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsInvoiced")
                         .HasColumnType("boolean");
 
                     b.Property<int>("Quantity")
@@ -3702,10 +3767,6 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.Sales.SalesInvoice", "SalesInvoice")
-                        .WithMany()
-                        .HasForeignKey("SalesInvoiceId");
-
                     b.HasOne("Domain.Entities.Production.Site", "Site")
                         .WithMany()
                         .HasForeignKey("SiteId")
@@ -3721,8 +3782,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("Exercise");
-
-                    b.Navigation("SalesInvoice");
 
                     b.Navigation("Site");
 
@@ -3745,7 +3804,9 @@ namespace Infrastructure.Migrations
 
                     b.HasOne("Domain.Entities.Sales.SalesOrderDetail", "SalesOrderDetail")
                         .WithMany()
-                        .HasForeignKey("SalesOrderDetailId");
+                        .HasForeignKey("SalesOrderDetailId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("DeliveryNote");
 
@@ -3791,15 +3852,15 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Sales.SalesInvoiceDetail", b =>
                 {
-                    b.HasOne("Domain.Entities.Sales.DeliveryNoteDetail", "DeliveryNoteDetail")
-                        .WithMany()
-                        .HasForeignKey("DeliveryNoteDetailId");
-
                     b.HasOne("Domain.Entities.Sales.SalesInvoice", "SalesInvoice")
                         .WithMany("SalesInvoiceDetails")
                         .HasForeignKey("SalesInvoiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Domain.Entities.Sales.SalesOrderDetail", "SalesOrderDetail")
+                        .WithMany()
+                        .HasForeignKey("SalesOrderDetailId");
 
                     b.HasOne("Domain.Entities.Tax", "Tax")
                         .WithMany()
@@ -3807,9 +3868,9 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("DeliveryNoteDetail");
-
                     b.Navigation("SalesInvoice");
+
+                    b.Navigation("SalesOrderDetail");
 
                     b.Navigation("Tax");
                 });
