@@ -37,28 +37,28 @@ namespace Api.Controllers.Sales
         {
             var entities = await _unitOfWork.References.GetAll();
 
-            return Ok(entities);
+            return Ok(entities.OrderBy(r => r.Code));
         }
 
         [Route("Sales")]
         [HttpGet]
         public IActionResult GetAllSales()
         {
-            var entities = _unitOfWork.References.Find(r => r.Sales);
+            var entities = _unitOfWork.References.Find(r => r.Sales).OrderBy(r => r.Code);
             return Ok(entities);
         }
         [Route("Purchase")]
         [HttpGet]
         public IActionResult GetAllPurchase()
         {
-            var entities = _unitOfWork.References.Find(r => r.Purchase);
+            var entities = _unitOfWork.References.Find(r => r.Purchase).OrderBy(r => r.Code);
             return Ok(entities);
         }
         [Route("Production")]
         [HttpGet]
         public IActionResult GetAllProduction()
         {
-            var entities = _unitOfWork.References.Find(r => r.Production);
+            var entities = _unitOfWork.References.Find(r => r.Production).OrderBy(r => r.Code);
             return Ok(entities);
         }
 

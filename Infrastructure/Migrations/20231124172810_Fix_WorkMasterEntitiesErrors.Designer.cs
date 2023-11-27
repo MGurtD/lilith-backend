@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231124172810_Fix_WorkMasterEntitiesErrors")]
+    partial class Fix_WorkMasterEntitiesErrors
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1077,7 +1079,7 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("OperatorTypeId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("PreferredWorkcenterId")
+                    b.Property<Guid>("PreferredWorkcenterId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("UpdatedOn")
@@ -3395,7 +3397,7 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.Production.WorkMasterPhase", b =>
                 {
                     b.HasOne("Domain.Entities.Production.WorkMaster", "WorkMaster")
-                        .WithMany("Phases")
+                        .WithMany()
                         .HasForeignKey("WorkMasterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -3416,7 +3418,7 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("WasteReferenceId");
 
                     b.HasOne("Domain.Entities.Production.WorkMasterPhase", "WorkMasterPhase")
-                        .WithMany("BillOfMaterials")
+                        .WithMany()
                         .HasForeignKey("WorkMasterPhaseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -3444,10 +3446,12 @@ namespace Infrastructure.Migrations
 
                     b.HasOne("Domain.Entities.Production.Workcenter", "PreferredWorkcenter")
                         .WithMany()
-                        .HasForeignKey("PreferredWorkcenterId");
+                        .HasForeignKey("PreferredWorkcenterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Domain.Entities.Production.WorkMasterPhase", "WorkMasterPhase")
-                        .WithMany("Details")
+                        .WithMany()
                         .HasForeignKey("WorkMasterPhaseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -4002,18 +4006,6 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.Production.Enterprise", b =>
                 {
                     b.Navigation("Sites");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Production.WorkMaster", b =>
-                {
-                    b.Navigation("Phases");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Production.WorkMasterPhase", b =>
-                {
-                    b.Navigation("BillOfMaterials");
-
-                    b.Navigation("Details");
                 });
 
             modelBuilder.Entity("Domain.Entities.Purchase.PurchaseInvoice", b =>

@@ -64,6 +64,7 @@ namespace Application.Persistance
         IRepository<OperatorType, Guid> OperatorTypes { get; }        
         IRepository<MachineStatus, Guid> MachineStatuses { get; }
         IRepository<Shift, Guid> Shifts { get; }
+        IWorkMasterRepository WorkMasters { get; }
 
         //Warehouse
         IWarehouseRepository Warehouses { get; }

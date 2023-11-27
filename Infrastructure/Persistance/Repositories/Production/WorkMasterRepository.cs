@@ -1,0 +1,33 @@
+﻿using Application.Persistance.Repositories.Production;
+using Domain.Entities.Production;
+using Microsoft.EntityFrameworkCore;
+
+namespace Infrastructure.Persistance.Repositories.Production
+{
+    public class WorkMasterRepository : Repository<WorkMaster, Guid>, IWorkMasterRepository
+    {
+        public IWorkMasterPhaseRepository Phases { get; }
+
+        public WorkMasterRepository(ApplicationDbContext context) : base(context)
+        {
+            Phases = new WorkMasterPhaseRepository(context);
+        }
+
+        public override async Task<IEnumerable<WorkMaster>> GetAll()
+        {
+            return await dbSet
+                        .Include(d => d.Reference)
+                        .AsNoTracking()
+                        .ToListAsync();
+        }
+
+        public override async Task<WorkMaster?> Get(Guid id)
+        {
+            return await dbSet
+                        .Include(d => d.Reference)
+                        .Include(d => d.Phases)
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(e => e.Id == id);
+        }
+    }
+}
