@@ -20,9 +20,6 @@ namespace Infrastructure.Persistance.EntityConfiguration.Warehouse
                 .HasColumnType("varchar")
                 .HasMaxLength(250);
             builder
-                .Property(b => b.Default)
-                .HasColumnType("boolean");
-            builder
                 .HasKey(b => b.Id)
                 .HasName("PK_Location");
             builder.HasIndex(builder => new { builder.Name, builder.WarehouseId }, "UK_Location_Warehouse");
