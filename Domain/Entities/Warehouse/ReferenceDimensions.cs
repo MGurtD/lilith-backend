@@ -14,7 +14,7 @@ namespace Domain.Entities.Warehouse
 
         public void SetFromReceiptDetail(ReceiptDetail receiptDetail)
         {
-            Density = receiptDetail.Reference!.Density;
+            //Density = receiptDetail.Reference!.Density;
             Quantity = receiptDetail.Quantity;
             Width = receiptDetail.Width;
             Length = receiptDetail.Lenght;
