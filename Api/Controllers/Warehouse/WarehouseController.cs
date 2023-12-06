@@ -99,10 +99,11 @@ namespace Api.Controllers.Warehouse
             }
         }
 
-        [HttpPut("Location")]
-        public async Task<IActionResult> UpdateLocation(Location request)
+        [HttpPut("Location/{id:guid}")]
+        public async Task<IActionResult> UpdateLocation(Guid id, [FromBody] Location request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+            if (id != request.Id) return BadRequest();
 
             var exists = _unitOfWork.Warehouses.Locations.Find(r => request.Id == r.Id).Any();
             if (exists)
@@ -116,7 +117,7 @@ namespace Api.Controllers.Warehouse
             }
         }
 
-        [HttpDelete("Location")]
+        [HttpDelete("Location/{id:guid}")]
         public async Task<IActionResult> DeleteLocation(Guid id)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);

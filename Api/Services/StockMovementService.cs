@@ -9,23 +9,24 @@ namespace Api.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IStockService _stockService;
-        private readonly Location? _defaultLocation;
+        private readonly Guid? _defaultLocationId;
 
         public StockMovementService(IUnitOfWork unitOfWork, IStockService stockService)
         {
             _unitOfWork = unitOfWork;
             _stockService = stockService;
 
-            _defaultLocation = _unitOfWork.Warehouses.Locations.Find(l => l.Default).FirstOrDefault();
+            var warehouse = _unitOfWork.Warehouses.Find(w => w.Disabled == false).FirstOrDefault();
+            if (warehouse != null) _defaultLocationId = warehouse.DefaultLocationId;
         }
 
         public async Task<GenericResponse> Create(StockMovement request)
         {
-            if (_defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte definida al projecte");
-            request.LocationId = _defaultLocation.Id;
+            if (_defaultLocationId == null) return new GenericResponse(false, "No hi ha una ubicació per defecte definida al projecte");
+            request.LocationId = _defaultLocationId;
 
             // Comprovar si existeix un stock id per les dimensions i producte
-            var stock = _stockService.GetByDimensions(_defaultLocation.Id, request.ReferenceId,
+            var stock = _stockService.GetByDimensions(_defaultLocationId.Value, request.ReferenceId,
                                                       request.Width, request.Length, request.Height,
                                                       request.Diameter, request.Thickness);
 
@@ -50,7 +51,7 @@ namespace Api.Services
                 var newStock = new Stock
                 {
                     ReferenceId = request.ReferenceId,
-                    LocationId = _defaultLocation.Id,
+                    LocationId = _defaultLocationId.Value,
                     Quantity = request.Quantity,
                     Width = request.Width,
                     Length = request.Length,
@@ -76,11 +77,11 @@ namespace Api.Services
 
         public async Task<GenericResponse> Remove(Guid id)
         {
-            if (_defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte definida al projecte");
+            if (_defaultLocationId == null) return new GenericResponse(false, "No hi ha una ubicació per defecte definida al projecte");
 
             var stockMovement = await _unitOfWork.StockMovements.Get(id);
             if (stockMovement == null) return new GenericResponse(false, new List<string>() { $"Id {id} inexistent" });
-            var stock = _stockService.GetByDimensions(_defaultLocation.Id, stockMovement.ReferenceId,
+            var stock = _stockService.GetByDimensions(_defaultLocationId.Value, stockMovement.ReferenceId,
                                                       stockMovement.Width, stockMovement.Length, stockMovement.Height,
                                                       stockMovement.Diameter, stockMovement.Thickness);
 

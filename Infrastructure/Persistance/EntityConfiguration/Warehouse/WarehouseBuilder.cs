@@ -19,6 +19,10 @@ namespace Infrastructure.Persistance.EntityConfiguration.Warehouse
                 .HasColumnType("varchar")
                 .HasMaxLength(250);
             builder
+                .HasOne(e => e.DefaultLocation)
+                .WithMany()
+                .HasForeignKey(e => e.DefaultLocationId);
+            builder
                 .HasKey(b => b.Id)
                 .HasName("PK_Warehouse");
             builder.HasIndex(builder => builder.Name, "UK_Warehouse_Name");

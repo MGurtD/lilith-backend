@@ -118,15 +118,16 @@ namespace Application.Services
 
         public async Task<GenericResponse> MoveToWarehose(Receipt receipt)
         {
-            var defaultLocation = _unitOfWork.Warehouses.Locations.Find(l => l.Default == true).FirstOrDefault();
-            if (defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte");
+            var warehouse = _unitOfWork.Warehouses.Find(w => w.Disabled == false).FirstOrDefault();
+            if (warehouse == null) return new GenericResponse(false, "No existeixen magatzems actius");
+            if (warehouse.DefaultLocationId == null) return new GenericResponse(false, "No hi ha una ubicació per defecte");
 
             var detailsToMove = receipt.Details!.Where(d => d.StockMovementId == null);
             foreach (var detail in detailsToMove) 
             {
                 var stockMovement = new StockMovement
                 {
-                    LocationId = defaultLocation.Id,
+                    LocationId = warehouse.DefaultLocationId,
                     MovementDate = DateTime.Now,
                     CreatedOn = DateTime.Now,
                     MovementType = StockMovementType.INPUT,
