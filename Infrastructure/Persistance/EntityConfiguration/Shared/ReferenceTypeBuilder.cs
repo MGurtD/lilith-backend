@@ -30,6 +30,13 @@ namespace Infrastructure.Persistance.EntityConfiguration.Warehouse
                 .HasColumnType("varchar")
                 .HasMaxLength(25);
             builder
+                .Property(b => b.Density)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasDefaultValue(0.0)
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
                 .HasKey(b => b.Id)
                 .HasName("PK_ReferenceType");
             builder.HasIndex(builder => builder.Name, "UK_ReferenceType_Name");

@@ -13,8 +13,7 @@ namespace Domain.Entities.Warehouse
         public decimal Thickness { get; set; }
 
         public void SetFromReceiptDetail(ReceiptDetail receiptDetail)
-        {
-            Density = receiptDetail.Reference!.Density;
+        {            
             Quantity = receiptDetail.Quantity;
             Width = receiptDetail.Width;
             Length = receiptDetail.Lenght;

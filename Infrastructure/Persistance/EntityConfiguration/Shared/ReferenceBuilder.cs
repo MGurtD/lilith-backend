@@ -44,12 +44,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                               ApplicationDbContextConstants.DECIMAL_SCALE);
             
-            builder
-                .Property(b => b.Density)
-                .IsRequired()
-                .HasColumnType("decimal")
-                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            
                     
             builder
                 .Property(b => b.Sales)
