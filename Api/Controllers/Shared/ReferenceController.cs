@@ -1,4 +1,5 @@
 ﻿using Application.Persistance;
+using Application.Services;
 using Domain.Entities.Shared;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,10 +10,12 @@ namespace Api.Controllers.Sales
     public class ReferenceController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IReferenceService _referenceService;
 
-        public ReferenceController(IUnitOfWork unitOfWork)
+        public ReferenceController(IUnitOfWork unitOfWork, IReferenceService referenceService)
         {
             _unitOfWork = unitOfWork;
+            _referenceService = referenceService;
         }
         
         [HttpGet]
@@ -122,8 +125,19 @@ namespace Api.Controllers.Sales
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.References.Remove(entity);
-            return Ok(entity);
+            var canDelete = await _referenceService.CanDelete(id);
+            if (canDelete.Result)
+            {
+                await _unitOfWork.References.Remove(entity);
+                return Ok(entity);
+            }
+            else
+            {
+                return BadRequest(canDelete.Content);
+            }
+            
+            
+
         }
 
 
