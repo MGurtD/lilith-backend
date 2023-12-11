@@ -16,39 +16,39 @@ namespace Api.Services
         public async Task<GenericResponse> CanDelete(Guid referenceId)
         {
             var resp = true;
-            var message = "";
-            var salesOrderDetails = _unitOfWork.SalesOrderDetails.Find(p => p.ReferenceId == referenceId);
-            if (salesOrderDetails != null)
+            var message = "La referencia amb ID:" + referenceId;
+            var salesOrderDetails = _unitOfWork.SalesOrderDetails.Find(p => p.ReferenceId == referenceId).Count();
+            if (salesOrderDetails > 0)
             {
                 resp = false;
-                message = message + " La referencia amb ID:" + referenceId + " te comandes de compra";
+                message = message + " Te comandes de compra\n";
             }
-            var receiptDetails = _unitOfWork.Receipts.Details.Find(p => p.ReferenceId.Equals(referenceId));
-            if (receiptDetails != null)
+            var receiptDetails = _unitOfWork.Receipts.Details.Find(p => p.ReferenceId.Equals(referenceId)).Count();
+            if (receiptDetails > 0)
             {
                 resp = false;
-                message = message + " La referencia amb ID:" + referenceId + " te albarans de recepció";
+                message = message + " Te albarans de recepció\n";
             }
-            var stock = _unitOfWork.StockMovements.Find(p => p.ReferenceId == referenceId);
-            if (stock != null)
+            var stock = _unitOfWork.StockMovements.Find(p => p.ReferenceId == referenceId).Count();
+            if (stock > 0)
             {
                 resp = false;
-                message = message + " La referencia amb ID:" + referenceId + " te moviments de magatzem";
+                message = message + " Te moviments de magatzem\n";
             }
-            var workmaster = _unitOfWork.WorkMasters.Find(p => p.ReferenceId == referenceId);
-            if (workmaster != null)
+            var workmaster = _unitOfWork.WorkMasters.Find(p => p.ReferenceId == referenceId).Count();
+            if (workmaster > 0)
             {
                 resp = false;
-                message = message + " La referencia amb ID:" + referenceId + " te una ruta de producció definida";
+                message = message + " Te una ruta de producció definida\n";
             }
-            var bom = _unitOfWork.WorkMasters.Phases.BillOfMaterials.Find(p => p.ReferenceId == referenceId);
-            if (bom != null)
+            var bom = _unitOfWork.WorkMasters.Phases.BillOfMaterials.Find(p => p.ReferenceId == referenceId).Count();
+            if (bom > 0)
             {
                 resp = false;
-                message = message + " La referencia amb ID:" + referenceId + " forma part d'una llista de materials";
+                message = message + " Forma part d'una llista de materials\n";
             }
 
-            return new GenericResponse(resp, message);
+            return new GenericResponse(resp,message);
         }
     }
 }

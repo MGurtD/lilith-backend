@@ -3,7 +3,7 @@ using Application.Services;
 using Domain.Entities.Shared;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers.Sales
+namespace Api.Controllers.Shared
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -133,7 +133,7 @@ namespace Api.Controllers.Sales
             }
             else
             {
-                return BadRequest(canDelete.Content);
+                return BadRequest(canDelete.Errors[0]);
             }
             
             
