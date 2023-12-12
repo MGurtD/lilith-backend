@@ -30,13 +30,13 @@ namespace Application.Services
 
         public IEnumerable<PurchaseInvoice> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid statusId)
         {
-            var invoices = _unitOfWork.PurchaseInvoices.Find(p => p.PurchaseInvoiceDate >= startDate && p.PurchaseInvoiceDate <= endDate && p.PurchaseInvoiceStatusId == statusId);
+            var invoices = _unitOfWork.PurchaseInvoices.Find(p => p.PurchaseInvoiceDate >= startDate && p.PurchaseInvoiceDate <= endDate && p.StatusId == statusId);
             return invoices;
         }
 
         public IEnumerable<PurchaseInvoice> GetBetweenDatesAndExcludeStatus(DateTime startDate, DateTime endDate, Guid statusId)
         {
-            var invoices = _unitOfWork.PurchaseInvoices.Find(p => p.PurchaseInvoiceDate >= startDate && p.PurchaseInvoiceDate <= endDate && p.PurchaseInvoiceStatusId != statusId);
+            var invoices = _unitOfWork.PurchaseInvoices.Find(p => p.PurchaseInvoiceDate >= startDate && p.PurchaseInvoiceDate <= endDate && p.StatusId != statusId);
             return invoices;
         }
 
@@ -103,7 +103,7 @@ namespace Application.Services
         public async Task<GenericResponse> ChangeStatuses(ChangeStatusOfPurchaseInvoicesRequest changeStatusOfPurchaseInvoicesRequest)
         {
             var statusToId = changeStatusOfPurchaseInvoicesRequest.StatusToId;
-            var status = await _unitOfWork.PurchaseInvoiceStatuses.Get(statusToId);
+            var status = await _unitOfWork.Lifecycles.StatusRepository.Get(statusToId);
             if (status == null || status.Disabled)
             {
                 return new GenericResponse(false, new List<string> { $"L'estat de factura amb ID {statusToId} no existeix o est� deshabilitat" });
@@ -112,7 +112,7 @@ namespace Application.Services
             var purchaseInvoices = _unitOfWork.PurchaseInvoices.Find(pi => changeStatusOfPurchaseInvoicesRequest.Ids.Contains(pi.Id));
             foreach (var invoice in purchaseInvoices)
             {
-                invoice.PurchaseInvoiceStatusId = statusToId;
+                invoice.StatusId = statusToId;
                 _unitOfWork.PurchaseInvoices.UpdateWithoutSave(invoice);
             }
             await _unitOfWork.CompleteAsync();
@@ -128,13 +128,13 @@ namespace Application.Services
                 return new GenericResponse(false, new List<string> { $"La factura amb ID {changeStatusOfPurchaseInvoiceRequest.Id} no existeix" });
             }
 
-            var status = await _unitOfWork.PurchaseInvoiceStatuses.Get(changeStatusOfPurchaseInvoiceRequest.StatusToId);
+            var status = await _unitOfWork.Lifecycles.StatusRepository.Get(changeStatusOfPurchaseInvoiceRequest.StatusToId);
             if (status == null || status.Disabled)
             {
                 return new GenericResponse(false, new List<string> { $"L'estat de factura amb ID {changeStatusOfPurchaseInvoiceRequest.StatusToId} no existeix o est� deshabilitat" });
             }
 
-            invoice.PurchaseInvoiceStatusId = changeStatusOfPurchaseInvoiceRequest.StatusToId;
+            invoice.StatusId = changeStatusOfPurchaseInvoiceRequest.StatusToId;
             await _unitOfWork.PurchaseInvoices.Update(invoice);
 
             return new GenericResponse(true, new List<string> { });

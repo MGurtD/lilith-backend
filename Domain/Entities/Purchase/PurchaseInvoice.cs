@@ -28,8 +28,11 @@
         public PaymentMethod? PaymentMethod { get; set; }
         public Guid PaymentMethodId { get; set; }
 
+        public Status? Status { get; set; }
+        public Guid? StatusId { get; set; }
+
         public PurchaseInvoiceStatus? PurchaseInvoiceStatus { get; set; }
-        public Guid PurchaseInvoiceStatusId { get; set; }
+        public Guid? PurchaseInvoiceStatusId { get; set; }
 
         public ICollection<PurchaseInvoiceDueDate>? PurchaseInvoiceDueDates { get; set; }
         public ICollection<PurchaseInvoiceImport>? PurchaseInvoiceImports { get; set; }
