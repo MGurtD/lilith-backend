@@ -65,14 +65,14 @@ namespace Application.Services
                     return new GenericResponse(false, new List<string> { $"Exercici invàlid" });
                 }
 
-                exercise.PurchaseInvoiceCounter += 1;
+                //exercise.PurchaseInvoiceCounter += 1;
                 var counterObj = await _exerciseService.GetNextCounter(exercise.Id, "purchaseinvoice");
                 if (counterObj == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
 
-                //purchaseInvoice.Number = counterObj.Content.ToString();
-                purchaseInvoice.Number = exercise.PurchaseInvoiceCounter.ToString();
+                purchaseInvoice.Number = counterObj.Content.ToString();
+                //purchaseInvoice.Number = exercise.PurchaseInvoiceCounter.ToString();
                 await _unitOfWork.PurchaseInvoices.Add(purchaseInvoice);
-                await _unitOfWork.Exercices.Update(exercise);
+                //await _unitOfWork.Exercices.Update(exercise);
             }
 
             return new GenericResponse(true, new List<string> { });
