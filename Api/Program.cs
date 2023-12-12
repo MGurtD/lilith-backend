@@ -50,6 +50,7 @@ try
         builder.Services.AddScoped<IStockMovementService, StockMovementService>();
         builder.Services.AddScoped<IDeliveryNoteService, DeliveryNoteService>();
         builder.Services.AddScoped<IReceiptService, ReceiptService>();
+        builder.Services.AddScoped<IReferenceService, ReferenceService>();
 
         // JWT Service    
         var signKey = Encoding.ASCII.GetBytes(Configuration.JwtSecret);
