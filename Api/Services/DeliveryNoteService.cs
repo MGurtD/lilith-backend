@@ -22,12 +22,14 @@ namespace Application.Services
         private readonly IStockMovementService _stockMovementService;
         private readonly ISalesOrderService _salesOrderService;
         private readonly string lifecycleName = "DeliveryNote";
+        private readonly IExerciseService _exerciseService;
 
-        public DeliveryNoteService(IUnitOfWork unitOfWork, IStockMovementService stockMovementService, ISalesOrderService salesOrderService)
+        public DeliveryNoteService(IUnitOfWork unitOfWork, IStockMovementService stockMovementService, ISalesOrderService salesOrderService, IExerciseService exerciseService)
         {
             _unitOfWork = unitOfWork;
             _stockMovementService = stockMovementService;
             _salesOrderService = salesOrderService;
+            _exerciseService = exerciseService;
         }
 
         public IEnumerable<DeliveryNote> GetBetweenDates(DateTime startDate, DateTime endDate)
@@ -85,7 +87,10 @@ namespace Application.Services
 
             var deliveryNoteEntities = (DeliveryNoteEntities)response.Content!;
 
-            var counter = deliveryNoteEntities.Exercise.DeliveryNoteCounter == 0 ? 1 : deliveryNoteEntities.Exercise.DeliveryNoteCounter;
+            //var counter = deliveryNoteEntities.Exercise.DeliveryNoteCounter == 0 ? 1 : deliveryNoteEntities.Exercise.DeliveryNoteCounter;
+            var counterObj = await _exerciseService.GetNextCounter(deliveryNoteEntities.Exercise.Id, "deliverynote");
+            if (counterObj == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
+            var counter = counterObj.Content.ToString();
             var deliveryNote = new DeliveryNote()
             {
                 Id = createRequest.Id,
@@ -93,7 +98,7 @@ namespace Application.Services
                 CustomerId = createRequest.CustomerId,
                 SiteId = deliveryNoteEntities.Site.Id,
                 CreatedOn = createRequest.Date,
-                Number = $"{deliveryNoteEntities.Exercise.Name}-{counter.ToString().PadLeft(3, '0')}",
+                Number = counter, // $"{deliveryNoteEntities.Exercise.Name}-{counter.ToString().PadLeft(3, '0')}",
                 StatusId = deliveryNoteEntities.Lifecycle.InitialStatusId!.Value
             };
             await _unitOfWork.DeliveryNotes.Add(deliveryNote);

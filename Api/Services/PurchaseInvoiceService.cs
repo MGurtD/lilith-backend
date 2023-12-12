@@ -8,10 +8,12 @@ namespace Application.Services
     public class PurchaseInvoiceService : IPurchaseInvoiceService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IExerciseService _exerciseService;
 
-        public PurchaseInvoiceService(IUnitOfWork unitOfWork)
+        public PurchaseInvoiceService(IUnitOfWork unitOfWork, IExerciseService exerciseService)
         {
             _unitOfWork = unitOfWork;
+            _exerciseService = exerciseService;
         }
 
         public async Task<PurchaseInvoice?> GetById(Guid id)
@@ -64,7 +66,10 @@ namespace Application.Services
                 }
 
                 exercise.PurchaseInvoiceCounter += 1;
-                purchaseInvoice.Number = exercise.PurchaseInvoiceCounter;
+                var counterObj = await _exerciseService.GetNextCounter(exercise.Id, "purchaseinvoice");
+                if (counterObj == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
+
+                purchaseInvoice.Number = counterObj.Content.ToString();
 
                 await _unitOfWork.PurchaseInvoices.Add(purchaseInvoice);
                 await _unitOfWork.Exercices.Update(exercise);

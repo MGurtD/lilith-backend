@@ -10,11 +10,13 @@ namespace Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IStockMovementService _stockMovementService;
+        private readonly IExerciseService _exerciseService;
 
-        public ReceiptService(IUnitOfWork unitOfWork, IStockMovementService stockMovementService)
+        public ReceiptService(IUnitOfWork unitOfWork, IStockMovementService stockMovementService, IExerciseService exerciseService)
         {
             _unitOfWork = unitOfWork;
             _stockMovementService = stockMovementService;
+            _exerciseService = exerciseService;
         }
 
         public IEnumerable<Receipt> GetBetweenDates(DateTime startDate, DateTime endDate)
@@ -54,20 +56,24 @@ namespace Application.Services
             if (status == null) return new GenericResponse(false, new List<string>() { "Cicle de vida 'Receipts' inexistent" });
             if (!status.InitialStatusId.HasValue) return new GenericResponse(false, new List<string>() { "El cicle de vida 'Receipts' no té un estat inicial" });
 
-            var receiptCounter = exercise.ReceiptCounter == 0 ? 1 : exercise.ReceiptCounter;
+            //var receiptCounter = exercise.ReceiptCounter == 0 ? 1 : exercise.ReceiptCounter;
+            var receiptCounterObj = await _exerciseService.GetNextCounter(exercise.Id, "receipt");
+            if (receiptCounterObj == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
+            
+            var receiptCounter = receiptCounterObj.Content.ToString();
             var receipt = new Receipt()
             {
                 Id = createRequest.Id,
                 ExerciseId = createRequest.ExerciseId,
                 SupplierId = createRequest.SupplierId,
                 Date = createRequest.Date,
-                Number = $"{exercise.Name}-{receiptCounter.ToString().PadLeft(3, '0')}",
+                Number = receiptCounter,
                 StatusId = status.InitialStatusId.Value
             };
             await _unitOfWork.Receipts.Add(receipt);
 
-            exercise.ReceiptCounter = receiptCounter + 1;
-            await _unitOfWork.Exercices.Update(exercise);
+            /*exercise.ReceiptCounter = int.Parse(receiptCounter) + 1;
+            await _unitOfWork.Exercices.Update(exercise);*/
 
             return new GenericResponse(true);
         }

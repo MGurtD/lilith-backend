@@ -2,7 +2,7 @@
 {
     public class PurchaseInvoice : Entity
     {
-        public int Number { get; set; }
+        public string Number { get; set; } = string.Empty;
         public DateTime PurchaseInvoiceDate { get; set; }
 
         public decimal BaseAmount { get; set; }

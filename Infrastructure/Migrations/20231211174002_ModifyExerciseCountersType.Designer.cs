@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231211174002_ModifyExerciseCountersType")]
+    partial class ModifyExerciseCountersType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1266,12 +1268,8 @@ namespace Infrastructure.Migrations
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)");
 
-                    b.Property<string>("Number")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar")
-                        .HasDefaultValue("0");
+                    b.Property<int>("Number")
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("PaymentMethodId")
                         .HasColumnType("uuid");
@@ -1550,10 +1548,8 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("Number")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar")
-                        .HasDefaultValue("0");
+                        .HasColumnType("varchar");
 
                     b.Property<Guid>("StatusId")
                         .HasColumnType("uuid");
@@ -2190,10 +2186,8 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("Number")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar")
-                        .HasDefaultValue("0");
+                        .HasMaxLength(25)
+                        .HasColumnType("varchar");
 
                     b.Property<Guid?>("SalesInvoiceId")
                         .HasColumnType("uuid");
@@ -2395,12 +2389,8 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("InvoiceDate")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("InvoiceNumber")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar")
-                        .HasDefaultValue("0");
+                    b.Property<int>("InvoiceNumber")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -2765,12 +2755,8 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("SalesOrderDate")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("SalesOrderNumber")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar")
-                        .HasDefaultValue("0");
+                    b.Property<int>("SalesOrderNumber")
+                        .HasColumnType("integer");
 
                     b.Property<Guid?>("SiteId")
                         .HasColumnType("uuid");
