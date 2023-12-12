@@ -125,7 +125,7 @@ namespace Api.Controllers.Shared
             if (entity is null)
                 return NotFound();
 
-            var canDelete = await _referenceService.CanDelete(id);
+            var canDelete = _referenceService.CanDelete(id);
             if (canDelete.Result)
             {
                 await _unitOfWork.References.Remove(entity);
@@ -135,11 +135,7 @@ namespace Api.Controllers.Shared
             {
                 return BadRequest(canDelete.Errors[0]);
             }
-            
-            
-
         }
-
 
         [Route("Formats")]
         [HttpGet]
