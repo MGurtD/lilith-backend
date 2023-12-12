@@ -104,8 +104,8 @@ namespace Application.Services
             await _unitOfWork.DeliveryNotes.Add(deliveryNote);
 
             // Incrementar 
-            deliveryNoteEntities.Exercise.DeliveryNoteCounter = counter + 1;
-            await _unitOfWork.Exercices.Update(deliveryNoteEntities.Exercise);
+            //deliveryNoteEntities.Exercise.DeliveryNoteCounter = counter + 1;
+            //await _unitOfWork.Exercices.Update(deliveryNoteEntities.Exercise);
 
             return new GenericResponse(true, deliveryNote);
         }
