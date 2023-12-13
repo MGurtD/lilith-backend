@@ -101,10 +101,6 @@ namespace Api.Services
 
             await _unitOfWork.SalesInvoices.Add(invoice);
 
-            // Incrementar el comptador de comandes de l'exercici
-            invoiceEntities.Exercise.SalesInvoiceCounter += 1;
-            await _unitOfWork.Exercices.Update(invoiceEntities.Exercise);
-
             return new GenericResponse(true, invoice);
         }
 

@@ -41,6 +41,7 @@ namespace Api.Services
                     counter = prefix + exercise.SalesInvoiceCounter.PadLeft(3,'0');
                     newcounter = int.Parse(counter) + 1;
                     exercise.SalesInvoiceCounter = newcounter.ToString().Substring(newcounter.ToString().Length - 3);
+                    
                     break;
                 case "salesorder":
                     result = true;
@@ -62,7 +63,7 @@ namespace Api.Services
                     break;
             }
             await _unitOfWork.Exercices.Update(exercise);
-            return new GenericResponse(result, new List<string>() { "" }, counter);
+            return new GenericResponse(result, new List<string>() { "" }, newcounter);
         }
     }
 }
