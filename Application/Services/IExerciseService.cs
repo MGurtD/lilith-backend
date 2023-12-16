@@ -1,14 +1,10 @@
 ﻿using Application.Contracts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Domain.Entities;
 
-namespace Application.Services
+namespace Application.Services;
+
+public interface IExerciseService
 {
-    public interface IExerciseService
-    {
-        Task<GenericResponse> GetNextCounter(Guid exerciseId, string counterName);
-    }
+    Task<GenericResponse> GetNextCounter(Guid exerciseId, string counterName);
+    Exercise? GetExerciceByDate(DateTime dateTime);
 }

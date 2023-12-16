@@ -59,7 +59,7 @@ namespace Application.Services
             // Incrementar el comptador de factures de l'exercici
             if (purchaseInvoice.ExerciceId.HasValue)
             {
-                var exercise = _unitOfWork.Exercices.Find(e => e.Id == purchaseInvoice.ExerciceId.Value).FirstOrDefault();
+                var exercise = _exerciseService.GetExerciceByDate(purchaseInvoice.PurchaseInvoiceDate);
                 if (exercise == null || exercise.Disabled)
                 {
                     return new GenericResponse(false, new List<string> { $"Exercici invàlid" });
@@ -70,9 +70,7 @@ namespace Application.Services
                 if (counterObj == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
 
                 purchaseInvoice.Number = counterObj.Content.ToString();
-                //purchaseInvoice.Number = exercise.PurchaseInvoiceCounter.ToString();
                 await _unitOfWork.PurchaseInvoices.Add(purchaseInvoice);
-                //await _unitOfWork.Exercices.Update(exercise);
             }
 
             return new GenericResponse(true, new List<string> { });
