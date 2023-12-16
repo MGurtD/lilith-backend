@@ -10,10 +10,12 @@ namespace Api.Services
     public class SalesOrderService : ISalesOrderService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IExerciseService _exerciseService;
 
-        public SalesOrderService(IUnitOfWork unitOfWork)
+        public SalesOrderService(IUnitOfWork unitOfWork, IExerciseService exerciseService)
         {
             _unitOfWork = unitOfWork;
+            _exerciseService = exerciseService;
         }
         public async Task<SalesOrderHeader?> GetById(Guid id)
         {
@@ -50,12 +52,16 @@ namespace Api.Services
         {
             var response = await ValidateCreateInvoiceRequest(createRequest);
             if (!response.Result) return response;
+            
 
             var invoiceEntities = (InvoiceEntities)response.Content!;
+            var counterObj = await _exerciseService.GetNextCounter(invoiceEntities.Exercise.Id, "salesorder");
+            if (counterObj == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
+            var counter = counterObj.Content.ToString();
             var order = new SalesOrderHeader
             {
                 Id = createRequest.Id,
-                SalesOrderNumber = invoiceEntities.Exercise.SalesOrderCounter + 1,
+                SalesOrderNumber = counter,
                 SalesOrderDate = createRequest.Date
             };
 
@@ -80,8 +86,8 @@ namespace Api.Services
             await _unitOfWork.SalesOrderHeaders.Add(order);
 
             // Incrementar el comptador de comandes de l'exercici
-            invoiceEntities.Exercise.SalesOrderCounter += 1;
-            await _unitOfWork.Exercices.Update(invoiceEntities.Exercise);
+            //invoiceEntities.Exercise.SalesOrderCounter += 1;
+            //await _unitOfWork.Exercices.Update(invoiceEntities.Exercise);
 
             return new GenericResponse(true, order);
         }
