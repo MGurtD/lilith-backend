@@ -55,6 +55,12 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasDefaultValue("0")
                 .HasColumnType("varchar")
                 .HasMaxLength(10);
+            builder
+                .Property(b => b.BudgetCounter)
+                .IsRequired()
+                .HasDefaultValue("0")
+                .HasColumnType("varchar")
+                .HasMaxLength(10);
 
             builder
                 .HasKey(b => b.Id)

@@ -12,6 +12,7 @@
         public string SalesOrderCounter { get; set; } = string.Empty;
         public string SalesInvoiceCounter { get; set; } = string.Empty;
         public string DeliveryNoteCounter { get; set; } = string.Empty;
+        public string BudgetCounter { get; set; } = string.Empty;
 
     }
 }

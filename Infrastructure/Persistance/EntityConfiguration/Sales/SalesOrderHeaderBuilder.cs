@@ -21,6 +21,10 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .HasColumnType("varchar")
                 .HasMaxLength(50);
             builder
+                .Property(b => b.BudgetNumber)
+                .HasColumnType("varchar")
+                .HasMaxLength(50);
+            builder
                 .Property(b => b.CustomerCode)                
                 .IsRequired()
                 .HasColumnType("varchar")
