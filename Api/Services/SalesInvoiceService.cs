@@ -22,12 +22,14 @@ namespace Api.Services
         private readonly IDueDateService _dueDateService;
         private readonly IDeliveryNoteService _deliveryNoteService;
         private readonly string LifecycleName = "SalesInvoice";
+        private readonly IExerciseService _exerciseService;
 
-        public SalesInvoiceService(IUnitOfWork unitOfWork, IDueDateService dueDateService, ISalesOrderService salesOrderService, IDeliveryNoteService deliveryNoteService)
+        public SalesInvoiceService(IUnitOfWork unitOfWork, IDueDateService dueDateService, ISalesOrderService salesOrderService, IDeliveryNoteService deliveryNoteService, IExerciseService exerciseService)
         {
             _unitOfWork = unitOfWork;
             _dueDateService = dueDateService;
             _deliveryNoteService = deliveryNoteService;
+            _exerciseService = exerciseService;
         }    
 
         public async Task<SalesInvoice?> GetById(Guid id)
@@ -76,10 +78,13 @@ namespace Api.Services
             if (!response.Result) return response;
 
             var invoiceEntities = (InvoiceEntities)response.Content!;
+            var counterObj = await _exerciseService.GetNextCounter(invoiceEntities.Exercise.Id, "salesinvoice");
+            if (counterObj == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
+            var counter = counterObj.Content.ToString();
             var invoice = new SalesInvoice
             {
                 Id = createInvoiceRequest.Id,
-                InvoiceNumber = invoiceEntities.Exercise.SalesInvoiceCounter + 1,
+                InvoiceNumber = counter,
                 InvoiceDate = createInvoiceRequest.Date
             };
 
@@ -95,10 +100,6 @@ namespace Api.Services
             invoice.SetSite(invoiceEntities.Site);
 
             await _unitOfWork.SalesInvoices.Add(invoice);
-
-            // Incrementar el comptador de comandes de l'exercici
-            invoiceEntities.Exercise.SalesInvoiceCounter += 1;
-            await _unitOfWork.Exercices.Update(invoiceEntities.Exercise);
 
             return new GenericResponse(true, invoice);
         }

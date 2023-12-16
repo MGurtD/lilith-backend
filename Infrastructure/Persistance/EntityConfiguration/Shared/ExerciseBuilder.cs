@@ -34,23 +34,27 @@ namespace Infrastructure.Persistance.EntityConfiguration
             builder
                 .Property(b => b.PurchaseInvoiceCounter)
                 .IsRequired()
-                .HasDefaultValue(0)
-                .HasColumnType("integer");
+                .HasDefaultValue("0")
+                .HasColumnType("varchar")
+                .HasMaxLength(10);
             builder
                 .Property(b => b.SalesInvoiceCounter)
                 .IsRequired()
-                .HasDefaultValue(0)
-                .HasColumnType("integer");
+                .HasDefaultValue("0")
+                .HasColumnType("varchar")
+                .HasMaxLength(10);
             builder
                 .Property(b => b.SalesOrderCounter)
                 .IsRequired()
-                .HasDefaultValue(0)
-                .HasColumnType("integer");
+                .HasDefaultValue("0")
+                .HasColumnType("varchar")
+                .HasMaxLength(10);
             builder
                 .Property(b => b.DeliveryNoteCounter)
                 .IsRequired()
-                .HasDefaultValue(0)
-                .HasColumnType("integer");            
+                .HasDefaultValue("0")
+                .HasColumnType("varchar")
+                .HasMaxLength(10);
 
             builder
                 .HasKey(b => b.Id)

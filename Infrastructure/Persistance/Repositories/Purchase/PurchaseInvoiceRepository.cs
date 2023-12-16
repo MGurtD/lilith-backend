@@ -34,11 +34,11 @@ namespace Infrastructure.Persistance.Repositories.Purchase
                 .OrderBy(pi => pi.PurchaseInvoiceDate);
         }
 
-        public int GetNextNumber()
+        /*public int GetNextNumber()
         {
             if (dbSet.Count() == 0) return 1;
             else return dbSet.Max(x => x.Number) + 1;
-        }
+        }*/
 
         public async Task AddImport(PurchaseInvoiceImport import)
         {
