@@ -19,5 +19,6 @@ namespace Domain.Entities.Shared
         public ReferenceFormat? ReferenceFormat { get; set; }
         public decimal LastPurchaseCost {get; set;}        
         public bool Production { get; set; }
+        public bool IsService { get; set; }
     }
 }

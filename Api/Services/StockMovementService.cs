@@ -24,6 +24,9 @@ namespace Api.Services
         {
             if (_defaultLocationId == null) return new GenericResponse(false, "No hi ha una ubicació per defecte definida al projecte");
             request.LocationId = _defaultLocationId;
+            //Comprovar si la referència es un servei. Si es un servei no es genera moviment ni error.
+            var reference = _unitOfWork.References.Find(p => p.Id == request.ReferenceId).FirstOrDefault();
+            if (reference.IsService) return new GenericResponse(true, "Aquesta referència no genera moviments. Es un servei");
 
             // Comprovar si existeix un stock id per les dimensions i producte
             var stock = _stockService.GetByDimensions(_defaultLocationId.Value, request.ReferenceId,

@@ -60,6 +60,10 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .Property(b => b.Production)
                 .IsRequired()
                 .HasColumnType("boolean");
+            builder
+                .Property(b => b.IsService)
+                .IsRequired()
+                .HasColumnType("boolean");
 
             builder
                 .HasKey(b => b.Id)
