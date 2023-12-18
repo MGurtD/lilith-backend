@@ -8,6 +8,7 @@ namespace Domain.Entities.Sales
         public Guid? ExerciseId { get; set; }
         public DateTime SalesOrderDate { get; set; }
         public string SalesOrderNumber { get; set; } = string.Empty;
+        public string? BudgetNumber { get; set; }
 
         public Customer? Customer { get; set; }
         public Guid? CustomerId { get; set; }

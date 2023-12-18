@@ -59,6 +59,11 @@ namespace Api.Services
                     newcounter = int.Parse(counter) + 1;
                     exercise.DeliveryNoteCounter = newcounter.ToString().Substring(newcounter.ToString().Length - 3);
                     break;
+                case "budgetcounter":
+                    counter = prefix + exercise.BudgetCounter.PadLeft(3, '0');
+                    newcounter = int.Parse(counter) + 1;
+                    exercise.BudgetCounter = newcounter.ToString().Substring(newcounter.ToString().Length - 3);
+                    break;
                 default:
                     return new GenericResponse(false, $"El comptador proporcionat '{counterName}' no és vàlid");
             }
