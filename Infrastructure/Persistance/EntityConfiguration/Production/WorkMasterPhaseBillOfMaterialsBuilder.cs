@@ -14,13 +14,37 @@ public class WorkMasterPhaseBillOfMaterialsBuilder : IEntityTypeConfiguration<Wo
             .IsRequired()
             .HasColumnType("decimal")
             .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                            ApplicationDbContextConstants.DECIMAL_SCALE);
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
         builder
-            .Property(b => b.Waste)
+                .Property(b => b.Width)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+        builder
+            .Property(b => b.Length)
             .IsRequired()
             .HasColumnType("decimal")
             .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                            ApplicationDbContextConstants.DECIMAL_SCALE);
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
+        builder
+            .Property(b => b.Height)
+            .IsRequired()
+            .HasColumnType("decimal")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
+        builder
+            .Property(b => b.Diameter)
+            .IsRequired()
+            .HasColumnType("decimal")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
+        builder
+            .Property(b => b.Thickness)
+            .IsRequired()
+            .HasColumnType("decimal")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
 
         builder
             .HasKey(b => b.Id)
