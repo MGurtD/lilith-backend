@@ -13,6 +13,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Purchase
             builder
                 .Property(b => b.Number)
                 .IsRequired()
+                .HasDefaultValue("0")
                 .HasColumnType("varchar")
                 .HasMaxLength(50);
             builder

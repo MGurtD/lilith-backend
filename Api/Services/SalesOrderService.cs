@@ -10,10 +10,12 @@ namespace Api.Services
     public class SalesOrderService : ISalesOrderService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IExerciseService _exerciseService;
 
-        public SalesOrderService(IUnitOfWork unitOfWork)
+        public SalesOrderService(IUnitOfWork unitOfWork, IExerciseService exerciseService)
         {
             _unitOfWork = unitOfWork;
+            _exerciseService = exerciseService;
         }
         public async Task<SalesOrderHeader?> GetById(Guid id)
         {
@@ -52,10 +54,13 @@ namespace Api.Services
             if (!response.Result) return response;
 
             var invoiceEntities = (InvoiceEntities)response.Content!;
+            var counterObj = await _exerciseService.GetNextCounter(invoiceEntities.Exercise.Id, "salesorder");
+            if (counterObj == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
+            var counter = counterObj.Content.ToString();
             var order = new SalesOrderHeader
             {
                 Id = createRequest.Id,
-                SalesOrderNumber = invoiceEntities.Exercise.SalesOrderCounter + 1,
+                SalesOrderNumber = counter,
                 SalesOrderDate = createRequest.Date
             };
 
@@ -79,16 +84,20 @@ namespace Api.Services
 
             await _unitOfWork.SalesOrderHeaders.Add(order);
 
-            // Incrementar el comptador de comandes de l'exercici
-            invoiceEntities.Exercise.SalesOrderCounter += 1;
-            await _unitOfWork.Exercices.Update(invoiceEntities.Exercise);
-
             return new GenericResponse(true, order);
         }
 
         public async Task<GenericResponse> Update(SalesOrderHeader salesOrderHeader)
         {            
             salesOrderHeader.SalesOrderDetails.Clear();
+
+            var status = await GetStatusId("Pressupost");
+            if (salesOrderHeader.StatusId.HasValue) {
+                if (((Guid) status.Content! == salesOrderHeader.StatusId.Value) && salesOrderHeader.BudgetNumber is null) {
+                    GenericResponse serviceResponse = await _exerciseService.GetNextCounter(salesOrderHeader.ExerciseId!.Value, "budgetcounter");
+                    if (serviceResponse.Result) salesOrderHeader.BudgetNumber = serviceResponse.Content!.ToString();
+                }
+            }
 
             await _unitOfWork.SalesOrderHeaders.Update(salesOrderHeader);
             return new GenericResponse(true);

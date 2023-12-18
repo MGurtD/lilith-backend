@@ -4,7 +4,7 @@ namespace Domain.Entities.Sales
 {
     public  class SalesInvoice : Entity
     {
-        public int InvoiceNumber { get; set; }
+        public string InvoiceNumber { get; set; } = string.Empty;
         public DateTime InvoiceDate { get; set; }
         public decimal BaseAmount { get; set; }
         public decimal TransportAmount { get; set; }

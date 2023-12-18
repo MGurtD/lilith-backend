@@ -17,7 +17,13 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
             builder
                 .Property(b => b.SalesOrderNumber)
                 .IsRequired()
-                .HasColumnType("integer");
+                .HasDefaultValue("0")
+                .HasColumnType("varchar")
+                .HasMaxLength(50);
+            builder
+                .Property(b => b.BudgetNumber)
+                .HasColumnType("varchar")
+                .HasMaxLength(50);
             builder
                 .Property(b => b.CustomerCode)                
                 .IsRequired()

@@ -7,11 +7,12 @@
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
-        public int PurchaseInvoiceCounter { get; set; }
-        public int ReceiptCounter { get; set; }
-        public int SalesOrderCounter { get; set; }
-        public int SalesInvoiceCounter { get; set; }
-        public int DeliveryNoteCounter { get; set; }
+        public string PurchaseInvoiceCounter { get; set; } = string.Empty;
+        public string ReceiptCounter { get; set; } = string.Empty;
+        public string SalesOrderCounter { get; set; } = string.Empty;
+        public string SalesInvoiceCounter { get; set; } = string.Empty;
+        public string DeliveryNoteCounter { get; set; } = string.Empty;
+        public string BudgetCounter { get; set; } = string.Empty;
 
     }
 }
