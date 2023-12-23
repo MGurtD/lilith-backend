@@ -2,10 +2,11 @@
 using Application.Contracts.Sales;
 using Application.Persistance;
 using Application.Services;
+using Application.Services.Sales;
 using Domain.Entities.Sales;
 using SalesOrderDetail = Domain.Entities.Sales.SalesOrderDetail;
 
-namespace Api.Services
+namespace Api.Services.Sales
 {
     public class SalesOrderService : ISalesOrderService
     {
@@ -16,7 +17,31 @@ namespace Api.Services
         {
             _unitOfWork = unitOfWork;
             _exerciseService = exerciseService;
+        }        
+
+        public async Task<SalesOrderReportResponse?> GetByIdForReporting(Guid id)
+        {
+            var salesOrder = await GetById(id);
+            if (salesOrder is null) return null;
+
+            if (!salesOrder.CustomerId.HasValue) return null;
+            var customer = await _unitOfWork.Customers.Get(salesOrder.CustomerId.Value);
+            if (customer is null) return null;
+
+            if (!salesOrder.SiteId.HasValue) return null;
+            var site = await _unitOfWork.Sites.Get(salesOrder.SiteId.Value);
+            if (site is null) return null;
+
+            var salesOrderReport = new SalesOrderReportResponse
+            {
+                Order = salesOrder,
+                Customer = customer,
+                Site = site,
+                Total = salesOrder.SalesOrderDetails.Sum(d => d.Amount),
+            };
+            return salesOrderReport;
         }
+
         public async Task<SalesOrderHeader?> GetById(Guid id)
         {
             var salesOrderHeader = await _unitOfWork.SalesOrderHeaders.Get(id);
@@ -33,7 +58,7 @@ namespace Api.Services
             var invoices = _unitOfWork.SalesOrderHeaders.Find(p => p.SalesOrderDate >= startDate && p.SalesOrderDate <= endDate && p.CustomerId == customerId);
             return invoices;
         }
-        
+
         public IEnumerable<SalesOrderHeader> GetByDeliveryNoteId(Guid deliveryNoteId)
         {
             var invoices = _unitOfWork.SalesOrderHeaders.Find(p => p.DeliveryNoteId == deliveryNoteId);
@@ -68,7 +93,8 @@ namespace Api.Services
             if (createRequest.InitialStatusId.HasValue)
             {
                 order.StatusId = createRequest.InitialStatusId;
-            } else
+            }
+            else
             {
                 var lifecycle = _unitOfWork.Lifecycles.Find(l => l.Name == "SalesOrder").FirstOrDefault();
                 if (lifecycle == null)
@@ -76,7 +102,7 @@ namespace Api.Services
                 if (!lifecycle.InitialStatusId.HasValue)
                     return new GenericResponse(false, new List<string>() { "El cicle de vida 'SalesOrder' no té estat inicial" });
                 order.StatusId = lifecycle.InitialStatusId;
-            }            
+            }
 
             order.ExerciseId = invoiceEntities.Exercise.Id;
             order.SetCustomer(invoiceEntities.Customer);
@@ -88,12 +114,14 @@ namespace Api.Services
         }
 
         public async Task<GenericResponse> Update(SalesOrderHeader salesOrderHeader)
-        {            
+        {
             salesOrderHeader.SalesOrderDetails.Clear();
 
             var status = await GetStatusId("Pressupost");
-            if (salesOrderHeader.StatusId.HasValue) {
-                if (((Guid) status.Content! == salesOrderHeader.StatusId.Value) && salesOrderHeader.BudgetNumber is null) {
+            if (salesOrderHeader.StatusId.HasValue)
+            {
+                if ((Guid)status.Content! == salesOrderHeader.StatusId.Value && salesOrderHeader.BudgetNumber is null)
+                {
                     GenericResponse serviceResponse = await _exerciseService.GetNextCounter(salesOrderHeader.ExerciseId!.Value, "budgetcounter");
                     if (serviceResponse.Result) salesOrderHeader.BudgetNumber = serviceResponse.Content!.ToString();
                 }
@@ -122,7 +150,7 @@ namespace Api.Services
             var detail = await _unitOfWork.SalesOrderDetails.Get(id);
             return detail;
         }
-        public async Task<GenericResponse>AddDetail(SalesOrderDetail salesOrderDetail)
+        public async Task<GenericResponse> AddDetail(SalesOrderDetail salesOrderDetail)
         {
             await _unitOfWork.SalesOrderHeaders.AddDetail(salesOrderDetail);
 
@@ -182,7 +210,7 @@ namespace Api.Services
         }
 
         #region DeliveryNote
-        
+
 
         public async Task<GenericResponse> Deliver(Guid deliveryNoteId)
         {
@@ -210,7 +238,7 @@ namespace Api.Services
                     await UpdateDetail(detail);
                 }
                 order.DeliveryNoteId = isDelivered ? deliveryNoteId : null;
-                order.StatusId = (Guid) statusResponse.Content!;
+                order.StatusId = (Guid)statusResponse.Content!;
                 await Update(order);
             }
 

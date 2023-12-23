@@ -2,11 +2,11 @@ using Application.Contracts;
 using Application.Contracts.Sales;
 using Domain.Entities.Sales;
 
-namespace Application.Services
+namespace Application.Services.Sales
 {
     public interface ISalesInvoiceService
     {
-        Task<GenericResponse> Create(CreateHeaderRequest createInvoiceRequest);        
+        Task<GenericResponse> Create(CreateHeaderRequest createInvoiceRequest);
 
         Task<SalesInvoice?> GetById(Guid id);
         IEnumerable<SalesInvoice> GetBetweenDates(DateTime startDate, DateTime endDate);

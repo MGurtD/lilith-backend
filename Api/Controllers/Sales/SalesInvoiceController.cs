@@ -1,6 +1,6 @@
 ﻿using Application.Contracts.Sales;
 using Application.Persistance;
-using Application.Services;
+using Application.Services.Sales;
 using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -58,20 +58,6 @@ namespace Api.Controllers.Sales
 
             if (invoices != null) return Ok(invoices);
             else return BadRequest();
-        }
-
-        [HttpGet("Report/{id:guid}")]
-        public async Task<IActionResult> GetInvoiceForReport(Guid id)
-        {
-            var invoice = await _unitOfWork.SalesInvoices.Get(id) as SalesInvoiceReport;
-            if (invoice == null) return NotFound();
-
-            var details = _unitOfWork.SalesInvoiceDetailWithOrder.Find(d => d.SalesInvoiceId == id);
-
-            // TODO crear JSON de tornada
-
-
-            return Ok(details);
         }
 
         [HttpPut("{id:guid}")]

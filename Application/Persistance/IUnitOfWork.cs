@@ -1,5 +1,5 @@
-﻿using Application.Contracts.Purchase;
-using Application.Contracts.Sales;
+﻿
+using Application.Contracts.Purchase;
 using Application.Persistance.Repositories;
 using Application.Persistance.Repositories.Production;
 using Application.Persistance.Repositories.Purchase;
@@ -51,7 +51,6 @@ namespace Application.Persistance
         ISalesOrderDetailRepository SalesOrderDetails { get; }
         ISalesInvoiceRepository SalesInvoices { get; }
         IDeliveryNoteRepository DeliveryNotes { get; }
-        IContractReader<SalesInvoiceDetailReport> SalesInvoiceDetailWithOrder { get; }
 
         // Production
         IRepository<Enterprise, Guid> Enterprises { get; }

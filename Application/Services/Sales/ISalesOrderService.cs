@@ -3,16 +3,17 @@ using Application.Contracts.Sales;
 using Domain.Entities.Sales;
 using SalesOrderDetail = Domain.Entities.Sales.SalesOrderDetail;
 
-namespace Application.Services
+namespace Application.Services.Sales
 {
     public interface ISalesOrderService
     {
         Task<GenericResponse> Create(CreateHeaderRequest createRequest);
 
+        Task<SalesOrderReportResponse?> GetByIdForReporting(Guid id);
         Task<SalesOrderHeader?> GetById(Guid id);
         IEnumerable<SalesOrderHeader> GetByDeliveryNoteId(Guid deliveryNoteId);
         IEnumerable<SalesOrderHeader> GetBetweenDates(DateTime startDate, DateTime endDate);
-        IEnumerable<SalesOrderHeader> GetBetweenDatesAndCustomer(DateTime startDate, DateTime endDate, Guid customerId);   
+        IEnumerable<SalesOrderHeader> GetBetweenDatesAndCustomer(DateTime startDate, DateTime endDate, Guid customerId);
         IEnumerable<SalesOrderHeader> GetOrdersToDeliver(Guid customerId);
 
         Task<GenericResponse> Deliver(Guid deliveryNoteId);

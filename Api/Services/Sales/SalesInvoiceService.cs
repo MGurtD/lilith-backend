@@ -2,12 +2,13 @@
 using Application.Contracts.Sales;
 using Application.Persistance;
 using Application.Services;
+using Application.Services.Sales;
 using Domain.Entities;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
 using FastReport;
 
-namespace Api.Services
+namespace Api.Services.Sales
 {
     internal struct InvoiceEntities
     {
@@ -30,7 +31,7 @@ namespace Api.Services
             _dueDateService = dueDateService;
             _deliveryNoteService = deliveryNoteService;
             _exerciseService = exerciseService;
-        }    
+        }
 
         public async Task<SalesInvoice?> GetById(Guid id)
         {
@@ -177,7 +178,7 @@ namespace Api.Services
             var invoiceDeliveryNotes = _unitOfWork.DeliveryNotes.Find(d => d.SalesInvoiceId == id);
             if (invoiceDeliveryNotes != null && invoiceDeliveryNotes.Any())
             {
-                foreach(var note in invoiceDeliveryNotes)
+                foreach (var note in invoiceDeliveryNotes)
                 {
                     note.SalesInvoiceId = null;
                     _unitOfWork.DeliveryNotes.UpdateWithoutSave(note);
@@ -206,7 +207,7 @@ namespace Api.Services
             // Generar nous venciments
             var newDueDates = new List<SalesInvoiceDueDate>();
             if (invoice.NetAmount > 0)
-            {   
+            {
                 var dueDates = _dueDateService.GenerateDueDates(paymentMethod, invoice.InvoiceDate, invoice.NetAmount);
                 foreach (var dueDate in dueDates)
                 {
@@ -327,7 +328,7 @@ namespace Api.Services
         /// <param name="invoice">SalesInvoice</param>
         private async Task<GenericResponse> UpdateImportsAndHeaderAmounts(SalesInvoice invoice)
         {
-            await RemoveImports(invoice);            
+            await RemoveImports(invoice);
 
             // Obtenir sumatori d'imports agrupat per impost
             var invoiceImports = invoice.SalesInvoiceDetails
