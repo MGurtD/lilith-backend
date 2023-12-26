@@ -19,6 +19,7 @@ namespace Infrastructure.Persistance.Repositories.Purchase
         {
             return await dbSet
                         .Include(d => d.Details)
+                            .ThenInclude(d => d.Reference)
                         .Include(d => d.SalesInvoice)
                         .AsNoTracking()
                         .FirstOrDefaultAsync(e => e.Id == id);

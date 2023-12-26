@@ -4,7 +4,6 @@ using Application.Persistance;
 using Application.Services;
 using Application.Services.Sales;
 using Domain.Entities.Sales;
-using SalesOrderDetail = Domain.Entities.Sales.SalesOrderDetail;
 
 namespace Api.Services.Sales
 {
@@ -61,14 +60,12 @@ namespace Api.Services.Sales
 
         public IEnumerable<SalesOrderHeader> GetByDeliveryNoteId(Guid deliveryNoteId)
         {
-            var invoices = _unitOfWork.SalesOrderHeaders.Find(p => p.DeliveryNoteId == deliveryNoteId);
-            return invoices;
+            var orders = _unitOfWork.SalesOrderHeaders.Find(p => p.DeliveryNoteId == deliveryNoteId);
+            return orders;
         }
 
         public IEnumerable<SalesOrderHeader> GetOrdersToDeliver(Guid customerId)
         {
-            // TODO: Afegir estats
-
             var orders = _unitOfWork.SalesOrderHeaders.Find(p => p.CustomerId == customerId && p.DeliveryNoteId == null);
             return orders;
         }
@@ -78,14 +75,14 @@ namespace Api.Services.Sales
             var response = await ValidateCreateInvoiceRequest(createRequest);
             if (!response.Result) return response;
 
-            var invoiceEntities = (InvoiceEntities)response.Content!;
-            var counterObj = await _exerciseService.GetNextCounter(invoiceEntities.Exercise.Id, "salesorder");
-            if (counterObj == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
-            var counter = counterObj.Content.ToString();
+            var orderEntities = (InvoiceEntities)response.Content!;
+
+            var counterObj = await _exerciseService.GetNextCounter(orderEntities.Exercise.Id, "salesorder");
+            if (!counterObj.Result || counterObj.Content == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
             var order = new SalesOrderHeader
             {
                 Id = createRequest.Id,
-                SalesOrderNumber = counter,
+                SalesOrderNumber = counterObj.Content.ToString()!,
                 SalesOrderDate = createRequest.Date
             };
 
@@ -104,9 +101,9 @@ namespace Api.Services.Sales
                 order.StatusId = lifecycle.InitialStatusId;
             }
 
-            order.ExerciseId = invoiceEntities.Exercise.Id;
-            order.SetCustomer(invoiceEntities.Customer);
-            order.SetSite(invoiceEntities.Site);
+            order.ExerciseId = orderEntities.Exercise.Id;
+            order.SetCustomer(orderEntities.Customer);
+            order.SetSite(orderEntities.Site);
 
             await _unitOfWork.SalesOrderHeaders.Add(order);
 

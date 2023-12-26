@@ -33,6 +33,30 @@ namespace Application.Services
             _exerciseService = exerciseService;
         }
 
+        public async Task<DeliveryNoteReportResponse?> GetByIdForReporting(Guid id)
+        {
+            var deliveryNote = await _unitOfWork.DeliveryNotes.Get(id);
+            if (deliveryNote is null) return null;
+
+            var orders = _salesOrderService.GetByDeliveryNoteId(id);
+
+            var customer = await _unitOfWork.Customers.Get(deliveryNote.CustomerId);
+            if (customer is null) return null;
+
+            var site = await _unitOfWork.Sites.Get(deliveryNote.SiteId);
+            if (site is null) return null;
+
+            var deliveryNoteReport = new DeliveryNoteReportResponse
+            {
+                DeliveryNote = deliveryNote,
+                Orders = orders.ToList(),
+                Customer = customer,
+                Site = site,
+                Total = deliveryNote.Details.Sum(d => d.Amount),
+            };
+            return deliveryNoteReport;
+        }
+
         public IEnumerable<DeliveryNote> GetBetweenDates(DateTime startDate, DateTime endDate)
         {
             var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.CreatedOn >= startDate && p.CreatedOn <= endDate);
@@ -88,10 +112,8 @@ namespace Application.Services
 
             var deliveryNoteEntities = (DeliveryNoteEntities)response.Content!;
 
-            //var counter = deliveryNoteEntities.Exercise.DeliveryNoteCounter == 0 ? 1 : deliveryNoteEntities.Exercise.DeliveryNoteCounter;
             var counterObj = await _exerciseService.GetNextCounter(deliveryNoteEntities.Exercise.Id, "deliverynote");
-            if (counterObj == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
-            var counter = counterObj.Content.ToString();
+            if (counterObj.Content == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
             var deliveryNote = new DeliveryNote()
             {
                 Id = createRequest.Id,
@@ -99,14 +121,10 @@ namespace Application.Services
                 CustomerId = createRequest.CustomerId,
                 SiteId = deliveryNoteEntities.Site.Id,
                 CreatedOn = createRequest.Date,
-                Number = counter, // $"{deliveryNoteEntities.Exercise.Name}-{counter.ToString().PadLeft(3, '0')}",
+                Number = counterObj.Content.ToString()!,
                 StatusId = deliveryNoteEntities.Lifecycle.InitialStatusId!.Value
             };
             await _unitOfWork.DeliveryNotes.Add(deliveryNote);
-
-            // Incrementar 
-            //deliveryNoteEntities.Exercise.DeliveryNoteCounter = counter + 1;
-            //await _unitOfWork.Exercices.Update(deliveryNoteEntities.Exercise);
 
             return new GenericResponse(true, deliveryNote);
         }
@@ -158,17 +176,6 @@ namespace Application.Services
             await Update(deliveryNote);
 
             return new GenericResponse(true);
-        }
-
-        private async Task<GenericResponse> GetStatusId(string statusName)
-        {
-            var lifecycle = await _unitOfWork.Lifecycles.GetByName("SalesOrder");
-            if (lifecycle == null) return new GenericResponse(false, "El cicle de vida 'SalesOrder' no existeix");
-
-            var status = lifecycle.Statuses!.FirstOrDefault(s => s.Name == statusName);
-            if (status == null) return new GenericResponse(false, $"L'estat {statusName} no existeix dins del cicle de vida 'SalesOrder'");
-
-            return new GenericResponse(true, status.Id);
         }
 
         public async Task<GenericResponse> Invoice(Guid salesInvoiceId)

@@ -6,6 +6,7 @@ namespace Application.Services
 {
     public interface IDeliveryNoteService
     {
+        Task<DeliveryNoteReportResponse?> GetByIdForReporting(Guid id);
         IEnumerable<DeliveryNote> GetBetweenDates(DateTime startDate, DateTime endDate);
         IEnumerable<DeliveryNote> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid statusId);
         IEnumerable<DeliveryNote> GetByStatus(Guid statusId);
