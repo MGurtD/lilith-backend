@@ -16,6 +16,7 @@ namespace Api.Controllers.Sales
         {
             _service = service;
         }
+
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {

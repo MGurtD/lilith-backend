@@ -16,6 +16,10 @@ using Api.Services;
 using System.Text.Json.Serialization;
 using Application.Services.Sales;
 using Api.Services.Sales;
+using Application.Services.Warehouse;
+using Application.Services.Purchase;
+using Api.Services.Purchase;
+using Api.Services.Warehouse;
 
 // Early init of NLog to allow startup and exception logging, before host is built
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();

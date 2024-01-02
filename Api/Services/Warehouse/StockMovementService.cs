@@ -1,9 +1,9 @@
 using Application.Contracts;
 using Application.Persistance;
-using Application.Services;
+using Application.Services.Warehouse;
 using Domain.Entities.Warehouse;
 
-namespace Api.Services
+namespace Api.Services.Warehouse
 {
     public class StockMovementService : IStockMovementService
     {
@@ -88,7 +88,7 @@ namespace Api.Services
                                                       stockMovement.Width, stockMovement.Length, stockMovement.Height,
                                                       stockMovement.Diameter, stockMovement.Thickness);
 
-            stock.Quantity += (-1) * stockMovement.Quantity;
+            stock.Quantity += -1 * stockMovement.Quantity;
             await _stockService.Update(stock);
 
             await _unitOfWork.StockMovements.Remove(stockMovement);

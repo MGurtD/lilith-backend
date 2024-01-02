@@ -1,9 +1,9 @@
 using Application.Contracts;
 using Application.Persistance;
-using Application.Services;
+using Application.Services.Warehouse;
 using Domain.Entities.Warehouse;
 
-namespace Api.Services
+namespace Api.Services.Warehouse
 {
     public class StockService : IStockService
     {
@@ -34,11 +34,11 @@ namespace Api.Services
         public IEnumerable<Stock> GetByLocation(Guid locationId)
         {
             var stocks = _unitOfWork.Stocks.Find(p => p.LocationId == locationId)
-                            .GroupBy(p => new { p.Width, p.Length, p.Height, p.Diameter, p.Thickness})
-                            .Select(b => new Stock 
-                            {  
+                            .GroupBy(p => new { p.Width, p.Length, p.Height, p.Diameter, p.Thickness })
+                            .Select(b => new Stock
+                            {
                                 LocationId = locationId,
-                                Width = b.Key.Width, 
+                                Width = b.Key.Width,
                                 Length = b.Key.Length,
                                 Height = b.Key.Height,
                                 Diameter = b.Key.Diameter,
@@ -51,7 +51,7 @@ namespace Api.Services
         public IEnumerable<Stock> GetByReference(Guid referenceId)
         {
             var stocks = _unitOfWork.Stocks.Find(p => p.ReferenceId == referenceId)
-                            .GroupBy(p => new { p.Width, p.Length, p.Height, p.Diameter, p.Thickness})
+                            .GroupBy(p => new { p.Width, p.Length, p.Height, p.Diameter, p.Thickness })
                             .Select(b => new Stock
                             {
                                 ReferenceId = referenceId,
@@ -68,7 +68,7 @@ namespace Api.Services
         public Stock GetByDimensions(Guid locationId, Guid referenceId, decimal width, decimal length, decimal height, decimal diameter, decimal thickness)
         {
             var stocks = _unitOfWork.Stocks.Find(
-                p => p.LocationId == locationId && 
+                p => p.LocationId == locationId &&
                     p.ReferenceId == referenceId &&
                     p.Width == width &&
                     p.Length == length &&

@@ -1,7 +1,7 @@
 using Application.Contracts;
 using Domain.Entities.Warehouse;
 
-namespace Application.Services
+namespace Application.Services.Warehouse
 {
     public interface IStockMovementService
     {

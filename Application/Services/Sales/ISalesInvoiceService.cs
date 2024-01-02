@@ -9,6 +9,7 @@ namespace Application.Services.Sales
         Task<GenericResponse> Create(CreateHeaderRequest createInvoiceRequest);
 
         Task<SalesInvoice?> GetById(Guid id);
+        Task<SalesInvoiceReportResponse?> GetByIdForReporting(Guid id);
         IEnumerable<SalesInvoice> GetBetweenDates(DateTime startDate, DateTime endDate);
         IEnumerable<SalesInvoice> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid statusId);
         IEnumerable<SalesInvoice> GetBetweenDatesAndCustomer(DateTime startDate, DateTime endDate, Guid customerId);

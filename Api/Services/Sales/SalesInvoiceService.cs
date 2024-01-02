@@ -38,6 +38,69 @@ namespace Api.Services.Sales
             var invoices = await _unitOfWork.SalesInvoices.Get(id);
             return invoices;
         }
+
+        public async  Task<SalesInvoiceReportResponse?> GetByIdForReporting(Guid id)
+        {
+            var invoice = await GetById(id);
+            if (invoice is null) return null;
+
+            if (!invoice.CustomerId.HasValue) return null;
+            var customer = await _unitOfWork.Customers.Get(invoice.CustomerId.Value);
+            if (customer is null) return null;
+
+            if (!invoice.SiteId.HasValue) return null;
+            var site = await _unitOfWork.Sites.Get(invoice.SiteId.Value);
+            if (site is null) return null;
+
+            var paymentMethod = await _unitOfWork.PaymentMethods.Get(invoice.PaymentMethodId);
+            if (paymentMethod is null) return null;
+
+            var invoiceDetails = new List<InvoiceDetailGroup>();
+
+            // Obtenir linies agrupades per albarà
+            var deliveryNotes = _deliveryNoteService.GetBySalesInvoice(id).OrderBy(d => d.Number);
+            foreach ( var deliveryNote in deliveryNotes )
+            {
+                var invoiceDetailGroup = new InvoiceDetailGroup() { Key = deliveryNote.Number };
+
+                var deliveryNoteDetailIds = deliveryNote.Details.Select(d => d.Id);
+                invoiceDetailGroup.Details = invoice.SalesInvoiceDetails.Where(d => d.DeliveryNoteDetailId.HasValue && deliveryNoteDetailIds.Contains(d.DeliveryNoteDetailId.Value)).Select(d => new SalesInvoiceDetail()
+                {
+                    Amount = d.Amount,
+                    Description = d.Description,
+                    Quantity = d.Quantity,
+                    TotalCost = d.TotalCost,
+                    UnitCost = d.UnitCost,
+                    UnitPrice = d.UnitPrice,
+                }).ToList();
+                invoiceDetailGroup.Total = invoiceDetailGroup.Details.Sum(d => d.Amount);
+
+                invoiceDetails.Add(invoiceDetailGroup);
+            }
+
+            // Linies lliures
+            var hasDetailsWithoutDeliveryNote = invoice.SalesInvoiceDetails.Any(d => d.DeliveryNoteDetailId == null);
+            if (hasDetailsWithoutDeliveryNote)
+            {
+                var detailsWithoutDeliveryNote = new InvoiceDetailGroup() { Key = "--" };
+                detailsWithoutDeliveryNote.Details.AddRange(invoice.SalesInvoiceDetails.Where(d => d.DeliveryNoteDetailId == null).ToList());
+                detailsWithoutDeliveryNote.Total = detailsWithoutDeliveryNote.Details.Sum(d => d.Amount);
+
+                invoiceDetails.Add(detailsWithoutDeliveryNote);
+            }
+            var lastDueDate = invoice.SalesInvoiceDueDates.OrderByDescending(d => d.DueDate).FirstOrDefault();
+
+            return new(            
+                customer,
+                site,
+                invoice,
+                paymentMethod,
+                invoiceDetails,
+                invoice.SalesInvoiceImports.Sum(i => i.NetAmount),
+                lastDueDate!.DueDate
+            );
+        }        
+
         public IEnumerable<SalesInvoice> GetBetweenDates(DateTime startDate, DateTime endDate)
         {
             var invoice = _unitOfWork.SalesInvoices.Find(p => p.InvoiceDate >= startDate && p.InvoiceDate <= endDate);

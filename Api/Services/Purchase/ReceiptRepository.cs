@@ -1,10 +1,13 @@
 using Application.Contracts;
 using Application.Contracts.Purchase;
 using Application.Persistance;
+using Application.Services;
+using Application.Services.Purchase;
+using Application.Services.Warehouse;
 using Domain.Entities.Purchase;
 using Domain.Entities.Warehouse;
 
-namespace Application.Services
+namespace Api.Services.Purchase
 {
     public class ReceiptService : IReceiptService
     {
@@ -59,7 +62,7 @@ namespace Application.Services
             //var receiptCounter = exercise.ReceiptCounter == 0 ? 1 : exercise.ReceiptCounter;
             var receiptCounterObj = await _exerciseService.GetNextCounter(exercise.Id, "receipt");
             if (receiptCounterObj == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
-            
+
             var receiptCounter = receiptCounterObj.Content.ToString();
             var receipt = new Receipt()
             {
@@ -106,7 +109,7 @@ namespace Application.Services
         public async Task<GenericResponse> UpdateDetail(ReceiptDetail detail)
         {
             var exists = await _unitOfWork.Receipts.Details.Exists(detail.Id);
-            if (!exists) return new GenericResponse(false, $"Id {detail.Id} inexistent" );
+            if (!exists) return new GenericResponse(false, $"Id {detail.Id} inexistent");
 
             detail.Reference = null;
             await _unitOfWork.Receipts.Details.Update(detail);
@@ -129,7 +132,7 @@ namespace Application.Services
             if (warehouse.DefaultLocationId == null) return new GenericResponse(false, "No hi ha una ubicació per defecte");
 
             var detailsToMove = receipt.Details!.Where(d => d.StockMovementId == null);
-            foreach (var detail in detailsToMove) 
+            foreach (var detail in detailsToMove)
             {
                 var stockMovement = new StockMovement
                 {

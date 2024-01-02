@@ -1,9 +1,11 @@
 using Application.Contracts;
 using Application.Contracts.Purchase;
 using Application.Persistance;
+using Application.Services;
+using Application.Services.Purchase;
 using Domain.Entities.Purchase;
 
-namespace Application.Services
+namespace Api.Services.Purchase
 {
     public class PurchaseInvoiceService : IPurchaseInvoiceService
     {
@@ -82,7 +84,7 @@ namespace Application.Services
             purchaseInvoice.PurchaseInvoiceDueDates!.Clear();
             purchaseInvoice.PurchaseInvoiceImports!.Clear();
             await _unitOfWork.PurchaseInvoices.Update(purchaseInvoice);
-            
+
             return new GenericResponse(true, new List<string> { });
         }
 
@@ -93,7 +95,7 @@ namespace Application.Services
                 await _unitOfWork.PurchaseInvoiceDueDates.RemoveRange(dbDueDates);
 
             if (requestInvoice.PurchaseInvoiceDueDates != null)
-               await _unitOfWork.PurchaseInvoiceDueDates.AddRange(requestInvoice.PurchaseInvoiceDueDates);
+                await _unitOfWork.PurchaseInvoiceDueDates.AddRange(requestInvoice.PurchaseInvoiceDueDates);
 
             return new GenericResponse(true, new List<string> { });
         }
@@ -136,7 +138,7 @@ namespace Application.Services
             await _unitOfWork.PurchaseInvoices.Update(invoice);
 
             return new GenericResponse(true, new List<string> { });
-        }        
+        }
 
         public async Task<GenericResponse> Remove(Guid id)
         {
@@ -144,7 +146,7 @@ namespace Application.Services
             if (invoice == null)
             {
                 return new GenericResponse(false, new List<string> { $"La factura amb ID {id} no existeix" });
-            }   
+            }
             else
             {
                 await _unitOfWork.PurchaseInvoices.Remove(invoice);
@@ -161,7 +163,7 @@ namespace Application.Services
             return new GenericResponse(true, new List<string> { });
         }
 
-            public async Task<GenericResponse> UpdateImport(PurchaseInvoiceImport import)
+        public async Task<GenericResponse> UpdateImport(PurchaseInvoiceImport import)
         {
             await _unitOfWork.PurchaseInvoices.UpdateImport(import);
             return new GenericResponse(true, new List<string> { });

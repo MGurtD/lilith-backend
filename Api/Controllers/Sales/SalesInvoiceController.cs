@@ -43,6 +43,13 @@ namespace Api.Controllers.Sales
                 return Ok(invoice);
         }
 
+        [HttpGet("Report/{id:guid}")]
+        public async Task<IActionResult> GetInvoiceForReport(Guid id)
+        {
+            var salesOrders = await _service.GetByIdForReporting(id);
+            return Ok(salesOrders);
+        }
+
         [HttpGet]
         public IActionResult GetInvoices(DateTime startTime, DateTime endTime, Guid? customerId, Guid? statusId, Guid? exerciceId)
         {
