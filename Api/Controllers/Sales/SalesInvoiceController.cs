@@ -47,6 +47,8 @@ namespace Api.Controllers.Sales
         public async Task<IActionResult> GetInvoiceForReport(Guid id)
         {
             var salesOrders = await _service.GetByIdForReporting(id);
+            if (salesOrders is null) return NotFound();
+
             return Ok(salesOrders);
         }
 

@@ -88,7 +88,7 @@ namespace Api.Services.Sales
 
                 invoiceDetails.Add(detailsWithoutDeliveryNote);
             }
-            var lastDueDate = invoice.SalesInvoiceDueDates.OrderByDescending(d => d.DueDate).FirstOrDefault();
+            var lastDueDate = invoice.SalesInvoiceDueDates.Any() ? invoice.SalesInvoiceDueDates.OrderByDescending(d => d.DueDate).FirstOrDefault()!.DueDate : invoice.InvoiceDate;
 
             return new(            
                 customer,
@@ -97,7 +97,7 @@ namespace Api.Services.Sales
                 paymentMethod,
                 invoiceDetails,
                 invoice.SalesInvoiceImports.Sum(i => i.NetAmount),
-                lastDueDate!.DueDate
+                lastDueDate
             );
         }        
 
@@ -269,20 +269,18 @@ namespace Api.Services.Sales
 
             // Generar nous venciments
             var newDueDates = new List<SalesInvoiceDueDate>();
-            if (invoice.NetAmount > 0)
+            
+            var dueDates = _dueDateService.GenerateDueDates(paymentMethod, invoice.InvoiceDate, invoice.NetAmount);
+            foreach (var dueDate in dueDates)
             {
-                var dueDates = _dueDateService.GenerateDueDates(paymentMethod, invoice.InvoiceDate, invoice.NetAmount);
-                foreach (var dueDate in dueDates)
+                newDueDates.Add(new SalesInvoiceDueDate()
                 {
-                    newDueDates.Add(new SalesInvoiceDueDate()
-                    {
-                        SalesInvoiceId = invoice.Id,
-                        Amount = dueDate.Amount,
-                        DueDate = dueDate.Date
-                    });
-                }
-                if (dueDates.Any()) await _unitOfWork.SalesInvoices.InvoiceDueDates.AddRange(newDueDates);
+                    SalesInvoiceId = invoice.Id,
+                    Amount = dueDate.Amount,
+                    DueDate = dueDate.Date
+                });
             }
+            if (dueDates.Any()) await _unitOfWork.SalesInvoices.InvoiceDueDates.AddRange(newDueDates);
 
             return new GenericResponse(true, newDueDates);
         }
