@@ -1,6 +1,7 @@
 ﻿using Application.Contracts;
 using Application.Persistance;
 using Application.Services;
+using System.Text;
 
 namespace Api.Services
 {
@@ -15,40 +16,38 @@ namespace Api.Services
 
         public GenericResponse CanDelete(Guid referenceId)
         {
+            var sb = new StringBuilder();
+
             var resp = true;
-            var message = "Referencia amb dependencies:\n";
-            var salesOrderDetails = _unitOfWork.SalesOrderDetails.Find(p => p.ReferenceId == referenceId).Count();
-            if (salesOrderDetails > 0)
+            sb.AppendLine("Referència amb dependencies: ");
+
+            if (_unitOfWork.SalesOrderDetails.Find(p => p.ReferenceId == referenceId).Any())
             {
                 resp = false;
-                message = message + "- Te comandes de compra\n";
+                sb.AppendLine("- Té comandes de compra");
             }
-            var receiptDetails = _unitOfWork.Receipts.Details.Find(p => p.ReferenceId.Equals(referenceId)).Count();
-            if (receiptDetails > 0)
+            if (_unitOfWork.Receipts.Details.Find(p => p.ReferenceId.Equals(referenceId)).Any())
             {
                 resp = false;
-                message = message + "- Te albarans de recepció\n";
+                sb.AppendLine("- Té albarans de recepció");
             }
-            var stock = _unitOfWork.StockMovements.Find(p => p.ReferenceId == referenceId).Count();
-            if (stock > 0)
+            if (_unitOfWork.StockMovements.Find(p => p.ReferenceId == referenceId).Any())
             {
                 resp = false;
-                message = message + "- Te moviments de magatzem\n";
+                sb.AppendLine("- Té moviments de magatzem");
             }
-            var workmaster = _unitOfWork.WorkMasters.Find(p => p.ReferenceId == referenceId).Count();
-            if (workmaster > 0)
+            if (_unitOfWork.WorkMasters.Find(p => p.ReferenceId == referenceId).Any())
             {
                 resp = false;
-                message = message + "- Te una ruta de producció definida\n";
+                sb.AppendLine("- Té una ruta de producció definida");
             }
-            var bom = _unitOfWork.WorkMasters.Phases.BillOfMaterials.Find(p => p.ReferenceId == referenceId).Count();
-            if (bom > 0)
+            if (_unitOfWork.WorkMasters.Phases.BillOfMaterials.Find(p => p.ReferenceId == referenceId).Any())
             {
                 resp = false;
-                message = message + "- Forma part d'una llista de materials\n";
+                sb.AppendLine("- Forma part d'una llista de materials");
             }
 
-            return new GenericResponse(resp,message);
+            return new GenericResponse(resp, sb.ToString());
         }
     }
 }
