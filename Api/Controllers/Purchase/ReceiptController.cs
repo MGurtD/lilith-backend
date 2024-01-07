@@ -99,36 +99,12 @@ namespace Api.Controllers.Purchase
             else return BadRequest(response);
         }
 
-        [HttpPost("MoveToWarehouse")]
-        [SwaggerOperation("ReceiptMoveToWarehouse")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> MoveToWarehouse(Receipt receipt)
-        {
-            var response = await _service.MoveToWarehose(receipt);
-
-            if (response.Result) return Ok(response);
-            else return BadRequest(response);
-        }
-
-        [HttpPost("RetriveFromWarehose")]
-        [SwaggerOperation("ReceiptRetriveFromWarehose")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> RetriveFromWarehouse(Receipt receipt)
-        {
-            var response = await _service.RetriveFromWarehose(receipt);
-
-            if (response.Result) return Ok(response);
-            else return BadRequest(response);
-        }
-
         #region Details
         [HttpPost("Detail")]
         [SwaggerOperation("ReceiptDetailCreate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddImport(ReceiptDetail detail)
+        public async Task<IActionResult> AddDetail(ReceiptDetail detail)
         {
             var response = await _service.AddDetail(detail);
 
@@ -140,7 +116,7 @@ namespace Api.Controllers.Purchase
         [SwaggerOperation("ReceiptDetailUpdate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UpdateImport(Guid id, [FromBody] ReceiptDetail detail)
+        public async Task<IActionResult> UpdateDetail(Guid id, [FromBody] ReceiptDetail detail)
         {
             var response = await _service.UpdateDetail(detail);
 
@@ -152,9 +128,21 @@ namespace Api.Controllers.Purchase
         [SwaggerOperation("ReceiptDetailDelete")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> RemoveImport(Guid id)
+        public async Task<IActionResult> RemoveDetail(Guid id)
         {
             var response = await _service.RemoveDetail(id);
+
+            if (response.Result) return Ok(response);
+            else return BadRequest(response);
+        }
+
+        [HttpPost("Detail/Calculate")]
+        [SwaggerOperation("ReceiptDetailCalculate")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CalculateDetailPriceAndWeight(ReceiptDetail detail)
+        {
+            var response = await _service.CalculateDetailWeightAndPrice(detail);
 
             if (response.Result) return Ok(response);
             else return BadRequest(response);
