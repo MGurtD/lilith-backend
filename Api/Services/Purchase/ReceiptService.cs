@@ -6,6 +6,7 @@ using Application.Services.Purchase;
 using Application.Services.Warehouse;
 using Domain.Entities.Purchase;
 using Domain.Entities.Warehouse;
+using Domain.Implementations.ReferenceFormat;
 
 namespace Api.Services.Purchase
 {
@@ -75,9 +76,6 @@ namespace Api.Services.Purchase
             };
             await _unitOfWork.Receipts.Add(receipt);
 
-            /*exercise.ReceiptCounter = int.Parse(receiptCounter) + 1;
-            await _unitOfWork.Exercices.Update(exercise);*/
-
             return new GenericResponse(true);
         }
         public async Task<GenericResponse> Update(Receipt receipt)
@@ -100,8 +98,39 @@ namespace Api.Services.Purchase
             await _unitOfWork.Receipts.Remove(receipt);
             return new GenericResponse(true);
         }
+
+        public async Task<GenericResponse> CalculateDetailWeightAndPrice(ReceiptDetail detail)
+        {
+            detail.Reference ??= await _unitOfWork.References.Get(detail.ReferenceId);
+            if (detail.Reference is null) return new GenericResponse(false, "Referencia no existent");
+            if (!detail.Reference.ReferenceFormatId.HasValue) return new GenericResponse(false, "Referencia sense format");
+            if (!detail.Reference.ReferenceTypeId.HasValue) return new GenericResponse(false, "Referencia sense tipus");
+            var referenceType = await _unitOfWork.ReferenceTypes.Get(detail.Reference.ReferenceTypeId.Value);
+
+            // Obtenir calculadora segons el format
+            var format = await _unitOfWork.ReferenceFormats.Get(detail.Reference.ReferenceFormatId.Value);
+            var dimensionsCalculator = ReferenceFormatCalculationFactory.Create(format!.Code);
+            // Assignar dimensions a la calculadoras
+            var dimensions = new ReferenceDimensions();
+            dimensions.SetFromReceiptDetail(detail);
+            dimensions.Density = referenceType!.Density;
+
+            // Calcular el pes
+            detail.UnitWeight = Math.Round(dimensionsCalculator.Calculate(dimensions), 2);
+            detail.TotalWeight = detail.UnitWeight * detail.Quantity;
+            // Calcular el preu
+            detail.UnitPrice = detail.KilogramPrice * detail.UnitWeight;
+            detail.Amount = detail.KilogramPrice * detail.TotalWeight;
+
+            return new GenericResponse(true, detail);
+        }
+
         public async Task<GenericResponse> AddDetail(ReceiptDetail detail)
         {
+            // var calculationResponse = await CalculateDetailWeightAndPrice(detail);
+            // if (calculationResponse.Result) detail = (ReceiptDetail)calculationResponse.Content!;
+            detail.Reference = null;
+
             await _unitOfWork.Receipts.Details.Add(detail);
             return new GenericResponse(true);
         }
@@ -110,6 +139,9 @@ namespace Api.Services.Purchase
         {
             var exists = await _unitOfWork.Receipts.Details.Exists(detail.Id);
             if (!exists) return new GenericResponse(false, $"Id {detail.Id} inexistent");
+
+            // var calculationResponse = await CalculateDetailWeightAndPrice(detail);
+            // if (calculationResponse.Result) detail = (ReceiptDetail) calculationResponse.Content!;
 
             detail.Reference = null;
             await _unitOfWork.Receipts.Details.Update(detail);
