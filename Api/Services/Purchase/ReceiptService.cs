@@ -127,8 +127,8 @@ namespace Api.Services.Purchase
 
         public async Task<GenericResponse> AddDetail(ReceiptDetail detail)
         {
-            var calculationResponse = await CalculateDetailWeightAndPrice(detail);
-            if (calculationResponse.Result) detail = (ReceiptDetail)calculationResponse.Content!;
+            // var calculationResponse = await CalculateDetailWeightAndPrice(detail);
+            // if (calculationResponse.Result) detail = (ReceiptDetail)calculationResponse.Content!;
             detail.Reference = null;
 
             await _unitOfWork.Receipts.Details.Add(detail);
@@ -140,8 +140,8 @@ namespace Api.Services.Purchase
             var exists = await _unitOfWork.Receipts.Details.Exists(detail.Id);
             if (!exists) return new GenericResponse(false, $"Id {detail.Id} inexistent");
 
-            var calculationResponse = await CalculateDetailWeightAndPrice(detail);
-            if (calculationResponse.Result) detail = (ReceiptDetail) calculationResponse.Content!;
+            // var calculationResponse = await CalculateDetailWeightAndPrice(detail);
+            // if (calculationResponse.Result) detail = (ReceiptDetail) calculationResponse.Content!;
 
             detail.Reference = null;
             await _unitOfWork.Receipts.Details.Update(detail);
