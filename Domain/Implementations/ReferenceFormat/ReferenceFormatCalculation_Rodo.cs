@@ -1,5 +1,4 @@
-﻿using Domain.Entities.Shared;
-using Domain.Entities.Warehouse;
+﻿using Domain.Entities.Warehouse;
 
 namespace Domain.Implementations.ReferenceFormat
 {
@@ -7,15 +6,20 @@ namespace Domain.Implementations.ReferenceFormat
     {
         public decimal Calculate(ReferenceDimensions referenceDimensions)
         {
-            decimal result;
+            double result;
             if ((referenceDimensions.Diameter > 0) && (referenceDimensions.Height > 0) && (referenceDimensions.Density > 0))
             {
-                result = (referenceDimensions.Diameter / 2) * (referenceDimensions.Diameter / 2)* (decimal) (Math.PI) * (referenceDimensions.Height / 1000) * (referenceDimensions.Density);
-            } else {
+                var diameter = (double) referenceDimensions.Diameter;
+                var height = (double) referenceDimensions.Height;
+                var density = (double) referenceDimensions.Density;
+
+                result = Math.Pow(diameter / 2, 2) * Math.PI * (height / 1000) * density;
+            } 
+            else 
+            {
                 throw new Exception($"All values must be greater than 0");
-            }
-            
-            return result;
+            }            
+            return (decimal) result;
         }
     }
 }
