@@ -1,20 +1,26 @@
 using Application.Contracts;
 using Application.Contracts.Purchase;
 using Application.Persistance;
+using Application.Services;
+using Application.Services.Purchase;
+using Application.Services.Warehouse;
 using Domain.Entities.Purchase;
 using Domain.Entities.Warehouse;
+using Domain.Implementations.ReferenceFormat;
 
-namespace Application.Services
+namespace Api.Services.Purchase
 {
     public class ReceiptService : IReceiptService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IStockMovementService _stockMovementService;
+        private readonly IExerciseService _exerciseService;
 
-        public ReceiptService(IUnitOfWork unitOfWork, IStockMovementService stockMovementService)
+        public ReceiptService(IUnitOfWork unitOfWork, IStockMovementService stockMovementService, IExerciseService exerciseService)
         {
             _unitOfWork = unitOfWork;
             _stockMovementService = stockMovementService;
+            _exerciseService = exerciseService;
         }
 
         public IEnumerable<Receipt> GetBetweenDates(DateTime startDate, DateTime endDate)
@@ -54,20 +60,21 @@ namespace Application.Services
             if (status == null) return new GenericResponse(false, new List<string>() { "Cicle de vida 'Receipts' inexistent" });
             if (!status.InitialStatusId.HasValue) return new GenericResponse(false, new List<string>() { "El cicle de vida 'Receipts' no té un estat inicial" });
 
-            var receiptCounter = exercise.ReceiptCounter == 0 ? 1 : exercise.ReceiptCounter;
+            //var receiptCounter = exercise.ReceiptCounter == 0 ? 1 : exercise.ReceiptCounter;
+            var receiptCounterObj = await _exerciseService.GetNextCounter(exercise.Id, "receipt");
+            if (receiptCounterObj == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
+
+            var receiptCounter = receiptCounterObj.Content.ToString();
             var receipt = new Receipt()
             {
                 Id = createRequest.Id,
                 ExerciseId = createRequest.ExerciseId,
                 SupplierId = createRequest.SupplierId,
                 Date = createRequest.Date,
-                Number = $"{exercise.Name}-{receiptCounter.ToString().PadLeft(3, '0')}",
+                Number = receiptCounter,
                 StatusId = status.InitialStatusId.Value
             };
             await _unitOfWork.Receipts.Add(receipt);
-
-            exercise.ReceiptCounter = receiptCounter + 1;
-            await _unitOfWork.Exercices.Update(exercise);
 
             return new GenericResponse(true);
         }
@@ -91,8 +98,39 @@ namespace Application.Services
             await _unitOfWork.Receipts.Remove(receipt);
             return new GenericResponse(true);
         }
+
+        public async Task<GenericResponse> CalculateDetailWeightAndPrice(ReceiptDetail detail)
+        {
+            detail.Reference ??= await _unitOfWork.References.Get(detail.ReferenceId);
+            if (detail.Reference is null) return new GenericResponse(false, "Referencia no existent");
+            if (!detail.Reference.ReferenceFormatId.HasValue) return new GenericResponse(false, "Referencia sense format");
+            if (!detail.Reference.ReferenceTypeId.HasValue) return new GenericResponse(false, "Referencia sense tipus");
+            var referenceType = await _unitOfWork.ReferenceTypes.Get(detail.Reference.ReferenceTypeId.Value);
+
+            // Obtenir calculadora segons el format
+            var format = await _unitOfWork.ReferenceFormats.Get(detail.Reference.ReferenceFormatId.Value);
+            var dimensionsCalculator = ReferenceFormatCalculationFactory.Create(format!.Code);
+            // Assignar dimensions a la calculadoras
+            var dimensions = new ReferenceDimensions();
+            dimensions.SetFromReceiptDetail(detail);
+            dimensions.Density = referenceType!.Density;
+
+            // Calcular el pes
+            detail.UnitWeight = Math.Round(dimensionsCalculator.Calculate(dimensions), 2);
+            detail.TotalWeight = detail.UnitWeight * detail.Quantity;
+            // Calcular el preu
+            detail.UnitPrice = detail.KilogramPrice * detail.UnitWeight;
+            detail.Amount = detail.KilogramPrice * detail.TotalWeight;
+
+            return new GenericResponse(true, detail);
+        }
+
         public async Task<GenericResponse> AddDetail(ReceiptDetail detail)
         {
+            // var calculationResponse = await CalculateDetailWeightAndPrice(detail);
+            // if (calculationResponse.Result) detail = (ReceiptDetail)calculationResponse.Content!;
+            detail.Reference = null;
+
             await _unitOfWork.Receipts.Details.Add(detail);
             return new GenericResponse(true);
         }
@@ -100,7 +138,10 @@ namespace Application.Services
         public async Task<GenericResponse> UpdateDetail(ReceiptDetail detail)
         {
             var exists = await _unitOfWork.Receipts.Details.Exists(detail.Id);
-            if (!exists) return new GenericResponse(false, $"Id {detail.Id} inexistent" );
+            if (!exists) return new GenericResponse(false, $"Id {detail.Id} inexistent");
+
+            // var calculationResponse = await CalculateDetailWeightAndPrice(detail);
+            // if (calculationResponse.Result) detail = (ReceiptDetail) calculationResponse.Content!;
 
             detail.Reference = null;
             await _unitOfWork.Receipts.Details.Update(detail);
@@ -123,7 +164,7 @@ namespace Application.Services
             if (warehouse.DefaultLocationId == null) return new GenericResponse(false, "No hi ha una ubicació per defecte");
 
             var detailsToMove = receipt.Details!.Where(d => d.StockMovementId == null);
-            foreach (var detail in detailsToMove) 
+            foreach (var detail in detailsToMove)
             {
                 var stockMovement = new StockMovement
                 {

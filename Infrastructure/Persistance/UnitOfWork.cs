@@ -1,5 +1,4 @@
 ﻿using Application.Contracts.Purchase;
-using Application.Contracts.Sales;
 using Application.Persistance;
 using Application.Persistance.Repositories;
 using Application.Persistance.Repositories.Production;
@@ -59,7 +58,6 @@ namespace Infrastructure.Persistance
         public ISalesInvoiceRepository SalesInvoices { get; private set; }
         public IReceiptRepository Receipts { get; private set; }
         public IDeliveryNoteRepository DeliveryNotes { get; private set; }
-        public IContractReader<SalesInvoiceDetailReport> SalesInvoiceDetailWithOrder { get; private set; }
 
         // Production
         public IRepository<Enterprise, Guid> Enterprises { get; private set; }
@@ -114,7 +112,6 @@ namespace Infrastructure.Persistance
             SalesOrderDetails = new SalesOrderDetailRepository(context);
             SalesInvoices = new SalesInvoiceRepository(context);
             DeliveryNotes = new DeliveryNoteRepository(context);
-            SalesInvoiceDetailWithOrder = new ContractReader<SalesInvoiceDetailReport>(context);
 
             Enterprises = new Repository<Enterprise, Guid>(context);
             Sites = new Repository<Site, Guid>(context);

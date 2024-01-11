@@ -2,12 +2,13 @@
 using Application.Contracts.Sales;
 using Application.Persistance;
 using Application.Services;
+using Application.Services.Sales;
 using Domain.Entities;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
 using FastReport;
 
-namespace Api.Services
+namespace Api.Services.Sales
 {
     internal struct InvoiceEntities
     {
@@ -22,19 +23,84 @@ namespace Api.Services
         private readonly IDueDateService _dueDateService;
         private readonly IDeliveryNoteService _deliveryNoteService;
         private readonly string LifecycleName = "SalesInvoice";
+        private readonly IExerciseService _exerciseService;
 
-        public SalesInvoiceService(IUnitOfWork unitOfWork, IDueDateService dueDateService, ISalesOrderService salesOrderService, IDeliveryNoteService deliveryNoteService)
+        public SalesInvoiceService(IUnitOfWork unitOfWork, IDueDateService dueDateService, ISalesOrderService salesOrderService, IDeliveryNoteService deliveryNoteService, IExerciseService exerciseService)
         {
             _unitOfWork = unitOfWork;
             _dueDateService = dueDateService;
             _deliveryNoteService = deliveryNoteService;
-        }    
+            _exerciseService = exerciseService;
+        }
 
         public async Task<SalesInvoice?> GetById(Guid id)
         {
             var invoices = await _unitOfWork.SalesInvoices.Get(id);
             return invoices;
         }
+
+        public async  Task<SalesInvoiceReportResponse?> GetByIdForReporting(Guid id)
+        {
+            var invoice = await GetById(id);
+            if (invoice is null) return null;
+
+            if (!invoice.CustomerId.HasValue) return null;
+            var customer = await _unitOfWork.Customers.Get(invoice.CustomerId.Value);
+            if (customer is null) return null;
+
+            if (!invoice.SiteId.HasValue) return null;
+            var site = await _unitOfWork.Sites.Get(invoice.SiteId.Value);
+            if (site is null) return null;
+
+            var paymentMethod = await _unitOfWork.PaymentMethods.Get(invoice.PaymentMethodId);
+            if (paymentMethod is null) return null;
+
+            var invoiceDetails = new List<InvoiceDetailGroup>();
+
+            // Obtenir linies agrupades per albarà
+            var deliveryNotes = _deliveryNoteService.GetBySalesInvoice(id).OrderBy(d => d.Number);
+            foreach ( var deliveryNote in deliveryNotes )
+            {
+                var invoiceDetailGroup = new InvoiceDetailGroup() { Key = deliveryNote.Number };
+
+                var deliveryNoteDetailIds = deliveryNote.Details.Select(d => d.Id);
+                invoiceDetailGroup.Details = invoice.SalesInvoiceDetails.Where(d => d.DeliveryNoteDetailId.HasValue && deliveryNoteDetailIds.Contains(d.DeliveryNoteDetailId.Value)).Select(d => new SalesInvoiceDetail()
+                {
+                    Amount = d.Amount,
+                    Description = d.Description,
+                    Quantity = d.Quantity,
+                    TotalCost = d.TotalCost,
+                    UnitCost = d.UnitCost,
+                    UnitPrice = d.UnitPrice,
+                }).ToList();
+                invoiceDetailGroup.Total = invoiceDetailGroup.Details.Sum(d => d.Amount);
+
+                invoiceDetails.Add(invoiceDetailGroup);
+            }
+
+            // Linies lliures
+            var hasDetailsWithoutDeliveryNote = invoice.SalesInvoiceDetails.Any(d => d.DeliveryNoteDetailId == null);
+            if (hasDetailsWithoutDeliveryNote)
+            {
+                var detailsWithoutDeliveryNote = new InvoiceDetailGroup() { Key = "--" };
+                detailsWithoutDeliveryNote.Details.AddRange(invoice.SalesInvoiceDetails.Where(d => d.DeliveryNoteDetailId == null).ToList());
+                detailsWithoutDeliveryNote.Total = detailsWithoutDeliveryNote.Details.Sum(d => d.Amount);
+
+                invoiceDetails.Add(detailsWithoutDeliveryNote);
+            }
+            var lastDueDate = invoice.SalesInvoiceDueDates.Any() ? invoice.SalesInvoiceDueDates.OrderByDescending(d => d.DueDate).FirstOrDefault()!.DueDate : invoice.InvoiceDate;
+
+            return new(            
+                customer,
+                site,
+                invoice,
+                paymentMethod,
+                invoiceDetails,
+                invoice.SalesInvoiceImports.Sum(i => i.NetAmount),
+                lastDueDate
+            );
+        }        
+
         public IEnumerable<SalesInvoice> GetBetweenDates(DateTime startDate, DateTime endDate)
         {
             var invoice = _unitOfWork.SalesInvoices.Find(p => p.InvoiceDate >= startDate && p.InvoiceDate <= endDate);
@@ -76,10 +142,13 @@ namespace Api.Services
             if (!response.Result) return response;
 
             var invoiceEntities = (InvoiceEntities)response.Content!;
+            var counterObj = await _exerciseService.GetNextCounter(invoiceEntities.Exercise.Id, "salesinvoice");
+            if (counterObj == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
+            var counter = counterObj.Content.ToString();
             var invoice = new SalesInvoice
             {
                 Id = createInvoiceRequest.Id,
-                InvoiceNumber = invoiceEntities.Exercise.SalesInvoiceCounter + 1,
+                InvoiceNumber = counter,
                 InvoiceDate = createInvoiceRequest.Date
             };
 
@@ -95,10 +164,6 @@ namespace Api.Services
             invoice.SetSite(invoiceEntities.Site);
 
             await _unitOfWork.SalesInvoices.Add(invoice);
-
-            // Incrementar el comptador de comandes de l'exercici
-            invoiceEntities.Exercise.SalesInvoiceCounter += 1;
-            await _unitOfWork.Exercices.Update(invoiceEntities.Exercise);
 
             return new GenericResponse(true, invoice);
         }
@@ -176,7 +241,7 @@ namespace Api.Services
             var invoiceDeliveryNotes = _unitOfWork.DeliveryNotes.Find(d => d.SalesInvoiceId == id);
             if (invoiceDeliveryNotes != null && invoiceDeliveryNotes.Any())
             {
-                foreach(var note in invoiceDeliveryNotes)
+                foreach (var note in invoiceDeliveryNotes)
                 {
                     note.SalesInvoiceId = null;
                     _unitOfWork.DeliveryNotes.UpdateWithoutSave(note);
@@ -204,20 +269,18 @@ namespace Api.Services
 
             // Generar nous venciments
             var newDueDates = new List<SalesInvoiceDueDate>();
-            if (invoice.NetAmount > 0)
-            {   
-                var dueDates = _dueDateService.GenerateDueDates(paymentMethod, invoice.InvoiceDate, invoice.NetAmount);
-                foreach (var dueDate in dueDates)
+            
+            var dueDates = _dueDateService.GenerateDueDates(paymentMethod, invoice.InvoiceDate, invoice.NetAmount);
+            foreach (var dueDate in dueDates)
+            {
+                newDueDates.Add(new SalesInvoiceDueDate()
                 {
-                    newDueDates.Add(new SalesInvoiceDueDate()
-                    {
-                        SalesInvoiceId = invoice.Id,
-                        Amount = dueDate.Amount,
-                        DueDate = dueDate.Date
-                    });
-                }
-                if (dueDates.Any()) await _unitOfWork.SalesInvoices.InvoiceDueDates.AddRange(newDueDates);
+                    SalesInvoiceId = invoice.Id,
+                    Amount = dueDate.Amount,
+                    DueDate = dueDate.Date
+                });
             }
+            if (dueDates.Any()) await _unitOfWork.SalesInvoices.InvoiceDueDates.AddRange(newDueDates);
 
             return new GenericResponse(true, newDueDates);
         }
@@ -326,7 +389,7 @@ namespace Api.Services
         /// <param name="invoice">SalesInvoice</param>
         private async Task<GenericResponse> UpdateImportsAndHeaderAmounts(SalesInvoice invoice)
         {
-            await RemoveImports(invoice);            
+            await RemoveImports(invoice);
 
             // Obtenir sumatori d'imports agrupat per impost
             var invoiceImports = invoice.SalesInvoiceDetails

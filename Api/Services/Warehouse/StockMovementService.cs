@@ -1,9 +1,9 @@
 using Application.Contracts;
 using Application.Persistance;
-using Application.Services;
+using Application.Services.Warehouse;
 using Domain.Entities.Warehouse;
 
-namespace Api.Services
+namespace Api.Services.Warehouse
 {
     public class StockMovementService : IStockMovementService
     {
@@ -24,6 +24,9 @@ namespace Api.Services
         {
             if (_defaultLocationId == null) return new GenericResponse(false, "No hi ha una ubicació per defecte definida al projecte");
             request.LocationId = _defaultLocationId;
+            //Comprovar si la referència es un servei. Si es un servei no es genera moviment ni error.
+            var reference = _unitOfWork.References.Find(p => p.Id == request.ReferenceId).FirstOrDefault();
+            if (reference.IsService) return new GenericResponse(true, request);
 
             // Comprovar si existeix un stock id per les dimensions i producte
             var stock = _stockService.GetByDimensions(_defaultLocationId.Value, request.ReferenceId,
@@ -85,7 +88,7 @@ namespace Api.Services
                                                       stockMovement.Width, stockMovement.Length, stockMovement.Height,
                                                       stockMovement.Diameter, stockMovement.Thickness);
 
-            stock.Quantity += (-1) * stockMovement.Quantity;
+            stock.Quantity += -1 * stockMovement.Quantity;
             await _stockService.Update(stock);
 
             await _unitOfWork.StockMovements.Remove(stockMovement);

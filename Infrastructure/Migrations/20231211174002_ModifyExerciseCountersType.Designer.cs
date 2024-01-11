@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231211174002_ModifyExerciseCountersType")]
+    partial class ModifyExerciseCountersType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -233,13 +235,6 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("BudgetCounter")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(10)
-                        .HasColumnType("varchar")
-                        .HasDefaultValue("0");
 
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
@@ -983,9 +978,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bool")
                         .HasDefaultValue(false);
 
-                    b.Property<Guid?>("OperatorTypeId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("PhaseCode")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -996,9 +988,6 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("varchar");
 
-                    b.Property<Guid?>("PreferredWorkcenterId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp without time zone")
@@ -1007,19 +996,10 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("WorkMasterId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("WorkcenterTypeId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id")
                         .HasName("PK_WorkMasterPhase");
 
-                    b.HasIndex("OperatorTypeId");
-
-                    b.HasIndex("PreferredWorkcenterId");
-
                     b.HasIndex("WorkMasterId");
-
-                    b.HasIndex("WorkcenterTypeId");
 
                     b.ToTable("WorkMasterPhase", (string)null);
                 });
@@ -1034,22 +1014,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasDefaultValueSql("NOW()");
 
-                    b.Property<decimal>("Diameter")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
                     b.Property<bool>("Disabled")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bool")
                         .HasDefaultValue(false);
-
-                    b.Property<decimal>("Height")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.Property<decimal>("Length")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
 
                     b.Property<decimal>("Quantity")
                         .HasPrecision(18, 4)
@@ -1058,18 +1026,17 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("ReferenceId")
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("Thickness")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp without time zone")
                         .HasDefaultValueSql("NOW()");
 
-                    b.Property<decimal>("Width")
+                    b.Property<decimal>("Waste")
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)");
+
+                    b.Property<Guid?>("WasteReferenceId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("WorkMasterPhaseId")
                         .HasColumnType("uuid");
@@ -1078,6 +1045,8 @@ namespace Infrastructure.Migrations
                         .HasName("PK_WorkMasterPhaseBillOfMaterials");
 
                     b.HasIndex("ReferenceId");
+
+                    b.HasIndex("WasteReferenceId");
 
                     b.HasIndex("WorkMasterPhaseId");
 
@@ -1088,10 +1057,6 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("Comment")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
@@ -1117,11 +1082,14 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("IsExternalWork")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("MachineStatusId")
+                    b.Property<Guid>("MachineStatusId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Order")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("OperatorTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("PreferredWorkcenterId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -1131,12 +1099,21 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("WorkMasterPhaseId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("WorkcenterTypeId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id")
                         .HasName("PK_WorkMasterPhaseDetail");
 
                     b.HasIndex("MachineStatusId");
 
+                    b.HasIndex("OperatorTypeId");
+
+                    b.HasIndex("PreferredWorkcenterId");
+
                     b.HasIndex("WorkMasterPhaseId");
+
+                    b.HasIndex("WorkcenterTypeId");
 
                     b.ToTable("WorkMasterPhaseDetail", (string)null);
                 });
@@ -1291,12 +1268,8 @@ namespace Infrastructure.Migrations
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)");
 
-                    b.Property<string>("Number")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar")
-                        .HasDefaultValue("0");
+                    b.Property<int>("Number")
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("PaymentMethodId")
                         .HasColumnType("uuid");
@@ -1307,10 +1280,7 @@ namespace Infrastructure.Migrations
                     b.Property<Guid?>("PurchaseInvoiceSerieId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("PurchaseInvoiceStatusId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("StatusId")
+                    b.Property<Guid>("PurchaseInvoiceStatusId")
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("Subtotal")
@@ -1342,8 +1312,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("PurchaseInvoiceSerieId");
 
                     b.HasIndex("PurchaseInvoiceStatusId");
-
-                    b.HasIndex("StatusId");
 
                     b.HasIndex("SupplierId");
 
@@ -1580,10 +1548,8 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("Number")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar")
-                        .HasDefaultValue("0");
+                        .HasColumnType("varchar");
 
                     b.Property<Guid>("StatusId")
                         .HasColumnType("uuid");
@@ -2220,10 +2186,8 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("Number")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar")
-                        .HasDefaultValue("0");
+                        .HasMaxLength(25)
+                        .HasColumnType("varchar");
 
                     b.Property<Guid?>("SalesInvoiceId")
                         .HasColumnType("uuid");
@@ -2425,12 +2389,8 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("InvoiceDate")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("InvoiceNumber")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar")
-                        .HasDefaultValue("0");
+                    b.Property<int>("InvoiceNumber")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -2718,10 +2678,6 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("varchar");
 
-                    b.Property<string>("BudgetNumber")
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar");
-
                     b.Property<string>("City")
                         .IsRequired()
                         .HasMaxLength(250)
@@ -2799,12 +2755,8 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("SalesOrderDate")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("SalesOrderNumber")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar")
-                        .HasDefaultValue("0");
+                    b.Property<int>("SalesOrderNumber")
+                        .HasColumnType("integer");
 
                     b.Property<Guid?>("SiteId")
                         .HasColumnType("uuid");
@@ -2905,9 +2857,6 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bool")
                         .HasDefaultValue(false);
-
-                    b.Property<bool>("IsService")
-                        .HasColumnType("boolean");
 
                     b.Property<decimal>("LastPurchaseCost")
                         .HasPrecision(18, 4)
@@ -3460,31 +3409,13 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Production.WorkMasterPhase", b =>
                 {
-                    b.HasOne("Domain.Entities.Production.OperatorType", "OperatorType")
-                        .WithMany()
-                        .HasForeignKey("OperatorTypeId");
-
-                    b.HasOne("Domain.Entities.Production.Workcenter", "PreferredWorkcenter")
-                        .WithMany()
-                        .HasForeignKey("PreferredWorkcenterId");
-
                     b.HasOne("Domain.Entities.Production.WorkMaster", "WorkMaster")
                         .WithMany("Phases")
                         .HasForeignKey("WorkMasterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.Production.WorkcenterType", "WorkcenterType")
-                        .WithMany()
-                        .HasForeignKey("WorkcenterTypeId");
-
-                    b.Navigation("OperatorType");
-
-                    b.Navigation("PreferredWorkcenter");
-
                     b.Navigation("WorkMaster");
-
-                    b.Navigation("WorkcenterType");
                 });
 
             modelBuilder.Entity("Domain.Entities.Production.WorkMasterPhaseBillOfMaterials", b =>
@@ -3495,6 +3426,10 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.Shared.Reference", "WasteReference")
+                        .WithMany()
+                        .HasForeignKey("WasteReferenceId");
+
                     b.HasOne("Domain.Entities.Production.WorkMasterPhase", "WorkMasterPhase")
                         .WithMany("BillOfMaterials")
                         .HasForeignKey("WorkMasterPhaseId")
@@ -3503,6 +3438,8 @@ namespace Infrastructure.Migrations
 
                     b.Navigation("Reference");
 
+                    b.Navigation("WasteReference");
+
                     b.Navigation("WorkMasterPhase");
                 });
 
@@ -3510,7 +3447,19 @@ namespace Infrastructure.Migrations
                 {
                     b.HasOne("Domain.Entities.Production.MachineStatus", "MachineStatus")
                         .WithMany()
-                        .HasForeignKey("MachineStatusId");
+                        .HasForeignKey("MachineStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Production.OperatorType", "OperatorType")
+                        .WithMany()
+                        .HasForeignKey("OperatorTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Production.Workcenter", "PreferredWorkcenter")
+                        .WithMany()
+                        .HasForeignKey("PreferredWorkcenterId");
 
                     b.HasOne("Domain.Entities.Production.WorkMasterPhase", "WorkMasterPhase")
                         .WithMany("Details")
@@ -3518,9 +3467,21 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.Production.WorkcenterType", "WorkcenterType")
+                        .WithMany()
+                        .HasForeignKey("WorkcenterTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("MachineStatus");
 
+                    b.Navigation("OperatorType");
+
+                    b.Navigation("PreferredWorkcenter");
+
                     b.Navigation("WorkMasterPhase");
+
+                    b.Navigation("WorkcenterType");
                 });
 
             modelBuilder.Entity("Domain.Entities.Purchase.Expenses", b =>
@@ -3552,11 +3513,9 @@ namespace Infrastructure.Migrations
 
                     b.HasOne("Domain.Entities.Purchase.PurchaseInvoiceStatus", "PurchaseInvoiceStatus")
                         .WithMany()
-                        .HasForeignKey("PurchaseInvoiceStatusId");
-
-                    b.HasOne("Domain.Entities.Status", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId");
+                        .HasForeignKey("PurchaseInvoiceStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Domain.Entities.Purchase.Supplier", "Supplier")
                         .WithMany()
@@ -3571,8 +3530,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("PurchaseInvoiceSerie");
 
                     b.Navigation("PurchaseInvoiceStatus");
-
-                    b.Navigation("Status");
 
                     b.Navigation("Supplier");
                 });

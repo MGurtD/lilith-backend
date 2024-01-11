@@ -18,8 +18,9 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
             builder
                 .Property(b => b.Number)
                 .IsRequired()
+                .HasDefaultValue("0")
                 .HasColumnType("varchar")
-                .HasMaxLength(25);
+                .HasMaxLength(50);
 
             builder
                 .HasKey(b => b.Id)

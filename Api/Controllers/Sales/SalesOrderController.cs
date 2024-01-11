@@ -1,5 +1,5 @@
 ﻿using Application.Contracts.Sales;
-using Application.Services;
+using Application.Services.Sales;
 using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -16,6 +16,7 @@ namespace Api.Controllers.Sales
         {
             _service = service;
         }
+
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
@@ -25,6 +26,13 @@ namespace Api.Controllers.Sales
                 return NotFound();
             }
             else { return Ok(salesOrder); }
+        }
+
+        [HttpGet("Report/{id:guid}")]
+        public async Task<IActionResult> GetSalesOrderForReport(Guid id)
+        {
+            var salesOrders = await _service.GetByIdForReporting(id);
+            return Ok(salesOrders);
         }
 
         [HttpGet]

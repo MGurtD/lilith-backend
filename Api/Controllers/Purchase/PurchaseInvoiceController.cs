@@ -2,6 +2,7 @@
 using Application.Contracts.Purchase;
 using Application.Persistance;
 using Application.Services;
+using Application.Services.Purchase;
 using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
 using Infrastructure.Persistance;

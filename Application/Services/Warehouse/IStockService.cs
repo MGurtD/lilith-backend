@@ -1,7 +1,7 @@
 using Application.Contracts;
 using Domain.Entities.Warehouse;
 
-namespace Application.Services
+namespace Application.Services.Warehouse
 {
     public interface IStockService
     {
@@ -12,6 +12,6 @@ namespace Application.Services
         IEnumerable<Stock> GetByReference(Guid referenceId);
         Stock GetByDimensions(Guid locationId, Guid referenceId, decimal width, decimal length, decimal height, decimal diameter, decimal thickness);
         Task<IEnumerable<Stock>> GetAll();
-        
+
     }
 }

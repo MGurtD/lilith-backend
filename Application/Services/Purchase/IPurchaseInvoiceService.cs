@@ -2,7 +2,7 @@ using Application.Contracts;
 using Application.Contracts.Purchase;
 using Domain.Entities.Purchase;
 
-namespace Application.Services
+namespace Application.Services.Purchase
 {
     public interface IPurchaseInvoiceService
     {

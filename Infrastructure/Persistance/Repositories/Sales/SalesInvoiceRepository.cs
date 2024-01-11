@@ -25,9 +25,22 @@ namespace Infrastructure.Persistance.Repositories.Sales
                         .Include(s => s.SalesInvoiceDetails)
                             .ThenInclude(d => d.DeliveryNoteDetail)
                         .Include(s => s.SalesInvoiceImports)
+                            .ThenInclude(d => d.Tax)
                         .Include(s => s.SalesInvoiceDueDates)
                         .AsNoTracking()
                         .FirstOrDefaultAsync(e => e.Id == id);
+        }
+
+        public async Task<IEnumerable<SalesInvoiceImport>> GetImportsByInvoiceId(Guid id)
+        {
+            var imports = new List<SalesInvoiceImport>();
+            var invoice = await dbSet
+                        .Include(s => s.SalesInvoiceImports)
+                            .ThenInclude(d => d.Tax)
+                        .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (invoice is not null) imports.AddRange(invoice.SalesInvoiceImports);
+            return imports;
         }
 
         public override IEnumerable<SalesInvoice> Find(Expression<Func<SalesInvoice, bool>> predicate)

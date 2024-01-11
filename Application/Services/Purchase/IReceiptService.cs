@@ -2,7 +2,7 @@ using Application.Contracts;
 using Application.Contracts.Purchase;
 using Domain.Entities.Purchase;
 
-namespace Application.Services
+namespace Application.Services.Purchase
 {
     public interface IReceiptService
     {
@@ -22,5 +22,6 @@ namespace Application.Services
         Task<GenericResponse> AddDetail(ReceiptDetail detail);
         Task<GenericResponse> UpdateDetail(ReceiptDetail detail);
         Task<GenericResponse> RemoveDetail(Guid id);
+        Task<GenericResponse> CalculateDetailWeightAndPrice(ReceiptDetail detail);
     }
 }

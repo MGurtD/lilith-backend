@@ -11,7 +11,7 @@ namespace Application.Persistance.Repositories.Purchase
         Task UpdateImport(PurchaseInvoiceImport import);
         Task<bool> RemoveImport(Guid id);
 
-        int GetNextNumber();
+        //int GetNextNumber();
 
     }
 }

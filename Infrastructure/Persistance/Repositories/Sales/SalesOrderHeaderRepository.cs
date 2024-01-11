@@ -12,6 +12,7 @@ namespace Infrastructure.Persistance.Repositories.Sales
         {
             _salesOrderDetailRepository = salesOrderDetailRepository;
         }
+
         public override async Task<SalesOrderHeader?> Get(Guid id)
         {
             return await dbSet

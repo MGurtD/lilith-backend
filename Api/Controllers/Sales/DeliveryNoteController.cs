@@ -31,6 +31,13 @@ namespace Api.Controllers.Purchase
             else return Ok(receipt);
         }
 
+        [HttpGet("Report/{id:guid}")]
+        public async Task<IActionResult> GetDeliveryNoteForReport(Guid id)
+        {
+            var deliveryNote = await _service.GetByIdForReporting(id);
+            return Ok(deliveryNote);
+        }
+
         [HttpGet]
         public IActionResult GetDeliveryNotes(DateTime startTime, DateTime endTime, Guid? customerId, Guid? statusId)
         {

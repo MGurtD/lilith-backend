@@ -1,17 +1,21 @@
 using Application.Contracts;
 using Application.Contracts.Purchase;
 using Application.Persistance;
+using Application.Services;
+using Application.Services.Purchase;
 using Domain.Entities.Purchase;
 
-namespace Application.Services
+namespace Api.Services.Purchase
 {
     public class PurchaseInvoiceService : IPurchaseInvoiceService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IExerciseService _exerciseService;
 
-        public PurchaseInvoiceService(IUnitOfWork unitOfWork)
+        public PurchaseInvoiceService(IUnitOfWork unitOfWork, IExerciseService exerciseService)
         {
             _unitOfWork = unitOfWork;
+            _exerciseService = exerciseService;
         }
 
         public async Task<PurchaseInvoice?> GetById(Guid id)
@@ -57,17 +61,18 @@ namespace Application.Services
             // Incrementar el comptador de factures de l'exercici
             if (purchaseInvoice.ExerciceId.HasValue)
             {
-                var exercise = _unitOfWork.Exercices.Find(e => e.Id == purchaseInvoice.ExerciceId.Value).FirstOrDefault();
+                var exercise = _exerciseService.GetExerciceByDate(purchaseInvoice.PurchaseInvoiceDate);
                 if (exercise == null || exercise.Disabled)
                 {
                     return new GenericResponse(false, new List<string> { $"Exercici invàlid" });
                 }
 
-                exercise.PurchaseInvoiceCounter += 1;
-                purchaseInvoice.Number = exercise.PurchaseInvoiceCounter;
+                //exercise.PurchaseInvoiceCounter += 1;
+                var counterObj = await _exerciseService.GetNextCounter(exercise.Id, "purchaseinvoice");
+                if (counterObj == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
 
+                purchaseInvoice.Number = counterObj.Content.ToString();
                 await _unitOfWork.PurchaseInvoices.Add(purchaseInvoice);
-                await _unitOfWork.Exercices.Update(exercise);
             }
 
             return new GenericResponse(true, new List<string> { });
@@ -79,7 +84,7 @@ namespace Application.Services
             purchaseInvoice.PurchaseInvoiceDueDates!.Clear();
             purchaseInvoice.PurchaseInvoiceImports!.Clear();
             await _unitOfWork.PurchaseInvoices.Update(purchaseInvoice);
-            
+
             return new GenericResponse(true, new List<string> { });
         }
 
@@ -90,7 +95,7 @@ namespace Application.Services
                 await _unitOfWork.PurchaseInvoiceDueDates.RemoveRange(dbDueDates);
 
             if (requestInvoice.PurchaseInvoiceDueDates != null)
-               await _unitOfWork.PurchaseInvoiceDueDates.AddRange(requestInvoice.PurchaseInvoiceDueDates);
+                await _unitOfWork.PurchaseInvoiceDueDates.AddRange(requestInvoice.PurchaseInvoiceDueDates);
 
             return new GenericResponse(true, new List<string> { });
         }
@@ -133,7 +138,7 @@ namespace Application.Services
             await _unitOfWork.PurchaseInvoices.Update(invoice);
 
             return new GenericResponse(true, new List<string> { });
-        }        
+        }
 
         public async Task<GenericResponse> Remove(Guid id)
         {
@@ -141,7 +146,7 @@ namespace Application.Services
             if (invoice == null)
             {
                 return new GenericResponse(false, new List<string> { $"La factura amb ID {id} no existeix" });
-            }   
+            }
             else
             {
                 await _unitOfWork.PurchaseInvoices.Remove(invoice);
@@ -158,7 +163,7 @@ namespace Application.Services
             return new GenericResponse(true, new List<string> { });
         }
 
-            public async Task<GenericResponse> UpdateImport(PurchaseInvoiceImport import)
+        public async Task<GenericResponse> UpdateImport(PurchaseInvoiceImport import)
         {
             await _unitOfWork.PurchaseInvoices.UpdateImport(import);
             return new GenericResponse(true, new List<string> { });

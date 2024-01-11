@@ -14,6 +14,12 @@ using Api;
 using Application.Services;
 using Api.Services;
 using System.Text.Json.Serialization;
+using Application.Services.Sales;
+using Api.Services.Sales;
+using Application.Services.Warehouse;
+using Application.Services.Purchase;
+using Api.Services.Purchase;
+using Api.Services.Warehouse;
 
 // Early init of NLog to allow startup and exception logging, before host is built
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
@@ -51,6 +57,7 @@ try
         builder.Services.AddScoped<IDeliveryNoteService, DeliveryNoteService>();
         builder.Services.AddScoped<IReceiptService, ReceiptService>();
         builder.Services.AddScoped<IReferenceService, ReferenceService>();
+        builder.Services.AddScoped<IExerciseService, ExerciseService>();
 
         // JWT Service    
         var signKey = Encoding.ASCII.GetBytes(Configuration.JwtSecret);

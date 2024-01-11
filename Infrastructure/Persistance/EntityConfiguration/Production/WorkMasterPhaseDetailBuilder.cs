@@ -27,7 +27,15 @@ public class WorkMasterPhaseDetailBuilder : IEntityTypeConfiguration<WorkMasterP
             .IsRequired()
             .HasColumnType("decimal")
             .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                            ApplicationDbContextConstants.DECIMAL_SCALE);
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
+
+        builder
+            .Property(b => b.Order)
+            .HasColumnType("integer");
+        builder
+            .Property(b => b.Comment)
+            .IsRequired()
+            .HasColumnType("text");
 
         builder
             .HasKey(b => b.Id)

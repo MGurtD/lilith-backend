@@ -1,4 +1,4 @@
-using Application.Services;
+using Application.Services.Warehouse;
 using Domain.Entities.Warehouse;
 using Microsoft.AspNetCore.Mvc;
 

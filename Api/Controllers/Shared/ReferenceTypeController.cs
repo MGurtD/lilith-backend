@@ -36,8 +36,7 @@ namespace Api.Controllers.Shared
         public async Task<IActionResult> GetAll()
         {
             var entities = await _unitOfWork.ReferenceTypes.GetAll();
-
-            return Ok(entities);
+            return Ok(entities.OrderBy(e => e.Name));
         }
 
         [HttpGet("{id:guid}")]
