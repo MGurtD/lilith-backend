@@ -3,23 +3,22 @@ using Application.Persistance;
 using Domain.Entities.Production;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Net;
 
 namespace Api.Controllers.Production
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class WorkMasterController : ControllerBase
+    public class WorkOrderController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
 
-        public WorkMasterController(IUnitOfWork unitOfWork)
+        public WorkOrderController(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(WorkMaster request)
+        public async Task<IActionResult> Create(WorkOrder request)
         {
             // Validacions
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
@@ -27,11 +26,11 @@ namespace Api.Controllers.Production
             var existsReference = await _unitOfWork.References.Exists(request.ReferenceId);
             if (!existsReference) return NotFound(new GenericResponse(false, $"Referencia inexistent"));
 
-            var exists = _unitOfWork.WorkMasters.Find(w => w.Id == request.Id).Any();
-            if (exists) return Conflict(new GenericResponse(false, $"Ruta de fabricació existent"));
+            var exists = _unitOfWork.WorkOrders.Find(w => w.Id == request.Id).Any();
+            if (exists) return Conflict(new GenericResponse(false, $"ordre de fabricació existent"));
 
             // Creació
-            await _unitOfWork.WorkMasters.Add(request);
+            await _unitOfWork.WorkOrders.Add(request);
             var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
             return Created(location, request);
         }
@@ -39,7 +38,7 @@ namespace Api.Controllers.Production
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.WorkMasters.GetAll();
+            var entities = await _unitOfWork.WorkOrders.GetAll();
 
             return Ok(entities.OrderBy(w => w.ReferenceId));
         }
@@ -47,7 +46,7 @@ namespace Api.Controllers.Production
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.WorkMasters.Get(id);
+            var entity = await _unitOfWork.WorkOrders.Get(id);
             if (entity is not null)
                 return Ok(entity);
             else
@@ -55,18 +54,18 @@ namespace Api.Controllers.Production
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid Id, WorkMaster request)
+        public async Task<IActionResult> Update(Guid Id, WorkOrder request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.WorkMasters.Exists(request.Id);
+            var exists = await _unitOfWork.WorkOrders.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.WorkMasters.Update(request);
+            await _unitOfWork.WorkOrders.Update(request);
             return Ok(request);
         }
 
@@ -76,70 +75,70 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.WorkMasters.Find(e => e.Id == id).FirstOrDefault();
+            var entity = _unitOfWork.WorkOrders.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.WorkMasters.Remove(entity);
+            await _unitOfWork.WorkOrders.Remove(entity);
             return Ok(entity);
         }
 
         #region Phases
         [HttpGet("Phase/{id:guid}")]
-        [SwaggerOperation("GetWorkMasterPhaseById")]
+        [SwaggerOperation("GetWorkOrderPhaseById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetWorkMasterPhaseById(Guid id)
+        public async Task<IActionResult> GetWorkOrderPhaseById(Guid id)
         {
-            var workmasterPhase = await _unitOfWork.WorkMasters.Phases.Get(id);
-            if (workmasterPhase == null) return NotFound(new GenericResponse(false, $"Fase de la ruta de fabricació inexistent"));
+            var WorkOrderPhase = await _unitOfWork.WorkOrders.Phases.Get(id);
+            if (WorkOrderPhase == null) return NotFound(new GenericResponse(false, $"Fase de la ordre de fabricació inexistent"));
 
-            return Ok(workmasterPhase);
+            return Ok(WorkOrderPhase);
         }
 
         [HttpPost("Phase")]
-        [SwaggerOperation("CreateWorkMasterPhase")]
+        [SwaggerOperation("CreateWorkOrderPhase")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CreatePhase(WorkMasterPhase request)
+        public async Task<IActionResult> CreatePhase(WorkOrderPhase request)
         {
             // Validacions
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.WorkMasters.Phases.Find(w => w.Id == request.Id).Any();
-            if (exists) return Conflict(new GenericResponse(false, $"Fase de la ruta de fabricació existent"));
+            var exists = _unitOfWork.WorkOrders.Phases.Find(w => w.Id == request.Id).Any();
+            if (exists) return Conflict(new GenericResponse(false, $"Fase de la ordre de fabricació existent"));
 
-            var workmaster = await _unitOfWork.WorkMasters.Get(request.WorkMasterId);
-            if (workmaster is null) return NotFound(new GenericResponse(false, $"Ruta de fabricació inexistent"));
+            var WorkOrder = await _unitOfWork.WorkOrders.Get(request.WorkOrderId);
+            if (WorkOrder is null) return NotFound(new GenericResponse(false, $"ordre de fabricació inexistent"));
 
-            request.Code = $"{(workmaster.Phases.Count() + 1) * 10}";
+            request.Code = $"{(WorkOrder.Phases.Count() + 1) * 10}";
 
             // Creació
-            await _unitOfWork.WorkMasters.Phases.Add(request);
+            await _unitOfWork.WorkOrders.Phases.Add(request);
             return Ok(new GenericResponse(true, request));
         }
 
         [HttpPut("Phase/{id:guid}")]
-        [SwaggerOperation("UpdateWorkMasterPhase")]
+        [SwaggerOperation("UpdateWorkOrderPhase")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UpdatePhase(Guid Id, WorkMasterPhase request)
+        public async Task<IActionResult> UpdatePhase(Guid Id, WorkOrderPhase request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.WorkMasters.Phases.Exists(request.Id);
+            var exists = await _unitOfWork.WorkOrders.Phases.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.WorkMasters.Phases.Update(request);
+            await _unitOfWork.WorkOrders.Phases.Update(request);
             return Ok(request);
         }
 
         [HttpDelete("Phase/{id:guid}")]
-        [SwaggerOperation("DeleteWorkMasterPhase")]
+        [SwaggerOperation("DeleteWorkOrderPhase")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DeletePhase(Guid id)
@@ -147,66 +146,66 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.WorkMasters.Phases.Find(e => e.Id == id).FirstOrDefault();
+            var entity = _unitOfWork.WorkOrders.Phases.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.WorkMasters.Phases.Remove(entity);
+            await _unitOfWork.WorkOrders.Phases.Remove(entity);
             return Ok(entity);
         }
         #endregion
 
         #region PhaseDetails
         [HttpGet("Phase/Detail/{id:guid}")]
-        [SwaggerOperation("GetWorkMasterPhaseDetailById")]
+        [SwaggerOperation("GetWorkOrderPhaseDetailById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetWorkMasterPhaseDetailById(Guid id)
+        public async Task<IActionResult> GetWorkOrderPhaseDetailById(Guid id)
         {
-            var entities = await _unitOfWork.WorkMasters.Phases.Details.Get(id);
-            if (entities == null) return NotFound(new GenericResponse(false, $"Fase de la ruta de fabricació inexistent"));
+            var entities = await _unitOfWork.WorkOrders.Phases.Details.Get(id);
+            if (entities == null) return NotFound(new GenericResponse(false, $"Fase de la ordre de fabricació inexistent"));
 
             return Ok(entities);
         }
 
         [HttpPost("Phase/Detail")]
-        [SwaggerOperation("CreateWorkMasterPhaseDetail")]
+        [SwaggerOperation("CreateWorkOrderPhaseDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CreatePhaseDetail(WorkMasterPhaseDetail request)
+        public async Task<IActionResult> CreatePhaseDetail(WorkOrderPhaseDetail request)
         {
             // Validacions
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.WorkMasters.Phases.Details.Find(w => w.Id == request.Id).Any();
-            if (exists) return Conflict(new GenericResponse(false, $"Pas de la fase de la ruta de fabricació existent"));
+            var exists = _unitOfWork.WorkOrders.Phases.Details.Find(w => w.Id == request.Id).Any();
+            if (exists) return Conflict(new GenericResponse(false, $"Pas de la fase de la ordre de fabricació existent"));
 
             // Creació
-            await _unitOfWork.WorkMasters.Phases.Details.Add(request);
+            await _unitOfWork.WorkOrders.Phases.Details.Add(request);
             return Ok(new GenericResponse(true, request));
         }
 
         [HttpPut("Phase/Detail/{id:guid}")]
-        [SwaggerOperation("UpdateWorkMasterPhaseDetail")]
+        [SwaggerOperation("UpdateWorkOrderPhaseDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UpdatePhaseDetail(Guid Id, WorkMasterPhaseDetail request)
+        public async Task<IActionResult> UpdatePhaseDetail(Guid Id, WorkOrderPhaseDetail request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.WorkMasters.Phases.Details.Exists(request.Id);
+            var exists = await _unitOfWork.WorkOrders.Phases.Details.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.WorkMasters.Phases.Details.Update(request);
+            await _unitOfWork.WorkOrders.Phases.Details.Update(request);
             return Ok(request);
         }
 
         [HttpDelete("Phase/Detail/{id:guid}")]
-        [SwaggerOperation("DeleteWorkMasterPhaseDetail")]
+        [SwaggerOperation("DeleteWorkOrderPhaseDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DeletePhaseDetail(Guid id)
@@ -214,66 +213,66 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.WorkMasters.Phases.Details.Find(e => e.Id == id).FirstOrDefault();
+            var entity = _unitOfWork.WorkOrders.Phases.Details.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.WorkMasters.Phases.Details.Remove(entity);
+            await _unitOfWork.WorkOrders.Phases.Details.Remove(entity);
             return Ok(entity);
         }
         #endregion
 
         #region PhaseBillOfMaterials
         [HttpGet("Phase/BillOfMaterials/{id:guid}")]
-        [SwaggerOperation("GetWorkMasterPhaseDetailById")]
+        [SwaggerOperation("GetWorkOrderPhaseDetailById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetWorkMasterPhaseBillOfMaterialsItemById(Guid id)
+        public async Task<IActionResult> GetWorkOrderPhaseBillOfMaterialsItemById(Guid id)
         {
-            var entities = await _unitOfWork.WorkMasters.Phases.BillOfMaterials.Get(id);
-            if (entities == null) return NotFound(new GenericResponse(false, $"Fase de la ruta de fabricació inexistent"));
+            var entities = await _unitOfWork.WorkOrders.Phases.BillOfMaterials.Get(id);
+            if (entities == null) return NotFound(new GenericResponse(false, $"Fase de la ordre de fabricació inexistent"));
 
             return Ok(entities);
         }
 
         [HttpPost("Phase/BillOfMaterials")]
-        [SwaggerOperation("CreateWorkMasterPhaseBillOfMaterials")]
+        [SwaggerOperation("CreateWorkOrderPhaseBillOfMaterials")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CreatePhaseDetail(WorkMasterPhaseBillOfMaterials request)
+        public async Task<IActionResult> CreatePhaseDetail(WorkOrderPhaseBillOfMaterials request)
         {
             // Validacions
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.WorkMasters.Phases.BillOfMaterials.Find(w => w.Id == request.Id).Any();
-            if (exists) return Conflict(new GenericResponse(false, $"Pas de la fase de la ruta de fabricació existent"));
+            var exists = _unitOfWork.WorkOrders.Phases.BillOfMaterials.Find(w => w.Id == request.Id).Any();
+            if (exists) return Conflict(new GenericResponse(false, $"Pas de la fase de la ordre de fabricació existent"));
 
             // Creació
-            await _unitOfWork.WorkMasters.Phases.BillOfMaterials.Add(request);
+            await _unitOfWork.WorkOrders.Phases.BillOfMaterials.Add(request);
             return Ok(new GenericResponse(true, request));
         }
 
         [HttpPut("Phase/BillOfMaterials/{id:guid}")]
-        [SwaggerOperation("UpdateWorkMasterPhaseBillOfMaterials")]
+        [SwaggerOperation("UpdateWorkOrderPhaseBillOfMaterials")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UpdatePhaseDetail(Guid Id, WorkMasterPhaseBillOfMaterials request)
+        public async Task<IActionResult> UpdatePhaseDetail(Guid Id, WorkOrderPhaseBillOfMaterials request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.WorkMasters.Phases.BillOfMaterials.Exists(request.Id);
+            var exists = await _unitOfWork.WorkOrders.Phases.BillOfMaterials.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.WorkMasters.Phases.BillOfMaterials.Update(request);
+            await _unitOfWork.WorkOrders.Phases.BillOfMaterials.Update(request);
             return Ok(request);
         }
 
         [HttpDelete("Phase/BillOfMaterials/{id:guid}")]
-        [SwaggerOperation("DeleteWorkMasterPhaseBillOfMaterials")]
+        [SwaggerOperation("DeleteWorkOrderPhaseBillOfMaterials")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DeletePhaseBillOfMaterials(Guid id)
@@ -281,11 +280,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.WorkMasters.Phases.BillOfMaterials.Find(e => e.Id == id).FirstOrDefault();
+            var entity = _unitOfWork.WorkOrders.Phases.BillOfMaterials.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.WorkMasters.Phases.BillOfMaterials.Remove(entity);
+            await _unitOfWork.WorkOrders.Phases.BillOfMaterials.Remove(entity);
             return Ok(entity);
         }
         #endregion
