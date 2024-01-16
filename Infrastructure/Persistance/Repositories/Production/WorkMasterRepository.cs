@@ -29,5 +29,15 @@ namespace Infrastructure.Persistance.Repositories.Production
                         .AsNoTracking()
                         .FirstOrDefaultAsync(e => e.Id == id);
         }
+
+        public async Task<WorkMaster?> GetFullById(Guid id)
+        {
+            return await dbSet
+                        .Include(d => d.Reference)
+                        .Include("Phases.Details")
+                        .Include("Phases.BillOfMaterials")
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(e => e.Id == id);
+        }
     }
 }
