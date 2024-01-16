@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240116172455_Change_WorkMasterPhaseAndWorkOrderPhaseForeignKeysNullability")]
+    partial class Change_WorkMasterPhaseAndWorkOrderPhaseForeignKeysNullability
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1200,6 +1202,12 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("ReferenceId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("SalesOrderDetailId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("SalesOrderHeaderId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime?>("StartTime")
                         .HasColumnType("timestamp without time zone");
 
@@ -1220,6 +1228,10 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ExerciseId");
 
                     b.HasIndex("ReferenceId");
+
+                    b.HasIndex("SalesOrderDetailId");
+
+                    b.HasIndex("SalesOrderHeaderId");
 
                     b.HasIndex("StatusId");
 
@@ -3817,6 +3829,14 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.Sales.SalesOrderDetail", "SalesOrderDetail")
+                        .WithMany()
+                        .HasForeignKey("SalesOrderDetailId");
+
+                    b.HasOne("Domain.Entities.Sales.SalesOrderHeader", "SalesOrderHeader")
+                        .WithMany()
+                        .HasForeignKey("SalesOrderHeaderId");
+
                     b.HasOne("Domain.Entities.Status", "Status")
                         .WithMany()
                         .HasForeignKey("StatusId")
@@ -3832,6 +3852,10 @@ namespace Infrastructure.Migrations
                     b.Navigation("Exercise");
 
                     b.Navigation("Reference");
+
+                    b.Navigation("SalesOrderDetail");
+
+                    b.Navigation("SalesOrderHeader");
 
                     b.Navigation("Status");
 
