@@ -28,8 +28,4 @@
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\Production\" />
-  </ItemGroup>
-
 </Project>

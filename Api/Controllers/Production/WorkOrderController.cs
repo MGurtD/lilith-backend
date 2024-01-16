@@ -1,6 +1,9 @@
 ﻿using Application.Contracts;
+using Application.Contracts.Production;
 using Application.Persistance;
+using Application.Production.Warehouse;
 using Domain.Entities.Production;
+using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -11,10 +14,22 @@ namespace Api.Controllers.Production
     public class WorkOrderController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IWorkOrderService _workOrderService;
 
-        public WorkOrderController(IUnitOfWork unitOfWork)
+        public WorkOrderController(IUnitOfWork unitOfWork, IWorkOrderService workOrderService)
         {
             _unitOfWork = unitOfWork;
+            _workOrderService = workOrderService;
+        }
+
+        [HttpPost("CreateFromWorkMaster")]
+        public async Task<IActionResult> CreateFromWorkMaster([FromBody] CreateWorkOrderDto request)
+        {
+            var creationResult = await _workOrderService.CreateFromWorkMaster(request);
+            if (creationResult.Result)
+                return Ok(creationResult);
+            else
+                return BadRequest(creationResult);
         }
 
         [HttpPost]
@@ -36,11 +51,11 @@ namespace Api.Controllers.Production
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public IActionResult GetWorkOrders(DateTime startTime, DateTime endTime, Guid? statusId)
         {
-            var entities = await _unitOfWork.WorkOrders.GetAll();
-
-            return Ok(entities.OrderBy(w => w.ReferenceId));
+            IEnumerable<WorkOrder> workOrders = new List<WorkOrder>();
+            workOrders = _workOrderService.GetBetweenDatesAndStatus(startTime, endTime, statusId);           
+            return Ok(workOrders.OrderBy(e => e.Code));
         }
 
         [HttpGet("{id:guid}")]
