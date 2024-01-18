@@ -1,6 +1,11 @@
-﻿using Application.Persistance.Repositories.Production;
+﻿using Application.Contracts;
+using Application.Persistance.Repositories.Production;
 using Domain.Entities.Production;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using NpgsqlTypes;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace Infrastructure.Persistance.Repositories.Production
 {
@@ -28,6 +33,37 @@ namespace Infrastructure.Persistance.Repositories.Production
                         .Include(d => d.Phases)
                         .AsNoTracking()
                         .FirstOrDefaultAsync(e => e.Id == id);
+        }
+
+        public async Task<bool>Copy(WorkMasterCopy workMasterCopy)
+        {
+            
+            var referenceCodeParam = new NpgsqlParameter("@referenceCode", NpgsqlDbType.Varchar)
+            {
+                Value = workMasterCopy.Code,
+                Size = 250
+            };
+
+            var workmasterIdParam = new NpgsqlParameter("@workmasterId", NpgsqlDbType.Uuid)
+            {
+                Value = workMasterCopy.WorkmasterId
+            };
+
+            var referenceIdParam = new NpgsqlParameter("@referenceId", NpgsqlDbType.Uuid)
+            {
+                Value = workMasterCopy.ReferenceId != null ? workMasterCopy.ReferenceId : DBNull.Value,
+                Direction = ParameterDirection.InputOutput
+            };
+
+   
+
+            /*await context.Database.ExecuteSqlCommandAsync("CALL public.SP_Production_CopyWorkMaster(@referenceCode, @workmasterId, @referenceId, @result)",
+                new NpgsqlParameter("@result", resultParam));*/
+
+            await context.Database.ExecuteSqlInterpolatedAsync(
+            $"CALL public.SP_Production_CopyWorkMaster({referenceCodeParam}, {workmasterIdParam}, {referenceIdParam})");
+
+            return true;
         }
     }
 }
