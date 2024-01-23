@@ -40,7 +40,7 @@ namespace Infrastructure.Persistance.Repositories.Production
             
             var referenceCodeParam = new NpgsqlParameter("@referenceCode", NpgsqlDbType.Varchar)
             {
-                Value = workMasterCopy.Code,
+                Value = workMasterCopy.ReferenceCode,
                 Size = 250
             };
 

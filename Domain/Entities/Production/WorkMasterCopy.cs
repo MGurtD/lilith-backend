@@ -10,6 +10,6 @@ namespace Domain.Entities.Production
     {
         public Guid? ReferenceId { get; set; }
         public Guid WorkmasterId { get; set; }
-        public string Code { get; set; } = string.Empty;
+        public string ReferenceCode { get; set; } = string.Empty;
     }
 }
