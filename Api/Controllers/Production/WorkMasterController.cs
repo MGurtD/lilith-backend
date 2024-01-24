@@ -84,6 +84,29 @@ namespace Api.Controllers.Production
             return Ok(entity);
         }
 
+        [HttpPost("Copy")]
+        public async Task<IActionResult> Copy(WorkMasterCopy request)
+        {
+            // Validacions
+            if (request.ReferenceId.HasValue && request.ReferenceId != Guid.Empty)
+            {
+                var exists = _unitOfWork.WorkMasters.Find(w => w.ReferenceId == request.ReferenceId).Any();
+                if (exists) return Conflict(new GenericResponse(false, $"Referencia de destí amb ruta de fabricació existent"));
+            }
+            
+
+            // Creació            
+            var result = await _unitOfWork.WorkMasters.Copy(request);            
+            if (result) {
+                return Ok();
+            }
+            else
+            {
+                return NotFound();
+            };
+            
+        }
+
         #region Phases
         [HttpGet("Phase/{id:guid}")]
         [SwaggerOperation("GetWorkMasterPhaseById")]

@@ -4,6 +4,7 @@ namespace Application.Persistance.Repositories.Production
 {
     public interface IWorkMasterRepository : IRepository<WorkMaster, Guid>
     {
+        Task<bool> Copy(WorkMasterCopy workMasterCopy);
         IWorkMasterPhaseRepository Phases { get; }
     }
 }
