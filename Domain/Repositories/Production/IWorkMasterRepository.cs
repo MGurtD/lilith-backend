@@ -6,5 +6,7 @@ namespace Application.Persistance.Repositories.Production
     {
         Task<bool> Copy(WorkMasterCopy workMasterCopy);
         IWorkMasterPhaseRepository Phases { get; }
+
+        Task<WorkMaster?> GetFullById(Guid id);
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240115173429_Add_WorkOrderCounterToExercise")]
+    partial class Add_WorkOrderCounterToExercise
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1011,7 +1013,7 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("IsExternalWork")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("OperatorTypeId")
+                    b.Property<Guid>("OperatorTypeId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("PreferredWorkcenterId")
@@ -1025,7 +1027,7 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("WorkMasterId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("WorkcenterTypeId")
+                    b.Property<Guid>("WorkcenterTypeId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id")
@@ -1200,6 +1202,12 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("ReferenceId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("SalesOrderDetailId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("SalesOrderHeaderId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime?>("StartTime")
                         .HasColumnType("timestamp without time zone");
 
@@ -1220,6 +1228,10 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ExerciseId");
 
                     b.HasIndex("ReferenceId");
+
+                    b.HasIndex("SalesOrderDetailId");
+
+                    b.HasIndex("SalesOrderHeaderId");
 
                     b.HasIndex("StatusId");
 
@@ -1270,7 +1282,7 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("IsExternalWork")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("OperatorTypeId")
+                    b.Property<Guid>("OperatorTypeId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("PreferredWorkcenterId")
@@ -1290,7 +1302,7 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("WorkOrderId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("WorkcenterTypeId")
+                    b.Property<Guid>("WorkcenterTypeId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id")
@@ -2768,7 +2780,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex(new[] { "ExerciseId" }, "IX_SalesInvoices_Exercise");
 
-                    b.ToTable("SalesInvoice", (string)null);
+                    b.ToTable("SalesInvoice");
                 });
 
             modelBuilder.Entity("Domain.Entities.Sales.SalesInvoiceDetail", b =>
@@ -2983,7 +2995,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("SalesOrderHeaderId");
 
-                    b.ToTable("SalesOrderDetail", (string)null);
+                    b.ToTable("SalesOrderDetail");
                 });
 
             modelBuilder.Entity("Domain.Entities.Sales.SalesOrderHeader", b =>
@@ -3113,7 +3125,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex(new[] { "ExerciseId" }, "IDX_SalesOrderHeader_Exercise");
 
-                    b.ToTable("SalesOrderHeader", (string)null);
+                    b.ToTable("SalesOrderHeader");
                 });
 
             modelBuilder.Entity("Domain.Entities.Shared.Parameter", b =>
@@ -3740,7 +3752,9 @@ namespace Infrastructure.Migrations
                 {
                     b.HasOne("Domain.Entities.Production.OperatorType", "OperatorType")
                         .WithMany()
-                        .HasForeignKey("OperatorTypeId");
+                        .HasForeignKey("OperatorTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Domain.Entities.Production.Workcenter", "PreferredWorkcenter")
                         .WithMany()
@@ -3754,7 +3768,9 @@ namespace Infrastructure.Migrations
 
                     b.HasOne("Domain.Entities.Production.WorkcenterType", "WorkcenterType")
                         .WithMany()
-                        .HasForeignKey("WorkcenterTypeId");
+                        .HasForeignKey("WorkcenterTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("OperatorType");
 
@@ -3817,6 +3833,14 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.Sales.SalesOrderDetail", "SalesOrderDetail")
+                        .WithMany()
+                        .HasForeignKey("SalesOrderDetailId");
+
+                    b.HasOne("Domain.Entities.Sales.SalesOrderHeader", "SalesOrderHeader")
+                        .WithMany()
+                        .HasForeignKey("SalesOrderHeaderId");
+
                     b.HasOne("Domain.Entities.Status", "Status")
                         .WithMany()
                         .HasForeignKey("StatusId")
@@ -3833,6 +3857,10 @@ namespace Infrastructure.Migrations
 
                     b.Navigation("Reference");
 
+                    b.Navigation("SalesOrderDetail");
+
+                    b.Navigation("SalesOrderHeader");
+
                     b.Navigation("Status");
 
                     b.Navigation("WorkMaster");
@@ -3842,7 +3870,9 @@ namespace Infrastructure.Migrations
                 {
                     b.HasOne("Domain.Entities.Production.OperatorType", "OperatorType")
                         .WithMany()
-                        .HasForeignKey("OperatorTypeId");
+                        .HasForeignKey("OperatorTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Domain.Entities.Production.Workcenter", "PreferredWorkcenter")
                         .WithMany()
@@ -3862,7 +3892,9 @@ namespace Infrastructure.Migrations
 
                     b.HasOne("Domain.Entities.Production.WorkcenterType", "WorkcenterType")
                         .WithMany()
-                        .HasForeignKey("WorkcenterTypeId");
+                        .HasForeignKey("WorkcenterTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("OperatorType");
 

@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Persistance.EntityConfiguration.Production;
-public class WorkMasterPhaseDetailBuilder : IEntityTypeConfiguration<WorkMasterPhaseDetail>
+public class WorkOrderPhaseDetailBuilder : IEntityTypeConfiguration<WorkOrderPhaseDetail>
 {
-    public const string TABLE_NAME = "WorkMasterPhaseDetail";
-    public void Configure(EntityTypeBuilder<WorkMasterPhaseDetail> builder)
+    public const string TABLE_NAME = "WorkOrderPhaseDetail";
+    public void Configure(EntityTypeBuilder<WorkOrderPhaseDetail> builder)
     {
         builder.ConfigureBase();
         builder
@@ -18,6 +18,7 @@ public class WorkMasterPhaseDetailBuilder : IEntityTypeConfiguration<WorkMasterP
         builder
             .Property(b => b.IsCycleTime)
             .HasColumnType("boolean");
+        
 
         builder
             .Property(b => b.Order)

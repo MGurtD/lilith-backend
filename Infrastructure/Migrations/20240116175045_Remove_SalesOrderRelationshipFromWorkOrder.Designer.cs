@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240116175045_Remove_SalesOrderRelationshipFromWorkOrder")]
+    partial class Remove_SalesOrderRelationshipFromWorkOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2768,7 +2770,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex(new[] { "ExerciseId" }, "IX_SalesInvoices_Exercise");
 
-                    b.ToTable("SalesInvoice", (string)null);
+                    b.ToTable("SalesInvoice");
                 });
 
             modelBuilder.Entity("Domain.Entities.Sales.SalesInvoiceDetail", b =>
@@ -2983,7 +2985,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("SalesOrderHeaderId");
 
-                    b.ToTable("SalesOrderDetail", (string)null);
+                    b.ToTable("SalesOrderDetail");
                 });
 
             modelBuilder.Entity("Domain.Entities.Sales.SalesOrderHeader", b =>
@@ -3113,7 +3115,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex(new[] { "ExerciseId" }, "IDX_SalesOrderHeader_Exercise");
 
-                    b.ToTable("SalesOrderHeader", (string)null);
+                    b.ToTable("SalesOrderHeader");
                 });
 
             modelBuilder.Entity("Domain.Entities.Shared.Parameter", b =>
