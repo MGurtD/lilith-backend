@@ -19,8 +19,8 @@ public class WorkOrderPhase : Entity
     public string Comment { get; set; } = string.Empty;
     public Guid StatusId { get; set; }
     public Status? Status { get; set; }
-    public DateTime StartTime { get; set; }
-    public DateTime EndTime { get; set; }
+    public DateTime? StartTime { get; set; }
+    public DateTime? EndTime { get; set; }
 
     public ICollection<WorkOrderPhaseDetail> Details { get; set; } = new List<WorkOrderPhaseDetail>();
     public ICollection<WorkOrderPhaseBillOfMaterials> BillOfMaterials { get; set; } = new List<WorkOrderPhaseBillOfMaterials>();
