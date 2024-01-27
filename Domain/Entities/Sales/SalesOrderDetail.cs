@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Shared;
+﻿using Domain.Entities.Production;
+using Domain.Entities.Shared;
 
 namespace Domain.Entities.Sales
 {
@@ -8,6 +9,8 @@ namespace Domain.Entities.Sales
         public SalesOrderHeader? SalesOrderHeader { get; set; }
         public Guid ReferenceId { get; set; }
         public Reference? Reference { get; set; }
+        public Guid? WorkOrderId { get; set; }
+        public WorkOrder? WorkOrder { get; set; }
         public string Description { get; set; } = string.Empty;
         public int Quantity { get; set; }
         public decimal UnitCost { get; set; } = decimal.Zero;
