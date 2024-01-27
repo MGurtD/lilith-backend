@@ -1,9 +1,12 @@
-﻿using Application.Contracts;
+﻿using Api.Services.Sales;
+using Application.Contracts;
 using Application.Contracts.Production;
 using Application.Persistance;
 using Application.Production.Warehouse;
 using Application.Services;
+using Application.Services.Sales;
 using Domain.Entities.Production;
+using System.Collections;
 
 namespace Api.Services.Production
 {
@@ -11,11 +14,13 @@ namespace Api.Services.Production
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IExerciseService _exerciseService;
+        private readonly ISalesOrderService _salesOrderService;
 
-        public WorkOrderService(IUnitOfWork unitOfWork, IExerciseService exerciseService)
+        public WorkOrderService(IUnitOfWork unitOfWork, IExerciseService exerciseService, ISalesOrderService salesOrderService)
         {
             _unitOfWork = unitOfWork;
             _exerciseService = exerciseService;
+            _salesOrderService = salesOrderService;
         }        
 
         public async Task<GenericResponse> CreateFromWorkMaster(CreateWorkOrderDto dto)
@@ -139,6 +144,20 @@ namespace Api.Services.Production
             return workOrders;
         }
 
+        public async Task<IEnumerable<WorkOrder>> GetBySalesOrderId(Guid salesOrderId)
+        {
+            var workOrders = new List<WorkOrder>();
+
+            var salesOrder = await _salesOrderService.GetById(salesOrderId);
+            if (salesOrder != null)
+            {
+                var workOrderIds = salesOrder.SalesOrderDetails.Where(d => d.WorkOrderId != null).Select(d => d.WorkOrderId);
+                workOrders = _unitOfWork.WorkOrders.Find(w => workOrderIds.Contains(w.Id)).ToList();
+            }
+
+            return workOrders;
+        }
         
+
     }
 }
