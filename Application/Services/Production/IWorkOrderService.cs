@@ -10,6 +10,7 @@ namespace Application.Production.Warehouse
         Task<GenericResponse> Start(Guid id);
         Task<GenericResponse> End(Guid id); 
         IEnumerable<WorkOrder> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid? statusId);
+        Task<IEnumerable<WorkOrder>> GetBySalesOrderId(Guid salesOrderId);
 
     }
 }
