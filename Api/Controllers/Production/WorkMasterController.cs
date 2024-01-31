@@ -113,15 +113,13 @@ namespace Api.Controllers.Production
         public async Task<IActionResult> GetWorkMasterCostById(Guid id)
         {
             var workMaster = await _unitOfWork.WorkMasters.Get(id);
+            if (workMaster == null) return NotFound();
+
             var result = await _workMasterService.Calculate(workMaster);
             if (result.Result)
-            {
                 return Ok(result);
-            }
             else
-            {
                 return NotFound(result);
-            };
         }
 
         #region Phases
