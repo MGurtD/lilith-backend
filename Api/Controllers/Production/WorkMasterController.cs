@@ -152,7 +152,7 @@ namespace Api.Controllers.Production
             var workmaster = await _unitOfWork.WorkMasters.Get(request.WorkMasterId);
             if (workmaster is null) return NotFound(new GenericResponse(false, $"Ruta de fabricació inexistent"));
 
-            request.PhaseCode = $"{(workmaster.Phases.Count() + 1) * 10}";
+            request.Code = $"{(workmaster.Phases.Count() + 1) * 10}";
 
             // Creació
             await _unitOfWork.WorkMasters.Phases.Add(request);

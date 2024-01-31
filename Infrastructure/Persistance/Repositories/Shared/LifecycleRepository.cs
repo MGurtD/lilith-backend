@@ -36,5 +36,13 @@ namespace Infrastructure.Persistance.Repositories.Purchase
                 .Include("Statuses.Transitions")
                 .FirstOrDefaultAsync(e => e.Name == name);
         }
+
+        public async Task<Status?> GetStatusByName(string lifecycleName, string name)
+        {
+            var lifecycle = await GetByName(lifecycleName);
+            if (lifecycle == null || lifecycle.Statuses == null) return null;
+
+            return lifecycle.Statuses.FirstOrDefault(s => s.Name == name);
+        }
     }
 }

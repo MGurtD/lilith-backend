@@ -15,10 +15,17 @@ namespace Infrastructure.Persistance.Repositories.Sales
 
         public override async Task<SalesOrderHeader?> Get(Guid id)
         {
-            return await dbSet
+            var salesOrder = 
+                await dbSet
                     .Include("SalesOrderDetails.Reference")
                     .AsNoTracking()
                     .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (salesOrder != null && salesOrder.SalesOrderDetails.Any())
+            {
+                salesOrder.SalesOrderDetails = salesOrder.SalesOrderDetails.OrderBy(e => e.CreatedOn).ToList();
+            }
+            return salesOrder;
         }
         public override IEnumerable<SalesOrderHeader> Find(Expression<Func<SalesOrderHeader, bool>> predicate)
         {

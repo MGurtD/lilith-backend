@@ -7,5 +7,6 @@ namespace Application.Persistance.Repositories
         IStatusRepository StatusRepository { get; }
 
         Task<Lifecycle?> GetByName(string code);
+        Task<Status?> GetStatusByName(string lifecycleCode, string statusCode);
     }
 }

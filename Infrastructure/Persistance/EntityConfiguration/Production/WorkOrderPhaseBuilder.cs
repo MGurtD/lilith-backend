@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Persistance.EntityConfiguration.Production;
-public class WorkMasterPhaseBuilder : IEntityTypeConfiguration<WorkMasterPhase>
+public class WorkOrderPhaseBuilder : IEntityTypeConfiguration<WorkOrderPhase>
 {
-    public const string TABLE_NAME = "WorkMasterPhase";
-    public void Configure(EntityTypeBuilder<WorkMasterPhase> builder)
+    public const string TABLE_NAME = "WorkOrderPhase";
+    public void Configure(EntityTypeBuilder<WorkOrderPhase> builder)
     {
         builder.ConfigureBase();
         builder

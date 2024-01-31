@@ -20,6 +20,7 @@ using Application.Services.Warehouse;
 using Application.Services.Purchase;
 using Api.Services.Purchase;
 using Api.Services.Warehouse;
+using Application.Production.Warehouse;
 using Application.Services.Production;
 using Api.Services.Production;
 
@@ -61,6 +62,7 @@ try
         builder.Services.AddScoped<IReferenceService, ReferenceService>();
         builder.Services.AddScoped<IExerciseService, ExerciseService>();
         builder.Services.AddScoped<IWorkMasterService, WorkMasterService>();
+        builder.Services.AddScoped<IWorkOrderService, WorkOrderService>();
 
         // JWT Service    
         var signKey = Encoding.ASCII.GetBytes(Configuration.JwtSecret);
