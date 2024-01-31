@@ -21,6 +21,7 @@ using Application.Services.Purchase;
 using Api.Services.Purchase;
 using Api.Services.Warehouse;
 using Application.Production.Warehouse;
+using Application.Services.Production;
 using Api.Services.Production;
 
 // Early init of NLog to allow startup and exception logging, before host is built
@@ -60,6 +61,7 @@ try
         builder.Services.AddScoped<IReceiptService, ReceiptService>();
         builder.Services.AddScoped<IReferenceService, ReferenceService>();
         builder.Services.AddScoped<IExerciseService, ExerciseService>();
+        builder.Services.AddScoped<IWorkMasterService, WorkMasterService>();
         builder.Services.AddScoped<IWorkOrderService, WorkOrderService>();
 
         // JWT Service    

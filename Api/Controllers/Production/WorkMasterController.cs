@@ -1,5 +1,6 @@
 ﻿using Application.Contracts;
 using Application.Persistance;
+using Application.Services.Production;
 using Domain.Entities.Production;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -12,10 +13,12 @@ namespace Api.Controllers.Production
     public class WorkMasterController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IWorkMasterService _workMasterService;
 
-        public WorkMasterController(IUnitOfWork unitOfWork)
+        public WorkMasterController(IUnitOfWork unitOfWork, IWorkMasterService workMasterService)
         {
             _unitOfWork = unitOfWork;
+            _workMasterService = workMasterService;
         }
 
         [HttpPost]
@@ -105,6 +108,18 @@ namespace Api.Controllers.Production
                 return NotFound();
             };
             
+        }
+        [HttpGet("Cost/{id:guid}")]
+        public async Task<IActionResult> GetWorkMasterCostById(Guid id)
+        {
+            var workMaster = await _unitOfWork.WorkMasters.Get(id);
+            if (workMaster == null) return NotFound();
+
+            var result = await _workMasterService.Calculate(workMaster);
+            if (result.Result)
+                return Ok(result);
+            else
+                return NotFound(result);
         }
 
         #region Phases
