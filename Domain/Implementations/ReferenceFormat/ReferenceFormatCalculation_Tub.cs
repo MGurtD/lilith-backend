@@ -18,7 +18,7 @@ namespace Domain.Implementations.ReferenceFormat
             } 
             else 
             {
-                throw new Exception($"All values must be greater than 0");
+                throw new Exception($"El diàmetre, el gruix, l'alçada i la densitat han de ser superiors a 0 per calcular el format tub");
             }            
             return (decimal) result;
         }
