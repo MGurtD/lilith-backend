@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.EntityConfiguration.Production
 {
-    public class ProductionPartsBuilder : IEntityTypeConfiguration<ProductionParts>
+    public class ProductionPartBuilder : IEntityTypeConfiguration<ProductionPart>
     {
-        public void Configure(EntityTypeBuilder<ProductionParts> builder)
+        public void Configure(EntityTypeBuilder<ProductionPart> builder)
         {
             builder.ConfigureBase();
             builder
