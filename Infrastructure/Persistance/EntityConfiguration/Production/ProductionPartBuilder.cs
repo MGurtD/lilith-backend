@@ -32,7 +32,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Production
                 .HasKey(b => b.Id)
                 .HasName("PK_ProductionParts");
             builder
-                .HasIndex(b => new { b.WorkcenterId, b.OperatorId, b.WorkorderphasedetailId })
+                .HasIndex(b => new { b.WorkcenterId, b.OperatorId, b.WorkOrderPhaseDetail })
                 .HasDatabaseName("idx_workcenter_phasedetail_operator");
             builder
                 .HasIndex(b => b.Date)
