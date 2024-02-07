@@ -11,11 +11,11 @@ namespace Domain.Entities.Production
         public DateTime Date { get; set; }
         public Guid WorkcenterId { get; set; }
         public Workcenter? Workcenter { get; set; }
-        public Guid WorkorderphasedetailId { get; set; }
-        public WorkOrderPhaseDetail? Workorderphasedetail { get; set;}
+        public Guid WorkOrderPhaseDetailId { get; set; }
+        public WorkOrderPhaseDetail? WorkOrderPhaseDetail { get; set;}
         public Guid OperatorId { get; set; }
         public Operator? Operator { get; set; }
         public int Quantity { get; set; }
-        public Decimal Time { get; set; }
+        public decimal Time { get; set; }
     }
 }
