@@ -40,14 +40,21 @@ namespace Api.Services.Purchase
             return receipts;
         }
 
+        public IEnumerable<Receipt> GetByInvoice(Guid invoiceId)
+        {
+            var receipts = _unitOfWork.Receipts.Find(p => p.PurchaseInvoiceId == invoiceId);
+            return receipts;
+        }
+
         public IEnumerable<Receipt> GetByStatus(Guid statusId)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<Receipt> GetBySupplier(Guid supplierId)
+        public IEnumerable<Receipt> GetBySupplier(Guid supplierId, bool withoutInvoice)
         {
             var receipts = _unitOfWork.Receipts.Find(p => p.SupplierId == supplierId);
+            receipts = withoutInvoice ? receipts.Where(r => r.PurchaseInvoiceId == null) : receipts;
             return receipts;
         }
 
@@ -200,5 +207,6 @@ namespace Api.Services.Purchase
 
             return new GenericResponse(true, detailsToRetrive);
         }
+        
     }
 }

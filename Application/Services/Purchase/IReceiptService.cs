@@ -9,7 +9,8 @@ namespace Application.Services.Purchase
         IEnumerable<Receipt> GetBetweenDates(DateTime startDate, DateTime endDate);
         IEnumerable<Receipt> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid statusId);
         IEnumerable<Receipt> GetBetweenDatesAndSupplier(DateTime startDate, DateTime endDate, Guid customerId);
-        IEnumerable<Receipt> GetBySupplier(Guid customerId);
+        IEnumerable<Receipt> GetBySupplier(Guid supplierId, bool withoutInvoice);
+        IEnumerable<Receipt> GetByInvoice(Guid invoiceId);
         IEnumerable<Receipt> GetByStatus(Guid statusId);
 
         Task<GenericResponse> Create(CreateReceiptRequest createRequest);

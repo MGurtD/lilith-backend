@@ -1,11 +1,8 @@
-﻿using Api.Services;
-using Application.Contracts;
+﻿using Application.Contracts;
 using Application.Contracts.Purchase;
 using Application.Persistance;
 using Application.Services.Purchase;
 using Domain.Entities.Purchase;
-using Domain.Entities.Sales;
-using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -33,16 +30,19 @@ namespace Api.Controllers.Purchase
             else return Ok(receipt);
         }
 
-        [HttpGet]
-        public IActionResult GetReceipts(DateTime startTime, DateTime endTime, Guid? supplierId, Guid? statusId)
+        [HttpGet("Invoiceable/{supplierId:guid}")]
+        public IActionResult GetSupplierInvoiceableReceipts(Guid supplierId)
         {
-            IEnumerable<Receipt> receipts = new List<Receipt>();
-            if (supplierId.HasValue)
-                receipts = _service.GetBetweenDatesAndSupplier(startTime, endTime, supplierId.Value);
-            else if (statusId.HasValue)
-                receipts = _service.GetBetweenDatesAndStatus(startTime, endTime, statusId.Value);
-            else
-                receipts = _service.GetBetweenDates(startTime, endTime);
+            IEnumerable<Receipt> receipts = _service.GetBySupplier(supplierId, true);
+
+            if (receipts != null) return Ok(receipts.OrderBy(e => e.Number));
+            else return BadRequest();
+        }
+
+        [HttpGet("Invoice/{id:guid}")]
+        public IActionResult GetReceiptsByInvoiceId(Guid id)
+        {
+            IEnumerable<Receipt> receipts = _service.GetByInvoice(id);
 
             if (receipts != null) return Ok(receipts.OrderBy(e => e.Number));
             else return BadRequest();
