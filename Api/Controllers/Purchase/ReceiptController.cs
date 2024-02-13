@@ -30,7 +30,7 @@ namespace Api.Controllers.Purchase
             else return Ok(receipt);
         }
 
-        [HttpGet("Invoiceable/{supplierId:guid}")]
+        [HttpGet("ToInvoice/{supplierId:guid}")]
         public IActionResult GetSupplierInvoiceableReceipts(Guid supplierId)
         {
             IEnumerable<Receipt> receipts = _service.GetBySupplier(supplierId, true);
