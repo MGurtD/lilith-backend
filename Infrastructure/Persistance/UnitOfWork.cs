@@ -72,6 +72,7 @@ namespace Infrastructure.Persistance
         public IRepository<Shift, Guid> Shifts { get; private set; }
         public IWorkMasterRepository WorkMasters { get; private set; }
         public IWorkOrderRepository WorkOrders { get; private set; }
+        public IRepository<ProductionPart, Guid> ProductionParts { get; private set; }
 
         // Warehouse
         public IWarehouseRepository Warehouses { get; private set; }
@@ -126,6 +127,7 @@ namespace Infrastructure.Persistance
             Shifts = new Repository<Shift, Guid>(context);
             WorkMasters = new WorkMasterRepository(context);
             WorkOrders = new WorkOrderRepository(context);
+            ProductionParts = new Repository<ProductionPart, Guid>(context);
 
             Warehouses = new WarehouseRepository(context);
             ReferenceTypes = new Repository<ReferenceType, Guid>(context);
