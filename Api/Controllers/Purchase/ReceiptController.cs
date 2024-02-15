@@ -21,6 +21,21 @@ namespace Api.Controllers.Purchase
             _unitOfWork = unitOfWork;
         }
 
+        [HttpGet]
+        public IActionResult GetReceipts(DateTime startTime, DateTime endTime, Guid? supplierId, Guid? statusId)
+        {
+            IEnumerable<Receipt> receipts = new List<Receipt>();
+            if (supplierId.HasValue)
+                receipts = _service.GetBetweenDatesAndSupplier(startTime, endTime, supplierId.Value);
+            else if (statusId.HasValue)
+                receipts = _service.GetBetweenDatesAndStatus(startTime, endTime, statusId.Value);
+            else
+                receipts = _service.GetBetweenDates(startTime, endTime);
+
+            if (receipts != null) return Ok(receipts.OrderBy(e => e.Number));
+            else return BadRequest();
+        }
+
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
