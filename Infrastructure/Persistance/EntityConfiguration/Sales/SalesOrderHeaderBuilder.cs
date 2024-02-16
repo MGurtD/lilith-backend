@@ -25,6 +25,9 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .HasColumnType("varchar")
                 .HasMaxLength(50);
             builder
+                .Property(b => b.ExpectedDate)
+                .HasColumnType("timestamp without time zone");
+            builder
                 .Property(b => b.CustomerCode)                
                 .IsRequired()
                 .HasColumnType("varchar")
