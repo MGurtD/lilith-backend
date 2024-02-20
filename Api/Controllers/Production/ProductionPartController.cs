@@ -16,21 +16,36 @@ namespace Api.Controllers.Production
         {
             _unitOfWork = unitOfWork;
         }
+
         [HttpGet("{id:guid}")]
-        public async Task<IActionResult>GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id)
         {
             var productionPart = await _unitOfWork.ProductionParts.Get(id);
             if (productionPart == null) return NotFound();
             else return Ok(productionPart);
         }
+
+        [HttpGet("WorkOrder/{id:guid}")]
+        public IActionResult GetByWorkOrderId(Guid id)
+        {
+            var productionParts = _unitOfWork.ProductionParts.Find(wo => wo.WorkOrderId == id);
+            return Ok(productionParts);
+        }
+
         [HttpGet]
-        public async Task<IActionResult> GetBetweenDates(DateTime startTime, DateTime endTime)
+        public IActionResult GetBetweenDates(DateTime startTime, DateTime endTime, Guid? workcenterId, Guid? operatorId)
         {
             IEnumerable<ProductionPart> productionParts = new List<ProductionPart>();
             productionParts = _unitOfWork.ProductionParts.Find(r => r.Date >= startTime && r.Date <= endTime);
-            if (productionParts == null) return NotFound();
-            else return Ok(productionParts);
+
+            if (workcenterId != null)
+                productionParts = productionParts.Where(r => r.WorkcenterId == workcenterId);
+            if (operatorId != null)
+                productionParts = productionParts.Where(r => r.OperatorId == operatorId);
+
+            return Ok(productionParts);
         }
+
         [HttpPost]
         public async Task<IActionResult> Create(ProductionPart productionPart)
         {
