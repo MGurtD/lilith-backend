@@ -1,5 +1,6 @@
 ﻿using Application.Contracts;
 using Application.Contracts.Production;
+using Application.Contracts.Purchase;
 using Application.Persistance;
 using Application.Production.Warehouse;
 using Domain.Entities.Production;
@@ -313,5 +314,30 @@ namespace Api.Controllers.Production
         }
         #endregion
 
+        #region DetailedWorkOrder
+        [HttpGet("Detailed/ByWorkcenter/{id:guid}")]        
+        public IActionResult GetDetailedWorkOrderByWorkcenterId(Guid id)
+        {
+            IEnumerable<DetailedWorkOrder> entities = Enumerable.Empty<DetailedWorkOrder>();
+            entities = _unitOfWork.DetailedWorkOrders.Find(d => d.WorkcenterId == id);
+            return Ok(entities);
+        }
+
+        [HttpGet("Detailed/ByWorkOrder/{id:guid}")]
+        public IActionResult GetDetailedWorkOrderByWorkOrderId(Guid id)
+        {
+            IEnumerable<DetailedWorkOrder> entities = Enumerable.Empty<DetailedWorkOrder>();
+            entities = _unitOfWork.DetailedWorkOrders.Find(d => d.WorkOrderId == id);
+            return Ok(entities);
+        }
+
+        [HttpGet("Detailed/ByWorkOrderPhase/{id:guid}")]
+        public IActionResult GetDetailedWorkOrderByWorkOrderPhaseId(Guid id)
+        {
+            IEnumerable<DetailedWorkOrder> entities = Enumerable.Empty<DetailedWorkOrder>();
+            entities = _unitOfWork.DetailedWorkOrders.Find(d => d.WorkOrderPhaseId == id);
+            return Ok(entities);
+        }
+        #endregion
     }
 }

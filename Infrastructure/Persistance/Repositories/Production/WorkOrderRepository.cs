@@ -29,5 +29,7 @@ namespace Infrastructure.Persistance.Repositories.Production
                         .AsNoTracking()
                         .FirstOrDefaultAsync(e => e.Id == id);
         }
+
+ 
     }
 }
