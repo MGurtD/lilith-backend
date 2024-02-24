@@ -66,7 +66,7 @@ namespace Application.Persistance
         IRepository<Shift, Guid> Shifts { get; }
         IWorkMasterRepository WorkMasters { get; }
         IWorkOrderRepository WorkOrders { get; }
-        IRepository<ProductionPart, Guid> ProductionParts { get; }
+        IProductionPartRepository ProductionParts { get; }
         IContractReader<DetailedWorkOrder> DetailedWorkOrders { get; }
 
         //Warehouse
