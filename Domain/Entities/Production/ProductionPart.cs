@@ -5,6 +5,10 @@
         public DateTime Date { get; set; }
         public Guid WorkcenterId { get; set; }
         public Workcenter? Workcenter { get; set; }
+        public Guid WorkOrderId { get; set; }
+        public WorkOrder? WorkOrder { get; set;}
+        public Guid WorkOrderPhaseId { get; set; }
+        public WorkOrderPhase? WorkOrderPhase { get; set;}
         public Guid WorkOrderPhaseDetailId { get; set; }
         public WorkOrderPhaseDetail? WorkOrderPhaseDetail { get; set;}
         public Guid OperatorId { get; set; }

@@ -40,6 +40,17 @@ public class WorkOrderBuilder : IEntityTypeConfiguration<WorkOrder>
             .HasMaxLength(4000);
 
         builder
+            .Property(b => b.CostOperator)
+            .IsRequired()
+            .HasDefaultValue(0)
+            .HasColumnType("integer");
+        builder
+            .Property(b => b.CostMachine)
+            .IsRequired()
+            .HasDefaultValue(0)
+            .HasColumnType("integer");
+
+        builder
             .HasKey(b => b.Id)
             .HasName($"PK_{TABLE_NAME}");
         builder

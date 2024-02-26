@@ -1,4 +1,5 @@
 ﻿
+using Application.Contracts.Production;
 using Application.Contracts.Purchase;
 using Application.Persistance.Repositories;
 using Application.Persistance.Repositories.Production;
@@ -65,6 +66,8 @@ namespace Application.Persistance
         IRepository<Shift, Guid> Shifts { get; }
         IWorkMasterRepository WorkMasters { get; }
         IWorkOrderRepository WorkOrders { get; }
+        IProductionPartRepository ProductionParts { get; }
+        IContractReader<DetailedWorkOrder> DetailedWorkOrders { get; }
 
         //Warehouse
         IWarehouseRepository Warehouses { get; }

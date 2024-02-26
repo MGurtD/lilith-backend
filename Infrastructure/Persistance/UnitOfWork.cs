@@ -1,4 +1,5 @@
-﻿using Application.Contracts.Purchase;
+﻿using Application.Contracts.Production;
+using Application.Contracts.Purchase;
 using Application.Persistance;
 using Application.Persistance.Repositories;
 using Application.Persistance.Repositories.Production;
@@ -72,6 +73,8 @@ namespace Infrastructure.Persistance
         public IRepository<Shift, Guid> Shifts { get; private set; }
         public IWorkMasterRepository WorkMasters { get; private set; }
         public IWorkOrderRepository WorkOrders { get; private set; }
+        public IProductionPartRepository ProductionParts { get; private set; }
+        public IContractReader<DetailedWorkOrder> DetailedWorkOrders { get; private set; }
 
         // Warehouse
         public IWarehouseRepository Warehouses { get; private set; }
@@ -126,6 +129,8 @@ namespace Infrastructure.Persistance
             Shifts = new Repository<Shift, Guid>(context);
             WorkMasters = new WorkMasterRepository(context);
             WorkOrders = new WorkOrderRepository(context);
+            ProductionParts = new ProductionPartRepository(context);
+            DetailedWorkOrders = new ContractReader<DetailedWorkOrder>(context);
 
             Warehouses = new WarehouseRepository(context);
             ReferenceTypes = new Repository<ReferenceType, Guid>(context);

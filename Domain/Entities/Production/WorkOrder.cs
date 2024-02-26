@@ -13,6 +13,9 @@ public class WorkOrder : Entity
     public Guid StatusId { get; set; }
     public Status? Status { get; set; }
 
+    public int CostOperator { get; set; }
+    public int CostMachine { get; set; }
+
     public DateTime PlannedDate { get; set; }
     public decimal PlannedQuantity { get; set; }
     public DateTime? StartTime { get; set; }

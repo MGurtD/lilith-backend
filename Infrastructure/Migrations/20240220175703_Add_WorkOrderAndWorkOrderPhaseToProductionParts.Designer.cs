@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240220175703_Add_WorkOrderAndWorkOrderPhaseToProductionParts")]
+    partial class Add_WorkOrderAndWorkOrderPhaseToProductionParts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1355,16 +1357,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("varchar")
                         .HasDefaultValue("");
 
-                    b.Property<int>("CostMachine")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<int>("CostOperator")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp without time zone")
@@ -2059,9 +2051,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("varchar")
                         .HasDefaultValue("0");
 
-                    b.Property<Guid?>("PurchaseInvoiceId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("StatusId")
                         .HasColumnType("uuid");
 
@@ -2086,8 +2075,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("Number")
                         .IsUnique()
                         .HasDatabaseName("IX_Receipt_Number");
-
-                    b.HasIndex("PurchaseInvoiceId");
 
                     b.HasIndex("StatusId");
 
@@ -2969,7 +2956,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex(new[] { "ExerciseId" }, "IX_SalesInvoices_Exercise");
 
-                    b.ToTable("SalesInvoice", (string)null);
+                    b.ToTable("SalesInvoice");
                 });
 
             modelBuilder.Entity("Domain.Entities.Sales.SalesInvoiceDetail", b =>
@@ -3189,7 +3176,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("WorkOrderId");
 
-                    b.ToTable("SalesOrderDetail", (string)null);
+                    b.ToTable("SalesOrderDetail");
                 });
 
             modelBuilder.Entity("Domain.Entities.Sales.SalesOrderHeader", b =>
@@ -3265,9 +3252,6 @@ namespace Infrastructure.Migrations
                     b.Property<Guid?>("ExerciseId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("ExpectedDate")
-                        .HasColumnType("timestamp without time zone");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -3322,7 +3306,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex(new[] { "ExerciseId" }, "IDX_SalesOrderHeader_Exercise");
 
-                    b.ToTable("SalesOrderHeader", (string)null);
+                    b.ToTable("SalesOrderHeader");
                 });
 
             modelBuilder.Entity("Domain.Entities.Shared.Parameter", b =>
@@ -4274,10 +4258,6 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.Purchase.PurchaseInvoice", "PurchaseInvoice")
-                        .WithMany()
-                        .HasForeignKey("PurchaseInvoiceId");
-
                     b.HasOne("Domain.Entities.Status", "Status")
                         .WithMany()
                         .HasForeignKey("StatusId")
@@ -4291,8 +4271,6 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Exercise");
-
-                    b.Navigation("PurchaseInvoice");
 
                     b.Navigation("Status");
 

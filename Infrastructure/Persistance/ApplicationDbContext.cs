@@ -1,4 +1,5 @@
-﻿using Application.Contracts.Purchase;
+﻿using Application.Contracts.Production;
+using Application.Contracts.Purchase;
 using Application.Contracts.Sales;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,6 +34,10 @@ namespace Infrastructure.Persistance
                .Entity<SalesInvoiceDetailReport>()
                .ToView("vw_report_salesInvoiceDetails")
                .HasNoKey();
+            builder
+                .Entity<DetailedWorkOrder>()
+                .ToView("vw_detailedworkorder")
+                .HasNoKey();
 
             builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
