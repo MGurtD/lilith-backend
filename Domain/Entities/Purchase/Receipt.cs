@@ -12,6 +12,9 @@
         public Status? Status { get; set; }
         public string SupplierNumber { get; set; } = string.Empty;
 
+        public Guid? PurchaseInvoiceId { get; set; }
+        public PurchaseInvoice? PurchaseInvoice { get; set; }
+
         public ICollection<ReceiptDetail>? Details { get; set; }
     }
 }

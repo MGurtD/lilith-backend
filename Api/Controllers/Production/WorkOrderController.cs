@@ -66,8 +66,6 @@ namespace Api.Controllers.Production
             return Ok(workOrders.OrderBy(e => e.Code));
         }
 
-        
-
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
@@ -100,12 +98,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.WorkOrders.Find(e => e.Id == id).FirstOrDefault();
-            if (entity is null)
-                return NotFound();
-
-            await _unitOfWork.WorkOrders.Remove(entity);
-            return Ok(entity);
+            var response = await _workOrderService.Delete(id);            
+            if (response.Result)
+                return Ok();
+            else
+                return BadRequest(response);
         }
 
         #region Phases

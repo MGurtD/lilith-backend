@@ -157,7 +157,25 @@ namespace Api.Services.Production
 
             return workOrders;
         }
-        
-        
+
+        public async Task<GenericResponse> Delete(Guid id)
+        {
+            var woOrderDetails = _unitOfWork.SalesOrderDetails.Find(d => d.WorkOrderId == id);
+            if (woOrderDetails.Any()) {
+                var orderDetail = woOrderDetails.FirstOrDefault();
+
+                if (orderDetail is not null) {
+                    orderDetail.WorkOrderId = null;
+                    await _unitOfWork.SalesOrderDetails.Update(orderDetail);
+                }
+            }
+
+            var entity = _unitOfWork.WorkOrders.Find(e => e.Id == id).FirstOrDefault();
+            if (entity is null)
+                return new GenericResponse(false, "La ordre de fabricació no existeix");
+
+            await _unitOfWork.WorkOrders.Remove(entity);
+            return new GenericResponse(true, entity);
+        }
     }
 }

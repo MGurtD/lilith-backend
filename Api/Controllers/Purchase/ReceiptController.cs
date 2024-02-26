@@ -1,11 +1,8 @@
-﻿using Api.Services;
-using Application.Contracts;
+﻿using Application.Contracts;
 using Application.Contracts.Purchase;
 using Application.Persistance;
 using Application.Services.Purchase;
 using Domain.Entities.Purchase;
-using Domain.Entities.Sales;
-using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -24,15 +21,6 @@ namespace Api.Controllers.Purchase
             _unitOfWork = unitOfWork;
         }
 
-        [HttpGet("{id:guid}")]
-        public async Task<IActionResult> GetById(Guid id)
-        {
-            var receipt = await _unitOfWork.Receipts.Get(id);
-
-            if (receipt == null) return BadRequest();
-            else return Ok(receipt);
-        }
-
         [HttpGet]
         public IActionResult GetReceipts(DateTime startTime, DateTime endTime, Guid? supplierId, Guid? statusId)
         {
@@ -43,6 +31,33 @@ namespace Api.Controllers.Purchase
                 receipts = _service.GetBetweenDatesAndStatus(startTime, endTime, statusId.Value);
             else
                 receipts = _service.GetBetweenDates(startTime, endTime);
+
+            if (receipts != null) return Ok(receipts.OrderBy(e => e.Number));
+            else return BadRequest();
+        }
+
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var receipt = await _unitOfWork.Receipts.Get(id);
+
+            if (receipt == null) return BadRequest();
+            else return Ok(receipt);
+        }
+
+        [HttpGet("ToInvoice/{supplierId:guid}")]
+        public IActionResult GetSupplierInvoiceableReceipts(Guid supplierId)
+        {
+            IEnumerable<Receipt> receipts = _service.GetBySupplier(supplierId, true);
+
+            if (receipts != null) return Ok(receipts.OrderBy(e => e.Number));
+            else return BadRequest();
+        }
+
+        [HttpGet("Invoice/{id:guid}")]
+        public IActionResult GetReceiptsByInvoiceId(Guid id)
+        {
+            IEnumerable<Receipt> receipts = _service.GetByInvoice(id);
 
             if (receipts != null) return Ok(receipts.OrderBy(e => e.Number));
             else return BadRequest();
