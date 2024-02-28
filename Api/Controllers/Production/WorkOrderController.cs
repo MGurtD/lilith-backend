@@ -55,7 +55,8 @@ namespace Api.Controllers.Production
         public IActionResult GetWorkOrders(DateTime startTime, DateTime endTime, Guid? statusId)
         {
             IEnumerable<WorkOrder> workOrders = new List<WorkOrder>();
-            workOrders = _workOrderService.GetBetweenDatesAndStatus(startTime, endTime, statusId);           
+            workOrders = _workOrderService.GetBetweenDatesAndStatus(startTime, endTime, statusId);
+           
             return Ok(workOrders.OrderBy(e => e.Code));
         }
 

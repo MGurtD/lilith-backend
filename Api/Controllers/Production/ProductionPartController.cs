@@ -33,7 +33,7 @@ namespace Api.Controllers.Production
         }
 
         [HttpGet]
-        public IActionResult GetBetweenDates(DateTime startTime, DateTime endTime, Guid? workcenterId, Guid? operatorId)
+        public IActionResult GetBetweenDates(DateTime startTime, DateTime endTime, Guid? workcenterId, Guid? operatorId, Guid? workorderId)
         {
             IEnumerable<ProductionPart> productionParts = new List<ProductionPart>();
             productionParts = _unitOfWork.ProductionParts.Find(r => r.Date >= startTime && r.Date <= endTime);
@@ -42,6 +42,8 @@ namespace Api.Controllers.Production
                 productionParts = productionParts.Where(r => r.WorkcenterId == workcenterId);
             if (operatorId != null)
                 productionParts = productionParts.Where(r => r.OperatorId == operatorId);
+            if (workorderId != null)
+                productionParts = productionParts.Where(r => r.WorkOrderId == workorderId);
 
             return Ok(productionParts);
         }
