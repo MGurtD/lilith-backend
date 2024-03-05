@@ -177,5 +177,23 @@ namespace Api.Services.Production
             await _unitOfWork.WorkOrders.Remove(entity);
             return new GenericResponse(true, entity);
         }
+
+        public async Task<GenericResponse> AddProductionPart(Guid id, ProductionPart productionPart)
+        {
+            var workOrder = await _unitOfWork.WorkOrders.Get(id);
+            if (workOrder is null) return new GenericResponse(false, $"La ordre de fabricació no existeix");            
+
+            workOrder.OperatorTime += productionPart.Time;
+            workOrder.MachineTime += productionPart.Time;
+
+            var op = await _unitOfWork.Operators.Get(productionPart.OperatorId);
+            var operatorType = await _unitOfWork.OperatorTypes.Get(op.OperatorTypeId);
+            if (operatorType is null) return new GenericResponse(false, $"El tipus d'operari no existeix");
+            
+
+            await _unitOfWork.WorkOrders.Update(workOrder);
+
+            return new GenericResponse(true , workOrder);
+        }
     }
 }
