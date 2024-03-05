@@ -11,6 +11,7 @@ namespace Application.Production.Warehouse
         Task<GenericResponse> End(Guid id);
         Task<GenericResponse> Delete(Guid id); 
         IEnumerable<WorkOrder> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid? statusId);
+        IEnumerable<DetailedWorkOrder> GetWorkOrderDetails(Guid id);
         Task<IEnumerable<WorkOrder>> GetBySalesOrderId(Guid salesOrderId);
 
     }
