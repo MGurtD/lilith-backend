@@ -67,6 +67,13 @@ namespace Api.Controllers.Production
             return Ok(workOrders.OrderBy(e => e.Code));
         }
 
+        [HttpGet("{id:guid}/Detailed")]
+        public IActionResult GetDetailedWorkOrder(Guid id)
+        {
+            var details = _workOrderService.GetWorkOrderDetails(id);
+            return Ok(details);
+        }
+
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
