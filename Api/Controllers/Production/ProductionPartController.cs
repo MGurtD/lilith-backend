@@ -86,7 +86,9 @@ namespace Api.Controllers.Production
             if (entity is null)
                 return NotFound();
 
+            await _workOrderService.RemoveProductionPart(entity.WorkOrderId, entity);
             await _unitOfWork.ProductionParts.Remove(entity);
+            
             return Ok(entity);
         }
     }
