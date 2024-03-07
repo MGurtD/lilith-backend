@@ -21,6 +21,14 @@ public class WorkOrderBuilder : IEntityTypeConfiguration<WorkOrder>
             .HasColumnType("decimal")
             .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                           ApplicationDbContextConstants.DECIMAL_SCALE);
+
+        builder
+            .Property(b => b.TotalQuantity)
+            .IsRequired()
+            .HasColumnType("decimal")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
+
         builder
             .Property(b => b.StartTime)
             .HasColumnType("timestamp without time zone");
@@ -40,15 +48,42 @@ public class WorkOrderBuilder : IEntityTypeConfiguration<WorkOrder>
             .HasMaxLength(4000);
 
         builder
-            .Property(b => b.CostOperator)
+            .Property(b => b.OperatorCost)
             .IsRequired()
-            .HasDefaultValue(0)
-            .HasColumnType("integer");
+            .HasDefaultValue(0.0)
+            .HasColumnType("decimal")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
         builder
-            .Property(b => b.CostMachine)
+            .Property(b => b.MachineCost)
             .IsRequired()
-            .HasDefaultValue(0)
-            .HasColumnType("integer");
+            .HasDefaultValue(0.0)
+            .HasColumnType("decimal")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
+
+        builder
+            .Property(b => b.MaterialCost)
+            .IsRequired()
+            .HasDefaultValue(0.0)
+            .HasColumnType("decimal")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
+
+        builder
+            .Property(b => b.OperatorTime)
+            .IsRequired()
+            .HasDefaultValue(0.0)
+            .HasColumnType("decimal")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
+        builder
+            .Property(b => b.MachineTime)
+            .IsRequired()
+            .HasDefaultValue(0.0)
+            .HasColumnType("decimal")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
 
         builder
             .HasKey(b => b.Id)
