@@ -13,11 +13,16 @@ public class WorkOrder : Entity
     public Guid StatusId { get; set; }
     public Status? Status { get; set; }
 
-    public int CostOperator { get; set; }
-    public int CostMachine { get; set; }
+    public decimal OperatorCost { get; set; }
+    public decimal MachineCost { get; set; }
+    public decimal OperatorTime { get; set; }
+    public decimal MachineTime { get; set; }    
+    public decimal MaterialCost { get; set; }
 
     public DateTime PlannedDate { get; set; }
     public decimal PlannedQuantity { get; set; }
+
+    public decimal TotalQuantity { get; set; }
     public DateTime? StartTime { get; set; }
     public DateTime? EndTime { get; set; }
     public int Order { get; set; }

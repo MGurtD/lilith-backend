@@ -1,4 +1,6 @@
-﻿using Application.Persistance;
+﻿using Api.Services.Production;
+using Application.Persistance;
+using Application.Production.Warehouse;
 using Domain.Entities.Production;
 using Infrastructure.Migrations;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +13,12 @@ namespace Api.Controllers.Production
     public class ProductionPartController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IWorkOrderService _workOrderService;
 
-        public ProductionPartController(IUnitOfWork unitOfWork)
+        public ProductionPartController(IUnitOfWork unitOfWork, IWorkOrderService workOrderService)
         {
             _unitOfWork = unitOfWork;
+            _workOrderService = workOrderService;
         }
 
         [HttpGet("{id:guid}")]
@@ -53,6 +57,7 @@ namespace Api.Controllers.Production
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
             await _unitOfWork.ProductionParts.Add(productionPart);
+            await _workOrderService.AddProductionPart(productionPart.WorkOrderId, productionPart);
             return Created("",productionPart);
         }
         [HttpPut("{id:guid}")]
@@ -81,7 +86,9 @@ namespace Api.Controllers.Production
             if (entity is null)
                 return NotFound();
 
+            await _workOrderService.RemoveProductionPart(entity.WorkOrderId, entity);
             await _unitOfWork.ProductionParts.Remove(entity);
+            
             return Ok(entity);
         }
     }
