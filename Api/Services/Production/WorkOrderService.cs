@@ -23,6 +23,82 @@ namespace Api.Services.Production
             _salesOrderService = salesOrderService;
         }        
 
+        public IEnumerable<DetailedWorkOrder> GetWorkOrderDetails(Guid id) {
+            var details = _unitOfWork.DetailedWorkOrders.Find(d => d.WorkOrderId == id);
+
+            var groupedDetails =
+            from d in details
+            group d by new
+            {
+                d.WorkOrderId,
+                d.WorkOrderCode,
+                d.WorkOrderStartTime,
+                d.WorkOrderEndTime,
+                d.WorkOrderStatusCode,
+                d.WorkOrderStatusDescription,
+                d.WorkOrderOrder,
+                d.WorkOrderComment,
+                d.PlannedDate,
+                d.PlannedQuantity,
+                d.ReferenceCode,
+                d.ReferenceDescription,
+                d.ReferenceVersion,
+                d.ReferenceCost,
+                d.WorkOrderPhaseId,
+                d.WorkOrderPhaseCode,
+                d.WorkOrderPhaseDescription,
+                d.WorkOrderPhaseComment,
+                d.WorkOrderPhaseStartTime,
+                d.WorkOrderPhaseEndTime,
+                d.WorkOrderPhaseStatusCode,
+                d.WorkOrderPhaseStatusDescription,
+                d.WorkOrderPhaseDetailId,
+                d.WorkOrderPhaseDetailOrder,
+                d.WorkOrderPhaseDetailEstimatedTime,
+                d.WorkOrderPhaseDetailComment,
+                d.MachineStatusName,
+                d.MachineStatusDescription,
+            } into gcs
+            select new DetailedWorkOrder()
+            {
+                WorkOrderId = gcs.Key.WorkOrderId,
+                WorkOrderCode = gcs.Key.WorkOrderCode,
+                WorkOrderStartTime = gcs.Key.WorkOrderStartTime,
+                WorkOrderEndTime = gcs.Key.WorkOrderEndTime,
+                WorkOrderStatusCode = gcs.Key.WorkOrderStatusCode,
+                WorkOrderStatusDescription = gcs.Key.WorkOrderStatusDescription,
+                WorkOrderOrder = gcs.Key.WorkOrderOrder,
+                WorkOrderComment = gcs.Key.WorkOrderComment,
+                PlannedDate = gcs.Key.PlannedDate,
+                PlannedQuantity = gcs.Key.PlannedQuantity,
+                ReferenceCode = gcs.Key.ReferenceCode,
+                ReferenceDescription = gcs.Key.ReferenceDescription,
+                ReferenceVersion = gcs.Key.ReferenceVersion,
+                ReferenceCost = gcs.Key.ReferenceCost,
+                WorkOrderPhaseId = gcs.Key.WorkOrderPhaseId,
+                WorkOrderPhaseCode = gcs.Key.WorkOrderPhaseCode,
+                WorkOrderPhaseDescription = gcs.Key.WorkOrderPhaseDescription,
+                WorkOrderPhaseComment = gcs.Key.WorkOrderPhaseComment,
+                WorkOrderPhaseStartTime = gcs.Key.WorkOrderPhaseStartTime,
+                WorkOrderPhaseEndTime = gcs.Key.WorkOrderPhaseEndTime,
+                WorkOrderPhaseStatusCode = gcs.Key.WorkOrderPhaseStatusCode,
+                WorkOrderPhaseStatusDescription = gcs.Key.WorkOrderPhaseStatusDescription,
+                WorkOrderPhaseDetailId = gcs.Key.WorkOrderPhaseDetailId,
+                WorkOrderPhaseDetailOrder = gcs.Key.WorkOrderPhaseDetailOrder,
+                WorkOrderPhaseDetailEstimatedTime = gcs.Key.WorkOrderPhaseDetailEstimatedTime,
+                WorkOrderPhaseDetailComment = gcs.Key.WorkOrderPhaseDetailComment,
+                MachineStatusName = gcs.Key.MachineStatusName,
+                MachineStatusDescription = gcs.Key.MachineStatusDescription,
+                PreferredWorkcenter = false,
+                WorkcenterId = Guid.Empty,
+                WorkcenterName = "",
+                WorkcenterCost = 0,
+                WorkcenterDescription = ""
+            };
+
+            return groupedDetails;
+        }
+
         public async Task<GenericResponse> CreateFromWorkMaster(CreateWorkOrderDto dto)
         {
             // Ruta de fabricació
