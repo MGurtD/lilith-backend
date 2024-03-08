@@ -68,17 +68,17 @@ namespace Api.Services.Purchase
             if (!status.InitialStatusId.HasValue) return new GenericResponse(false, new List<string>() { "El cicle de vida 'Receipts' no té un estat inicial" });
 
             //var receiptCounter = exercise.ReceiptCounter == 0 ? 1 : exercise.ReceiptCounter;
-            var receiptCounterObj = await _exerciseService.GetNextCounter(exercise.Id, "receipt");
-            if (receiptCounterObj == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
+            var counterObj = await _exerciseService.GetNextCounter(exercise.Id, "receipt");
+            if (counterObj == null || counterObj.Content == null) return new GenericResponse(false, "Error al crear el comptador");
 
-            var receiptCounter = receiptCounterObj.Content.ToString();
+            var receiptCounter = counterObj.Content.ToString();
             var receipt = new Receipt()
             {
                 Id = createRequest.Id,
                 ExerciseId = createRequest.ExerciseId,
                 SupplierId = createRequest.SupplierId,
                 Date = createRequest.Date,
-                Number = receiptCounter,
+                Number = receiptCounter!,
                 StatusId = status.InitialStatusId.Value
             };
             await _unitOfWork.Receipts.Add(receipt);

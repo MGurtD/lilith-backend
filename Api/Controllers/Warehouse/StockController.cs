@@ -30,7 +30,7 @@ namespace Api.Controllers.Warehouse
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetStock(Guid? locationId, Guid? referenceId)
+        public IActionResult GetStock(Guid? locationId, Guid? referenceId)
         {
             IEnumerable<Stock> stock;
             if (locationId.HasValue)
@@ -43,7 +43,7 @@ namespace Api.Controllers.Warehouse
             }
             else
             {
-                stock = await _service.GetAll();
+                stock = _service.GetAll();
             }
 
             if (stock != null) return Ok(stock);

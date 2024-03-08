@@ -30,26 +30,13 @@ namespace Api.Controllers.Warehouse
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetMovement(DateTime startTime, DateTime endTime)
+        public IActionResult GetMovement(DateTime startTime, DateTime endTime)
         {
             var stockMovements =  _service.GetBetweenDates(startTime, endTime);
 
             if (stockMovements != null) return Ok(stockMovements);
             else return BadRequest();
         }
-
-        /*[HttpPut("{id:guid}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] Stock request)
-        {
-            if (id != request.Id) return BadRequest();
-
-            var response = await _service.Update(request);
-
-            if (response.Result) return Ok(response);
-            else return BadRequest(response);
-        }*/
 
     }
 }

@@ -22,10 +22,12 @@ namespace Api.Services.Warehouse
 
         public async Task<GenericResponse> Create(StockMovement request)
         {
-            if (_defaultLocationId == null) return new GenericResponse(false, "No hi ha una ubicació per defecte definida al projecte");
+            if (_defaultLocationId == null) return new GenericResponse(false, "No hi ha una ubicaciï¿½ per defecte definida al projecte");
             request.LocationId = _defaultLocationId;
-            //Comprovar si la referència es un servei. Si es un servei no es genera moviment ni error.
+            // Comprovar si la refer?ncia es un servei. Si es un servei no es genera moviment ni error.
             var reference = _unitOfWork.References.Find(p => p.Id == request.ReferenceId).FirstOrDefault();
+            if (reference == null) return new GenericResponse(false, $"Refer?ncia {request.ReferenceId} inexistent");
+
             if (reference.IsService) return new GenericResponse(true, request);
 
             // Comprovar si existeix un stock id per les dimensions i producte
@@ -80,13 +82,15 @@ namespace Api.Services.Warehouse
 
         public async Task<GenericResponse> Remove(Guid id)
         {
-            if (_defaultLocationId == null) return new GenericResponse(false, "No hi ha una ubicació per defecte definida al projecte");
+            if (_defaultLocationId == null) return new GenericResponse(false, "No hi ha una ubicaciÃ³ per defecte definida al projecte");
 
             var stockMovement = await _unitOfWork.StockMovements.Get(id);
             if (stockMovement == null) return new GenericResponse(false, new List<string>() { $"Id {id} inexistent" });
             var stock = _stockService.GetByDimensions(_defaultLocationId.Value, stockMovement.ReferenceId,
                                                       stockMovement.Width, stockMovement.Length, stockMovement.Height,
                                                       stockMovement.Diameter, stockMovement.Thickness);
+
+            if (stock == null) return new GenericResponse(false, $"No s'ha trobat stock amb les dimensions proporcionades");
 
             stock.Quantity += -1 * stockMovement.Quantity;
             await _stockService.Update(stock);

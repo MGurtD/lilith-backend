@@ -49,12 +49,12 @@ namespace Api.Services.Sales
 
         public IEnumerable<SalesOrderHeader> GetBetweenDates(DateTime startDate, DateTime endDate)
         {
-            var salesOrderHeaders = _unitOfWork.SalesOrderHeaders.Find(p => p.SalesOrderDate >= startDate && p.SalesOrderDate <= endDate);
+            var salesOrderHeaders = _unitOfWork.SalesOrderHeaders.Find(p => p.Date >= startDate && p.Date <= endDate);
             return salesOrderHeaders;
         }
         public IEnumerable<SalesOrderHeader> GetBetweenDatesAndCustomer(DateTime startDate, DateTime endDate, Guid customerId)
         {
-            var invoices = _unitOfWork.SalesOrderHeaders.Find(p => p.SalesOrderDate >= startDate && p.SalesOrderDate <= endDate && p.CustomerId == customerId);
+            var invoices = _unitOfWork.SalesOrderHeaders.Find(p => p.Date >= startDate && p.Date <= endDate && p.CustomerId == customerId);
             return invoices;
         }
 
@@ -82,8 +82,8 @@ namespace Api.Services.Sales
             var order = new SalesOrderHeader
             {
                 Id = createRequest.Id,
-                SalesOrderNumber = counterObj.Content.ToString()!,
-                SalesOrderDate = createRequest.Date
+                Number = counterObj.Content.ToString()!,
+                Date = createRequest.Date
             };
 
             // Estat inicial
@@ -113,16 +113,6 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> Update(SalesOrderHeader salesOrderHeader)
         {
             salesOrderHeader.SalesOrderDetails.Clear();
-
-            var status = await GetStatusId("Pressupost");
-            if (salesOrderHeader.StatusId.HasValue)
-            {
-                if ((Guid)status.Content! == salesOrderHeader.StatusId.Value && salesOrderHeader.BudgetNumber is null)
-                {
-                    GenericResponse serviceResponse = await _exerciseService.GetNextCounter(salesOrderHeader.ExerciseId!.Value, "budgetcounter");
-                    if (serviceResponse.Result) salesOrderHeader.BudgetNumber = serviceResponse.Content!.ToString();
-                }
-            }
 
             await _unitOfWork.SalesOrderHeaders.Update(salesOrderHeader);
             return new GenericResponse(true);

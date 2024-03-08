@@ -11,17 +11,13 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
             builder.ConfigureBase();
 
             builder
-                .Property(b => b.SalesOrderDate)
+                .Property(b => b.Date)
                 .IsRequired()
                 .HasColumnType("timestamp without time zone");
             builder
-                .Property(b => b.SalesOrderNumber)
+                .Property(b => b.Number)
                 .IsRequired()
                 .HasDefaultValue("0")
-                .HasColumnType("varchar")
-                .HasMaxLength(50);
-            builder
-                .Property(b => b.BudgetNumber)
                 .HasColumnType("varchar")
                 .HasMaxLength(50);
             builder
@@ -34,7 +30,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .HasMaxLength(10);
 
             builder
-                .Property(b => b.CustomerSalesOrderNumber)
+                .Property(b => b.CustomerNumber)
                 .IsRequired()
                 .HasColumnType("varchar")
                 .HasMaxLength(50);

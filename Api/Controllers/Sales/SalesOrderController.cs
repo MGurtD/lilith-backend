@@ -43,7 +43,7 @@ namespace Api.Controllers.Sales
                 salesOrderHeaders = _service.GetBetweenDatesAndCustomer(startTime, endTime, customerId.Value);
             else
                 salesOrderHeaders = _service.GetBetweenDates(startTime, endTime);         
-            if (salesOrderHeaders != null) return Ok(salesOrderHeaders.OrderBy(e => e.SalesOrderNumber));
+            if (salesOrderHeaders != null) return Ok(salesOrderHeaders.OrderBy(e => e.Number));
             else return BadRequest();
         }
 
@@ -58,7 +58,7 @@ namespace Api.Controllers.Sales
         public IActionResult GetOrdersToDeliver(Guid customerId)
         {
             var salesOrderHeaders = _service.GetOrdersToDeliver(customerId);
-            return Ok(salesOrderHeaders.OrderBy(e => e.SalesOrderNumber));
+            return Ok(salesOrderHeaders.OrderBy(e => e.Number));
         }
 
         [HttpPost]

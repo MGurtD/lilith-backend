@@ -143,12 +143,12 @@ namespace Api.Services.Sales
 
             var invoiceEntities = (InvoiceEntities)response.Content!;
             var counterObj = await _exerciseService.GetNextCounter(invoiceEntities.Exercise.Id, "salesinvoice");
-            if (counterObj == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
+            if (counterObj == null || counterObj.Content == null) return new GenericResponse(false, "Error al crear el comptador");
             var counter = counterObj.Content.ToString();
             var invoice = new SalesInvoice
             {
                 Id = createInvoiceRequest.Id,
-                InvoiceNumber = counter,
+                InvoiceNumber = counter!,
                 InvoiceDate = createInvoiceRequest.Date
             };
 

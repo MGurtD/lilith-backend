@@ -20,7 +20,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .Property(b => b.Description)
                 .IsRequired()
                 .HasColumnType("varchar")
-                .HasMaxLength(250);
+                .HasMaxLength(2000);
             builder
                 .Property(b => b.Quantity)
                 .IsRequired()
