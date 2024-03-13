@@ -69,6 +69,16 @@ namespace Api.Controllers.Production
             if (!exists)
                 return NotFound();
 
+            var resultCosts = await _workMasterService.Calculate(request);
+
+            if (resultCosts.Result && resultCosts.Content is WorkMasterCosts workMasterCosts)
+            {
+                request.operatorCost = workMasterCosts.OperatorCost;
+                request.machineCost = workMasterCosts.MachineCost;
+                request.externalCost = workMasterCosts.ExternalCost;
+                request.materialCost = workMasterCosts.MaterialCost;
+            }
+
             await _unitOfWork.WorkMasters.Update(request);
             return Ok(request);
         }
@@ -116,8 +126,15 @@ namespace Api.Controllers.Production
             if (workMaster == null) return NotFound();
 
             var result = await _workMasterService.Calculate(workMaster);
-            if (result.Result)
-                return Ok(result);
+            var cost = (decimal)0.0;
+
+            if (result.Result && result.Content is WorkMasterCosts workMasterCosts)
+            {
+                cost = workMasterCosts.OperatorCost + workMasterCosts.MachineCost + workMasterCosts.ExternalCost + workMasterCosts.MaterialCost;
+            }
+
+            if (result.Result)                
+                return Ok(new GenericResponse(true, cost));
             else
                 return NotFound(result);
         }

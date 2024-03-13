@@ -18,6 +18,34 @@ public class WorkMasterBuilder : IEntityTypeConfiguration<WorkMaster>
             .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                            ApplicationDbContextConstants.DECIMAL_SCALE);
         builder
+            .Property(b => b.operatorCost)
+            .IsRequired()
+            .HasColumnType("decimal")
+            .HasDefaultValue("0")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                           ApplicationDbContextConstants.DECIMAL_SCALE);
+        builder
+            .Property(b => b.machineCost)
+            .IsRequired()
+            .HasColumnType("decimal")
+            .HasDefaultValue("0")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                           ApplicationDbContextConstants.DECIMAL_SCALE);
+        builder
+            .Property(b => b.externalCost)
+            .IsRequired()
+            .HasColumnType("decimal")
+            .HasDefaultValue("0")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                           ApplicationDbContextConstants.DECIMAL_SCALE);
+        builder
+            .Property(b => b.materialCost)
+            .IsRequired()
+            .HasColumnType("decimal")
+            .HasDefaultValue("0")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                           ApplicationDbContextConstants.DECIMAL_SCALE);
+        builder
                 .HasKey(b => b.Id)
                 .HasName($"PK_{TABLE_NAME}");
 
