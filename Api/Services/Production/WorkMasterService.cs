@@ -108,9 +108,10 @@ namespace Api.Services.Production
 
                 }
             }
+            var costDetails = new WorkMasterCosts(operatorCost, machineCost, materialCost, externalCost);
 
-            result = operatorCost + machineCost + materialCost + externalCost;
-            return new GenericResponse(true, result);
+            //result = operatorCost + machineCost + materialCost + externalCost;
+            return new GenericResponse(true, costDetails);
         }
     }
 }
