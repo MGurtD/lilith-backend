@@ -100,6 +100,7 @@ namespace Api.Controllers.Production
             var reference = await _unitOfWork.References.Get(request.ReferenceId);
             if(reference != null)
             {
+                
                 reference.LastCost = request.MachineCost + request.OperatorCost + request.MaterialCost;
                 await _unitOfWork.References.Update(reference);
             }
