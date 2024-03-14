@@ -78,8 +78,16 @@ namespace Api.Controllers.Production
                 request.externalCost = workMasterCosts.ExternalCost;
                 request.materialCost = workMasterCosts.MaterialCost;
             }
-
+            
             await _unitOfWork.WorkMasters.Update(request);
+            //get reference and update workmastercost
+
+            var reference = await _unitOfWork.References.Get(request.ReferenceId);
+            if (reference != null)
+            {
+                reference.WorkMasterCost = request.operatorCost + request.machineCost + request.externalCost + request.materialCost;
+                await _unitOfWork.References.Update(reference);
+            }
             return Ok(request);
         }
 

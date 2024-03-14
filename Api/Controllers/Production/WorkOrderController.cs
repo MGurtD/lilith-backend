@@ -95,6 +95,14 @@ namespace Api.Controllers.Production
             var exists = await _unitOfWork.WorkOrders.Exists(request.Id);
             if (!exists)
                 return NotFound();
+            
+            //If status is "Tancada"    
+            var reference = await _unitOfWork.References.Get(request.ReferenceId);
+            if(reference != null)
+            {
+                reference.LastCost = request.MachineCost + request.OperatorCost + request.MaterialCost;
+                await _unitOfWork.References.Update(reference);
+            }
 
             await _unitOfWork.WorkOrders.Update(request);
             return Ok(request);

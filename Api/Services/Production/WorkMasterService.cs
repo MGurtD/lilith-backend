@@ -101,8 +101,8 @@ namespace Api.Services.Production
                         var UnitWeight = Math.Round(dimensionsCalculator.Calculate(dimensions), 2);
                         var TotalWeight = UnitWeight * bom.Quantity;
                         // Calcular el preu
-                        var UnitPrice = reference.LastPurchaseCost * UnitWeight;
-                        var Amount = reference.LastPurchaseCost * TotalWeight;
+                        var UnitPrice = reference.LastCost * UnitWeight;
+                        var Amount = reference.LastCost * TotalWeight;
                         materialCost += Amount;
                     }
 
