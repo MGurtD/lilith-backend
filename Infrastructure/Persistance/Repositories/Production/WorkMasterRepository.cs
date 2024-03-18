@@ -55,10 +55,7 @@ namespace Infrastructure.Persistance.Repositories.Production
                 Direction = ParameterDirection.InputOutput
             };
 
-   
 
-            /*await context.Database.ExecuteSqlCommandAsync("CALL public.SP_Production_CopyWorkMaster(@referenceCode, @workmasterId, @referenceId, @result)",
-                new NpgsqlParameter("@result", resultParam));*/
 
             await context.Database.ExecuteSqlInterpolatedAsync(
             $"CALL public.SP_Production_CopyWorkMaster({referenceCodeParam}, {workmasterIdParam}, {referenceIdParam})");

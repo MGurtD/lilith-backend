@@ -110,6 +110,17 @@ namespace Api.Controllers.Sales
             else return BadRequest(response.Errors);
         }
 
+        [HttpPut("Cost/{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateCosts(Guid id)
+        {
+            var response = await _service.UpdateCosts(id);
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
+        }
+
+
         [HttpPut("Detail/{id:guid}")]
         [SwaggerOperation("SalesOrderDetailUpdate")]
         [ProducesResponseType(StatusCodes.Status200OK)]

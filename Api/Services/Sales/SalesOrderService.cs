@@ -132,6 +132,32 @@ namespace Api.Services.Sales
             }
         }
 
+        public async Task<GenericResponse> UpdateCosts(Guid id)
+        {
+            var details = _unitOfWork.SalesOrderDetails.Find(e => e.SalesOrderHeaderId == id).ToList();
+
+            foreach(SalesOrderDetail detail in details)
+            {
+                if (detail.WorkOrderId.HasValue)
+                {
+                    var workOrder = await _unitOfWork.WorkOrders.Get(detail.WorkOrderId.Value);
+                    if(workOrder != null)
+                    {
+                        detail.LastCost = (workOrder.MaterialCost + workOrder.OperatorCost + workOrder.MachineCost);
+                    }
+                    var workMaster = _unitOfWork.WorkMasters.Find(e => e.ReferenceId == detail.ReferenceId).FirstOrDefault();
+                    if (workMaster != null)
+                    {
+                        detail.WorkMasterCost = (workMaster.materialCost + workMaster.machineCost + workMaster.operatorCost + workMaster.externalCost);
+                    }                                        
+                    await _unitOfWork.SalesOrderHeaders.UpdateDetail(detail);
+                }
+                
+            }
+
+            return new GenericResponse(true);
+        }
+
         public async Task<SalesOrderDetail?> GetDetailById(Guid id)
         {
             var detail = await _unitOfWork.SalesOrderDetails.Get(id);
