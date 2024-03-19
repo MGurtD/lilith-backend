@@ -61,6 +61,19 @@ namespace Api.Controllers.Sales
             return Ok(salesOrderHeaders.OrderBy(e => e.Number));
         }
 
+        [HttpPost("FromBudget")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreateFromBudget(Budget budget)
+        {
+            var response = await _service.CreateFromBudget(budget);
+
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return BadRequest(response);
+        }
+
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

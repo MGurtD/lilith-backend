@@ -8,6 +8,7 @@ namespace Application.Services.Sales
     public interface ISalesOrderService
     {
         Task<GenericResponse> Create(CreateHeaderRequest createRequest);
+        Task<GenericResponse> CreateFromBudget(Budget budget);
 
         Task<SalesOrderReportResponse?> GetByIdForReporting(Guid id);
         Task<SalesOrderHeader?> GetById(Guid id);
