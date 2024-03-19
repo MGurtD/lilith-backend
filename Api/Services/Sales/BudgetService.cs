@@ -80,11 +80,9 @@ namespace Api.Services.Sales
 
             var statusPending = await _unitOfWork.Lifecycles.GetStatusByName("Budget", "Pendent d'acceptar");
             var statusAccept = await _unitOfWork.Lifecycles.GetStatusByName("Budget", "Acceptat");
-
             if (existingBudget.StatusId == statusPending.Id && budget.StatusId == statusAccept.Id)
             {
-                budget.AcceptanceDate = DateTime.Now;
-                
+                budget.AcceptanceDate = DateTime.Now;                
             }
 
             await _unitOfWork.Budgets.Update(budget);

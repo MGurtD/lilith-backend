@@ -69,7 +69,7 @@ namespace Api.Controllers.Sales
             var response = await _service.CreateFromBudget(budget);
 
             if (response.Result)
-                return Ok(response.Content);
+                return Ok(response);
             else
                 return BadRequest(response);
         }
