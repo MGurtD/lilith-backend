@@ -28,6 +28,13 @@ namespace Api.Controllers.Sales
             else { return Ok(salesOrder); }
         }
 
+        [HttpGet("Budget/{id:guid}")]
+        public IActionResult GetOrderFromBudget(Guid id)
+        {
+            var salesOrders = _service.GetOrderFromBudget(id);
+            return Ok(salesOrders);
+        }
+
         [HttpGet("Report/{id:guid}")]
         public async Task<IActionResult> GetSalesOrderForReport(Guid id)
         {

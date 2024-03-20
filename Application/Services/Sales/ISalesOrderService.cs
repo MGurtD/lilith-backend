@@ -11,6 +11,7 @@ namespace Application.Services.Sales
         Task<GenericResponse> CreateFromBudget(Budget budget);
 
         Task<SalesOrderReportResponse?> GetByIdForReporting(Guid id);
+        SalesOrderHeader? GetOrderFromBudget(Guid id);
         Task<SalesOrderHeader?> GetById(Guid id);
         IEnumerable<SalesOrderHeader> GetByDeliveryNoteId(Guid deliveryNoteId);
         IEnumerable<SalesOrderHeader> GetBetweenDates(DateTime startDate, DateTime endDate);
@@ -26,6 +27,5 @@ namespace Application.Services.Sales
         Task<GenericResponse> AddDetail(SalesOrderDetail detail);
         Task<GenericResponse> UpdateDetail(SalesOrderDetail detail);
         Task<GenericResponse> RemoveDetail(Guid id);
-
     }
 }

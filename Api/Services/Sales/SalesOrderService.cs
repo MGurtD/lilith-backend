@@ -47,6 +47,12 @@ namespace Api.Services.Sales
             return salesOrderHeader;
         }
 
+        public SalesOrderHeader? GetOrderFromBudget(Guid budgetId)
+        {
+            var salesOrder = _unitOfWork.SalesOrderHeaders.Find(p => p.BudgetId == budgetId).FirstOrDefault();
+            return salesOrder;
+        }
+
         public IEnumerable<SalesOrderHeader> GetBetweenDates(DateTime startDate, DateTime endDate)
         {
             var salesOrderHeaders = _unitOfWork.SalesOrderHeaders.Find(p => p.Date >= startDate && p.Date <= endDate);
@@ -272,7 +278,7 @@ namespace Api.Services.Sales
             }
 
             return new GenericResponse(true);
-        }        
+        }
 
         #endregion
 
