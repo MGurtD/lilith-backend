@@ -133,10 +133,8 @@ namespace Api.Controllers.Production
                 cost = workMasterCosts.OperatorCost + workMasterCosts.MachineCost + workMasterCosts.ExternalCost + workMasterCosts.MaterialCost;
             }
 
-            if (result.Result)                
-                return Ok(new GenericResponse(true, cost));
-            else
-                return NotFound(result);
+            var response = new GenericResponse(result.Result, result.Errors.FirstOrDefault()!, cost );
+            return Ok(response);
         }
 
         #region Phases

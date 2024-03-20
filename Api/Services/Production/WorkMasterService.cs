@@ -97,13 +97,17 @@ namespace Api.Services.Production
                             Density = referenceType!.Density
                         };
 
-                        // Calcular el pes
-                        var UnitWeight = Math.Round(dimensionsCalculator.Calculate(dimensions), 2);
-                        var TotalWeight = UnitWeight * bom.Quantity;
-                        // Calcular el preu
-                        var UnitPrice = reference.LastPurchaseCost * UnitWeight;
-                        var Amount = reference.LastPurchaseCost * TotalWeight;
-                        materialCost += Amount;
+                        try {
+                            // Calcular el pes
+                            var UnitWeight = Math.Round(dimensionsCalculator.Calculate(dimensions), 2);
+                            var TotalWeight = UnitWeight * bom.Quantity;
+                            // Calcular el preu
+                            var UnitPrice = reference.LastPurchaseCost * UnitWeight;
+                            var Amount = reference.LastPurchaseCost * TotalWeight;
+                            materialCost += Amount;
+                        } catch (Exception e) {
+                            return new GenericResponse(false, e.Message);
+                        }
                     }
 
                 }
