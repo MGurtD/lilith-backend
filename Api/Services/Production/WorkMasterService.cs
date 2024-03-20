@@ -23,9 +23,8 @@ namespace Api.Services.Production
             var baseQuantity = workMaster.BaseQuantity;
             var operatorCost = 0.0M;
             var machineCost = 0.0M;
-            var materailCost = 0.0M;
+            var materialCost = 0.0M;
             var externalCost = 0.0M;
-            var resp = false;
             
             //Recorrer les phases
             //A cada fase, recollir el operatortypeId, i buscar el seu preu cost/hora
@@ -63,9 +62,9 @@ namespace Api.Services.Production
                         return new GenericResponse(false, "No s'ha trobat la combinació de centre de treball i estat de màquina");
                     }
 
-                    var cost = (workCenterCost.Cost == null) ? 0.0M : workCenterCost.Cost;
+                    var cost = workCenterCost.Cost;
                     
-                    operatorCost += phaseTime / 60 * operatorType.Cost;
+                    operatorCost += phaseTime / 60 * (operatorType != null ? operatorType.Cost : 0);
                     machineCost += phaseTime / 60 * cost;       
                 }
                 //Material
@@ -78,41 +77,40 @@ namespace Api.Services.Production
                     {
                         return new GenericResponse(false, "No s'ha trobat el tipus de material");
                     }
-                    var referenceType = await _unitOfWork.ReferenceTypes.Get((Guid)reference.ReferenceTypeId);
 
+                    if (reference.ReferenceFormatId.HasValue) {
+                        var referenceType = await _unitOfWork.ReferenceTypes.Get((Guid)reference.ReferenceTypeId);
 
-                    // Obtenir calculadora segons el format
-                    var format = await _unitOfWork.ReferenceFormats.Get(reference.ReferenceFormatId.Value);
-                    var dimensionsCalculator = ReferenceFormatCalculationFactory.Create(format!.Code);
+                        // Obtenir calculadora segons el format
+                        var format = await _unitOfWork.ReferenceFormats.Get(reference.ReferenceFormatId.Value);
+                        var dimensionsCalculator = ReferenceFormatCalculationFactory.Create(format!.Code);
 
-                    // Assignar dimensions a la calculadoras
-                    var dimensions = new ReferenceDimensions
-                    {
-                        Quantity = (int)bom.Quantity,
-                        Width = bom.Width,
-                        Length = bom.Length,
-                        Height = bom.Height,
-                        Diameter = bom.Diameter,
-                        Thickness = bom.Thickness,
-                        Density = referenceType!.Density
-                    };
+                        // Assignar dimensions a la calculadoras
+                        var dimensions = new ReferenceDimensions
+                        {
+                            Quantity = (int)bom.Quantity,
+                            Width = bom.Width,
+                            Length = bom.Length,
+                            Height = bom.Height,
+                            Diameter = bom.Diameter,
+                            Thickness = bom.Thickness,
+                            Density = referenceType!.Density
+                        };
 
-                    // Calcular el pes
-                    var UnitWeight = Math.Round(dimensionsCalculator.Calculate(dimensions), 2);
-                    var TotalWeight = UnitWeight * bom.Quantity;
-                    // Calcular el preu
-                    var UnitPrice = reference.LastPurchaseCost * UnitWeight;
-                    var Amount = reference.LastPurchaseCost * TotalWeight;
-                    materailCost += Amount;
+                        // Calcular el pes
+                        var UnitWeight = Math.Round(dimensionsCalculator.Calculate(dimensions), 2);
+                        var TotalWeight = UnitWeight * bom.Quantity;
+                        // Calcular el preu
+                        var UnitPrice = reference.LastPurchaseCost * UnitWeight;
+                        var Amount = reference.LastPurchaseCost * TotalWeight;
+                        materialCost += Amount;
+                    }
+
                 }
             }
-            //
-            result = operatorCost + machineCost + materailCost + externalCost;
-            if(result > 0)
-            {
-                resp = true;
-            }
-            return new GenericResponse(resp, result);
+
+            result = operatorCost + machineCost + materialCost + externalCost;
+            return new GenericResponse(true, result);
         }
     }
 }

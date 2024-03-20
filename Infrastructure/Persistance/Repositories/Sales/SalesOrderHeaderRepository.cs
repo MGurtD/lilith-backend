@@ -33,7 +33,7 @@ namespace Infrastructure.Persistance.Repositories.Sales
                 .AsNoTracking()                
                 .Include("SalesOrderDetails.Reference")
                 .Where(predicate)
-                .OrderBy(s => s.SalesOrderNumber);
+                .OrderBy(s => s.Number);
         }
 
         public SalesOrderDetail? GetDetailById(Guid id)

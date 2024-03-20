@@ -52,6 +52,7 @@ namespace Application.Persistance
         ISalesOrderDetailRepository SalesOrderDetails { get; }
         ISalesInvoiceRepository SalesInvoices { get; }
         IDeliveryNoteRepository DeliveryNotes { get; }
+        IBudgetRepository Budgets { get; }
 
         // Production
         IRepository<Enterprise, Guid> Enterprises { get; }

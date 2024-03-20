@@ -1,19 +1,13 @@
 ﻿using Domain.Entities.Sales;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.EntityConfiguration.Sales
 {
-    public class SalesOrderDetailBuilder : IEntityTypeConfiguration<SalesOrderDetail>
+    public class BudgetDetailBuilder : IEntityTypeConfiguration<BudgetDetail>
     {
-        public void Configure(EntityTypeBuilder<SalesOrderDetail> builder)
+        public const string TABLE_NAME = "BudgetDetails";
+        public void Configure(EntityTypeBuilder<BudgetDetail> builder)
         {
             builder.ConfigureBase();
             builder
@@ -49,14 +43,8 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                               ApplicationDbContextConstants.DECIMAL_SCALE);
-            builder
-                .Property(b => b.EstimatedDeliveryDate)
-                .IsRequired()
-                .HasColumnType("timestamp without time zone");
-            builder
-                .Property(b => b.IsDelivered)
-                .IsRequired()
-                .HasColumnType("boolean");            
+
+            builder.ToTable(TABLE_NAME);
         }
     }
 }

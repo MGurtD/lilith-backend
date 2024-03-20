@@ -4,16 +4,24 @@ namespace Domain.Entities.Sales
 {
     public  class SalesOrderHeader : Entity
     {
-        public Exercise? Exercise { get; set; }
-        public Guid? ExerciseId { get; set; }
-        public DateTime SalesOrderDate { get; set; }
-        public string SalesOrderNumber { get; set; } = string.Empty;
-        public string? BudgetNumber { get; set; }
+        public string Number { get; set; } = string.Empty;
+        public DateTime Date { get; set; }
         public DateTime? ExpectedDate { get; set; }
 
+        public Exercise? Exercise { get; set; }
+        public Guid? ExerciseId { get; set; }
+        public Budget? Budget { get; set; }
+        public Guid? BudgetId { get; set; }
+        public Guid? StatusId { get; set; }
+        public Status? Status { get; set; }
+        public Guid? DeliveryNoteId { get; set; }
+        public DeliveryNote? DeliveryNote { get; set; }
         public Customer? Customer { get; set; }
         public Guid? CustomerId { get; set; }
-        public string CustomerSalesOrderNumber { get; set; } = string.Empty;
+        public Site? Site { get; set; }
+        public Guid? SiteId { get; set;}
+
+        public string CustomerNumber { get; set; } = string.Empty;
         public string CustomerCode { get; set; } = string.Empty;
         public string CustomerComercialName { get; set; } = string.Empty;
         public string CustomerTaxName { get; set; } = string.Empty; 
@@ -28,8 +36,6 @@ namespace Domain.Entities.Sales
             CustomerVatNumber = customer.VatNumber;
         }
 
-        public Site? Site { get; set; }
-        public Guid? SiteId { get; set;}
         public string Name { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
         public string City { get; set; } = string.Empty;
@@ -48,13 +54,7 @@ namespace Domain.Entities.Sales
             Country = site.Country;
             VatNumber = site.VatNumber;
         }
-
-        public Guid? StatusId { get; set; }
-        public Status? Status { get; set; }
-
-        public Guid? DeliveryNoteId { get; set; }
-        public DeliveryNote? DeliveryNote { get; set; }
-
+       
         public ICollection<SalesOrderDetail> SalesOrderDetails { get; set; } = new List<SalesOrderDetail>();
 
         public void Deliver()

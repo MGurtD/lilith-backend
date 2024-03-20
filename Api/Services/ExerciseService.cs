@@ -42,7 +42,6 @@ namespace Api.Services
                     counter = prefix + exercise.SalesInvoiceCounter.PadLeft(3, '0');
                     newcounter = int.Parse(counter) + 1;
                     exercise.SalesInvoiceCounter = newcounter.ToString().Substring(newcounter.ToString().Length - 3);
-
                     break;
                 case "salesorder":
                     counter = prefix + exercise.SalesOrderCounter.PadLeft(3, '0');
@@ -59,7 +58,7 @@ namespace Api.Services
                     newcounter = int.Parse(counter) + 1;
                     exercise.DeliveryNoteCounter = newcounter.ToString().Substring(newcounter.ToString().Length - 3);
                     break;
-                case "budgetcounter":
+                case "budget":
                     counter = prefix + exercise.BudgetCounter.PadLeft(3, '0');
                     newcounter = int.Parse(counter) + 1;
                     exercise.BudgetCounter = newcounter.ToString().Substring(newcounter.ToString().Length - 3);
