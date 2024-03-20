@@ -52,6 +52,7 @@ try
         builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
         builder.Services.AddScoped<IFileService, FileService>();
         builder.Services.AddScoped<IPurchaseInvoiceService, PurchaseInvoiceService>();
+        builder.Services.AddScoped<IBudgetService, BudgetService>();
         builder.Services.AddScoped<ISalesOrderService, SalesOrderService>();
         builder.Services.AddScoped<ISalesInvoiceService, SalesInvoiceService>();
         builder.Services.AddScoped<IDueDateService, DueDateService>();

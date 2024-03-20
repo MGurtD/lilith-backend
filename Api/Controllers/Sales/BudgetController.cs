@@ -3,16 +3,15 @@ using Application.Services.Sales;
 using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using SalesOrderDetail = Domain.Entities.Sales.SalesOrderDetail;
 
 namespace Api.Controllers.Sales
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class SalesOrderController : ControllerBase
+    public class BudgetController : ControllerBase
     {
-        private readonly ISalesOrderService _service;
-        public SalesOrderController(ISalesOrderService service)
+        private readonly IBudgetService _service;
+        public BudgetController(IBudgetService service)
         {
             _service = service;
         }
@@ -20,19 +19,12 @@ namespace Api.Controllers.Sales
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var salesOrder = await _service.GetById(id);
-            if (salesOrder == null)
+            var budget = await _service.GetById(id);
+            if (budget == null)
             {
                 return NotFound();
             }
-            else { return Ok(salesOrder); }
-        }
-
-        [HttpGet("Budget/{id:guid}")]
-        public IActionResult GetOrderFromBudget(Guid id)
-        {
-            var salesOrders = _service.GetOrderFromBudget(id);
-            return Ok(salesOrders);
+            else { return Ok(budget); }
         }
 
         [HttpGet("Report/{id:guid}")]
@@ -43,42 +35,15 @@ namespace Api.Controllers.Sales
         }
 
         [HttpGet]
-        public IActionResult GetSalesOrders(DateTime startTime, DateTime endTime, Guid? customerId)
+        public IActionResult GetByPeriodAndCustomer(DateTime startTime, DateTime endTime, Guid? customerId)
         {
-            IEnumerable<SalesOrderHeader> salesOrderHeaders = new List<SalesOrderHeader>();
+            IEnumerable<Budget> salesOrderHeaders = new List<Budget>();
             if (customerId.HasValue)
                 salesOrderHeaders = _service.GetBetweenDatesAndCustomer(startTime, endTime, customerId.Value);
             else
                 salesOrderHeaders = _service.GetBetweenDates(startTime, endTime);         
             if (salesOrderHeaders != null) return Ok(salesOrderHeaders.OrderBy(e => e.Number));
             else return BadRequest();
-        }
-
-        [HttpGet("DeliveryNote/{id:guid}")]
-        public IActionResult GetDeliveryNoteOrders(Guid id)
-        {
-            var salesOrders = _service.GetByDeliveryNoteId(id);
-            return Ok(salesOrders);
-        }
-
-        [HttpGet("ToDeliver")]
-        public IActionResult GetOrdersToDeliver(Guid customerId)
-        {
-            var salesOrderHeaders = _service.GetOrdersToDeliver(customerId);
-            return Ok(salesOrderHeaders.OrderBy(e => e.Number));
-        }
-
-        [HttpPost("FromBudget")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CreateFromBudget(Budget budget)
-        {
-            var response = await _service.CreateFromBudget(budget);
-
-            if (response.Result)
-                return Ok(response);
-            else
-                return BadRequest(response);
         }
 
         [HttpPost]
@@ -97,11 +62,11 @@ namespace Api.Controllers.Sales
         [HttpPut("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] SalesOrderHeader salesOrder)
+        public async Task<IActionResult> Update(Guid id, [FromBody] Budget budget)
         {
-            if (id != salesOrder.Id) return BadRequest();
+            if (id != budget.Id) return BadRequest();
 
-            var response = await _service.Update(salesOrder);
+            var response = await _service.Update(budget);
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
@@ -119,10 +84,10 @@ namespace Api.Controllers.Sales
         }
 
         [HttpPost("Detail")]
-        [SwaggerOperation("SalesOrderDetailCreate")]
+        [SwaggerOperation("BudgetDetailCreate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddDetail(SalesOrderDetail detail)
+        public async Task<IActionResult> AddDetail(BudgetDetail detail)
         {
             var response = await _service.AddDetail(detail);
 
@@ -131,10 +96,10 @@ namespace Api.Controllers.Sales
         }
 
         [HttpPut("Detail/{id:guid}")]
-        [SwaggerOperation("SalesOrderDetailUpdate")]
+        [SwaggerOperation("BudgetDetailUpdate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UpdateDetail(Guid id, [FromBody] SalesOrderDetail detail)
+        public async Task<IActionResult> UpdateDetail(Guid id, [FromBody] BudgetDetail detail)
         {
             var response = await _service.UpdateDetail(detail);
 
@@ -143,10 +108,10 @@ namespace Api.Controllers.Sales
         }
 
         [HttpDelete("Detail/{id:guid}")]
-        [SwaggerOperation("SalesOrderDetailDelete")]
+        [SwaggerOperation("BudgetDetailDelete")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> RemoveImport(Guid id)
+        public async Task<IActionResult> RemoveDetail(Guid id)
         {
             var response = await _service.RemoveDetail(id);
 
