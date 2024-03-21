@@ -38,14 +38,19 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .HasMaxLength(10);
             
             builder
-                .Property(b => b.LastPurchaseCost)
+                .Property(b => b.LastCost)
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                               ApplicationDbContextConstants.DECIMAL_SCALE);
-            
-            
-                    
+
+            builder
+                .Property(b => b.WorkMasterCost)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+
             builder
                 .Property(b => b.Sales)
                 .IsRequired()

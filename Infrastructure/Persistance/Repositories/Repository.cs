@@ -57,6 +57,9 @@ namespace Infrastructure.Persistance.Repositories
             dbSet.Update(entity);            
             await context.SaveChangesAsync();
 
+            var state = context.Entry(entity).State; // Debería ser EntityState.Modified para las entidades actualizadas
+            Console.WriteLine($"Estado de la entidad: {state}");
+
             context.Entry(entity).State = EntityState.Detached;
         }
 

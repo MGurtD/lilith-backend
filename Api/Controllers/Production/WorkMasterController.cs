@@ -80,6 +80,14 @@ namespace Api.Controllers.Production
             }
 
             await _unitOfWork.WorkMasters.Update(request);
+            //get reference and update workmastercost
+
+            var reference = await _unitOfWork.References.Get(request.ReferenceId);
+            if (reference != null)
+            {
+                reference.WorkMasterCost = request.operatorCost + request.machineCost + request.externalCost + request.materialCost;
+                await _unitOfWork.References.Update(reference);
+            }
             return Ok(request);
         }
 
@@ -133,8 +141,11 @@ namespace Api.Controllers.Production
                 cost = workMasterCosts.OperatorCost + workMasterCosts.MachineCost + workMasterCosts.ExternalCost + workMasterCosts.MaterialCost;
             }
 
-            var response = new GenericResponse(result.Result, result.Errors.FirstOrDefault()!, cost );
-            return Ok(response);
+            if (result.Result)                
+                return Ok(new GenericResponse(true, cost));
+            else
+                return NotFound(result);
+
         }
 
         #region Phases

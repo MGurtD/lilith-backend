@@ -17,7 +17,8 @@ namespace Domain.Entities.Shared
         public bool Purchase { get; set; }
         public Guid? ReferenceFormatId { get; set; }
         public ReferenceFormat? ReferenceFormat { get; set; }
-        public decimal LastPurchaseCost {get; set;}        
+        public decimal LastCost { get; set; } = decimal.Zero;
+        public decimal WorkMasterCost { get; set; } = decimal.Zero;
         public bool Production { get; set; }
         public bool IsService { get; set; }
     }
