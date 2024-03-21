@@ -78,7 +78,7 @@ namespace Api.Controllers.Production
                 request.externalCost = workMasterCosts.ExternalCost;
                 request.materialCost = workMasterCosts.MaterialCost;
             }
-            
+
             await _unitOfWork.WorkMasters.Update(request);
             //get reference and update workmastercost
 
@@ -145,6 +145,7 @@ namespace Api.Controllers.Production
                 return Ok(new GenericResponse(true, cost));
             else
                 return NotFound(result);
+
         }
 
         #region Phases

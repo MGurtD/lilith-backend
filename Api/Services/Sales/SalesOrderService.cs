@@ -47,6 +47,12 @@ namespace Api.Services.Sales
             return salesOrderHeader;
         }
 
+        public SalesOrderHeader? GetOrderFromBudget(Guid budgetId)
+        {
+            var salesOrder = _unitOfWork.SalesOrderHeaders.Find(p => p.BudgetId == budgetId).FirstOrDefault();
+            return salesOrder;
+        }
+
         public IEnumerable<SalesOrderHeader> GetBetweenDates(DateTime startDate, DateTime endDate)
         {
             var salesOrderHeaders = _unitOfWork.SalesOrderHeaders.Find(p => p.Date >= startDate && p.Date <= endDate);
@@ -68,6 +74,48 @@ namespace Api.Services.Sales
         {
             var orders = _unitOfWork.SalesOrderHeaders.Find(p => p.CustomerId == customerId && p.DeliveryNoteId == null);
             return orders;
+        }
+
+        public async Task<GenericResponse> CreateFromBudget(Budget budget)
+        {
+            var createDto = new CreateHeaderRequest
+            {
+                Id = Guid.NewGuid(),
+                Date = DateTime.Now,
+                ExerciseId = budget.ExerciseId,
+                CustomerId = budget.CustomerId
+            };
+
+            var createResponse = await Create(createDto);
+            if (!createResponse.Result) return createResponse;
+
+            var salesOrder = (SalesOrderHeader)createResponse.Content!;
+            salesOrder.ExpectedDate = DateTime.Now.AddDays(budget.DeliveryDays);
+            salesOrder.BudgetId = budget.Id;
+            var updateResponse = await Update(salesOrder);
+            if (!updateResponse.Result) return updateResponse;
+
+            foreach (var detail in budget.Details)
+            {
+                var salesOrderDetail = new SalesOrderDetail
+                {
+                    Id = Guid.NewGuid(),
+                    SalesOrderHeaderId = salesOrder.Id,
+                    ReferenceId = detail.ReferenceId,
+                    Quantity = detail.Quantity,
+                    UnitPrice = detail.UnitPrice,
+                    Amount = detail.Amount,
+                    Description = detail.Description,
+                    IsDelivered = false,
+                    UnitCost = detail.UnitCost,
+                    TotalCost = detail.TotalCost,
+                    CreatedOn = DateTime.Now,
+                    UpdatedOn = DateTime.Now
+                };
+                await AddDetail(salesOrderDetail);
+            }
+
+            return new GenericResponse(true, salesOrder);
         }
 
         public async Task<GenericResponse> Create(CreateHeaderRequest createRequest)
