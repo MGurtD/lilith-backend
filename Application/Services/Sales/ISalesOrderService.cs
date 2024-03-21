@@ -23,6 +23,8 @@ namespace Application.Services.Sales
         Task<GenericResponse> Update(SalesOrderHeader salesOrderHeader);
         Task<GenericResponse> Remove(Guid id);
 
+        Task<GenericResponse> UpdateCosts(Guid id);
+
         Task<SalesOrderDetail?> GetDetailById(Guid id);
         Task<GenericResponse> AddDetail(SalesOrderDetail detail);
         Task<GenericResponse> UpdateDetail(SalesOrderDetail detail);

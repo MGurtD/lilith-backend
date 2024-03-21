@@ -13,6 +13,8 @@ namespace Domain.Entities.Sales
         public WorkOrder? WorkOrder { get; set; }
         public string Description { get; set; }
         public int Quantity { get; set; }
+        public decimal LastCost { get; set; }
+        public decimal WorkMasterCost { get; set; }
         public decimal UnitCost { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal TotalCost { get; set; }
@@ -25,6 +27,8 @@ namespace Domain.Entities.Sales
             Description = string.Empty;
             Quantity = 0;
             UnitCost = decimal.Zero;
+            LastCost = decimal.Zero;
+            WorkMasterCost = decimal.Zero;
             UnitPrice = decimal.Zero;
             TotalCost = decimal.Zero;
             Amount = decimal.Zero;
@@ -55,6 +59,8 @@ namespace Domain.Entities.Sales
 
             ReferenceId = reference.Id;
             Quantity = quantity;
+            LastCost = reference.LastCost;
+            WorkMasterCost = reference.WorkMasterCost;
             UnitCost = reference.Cost;
             UnitPrice = reference.Price;
             TotalCost = reference.Cost * quantity;
