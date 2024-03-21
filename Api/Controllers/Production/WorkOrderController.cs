@@ -95,9 +95,9 @@ namespace Api.Controllers.Production
             var exists = await _unitOfWork.WorkOrders.Exists(request.Id);
             if (!exists)
                 return NotFound();
-            
+
             //If status is "Tancada"    
-            var reference = await _unitOfWork.References.Get(request.ReferenceId);
+            /*var reference = await _unitOfWork.References.Get(request.ReferenceId);
             if(reference != null)
             {
                 
@@ -105,7 +105,15 @@ namespace Api.Controllers.Production
                 await _unitOfWork.References.Update(reference);
             }
 
-            await _unitOfWork.WorkOrders.Update(request);
+            var details = _unitOfWork.SalesOrderDetails.Find(e => e.WorkOrderId == Id).ToList();
+            foreach(SalesOrderDetail detail in details)
+            {
+                detail.LastCost = request.MachineCost + request.OperatorCost + request.MaterialCost;
+                await _unitOfWork.SalesOrderDetails.Update(detail);
+            }
+
+            await _unitOfWork.WorkOrders.Update(request);*/
+            await _workOrderService.Update(request);
             return Ok(request);
         }
 

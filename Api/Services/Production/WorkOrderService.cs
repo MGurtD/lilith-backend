@@ -6,6 +6,7 @@ using Application.Production.Warehouse;
 using Application.Services;
 using Application.Services.Sales;
 using Domain.Entities.Production;
+using Domain.Entities.Sales;
 using System.Collections;
 
 namespace Api.Services.Production
@@ -310,6 +311,27 @@ namespace Api.Services.Production
         public async Task<GenericResponse> RemoveProductionPart(Guid id, ProductionPart productionPart)
         {
             return await UpdateWorkOrderTotalsFromProductionPart(id, productionPart, OperationType.Remove);
+        }
+
+        public async Task Update(WorkOrder workOrder)
+        {
+            var lastCost = workOrder.MachineCost + workOrder.OperatorCost + workOrder.MaterialCost;
+            var reference = await _unitOfWork.References.Get(workOrder.ReferenceId);
+            if (reference != null)
+            {
+
+                reference.LastCost = lastCost;
+                await _unitOfWork.References.Update(reference);
+            }
+
+            var details = _unitOfWork.SalesOrderDetails.Find(e => e.WorkOrderId == workOrder.Id).ToList();
+            foreach (SalesOrderDetail detail in details)
+            {
+                detail.LastCost = lastCost;
+                await _unitOfWork.SalesOrderDetails.Update(detail);
+            }
+            await _unitOfWork.WorkOrders.Update(workOrder);
+
         }
     }
 }

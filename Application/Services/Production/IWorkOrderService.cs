@@ -1,5 +1,6 @@
 using Application.Contracts;
 using Application.Contracts.Production;
+using Domain.Entities;
 using Domain.Entities.Production;
 
 namespace Application.Production.Warehouse
@@ -15,6 +16,8 @@ namespace Application.Production.Warehouse
         Task<IEnumerable<WorkOrder>> GetBySalesOrderId(Guid salesOrderId);
         Task<GenericResponse> AddProductionPart(Guid id, ProductionPart productionPart);
         Task<GenericResponse> RemoveProductionPart(Guid id, ProductionPart productionPart);
+
+        Task Update(WorkOrder workOrder);
 
     }
 }
