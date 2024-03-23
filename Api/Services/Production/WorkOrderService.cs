@@ -319,7 +319,6 @@ namespace Api.Services.Production
             var reference = await _unitOfWork.References.Get(workOrder.ReferenceId);
             if (reference != null)
             {
-
                 reference.LastCost = lastCost;
                 await _unitOfWork.References.Update(reference);
             }
@@ -330,8 +329,8 @@ namespace Api.Services.Production
                 detail.LastCost = lastCost;
                 await _unitOfWork.SalesOrderDetails.Update(detail);
             }
+            
             await _unitOfWork.WorkOrders.Update(workOrder);
-
         }
     }
 }
