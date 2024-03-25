@@ -17,7 +17,6 @@ namespace Api.Services.Sales
             _unitOfWork = unitOfWork;
             _exerciseService = exerciseService;
         }        
-
         
         public async Task<Budget?> GetById(Guid id)
         {
@@ -122,9 +121,25 @@ namespace Api.Services.Sales
             return new GenericResponse(true, detail);
         }
 
-        public Task<SalesOrderReportResponse?> GetByIdForReporting(Guid id)
+        public async Task<BudgetReportResponse?> GetByIdForReporting(Guid id)
         {
-            throw new NotImplementedException();
+             var budget = await GetById(id);
+            if (budget is null) return null;
+
+            var customer = await _unitOfWork.Customers.Get(budget.CustomerId);
+            if (customer is null) return null;
+
+            var site = _unitOfWork.Sites.Find(s => s.VatNumber == "J09680521").FirstOrDefault();
+            if (site is null) return null;
+
+            var salesOrderReport = new BudgetReportResponse
+            {
+                Budget = budget,
+                Customer = customer,
+                Site = site,
+                Total = budget.Details.Sum(d => d.Amount),
+            };
+            return salesOrderReport;
         }
     }
 }
