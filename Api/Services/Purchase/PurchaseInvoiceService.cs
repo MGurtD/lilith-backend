@@ -68,9 +68,9 @@ namespace Api.Services.Purchase
                 }
 
                 var counterObj = await _exerciseService.GetNextCounter(exercise.Id, "purchaseinvoice");
-                if (counterObj != null && counterObj.Content != null) 
+                if (counterObj != null && counterObj.Content != null)
                 {
-                    purchaseInvoice.Number = (string) counterObj.Content;
+                    purchaseInvoice.Number = counterObj.Content.ToString()!;
                     await _unitOfWork.PurchaseInvoices.Add(purchaseInvoice);
                 } 
                 else {
