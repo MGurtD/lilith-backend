@@ -3,7 +3,6 @@ using Application.Contracts.Sales;
 using Application.Persistance;
 using Application.Services;
 using Domain.Entities.Sales;
-using FastReport;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
