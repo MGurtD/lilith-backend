@@ -78,9 +78,66 @@ namespace Api.Controllers.Production
             var entity = _unitOfWork.Shifts.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
-
-            await _unitOfWork.Shifts.Remove(entity);
+            entity.Disabled = true;
+            await _unitOfWork.Shifts.Update(entity);
             return Ok(entity);
         }
+
+        #region Details
+        [HttpPost("Detail")]
+        public async Task<IActionResult> CreateDetail(ShiftDetail request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+
+            await _unitOfWork.ShiftDetails.Add(request);
+            var entity = await _unitOfWork.ShiftDetails.Get(request.Id);
+            if (entity is not null)
+            {
+                return Ok(entity);
+            }
+            else
+            {
+                return NotFound();
+            }
+
+        }
+        [HttpPut("Detail/{id:guid}")]
+        public async Task<IActionResult> UpdateDetail(Guid Id, ShiftDetail request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.ValidationState);
+            if (Id != request.Id)
+                return BadRequest();
+
+            var exists = await _unitOfWork.ShiftDetails.Exists(request.Id);
+            if (!exists)
+                return NotFound();
+
+            await _unitOfWork.ShiftDetails.Update(request);
+            return Ok(request);
+        }
+        [HttpDelete("Detail/{id:guid}")]
+        public async Task<IActionResult> DeleteDetail(Guid id)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.ValidationState);
+
+            var entity = _unitOfWork.ShiftDetails.Find(e => e.Id == id).FirstOrDefault();
+            if (entity is null)
+                return NotFound();
+
+            await _unitOfWork.ShiftDetails.Remove(entity);
+            return Ok(entity);
+        }
+        [HttpGet("Detail/{id:guid}")]
+        public async Task<IActionResult> GetDetailsByShiftId(Guid id)
+        {
+            var shift = await _unitOfWork.Shifts.Get(id);
+            if (shift is null)
+                return NotFound();
+            var details = _unitOfWork.ShiftDetails.Find(e => e.ShiftId == id).ToList();
+            return Ok(details);
+        }
+        #endregion
     }
 }

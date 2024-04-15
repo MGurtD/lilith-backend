@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240408155917_FixShiftDetail")]
+    partial class FixShiftDetail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1057,9 +1059,6 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar");
 
-                    b.Property<Guid>("ShiftId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp without time zone")
@@ -1075,8 +1074,6 @@ namespace Infrastructure.Migrations
                         .HasName("PK_Workcenter");
 
                     b.HasIndex("AreaId");
-
-                    b.HasIndex("ShiftId");
 
                     b.HasIndex("WorkcenterTypeId");
 
@@ -4180,12 +4177,6 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.Production.Shift", "Shift")
-                        .WithMany()
-                        .HasForeignKey("ShiftId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Domain.Entities.Production.WorkcenterType", "WorkcenterType")
                         .WithMany()
                         .HasForeignKey("WorkcenterTypeId")
@@ -4193,8 +4184,6 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Area");
-
-                    b.Navigation("Shift");
 
                     b.Navigation("WorkcenterType");
                 });
