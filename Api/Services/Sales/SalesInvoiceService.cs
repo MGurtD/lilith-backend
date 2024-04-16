@@ -6,7 +6,6 @@ using Application.Services.Sales;
 using Domain.Entities;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
-using FastReport;
 
 namespace Api.Services.Sales
 {
