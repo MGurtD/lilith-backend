@@ -138,6 +138,15 @@ namespace Api.Controllers.Production
             var details = _unitOfWork.ShiftDetails.Find(e => e.ShiftId == id).ToList();
             return Ok(details);
         }
+        [HttpPost("Detail/ByIdBetweenHours")]
+        public async Task<IActionResult> GetDetailsByShiftIdBetweenHours(Guid id, TimeOnly currentTime)
+        {
+            var shift = await _unitOfWork.Shifts.Get(id);
+            if (shift is null)
+                return NotFound();
+            var detail = _unitOfWork.ShiftDetails.Find(e => e.ShiftId == id && e.StartTime <= currentTime && e.EndTime > currentTime).FirstOrDefault();
+            return Ok(detail);
+        }
         #endregion
     }
 }
