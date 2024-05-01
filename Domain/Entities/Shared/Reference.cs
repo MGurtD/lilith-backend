@@ -1,4 +1,5 @@
 ﻿using Domain.Entities.Purchase;
+using Domain.Entities.Sales;
 
 namespace Domain.Entities.Shared
 {
@@ -11,6 +12,8 @@ namespace Domain.Entities.Shared
         public Tax? Tax { get; set; }
         public Guid? ReferenceTypeId { get; set;}
         public ReferenceType? ReferenceType { get; set;}
+        public Guid? CustomerId { get; set;}
+        public Customer? Customer { get; set;}
         public bool Sales { get; set; }
         public decimal Cost { get; set; } = decimal.Zero;
         public decimal Price { get; set; } = decimal.Zero;
