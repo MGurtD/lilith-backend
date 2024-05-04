@@ -28,11 +28,19 @@ namespace Api.Controllers.Shared
 
         [Route("Sales")]
         [HttpGet]
-        public IActionResult GetAllSales()
+        public IActionResult GetAllSales(Guid customerId)
         {
             var entities = _unitOfWork.References.Find(r => r.Sales).OrderBy(r => r.Code);
             return Ok(entities);
         }
+        [Route("Sales/Customer/{id:guid}")]
+        [HttpGet]
+        public IActionResult GetAllSalesByCustomerId(Guid id)
+        {
+            var entities = _unitOfWork.References.Find(r => r.Sales && r.CustomerId == id).OrderBy(r => r.Code);
+            return Ok(entities);
+        }
+
         [Route("Purchase")]
         [HttpGet]
         public IActionResult GetAllPurchase()
