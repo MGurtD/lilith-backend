@@ -79,6 +79,12 @@ namespace Api.Services.Sales
 
             var statusPending = await _unitOfWork.Lifecycles.GetStatusByName("Budget", "Pendent d'acceptar");
             var statusAccept = await _unitOfWork.Lifecycles.GetStatusByName("Budget", "Acceptat");
+
+            if (statusPending == null || statusAccept == null)
+            {
+                return new GenericResponse(false, "No s'han trobat els estats 'Pendent d'acceptar' i 'Acceptat' al cicle de vida 'Budget'");
+            }
+
             if (existingBudget.StatusId == statusPending.Id && budget.StatusId == statusAccept.Id)
             {
                 budget.AcceptanceDate = DateTime.Now;                

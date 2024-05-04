@@ -18,7 +18,6 @@ namespace Api.Services.Production
 
         public async Task<GenericResponse> Calculate(WorkMaster workMaster)
         {
-            var result = 0.0M;
             //Recollir la quantitat base
             var baseQuantity = workMaster.BaseQuantity;
             var operatorCost = 0.0M;
