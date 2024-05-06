@@ -18,15 +18,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Production
                 .Property(b => b.Name)
                 .IsRequired()
                 .HasColumnType("varchar")
-                .HasMaxLength(50);
-            builder
-                .Property(b => b.startTime)
-                .IsRequired()
-                .HasColumnType("time");
-            builder
-                .Property(b => b.endTime)
-                .IsRequired()
-                .HasColumnType("time");
+                .HasMaxLength(50);            
             builder.HasIndex(builder => builder.Name, "UK_shifts_name");
             builder.ToTable("Shifts");
         }

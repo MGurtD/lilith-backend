@@ -72,6 +72,7 @@ namespace Infrastructure.Persistance
         public IRepository<OperatorType, Guid> OperatorTypes { get; private set; }        
         public IRepository<MachineStatus, Guid> MachineStatuses { get; private set; }
         public IRepository<Shift, Guid> Shifts { get; private set; }
+        public IRepository<ShiftDetail, Guid> ShiftDetails { get; private set; }
         public IWorkMasterRepository WorkMasters { get; private set; }
         public IWorkOrderRepository WorkOrders { get; private set; }
         public IProductionPartRepository ProductionParts { get; private set; }
@@ -129,6 +130,7 @@ namespace Infrastructure.Persistance
             OperatorTypes = new Repository<OperatorType, Guid>(context);            
             MachineStatuses = new Repository<MachineStatus, Guid>(context);
             Shifts = new Repository<Shift, Guid>(context);
+            ShiftDetails = new Repository<ShiftDetail, Guid>(context);
             WorkMasters = new WorkMasterRepository(context);
             WorkOrders = new WorkOrderRepository(context);
             ProductionParts = new ProductionPartRepository(context);

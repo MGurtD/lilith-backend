@@ -15,5 +15,7 @@ namespace Domain.Entities.Production
         public Area? Area { get; set; }
         public Guid WorkcenterTypeId { get; set; }
         public WorkcenterType? WorkcenterType { get; set; }
+        public Guid ShiftId { get; set; }
+        public Shift? Shift { get; set; }
     }
 }
