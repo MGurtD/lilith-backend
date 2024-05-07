@@ -264,39 +264,20 @@ namespace Api.Services.Production
         private async Task<GenericResponse> UpdateWorkOrderTotalsFromProductionPart(Guid id, ProductionPart productionPart, OperationType operationType)
         {
             var workOrder = await _unitOfWork.WorkOrders.Get(id);            
-            if (workOrder is null) return new GenericResponse(false, $"La ordre de fabricació no existeix");            
-
-            var op = await _unitOfWork.Operators.Get(productionPart.OperatorId);
-            if (op is null) return new GenericResponse(false, $"L'operari no existeix");
-
-            var operatorType = await _unitOfWork.OperatorTypes.Get(op.OperatorTypeId);
-            if (operatorType is null) return new GenericResponse(false, $"El tipus d'operari no existeix");
-            
-            var workOrderPhase = await _unitOfWork.WorkOrders.Phases.Get(productionPart.WorkOrderPhaseId);
-            if (workOrderPhase is null) return new GenericResponse(false, $"La fase no existeix");
-
-            var detail = workOrderPhase.Details.Where(e => e.Id == productionPart.WorkOrderPhaseDetailId).FirstOrDefault();
-            if (detail is null) return new GenericResponse(false, $"El detall de la fase no existeix");
-
-            var machineCost = (decimal) 0.0;
-            var workcenterCost = _unitOfWork.WorkcenterCosts.Find(e => e.MachineStatusId == detail.MachineStatusId && e.WorkcenterId == productionPart.WorkcenterId).FirstOrDefault();
-            if (workcenterCost is not null)
-            {
-                machineCost = workcenterCost.Cost;
-            }
+            if (workOrder is null) return new GenericResponse(false, $"La ordre de fabricació no existeix");
 
             if (operationType == OperationType.Add) {
                 workOrder.OperatorTime += productionPart.Time;
                 workOrder.MachineTime += productionPart.Time;
                 workOrder.TotalQuantity += productionPart.Quantity;
-                workOrder.MachineCost += (productionPart.Time/60) * machineCost;
-                workOrder.OperatorCost += (productionPart.Time/60) * operatorType.Cost;
+                workOrder.MachineCost += (productionPart.Time/60) * productionPart.MachineCost;
+                workOrder.OperatorCost += (productionPart.Time/60) * productionPart.OperatorCost;
             } else {
                 workOrder.OperatorTime -= productionPart.Time;
                 workOrder.MachineTime -= productionPart.Time;
                 workOrder.TotalQuantity -= productionPart.Quantity;
-                workOrder.MachineCost -= (productionPart.Time/60) * machineCost;
-                workOrder.OperatorCost -= (productionPart.Time/60) * operatorType.Cost;
+                workOrder.MachineCost -= (productionPart.Time/60) * productionPart.MachineCost;
+                workOrder.OperatorCost -= (productionPart.Time/60) * productionPart.OperatorCost;
             }
 
             await _unitOfWork.WorkOrders.Update(workOrder);

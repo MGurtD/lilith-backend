@@ -1,6 +1,7 @@
 ﻿using Api.Services.Production;
 using Application.Persistance;
 using Application.Production.Warehouse;
+using Application.Services.Production;
 using Domain.Entities.Production;
 using Infrastructure.Migrations;
 using Microsoft.AspNetCore.Mvc;
@@ -14,11 +15,13 @@ namespace Api.Controllers.Production
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IWorkOrderService _workOrderService;
+        private readonly ICostsService _costsService;
 
-        public ProductionPartController(IUnitOfWork unitOfWork, IWorkOrderService workOrderService)
+        public ProductionPartController(IUnitOfWork unitOfWork, IWorkOrderService workOrderService, ICostsService costsService)
         {
             _unitOfWork = unitOfWork;
             _workOrderService = workOrderService;
+            _costsService = costsService;
         }
 
         [HttpGet("{id:guid}")]
@@ -56,6 +59,15 @@ namespace Api.Controllers.Production
         public async Task<IActionResult> Create(ProductionPart productionPart)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+
+            // Get current costs from master data
+            var costsRequest = await _costsService.GetProductionPartCosts(productionPart);
+            if (costsRequest.Result && costsRequest.Content is ProductionCosts costs)
+            {
+                productionPart.MachineCost = costs.MachineCost;
+                productionPart.OperatorCost = costs.OperatorCost;
+            }
+
             await _unitOfWork.ProductionParts.Add(productionPart);
             await _workOrderService.AddProductionPart(productionPart.WorkOrderId, productionPart);
             return Created("",productionPart);
