@@ -27,7 +27,21 @@ namespace Infrastructure.Persistance.EntityConfiguration.Production
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                             ApplicationDbContextConstants.DECIMAL_SCALE); ;
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.OperatorHourCost)
+                .IsRequired()
+                .HasDefaultValue(0)
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.MachineHourCost)
+                .IsRequired()
+                .HasDefaultValue(0)
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
             builder
                 .HasKey(b => b.Id)
                 .HasName("PK_ProductionParts");

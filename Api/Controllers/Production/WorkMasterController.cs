@@ -13,12 +13,12 @@ namespace Api.Controllers.Production
     public class WorkMasterController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IWorkMasterService _workMasterService;
+        private readonly ICostsService _costsService;
 
-        public WorkMasterController(IUnitOfWork unitOfWork, IWorkMasterService workMasterService)
+        public WorkMasterController(IUnitOfWork unitOfWork, ICostsService costsService)
         {
             _unitOfWork = unitOfWork;
-            _workMasterService = workMasterService;
+            _costsService = costsService;
         }
 
         [HttpPost]
@@ -69,9 +69,8 @@ namespace Api.Controllers.Production
             if (!exists)
                 return NotFound();
 
-            var resultCosts = await _workMasterService.Calculate(request);
-
-            if (resultCosts.Result && resultCosts.Content is WorkMasterCosts workMasterCosts)
+            var resultCosts = await _costsService.GetWorkmasterCost(request);
+            if (resultCosts.Result && resultCosts.Content is ProductionCosts workMasterCosts)
             {
                 request.operatorCost = workMasterCosts.OperatorCost;
                 request.machineCost = workMasterCosts.MachineCost;
@@ -133,10 +132,10 @@ namespace Api.Controllers.Production
             var workMaster = await _unitOfWork.WorkMasters.Get(id);
             if (workMaster == null) return NotFound();
 
-            var result = await _workMasterService.Calculate(workMaster);
+            var result = await _costsService.GetWorkmasterCost(workMaster);
             var cost = (decimal)0.0;
 
-            if (result.Result && result.Content is WorkMasterCosts workMasterCosts)
+            if (result.Result && result.Content is ProductionCosts workMasterCosts)
             {
                 cost = workMasterCosts.OperatorCost + workMasterCosts.MachineCost + workMasterCosts.ExternalCost + workMasterCosts.MaterialCost;
             }

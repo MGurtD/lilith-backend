@@ -15,5 +15,7 @@
         public Operator? Operator { get; set; }
         public int Quantity { get; set; }
         public decimal Time { get; set; }
+        public decimal OperatorHourCost { get; set; }
+        public decimal MachineHourCost { get; set; }
     }
 }

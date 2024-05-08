@@ -1,22 +1,51 @@
-﻿using Application.Contracts;
+﻿using Api.Services.Sales;
+using Application.Contracts;
+using Application.Contracts.Production;
 using Application.Persistance;
+using Application.Production.Warehouse;
+using Application.Services;
 using Application.Services.Production;
+using Application.Services.Sales;
 using Domain.Entities.Production;
+using Domain.Entities.Sales;
 using Domain.Entities.Warehouse;
 using Domain.Implementations.ReferenceFormat;
+using Infrastructure.Migrations;
+using System.Collections;
 
 namespace Api.Services.Production
 {
-    public class WorkMasterService : IWorkMasterService
+    public class CostsService : ICostsService
     {
         private readonly IUnitOfWork _unitOfWork;
 
-        public WorkMasterService(IUnitOfWork unitOfWork)
+        public CostsService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<GenericResponse> Calculate(WorkMaster workMaster)
+        public async Task<GenericResponse> GetOperatorCost(Guid operatorId)
+        {
+            var oper = await _unitOfWork.Operators.Get(operatorId);
+            if (oper == null) {
+                return new GenericResponse(false, "No s'ha trobat l'operari"); 
+            }
+
+            var operatorType = await _unitOfWork.OperatorTypes.Get(oper.OperatorTypeId);
+            if (operatorType == null) return new GenericResponse(false, "No s'ha trobat el tipus d'operari");
+
+            return new GenericResponse(true, operatorType.Cost);
+        }
+
+        public Task<GenericResponse> GetWorkcenterStatusCost(Guid workcenterId, Guid statusId)
+        {
+            var workcenterCost = _unitOfWork.WorkcenterCosts.Find(wc => wc.WorkcenterId == workcenterId && wc.MachineStatusId == statusId).FirstOrDefault();
+            if (workcenterCost == null) return Task.FromResult(new GenericResponse(false, "No s'ha trobat el cost del centre de treball"));
+
+            return Task.FromResult(new GenericResponse(true, workcenterCost.Cost));
+        }
+
+        public async Task<GenericResponse> GetWorkmasterCost(WorkMaster workMaster)
         {
             //Recollir la quantitat base
             var baseQuantity = workMaster.BaseQuantity;
@@ -112,10 +141,31 @@ namespace Api.Services.Production
 
                 }
             }
-            var costDetails = new WorkMasterCosts(operatorCost, machineCost, materialCost, externalCost);
 
-            //result = operatorCost + machineCost + materialCost + externalCost;
-            return new GenericResponse(true, costDetails);
+            return new GenericResponse(true, new ProductionCosts(operatorCost, machineCost, materialCost, externalCost));
+        }
+
+        public async Task<GenericResponse> GetProductionPartCosts(ProductionPart productionPart)
+        {
+            var productionCosts = new ProductionCosts(0, 0, 0, 0);
+
+            // Get operator cost
+            var operatorCostRequest = await GetOperatorCost(productionPart.OperatorId);
+            if (operatorCostRequest.Result)
+            {
+                productionCosts.OperatorCost = (decimal)operatorCostRequest.Content!;
+            }
+
+            // Get workcenter cost
+            var workOrderPhaseDetail = await _unitOfWork.WorkOrders.Phases.Details.Get(productionPart.WorkOrderPhaseDetailId);
+            if (workOrderPhaseDetail != null && workOrderPhaseDetail.MachineStatusId.HasValue)
+            {
+                var workcenterCostRequest = await GetWorkcenterStatusCost(productionPart.WorkcenterId, workOrderPhaseDetail.MachineStatusId.Value);
+                if (!workcenterCostRequest.Result) return workcenterCostRequest;
+                productionCosts.MachineCost = (decimal)workcenterCostRequest.Content!;
+            }            
+
+            return new GenericResponse(true, productionCosts);
         }
     }
 }
