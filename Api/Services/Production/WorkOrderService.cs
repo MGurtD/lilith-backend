@@ -270,14 +270,14 @@ namespace Api.Services.Production
                 workOrder.OperatorTime += productionPart.Time;
                 workOrder.MachineTime += productionPart.Time;
                 workOrder.TotalQuantity += productionPart.Quantity;
-                workOrder.MachineCost += (productionPart.Time/60) * productionPart.MachineCost;
-                workOrder.OperatorCost += (productionPart.Time/60) * productionPart.OperatorCost;
+                workOrder.MachineCost += (productionPart.Time/60) * productionPart.MachineHourCost;
+                workOrder.OperatorCost += (productionPart.Time/60) * productionPart.OperatorHourCost;
             } else {
                 workOrder.OperatorTime -= productionPart.Time;
                 workOrder.MachineTime -= productionPart.Time;
                 workOrder.TotalQuantity -= productionPart.Quantity;
-                workOrder.MachineCost -= (productionPart.Time/60) * productionPart.MachineCost;
-                workOrder.OperatorCost -= (productionPart.Time/60) * productionPart.OperatorCost;
+                workOrder.MachineCost -= (productionPart.Time/60) * productionPart.MachineHourCost;
+                workOrder.OperatorCost -= (productionPart.Time/60) * productionPart.OperatorHourCost;
             }
 
             await _unitOfWork.WorkOrders.Update(workOrder);

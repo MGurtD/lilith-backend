@@ -64,8 +64,8 @@ namespace Api.Controllers.Production
             var costsRequest = await _costsService.GetProductionPartCosts(productionPart);
             if (costsRequest.Result && costsRequest.Content is ProductionCosts costs)
             {
-                productionPart.MachineCost = costs.MachineCost;
-                productionPart.OperatorCost = costs.OperatorCost;
+                productionPart.MachineHourCost = costs.MachineCost;
+                productionPart.OperatorHourCost = costs.OperatorCost;
             }
 
             await _unitOfWork.ProductionParts.Add(productionPart);
