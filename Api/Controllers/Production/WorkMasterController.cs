@@ -4,7 +4,6 @@ using Application.Services.Production;
 using Domain.Entities.Production;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Net;
 
 namespace Api.Controllers.Production
 {
@@ -138,6 +137,14 @@ namespace Api.Controllers.Production
             if (result.Result && result.Content is ProductionCosts workMasterCosts)
             {
                 cost = workMasterCosts.OperatorCost + workMasterCosts.MachineCost + workMasterCosts.ExternalCost + workMasterCosts.MaterialCost;
+
+                // Update workmaster cost
+                workMaster.operatorCost = workMasterCosts.OperatorCost;
+                workMaster.machineCost = workMasterCosts.MachineCost;
+                workMaster.externalCost = workMasterCosts.ExternalCost;
+                workMaster.materialCost = workMasterCosts.MaterialCost;
+
+                await _unitOfWork.WorkMasters.Update(workMaster);
             }
 
             if (result.Result)                
