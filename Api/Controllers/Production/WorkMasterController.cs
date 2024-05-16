@@ -125,6 +125,14 @@ namespace Api.Controllers.Production
             };
             
         }
+
+        [HttpGet("reference/{id:guid}")]
+        public IActionResult GetWorkMasterByReferenceId(Guid id)
+        {
+            var entities = _unitOfWork.WorkMasters.Find(w => w.ReferenceId == id && w.Disabled == false);
+            return Ok(entities.OrderBy(w => w.BaseQuantity));
+        }
+
         [HttpGet("Cost/{id:guid}")]
         public async Task<IActionResult> GetWorkMasterCostById(Guid id)
         {
