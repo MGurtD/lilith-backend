@@ -10,6 +10,7 @@ public class WorkMasterPhaseDetail : Entity
     public int Order { get; set; }
     public bool IsCycleTime { get; set; }
     public decimal EstimatedTime { get; set; }
+    public decimal EstimatedOperatorTime { get; set; }
     public string Comment { get; set; } = string.Empty;
 
 }
