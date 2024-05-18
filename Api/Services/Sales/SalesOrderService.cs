@@ -31,6 +31,7 @@ namespace Api.Services.Sales
             var site = await _unitOfWork.Sites.Get(salesOrder.SiteId.Value);
             if (site is null) return null;
 
+            salesOrder.SalesOrderDetails = salesOrder.SalesOrderDetails.OrderBy(d => d.Reference!.Code).ToList();
             var salesOrderReport = new SalesOrderReportResponse
             {
                 Order = salesOrder,
