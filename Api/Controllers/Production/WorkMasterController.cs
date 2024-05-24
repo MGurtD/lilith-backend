@@ -68,7 +68,7 @@ namespace Api.Controllers.Production
             if (!exists)
                 return NotFound();
 
-            var resultCosts = await _costsService.GetWorkmasterCost(request);
+            var resultCosts = await _costsService.GetWorkmasterCost(request, 1);
             if (resultCosts.Result && resultCosts.Content is ProductionCosts workMasterCosts)
             {
                 request.operatorCost = workMasterCosts.OperatorCost;
@@ -134,12 +134,12 @@ namespace Api.Controllers.Production
         }
 
         [HttpGet("Cost/{id:guid}")]
-        public async Task<IActionResult> GetWorkMasterCostById(Guid id)
+        public async Task<IActionResult> GetWorkMasterCostById(Guid id, int? quantity)
         {
             var workMaster = await _unitOfWork.WorkMasters.Get(id);
             if (workMaster == null) return NotFound();
 
-            var result = await _costsService.GetWorkmasterCost(workMaster);
+            var result = await _costsService.GetWorkmasterCost(workMaster, quantity);
             var cost = (decimal)0.0;
 
             if (result.Result && result.Content is ProductionCosts workMasterCosts)
