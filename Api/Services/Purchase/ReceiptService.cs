@@ -114,22 +114,26 @@ namespace Api.Services.Purchase
             if (!detail.Reference.ReferenceTypeId.HasValue) return new GenericResponse(false, "Referencia sense tipus");
             var referenceType = await _unitOfWork.ReferenceTypes.Get(detail.Reference.ReferenceTypeId.Value);
 
-            // Obtenir calculadora segons el format
-            var format = await _unitOfWork.ReferenceFormats.Get(detail.Reference.ReferenceFormatId.Value);
-            var dimensionsCalculator = ReferenceFormatCalculationFactory.Create(format!.Code);
-            // Assignar dimensions a la calculadoras
-            var dimensions = new ReferenceDimensions();
-            dimensions.SetFromReceiptDetail(detail);
-            dimensions.Density = referenceType!.Density;
+            try {
+                // Obtenir calculadora segons el format
+                var format = await _unitOfWork.ReferenceFormats.Get(detail.Reference.ReferenceFormatId.Value);
+                var dimensionsCalculator = ReferenceFormatCalculationFactory.Create(format!.Code);
+                // Assignar dimensions a la calculadoras
+                var dimensions = new ReferenceDimensions();
+                dimensions.SetFromReceiptDetail(detail);
+                dimensions.Density = referenceType!.Density;
 
-            // Calcular el pes
-            detail.UnitWeight = Math.Round(dimensionsCalculator.Calculate(dimensions), 2);
-            detail.TotalWeight = detail.UnitWeight * detail.Quantity;
-            // Calcular el preu
-            detail.UnitPrice = detail.KilogramPrice * detail.UnitWeight;
-            detail.Amount = detail.KilogramPrice * detail.TotalWeight;
+                // Calcular el pes
+                detail.UnitWeight = Math.Round(dimensionsCalculator.Calculate(dimensions), 2);
+                detail.TotalWeight = detail.UnitWeight * detail.Quantity;
+                // Calcular el preu
+                detail.UnitPrice = detail.KilogramPrice * detail.UnitWeight;
+                detail.Amount = detail.KilogramPrice * detail.TotalWeight;
 
-            return new GenericResponse(true, detail);
+                return new GenericResponse(true, detail);
+            } catch (Exception e) {
+                return new GenericResponse(false, e.Message);
+            }
         }
 
         public async Task<GenericResponse> AddDetail(ReceiptDetail detail)
