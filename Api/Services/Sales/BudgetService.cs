@@ -138,6 +138,7 @@ namespace Api.Services.Sales
             var site = _unitOfWork.Sites.Find(s => s.VatNumber == "J09680521").FirstOrDefault();
             if (site is null) return null;
 
+            budget.Details = budget.Details.OrderBy(d => d.Reference!.Code).ToList();
             var salesOrderReport = new BudgetReportResponse
             {
                 Budget = budget,

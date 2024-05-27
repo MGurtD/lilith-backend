@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240518084931_Add_EstimatedOperatorTimeInWmAndWoDetails")]
+    partial class Add_EstimatedOperatorTimeInWmAndWoDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2626,14 +2628,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bool")
                         .HasDefaultValue(false);
 
-                    b.Property<decimal>("Discount")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.Property<decimal>("Profit")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
@@ -2657,16 +2651,11 @@ namespace Infrastructure.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasDefaultValueSql("NOW()");
 
-                    b.Property<Guid?>("WorkMasterId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BudgetId");
 
                     b.HasIndex("ReferenceId");
-
-                    b.HasIndex("WorkMasterId");
 
                     b.ToTable("BudgetDetails", (string)null);
                 });
@@ -3394,10 +3383,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bool")
                         .HasDefaultValue(false);
 
-                    b.Property<decimal>("Discount")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
                     b.Property<DateTime>("EstimatedDeliveryDate")
                         .HasColumnType("timestamp without time zone");
 
@@ -3405,10 +3390,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<decimal>("LastCost")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.Property<decimal>("Profit")
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)");
 
@@ -3442,9 +3423,6 @@ namespace Infrastructure.Migrations
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)");
 
-                    b.Property<Guid?>("WorkMasterId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid?>("WorkOrderId")
                         .HasColumnType("uuid");
 
@@ -3453,8 +3431,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ReferenceId");
 
                     b.HasIndex("SalesOrderHeaderId");
-
-                    b.HasIndex("WorkMasterId");
 
                     b.HasIndex("WorkOrderId");
 
@@ -4685,15 +4661,9 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.Production.WorkMaster", "WorkMaster")
-                        .WithMany()
-                        .HasForeignKey("WorkMasterId");
-
                     b.Navigation("Budget");
 
                     b.Navigation("Reference");
-
-                    b.Navigation("WorkMaster");
                 });
 
             modelBuilder.Entity("Domain.Entities.Sales.Customer", b =>
@@ -4901,10 +4871,6 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.Production.WorkMaster", "WorkMaster")
-                        .WithMany()
-                        .HasForeignKey("WorkMasterId");
-
                     b.HasOne("Domain.Entities.Production.WorkOrder", "WorkOrder")
                         .WithMany()
                         .HasForeignKey("WorkOrderId");
@@ -4912,8 +4878,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Reference");
 
                     b.Navigation("SalesOrderHeader");
-
-                    b.Navigation("WorkMaster");
 
                     b.Navigation("WorkOrder");
                 });

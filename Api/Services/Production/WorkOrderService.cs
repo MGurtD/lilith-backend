@@ -154,6 +154,7 @@ namespace Api.Services.Production
                     {
                         WorkOrderPhaseId = workOrderPhase.Id,
                         EstimatedTime = workMasterPhaseDetail.EstimatedTime,
+                        EstimatedOperatorTime = workMasterPhaseDetail.EstimatedOperatorTime,
                         Comment = workMasterPhaseDetail.Comment,
                         IsCycleTime = workMasterPhaseDetail.IsCycleTime,
                         MachineStatusId = workMasterPhaseDetail.MachineStatusId,

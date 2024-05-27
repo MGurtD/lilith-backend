@@ -16,9 +16,15 @@ public class WorkOrderPhaseDetailBuilder : IEntityTypeConfiguration<WorkOrderPha
             .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                           ApplicationDbContextConstants.DECIMAL_SCALE);
         builder
+            .Property(b => b.EstimatedOperatorTime)
+            .IsRequired()
+            .HasDefaultValue(0.0m)
+            .HasColumnType("decimal")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
+        builder
             .Property(b => b.IsCycleTime)
-            .HasColumnType("boolean");
-        
+            .HasColumnType("boolean");       
 
         builder
             .Property(b => b.Order)
