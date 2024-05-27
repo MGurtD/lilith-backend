@@ -52,10 +52,16 @@ namespace Api.Controllers.Production
         }
 
         [HttpGet]
-        public IActionResult GetWorkOrders(DateTime startTime, DateTime endTime, Guid? statusId)
+        public IActionResult GetWorkOrders(DateTime startTime, DateTime endTime, Guid? statusId, Guid? referenceId, Guid? customerId)
         {
             IEnumerable<WorkOrder> workOrders = new List<WorkOrder>();
             workOrders = _workOrderService.GetBetweenDatesAndStatus(startTime, endTime, statusId);
+
+            if (referenceId.HasValue)
+                workOrders = workOrders.Where(e => e.ReferenceId == referenceId.Value);
+
+            if (customerId.HasValue)
+                workOrders = workOrders.Where(e => e.Reference!.CustomerId == customerId.Value);
            
             return Ok(workOrders.OrderBy(e => e.Code));
         }

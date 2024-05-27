@@ -1,3 +1,4 @@
+using Domain.Entities.Production;
 using Domain.Entities.Shared;
 
 namespace Domain.Entities.Sales
@@ -8,12 +9,28 @@ namespace Domain.Entities.Sales
         public Budget? Budget { get; set; }
         public Guid ReferenceId { get; set; }
         public Reference? Reference { get; set; }
-        public string Description { get; set; } = string.Empty;
+        public Guid? WorkMasterId { get; set; }
+        public WorkMaster? WorkMaster { get; set; }
+        public string Description { get; set; }
         public int Quantity { get; set; }
-        public decimal UnitCost { get; set; } = decimal.Zero;
-        public decimal UnitPrice { get; set; } = decimal.Zero;
-        public decimal TotalCost { get; set; } = decimal.Zero;
-        public decimal Amount { get; set; } = decimal.Zero;
+        public decimal Profit { get; set; }
+        public decimal Discount { get; set; }
+        public decimal UnitCost { get; set; }
+        public decimal TotalCost { get; set; } 
+        public decimal UnitPrice { get; set; }
+        public decimal Amount { get; set; }         
+
+        public BudgetDetail()
+        {
+            Description = string.Empty;
+            Quantity = 0;
+            Profit = decimal.Zero;
+            Discount = decimal.Zero;
+            UnitCost = decimal.Zero;
+            TotalCost = decimal.Zero;
+            Amount = decimal.Zero;
+            Disabled = false;
+        }
 
         public void SetReference(Reference reference, int quantity)
         {
@@ -21,9 +38,6 @@ namespace Domain.Entities.Sales
 
             ReferenceId = reference.Id;
             Quantity = quantity;
-            UnitCost = reference.Cost;
-            UnitPrice = reference.Price;
-            TotalCost = reference.Cost * quantity;
             Amount = reference.Price * quantity;
         }
     }

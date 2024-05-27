@@ -1,13 +1,6 @@
 ﻿using Domain.Entities.Sales;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.EntityConfiguration.Sales
 {
@@ -33,6 +26,18 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                               ApplicationDbContextConstants.DECIMAL_SCALE);
             builder
                 .Property(b => b.WorkMasterCost)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.Profit)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.Discount)
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,

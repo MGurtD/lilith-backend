@@ -8,7 +8,7 @@ namespace Application.Services.Production
         Task<GenericResponse> GetOperatorCost(Guid operatorId);
         Task<GenericResponse> GetWorkcenterStatusCost(Guid workcenterId, Guid statusId);
 
-        Task<GenericResponse> GetWorkmasterCost(WorkMaster workMaster);
+        Task<GenericResponse> GetWorkmasterCost(WorkMaster workMaster, decimal? productedQuantity);
         Task<GenericResponse> GetProductionPartCosts(ProductionPart productionPart);
     }
 }

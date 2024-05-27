@@ -1,4 +1,5 @@
-﻿using Application.Persistance.Repositories.Production;
+﻿using System.Linq.Expressions;
+using Application.Persistance.Repositories.Production;
 using Domain.Entities.Production;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +20,14 @@ namespace Infrastructure.Persistance.Repositories.Production
                         .Include(d => d.Reference)
                         .AsNoTracking()
                         .ToListAsync();
+        }
+
+        public override IEnumerable<WorkOrder> Find(Expression<Func<WorkOrder, bool>> predicate) {
+            return dbSet
+                    .Include(d => d.Reference)
+                    .Where(predicate)
+                    .AsNoTracking()
+                    .OrderBy(w => w.Code);
         }
 
         public override async Task<WorkOrder?> Get(Guid id)

@@ -4,7 +4,6 @@ using Application.Services.Production;
 using Domain.Entities.Production;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Net;
 
 namespace Api.Controllers.Production
 {
@@ -69,7 +68,7 @@ namespace Api.Controllers.Production
             if (!exists)
                 return NotFound();
 
-            var resultCosts = await _costsService.GetWorkmasterCost(request);
+            var resultCosts = await _costsService.GetWorkmasterCost(request, request.BaseQuantity);
             if (resultCosts.Result && resultCosts.Content is ProductionCosts workMasterCosts)
             {
                 request.operatorCost = workMasterCosts.OperatorCost;
@@ -126,18 +125,34 @@ namespace Api.Controllers.Production
             };
             
         }
+
+        [HttpGet("reference/{id:guid}")]
+        public IActionResult GetWorkMasterByReferenceId(Guid id)
+        {
+            var entities = _unitOfWork.WorkMasters.Find(w => w.ReferenceId == id && w.Disabled == false);
+            return Ok(entities.OrderBy(w => w.BaseQuantity));
+        }
+
         [HttpGet("Cost/{id:guid}")]
-        public async Task<IActionResult> GetWorkMasterCostById(Guid id)
+        public async Task<IActionResult> GetWorkMasterCostById(Guid id, int? quantity)
         {
             var workMaster = await _unitOfWork.WorkMasters.Get(id);
             if (workMaster == null) return NotFound();
 
-            var result = await _costsService.GetWorkmasterCost(workMaster);
+            var result = await _costsService.GetWorkmasterCost(workMaster, quantity);
             var cost = (decimal)0.0;
 
             if (result.Result && result.Content is ProductionCosts workMasterCosts)
             {
                 cost = workMasterCosts.OperatorCost + workMasterCosts.MachineCost + workMasterCosts.ExternalCost + workMasterCosts.MaterialCost;
+
+                // Update workmaster cost
+                workMaster.operatorCost = workMasterCosts.OperatorCost;
+                workMaster.machineCost = workMasterCosts.MachineCost;
+                workMaster.externalCost = workMasterCosts.ExternalCost;
+                workMaster.materialCost = workMasterCosts.MaterialCost;
+
+                await _unitOfWork.WorkMasters.Update(workMaster);
             }
 
             if (result.Result)                
