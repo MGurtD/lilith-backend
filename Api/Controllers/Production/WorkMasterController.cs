@@ -68,7 +68,7 @@ namespace Api.Controllers.Production
             if (!exists)
                 return NotFound();
 
-            var resultCosts = await _costsService.GetWorkmasterCost(request, 1);
+            var resultCosts = await _costsService.GetWorkmasterCost(request, request.BaseQuantity);
             if (resultCosts.Result && resultCosts.Content is ProductionCosts workMasterCosts)
             {
                 request.operatorCost = workMasterCosts.OperatorCost;

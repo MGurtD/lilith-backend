@@ -48,7 +48,7 @@ namespace Api.Services.Production
         public async Task<GenericResponse> GetWorkmasterCost(WorkMaster workMaster, decimal? productedQuantity)
         {
             // Recollir la quantitat a calcular, si no es passa es calcula per la quantitat base
-            var baseQuantity = productedQuantity.HasValue ? productedQuantity.Value / workMaster.BaseQuantity : workMaster.BaseQuantity;
+            var baseQuantity = productedQuantity.HasValue ? productedQuantity.Value : workMaster.BaseQuantity;
             var operatorCost = 0.0M;
             var machineCost = 0.0M;
             var materialCost = 0.0M;
@@ -85,14 +85,14 @@ namespace Api.Services.Production
                     }
                     
                     // Cost Operari
-                    operatorCost += estimatedOperatorTime / 60 * operatorTypeCost;
+                    operatorCost += (estimatedOperatorTime / 60) * operatorTypeCost;
 
                     // Cost Màquina                    
                     var workCenterCost = _unitOfWork.WorkcenterCosts.Find(wc => wc.WorkcenterId == phase.PreferredWorkcenterId && wc.MachineStatusId == detail.MachineStatusId).FirstOrDefault();
                     if (workCenterCost == null) {
                         return new GenericResponse(false, "No s'ha trobat la combinació de centre de treball i estat de màquina");
                     }
-                    machineCost += estimatedWorkcenterTime / 60 * workCenterCost.Cost;    
+                    machineCost += (estimatedWorkcenterTime / 60) * workCenterCost.Cost;    
                     
                 }
 
