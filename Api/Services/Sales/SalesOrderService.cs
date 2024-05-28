@@ -167,9 +167,17 @@ namespace Api.Services.Sales
             return new GenericResponse(true);
         }
 
+
+        /*
+         * var receipt = await _unitOfWork.Receipts.Get(id);
+            if (receipt == null) return new GenericResponse(false, new List<string>() { $"Id {id} inexistent" });
+
+            await _unitOfWork.Receipts.Remove(receipt);
+            return new GenericResponse(true);
+         */
         public async Task<GenericResponse> Remove(Guid id)
         {
-            var salesOrder = _unitOfWork.SalesOrderHeaders.Find(p => p.Id == id).FirstOrDefault();
+            var salesOrder = await _unitOfWork.SalesOrderHeaders.Get(id);
             if (salesOrder == null)
             {
                 return new GenericResponse(false, $"La comanda amb ID {id} no existeix");
