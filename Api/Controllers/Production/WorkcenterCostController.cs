@@ -52,6 +52,16 @@ namespace Api.Controllers.Production
                 return NotFound();
             }
         }
+        [HttpGet("workcenter/{workcenterId:guid}/status/{statusId:guid}")]
+        public async Task<IActionResult>GetByWorkcenterAndStatusId(Guid workcenterId, Guid statusId)
+        {
+            var workcentercost = _unitOfWork.WorkcenterCosts.Find(r => r.WorkcenterId == workcenterId && r.MachineStatusId == statusId).FirstOrDefault();
+            if(workcentercost == null)
+            {
+                return NotFound();
+            }
+            return Ok(workcentercost);
+        }
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid Id, WorkCenterCost request)
         {
