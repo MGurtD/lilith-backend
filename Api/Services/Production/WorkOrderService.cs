@@ -268,17 +268,17 @@ namespace Api.Services.Production
             if (workOrder is null) return new GenericResponse(false, $"La ordre de fabricació no existeix");
 
             if (operationType == OperationType.Add) {
-                workOrder.OperatorTime += productionPart.Time;
-                workOrder.MachineTime += productionPart.Time;
+                workOrder.OperatorTime += productionPart.OperatorTime;
+                workOrder.MachineTime += productionPart.WorkcenterTime;
                 workOrder.TotalQuantity += productionPart.Quantity;
-                workOrder.MachineCost += (productionPart.Time/60) * productionPart.MachineHourCost;
-                workOrder.OperatorCost += (productionPart.Time/60) * productionPart.OperatorHourCost;
+                workOrder.MachineCost += (productionPart.WorkcenterTime / 60) * productionPart.MachineHourCost;
+                workOrder.OperatorCost += (productionPart.OperatorTime/60) * productionPart.OperatorHourCost;
             } else {
-                workOrder.OperatorTime -= productionPart.Time;
-                workOrder.MachineTime -= productionPart.Time;
+                workOrder.OperatorTime -= productionPart.OperatorTime;
+                workOrder.MachineTime -= productionPart.WorkcenterTime;
                 workOrder.TotalQuantity -= productionPart.Quantity;
-                workOrder.MachineCost -= (productionPart.Time/60) * productionPart.MachineHourCost;
-                workOrder.OperatorCost -= (productionPart.Time/60) * productionPart.OperatorHourCost;
+                workOrder.MachineCost -= (productionPart.WorkcenterTime / 60) * productionPart.MachineHourCost;
+                workOrder.OperatorCost -= (productionPart.OperatorTime/60) * productionPart.OperatorHourCost;
             }
 
             await _unitOfWork.WorkOrders.Update(workOrder);

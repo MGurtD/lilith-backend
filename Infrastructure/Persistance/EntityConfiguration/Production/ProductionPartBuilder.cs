@@ -23,7 +23,13 @@ namespace Infrastructure.Persistance.EntityConfiguration.Production
                 .IsRequired()
                 .HasColumnType("int");
             builder
-                .Property(b => b.Time)
+                .Property(b => b.OperatorTime)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.WorkcenterTime)
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
