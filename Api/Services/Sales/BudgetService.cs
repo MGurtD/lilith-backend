@@ -135,7 +135,7 @@ namespace Api.Services.Sales
             var customer = await _unitOfWork.Customers.Get(budget.CustomerId);
             if (customer is null) return null;
 
-            var site = _unitOfWork.Sites.Find(s => s.VatNumber == "J09680521").FirstOrDefault();
+            var site = _unitOfWork.Sites.Find(s => s.VatNumber == "B09680521").FirstOrDefault();
             if (site is null) return null;
 
             budget.Details = budget.Details.OrderBy(d => d.Reference!.Code).ToList();
