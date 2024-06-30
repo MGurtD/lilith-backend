@@ -23,6 +23,7 @@ namespace Api.Services.Sales
         private readonly IDeliveryNoteService _deliveryNoteService;
         private readonly string LifecycleName = "SalesInvoice";
         private readonly IExerciseService _exerciseService;
+        private readonly ISalesOrderService _salesOrderService;
 
         public SalesInvoiceService(IUnitOfWork unitOfWork, IDueDateService dueDateService, ISalesOrderService salesOrderService, IDeliveryNoteService deliveryNoteService, IExerciseService exerciseService)
         {
@@ -30,6 +31,7 @@ namespace Api.Services.Sales
             _dueDateService = dueDateService;
             _deliveryNoteService = deliveryNoteService;
             _exerciseService = exerciseService;
+            _salesOrderService = salesOrderService;
         }
 
         public async Task<SalesInvoice?> GetById(Guid id)
@@ -60,7 +62,9 @@ namespace Api.Services.Sales
             var deliveryNotes = _deliveryNoteService.GetBySalesInvoice(id).OrderBy(d => d.Number);
             foreach ( var deliveryNote in deliveryNotes )
             {
-                var invoiceDetailGroup = new InvoiceDetailGroup() { Key = deliveryNote.Number };
+                var orders = _salesOrderService.GetByDeliveryNoteId(deliveryNote.Id).ToList();
+                var customerOrderNumbers = String.Join(",", orders.Select(orders => orders.CustomerNumber).ToArray());
+                var invoiceDetailGroup = new InvoiceDetailGroup() { Key = $"Albarà: {deliveryNote.Number} - Entrega: {deliveryNote.DeliveryDate:dd/MM/yyy} - Comanda client: {customerOrderNumbers}" };
 
                 var deliveryNoteDetailIds = deliveryNote.Details.Select(d => d.Id);
                 invoiceDetailGroup.Details = invoice.SalesInvoiceDetails.Where(d => d.DeliveryNoteDetailId.HasValue && deliveryNoteDetailIds.Contains(d.DeliveryNoteDetailId.Value)).Select(d => new SalesInvoiceDetail()
