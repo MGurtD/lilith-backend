@@ -60,22 +60,32 @@ namespace Api.Services.Sales
 
             // Obtenir linies agrupades per albarà
             var deliveryNotes = _deliveryNoteService.GetBySalesInvoice(id).OrderBy(d => d.Number);
+
+
+            var referenceIds = deliveryNotes.SelectMany(deliveryNotes => deliveryNotes.Details).Select(d => d.ReferenceId).ToList();
+            var references = _unitOfWork.References.Find(r => referenceIds.Contains(r.Id)).ToList();
+
             foreach ( var deliveryNote in deliveryNotes )
             {
                 var orders = _salesOrderService.GetByDeliveryNoteId(deliveryNote.Id).ToList();
                 var customerOrderNumbers = String.Join(",", orders.Select(orders => orders.CustomerNumber).ToArray());
                 var invoiceDetailGroup = new InvoiceDetailGroup() { Key = $"Albarà: {deliveryNote.Number} - Entrega: {deliveryNote.DeliveryDate:dd/MM/yyy} - Comanda client: {customerOrderNumbers}" };
 
-                var deliveryNoteDetailIds = deliveryNote.Details.Select(d => d.Id);
-                invoiceDetailGroup.Details = invoice.SalesInvoiceDetails.Where(d => d.DeliveryNoteDetailId.HasValue && deliveryNoteDetailIds.Contains(d.DeliveryNoteDetailId.Value)).Select(d => new SalesInvoiceDetail()
+                foreach (var deliveryNoteDetail in deliveryNote.Details)
                 {
-                    Amount = d.Amount,
-                    Description = d.Description,
-                    Quantity = d.Quantity,
-                    TotalCost = d.TotalCost,
-                    UnitCost = d.UnitCost,
-                    UnitPrice = d.UnitPrice,
-                }).ToList();
+                    var reference = references.FirstOrDefault(r => r.Id == deliveryNoteDetail.ReferenceId);
+                    var salesInvoiceDetail = invoice.SalesInvoiceDetails.FirstOrDefault(d => d.DeliveryNoteDetailId == deliveryNoteDetail.Id);
+
+                    invoiceDetailGroup.Details.Add(new SalesInvoiceDetail()
+                    {
+                        Amount = salesInvoiceDetail?.Amount ?? 0,
+                        Description = $"{reference!.Code} (v. {reference!.Version}) - {deliveryNoteDetail.Description}",
+                        Quantity = deliveryNoteDetail.Quantity,
+                        TotalCost = deliveryNoteDetail.TotalCost,
+                        UnitCost = deliveryNoteDetail.UnitCost,
+                        UnitPrice = deliveryNoteDetail.UnitPrice
+                    });
+                }
                 invoiceDetailGroup.Total = invoiceDetailGroup.Details.Sum(d => d.Amount);
 
                 invoiceDetails.Add(invoiceDetailGroup);
@@ -91,7 +101,7 @@ namespace Api.Services.Sales
 
                 invoiceDetails.Add(detailsWithoutDeliveryNote);
             }
-            var lastDueDate = invoice.SalesInvoiceDueDates.Any() ? invoice.SalesInvoiceDueDates.OrderByDescending(d => d.DueDate).FirstOrDefault()!.DueDate : invoice.InvoiceDate;
+            var lastDueDate = invoice.SalesInvoiceDueDates.Count != 0 ? invoice.SalesInvoiceDueDates.OrderByDescending(d => d.DueDate).FirstOrDefault()!.DueDate : invoice.InvoiceDate;
 
             return new(            
                 customer,
@@ -174,20 +184,20 @@ namespace Api.Services.Sales
         private async Task<GenericResponse> ValidateCreateInvoiceRequest(CreateHeaderRequest createInvoiceRequest)
         {
             var exercise = await _unitOfWork.Exercices.Get(createInvoiceRequest.ExerciseId);
-            if (exercise == null) return new GenericResponse(false, new List<string>() { "L'exercici no existex" });
+            if (exercise == null) return new GenericResponse(false, "L'exercici no existex" );
 
             var customer = await _unitOfWork.Customers.Get(createInvoiceRequest.CustomerId);
-            if (customer == null) return new GenericResponse(false, new List<string>() { "El client no existeix" });
+            if (customer == null) return new GenericResponse(false, "El client no existeix" );
             if (!customer.IsValidForSales())
-                return new GenericResponse(false, new List<string>() { "El client no és válid per a crear una factura. Revisa el nom fiscal, el número de compte i el NIF" });
+                return new GenericResponse(false,  "El client no és válid per a crear una factura. Revisa el nom fiscal, el número de compte i el NIF" );
             if (customer.MainAddress() == null)
-                return new GenericResponse(false, new List<string>() { "El client no té direccions donades d'alta. Si us plau, creí una direcció." });
+                return new GenericResponse(false, "El client no té direccions donades d'alta. Si us plau, creí una direcció." );
 
             var site = _unitOfWork.Sites.Find(s => s.Name == "Local Torelló").FirstOrDefault();
             if (site == null)
-                return new GenericResponse(false, new List<string>() { "La seu 'Temges' no existeix" });
+                return new GenericResponse(false, "La seu 'Temges' no existeix" );
             if (!site.IsValidForSales())
-                return new GenericResponse(false, new List<string>() { "Seu 'Temges' no és válida per crear una factura. Revisi les dades de facturació." });
+                return new GenericResponse(false, "Seu 'Temges' no és válida per crear una factura. Revisi les dades de facturació." );
 
             InvoiceEntities invoiceEntities;
             invoiceEntities.Exercise = exercise;
@@ -305,15 +315,14 @@ namespace Api.Services.Sales
                 {
                     SalesInvoiceId = id
                 };
-                salesInvoiceDetail.TaxId = tax.Id;
                 salesInvoiceDetail.SetDeliveryNoteDetail(deliveryNoteDetail);
-                invoice.SalesInvoiceDetails.Add(salesInvoiceDetail);
+                if (salesInvoiceDetail.TaxId == Guid.Empty)
+                    salesInvoiceDetail.TaxId = tax.Id;
+
                 invoiceDetails.Add(salesInvoiceDetail);
             }
             await _unitOfWork.SalesInvoices.InvoiceDetails.AddRange(invoiceDetails);
-            deliveryNoteDetails = null;
-            invoiceDetails = null;
-
+            
             // Actualizar taules relacionades
             await UpdateImportsAndHeaderAmounts(invoice);
 
@@ -395,7 +404,7 @@ namespace Api.Services.Sales
             await RemoveImports(invoice);
 
             // Obtenir sumatori d'imports agrupat per impost
-            var invoiceImports = invoice.SalesInvoiceDetails
+            var invoiceImports = _unitOfWork.SalesInvoices.InvoiceDetails.Find(d => d.SalesInvoiceId == invoice.Id)
                 .GroupBy(d => d.TaxId)
                 .Select(d => new SalesInvoiceImport()
                 {
