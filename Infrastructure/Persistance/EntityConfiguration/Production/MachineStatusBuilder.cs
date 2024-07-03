@@ -30,6 +30,22 @@ namespace Infrastructure.Persistance.EntityConfiguration.Production
                 .HasColumnType("varchar")
                 .HasMaxLength(20);
             builder
+                .Property(b => b.Stoped)
+                .HasColumnType("boolean");
+            builder
+                .Property(b => b.OperatorsAllowed)
+                .HasColumnType("boolean");
+            builder
+                .Property(b => b.Closed)
+                .HasColumnType("boolean");
+            builder
+                .Property(b => b.Preferred)
+                .HasColumnType("boolean");
+            builder
+                .Property(b => b.Icon)
+                .HasColumnType("varchar")
+                .HasMaxLength(50);
+            builder
                 .HasKey(b => b.Id)
                 .HasName("PK_MachineStatus");
             builder.HasIndex(builder => builder.Name, "UK_MachineStatus_Name");

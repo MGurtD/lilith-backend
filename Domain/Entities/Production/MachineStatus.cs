@@ -11,5 +11,10 @@ namespace Domain.Entities.Production
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string Color { get; set;} = string.Empty;
+        public bool Stoped { get; set;} = false;
+        public bool OperatorsAllowed { get; set; } = true;
+        public bool Closed { get; set;} = false;
+        public bool Preferred { get; set; } = false;
+        public string Icon { get; set;} = string.Empty;
     }
 }
