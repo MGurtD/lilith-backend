@@ -30,7 +30,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Production
                 .HasColumnType("varchar")
                 .HasMaxLength(20);
             builder
-                .Property(b => b.Stoped)
+                .Property(b => b.Stopped)
                 .HasColumnType("boolean");
             builder
                 .Property(b => b.OperatorsAllowed)
