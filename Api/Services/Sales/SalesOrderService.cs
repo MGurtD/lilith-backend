@@ -302,13 +302,17 @@ namespace Api.Services.Sales
 
             foreach (var order in orders.ToList())
             {
+                // Actualizar flag de 'servida' en els detalls
                 foreach (var detail in order.SalesOrderDetails)
                 {
                     detail.IsDelivered = isDelivered;
                     await UpdateDetail(detail);
                 }
-                order.DeliveryNoteId = isDelivered ? deliveryNoteId : null;
+
+                // Canviar estat de la comanda
                 order.StatusId = (Guid)statusResponse.Content!;
+                // Asociar albarà
+                if (order.DeliveryNoteId == null && isDelivered) order.DeliveryNoteId = deliveryNoteId;
                 await Update(order);
             }
 
