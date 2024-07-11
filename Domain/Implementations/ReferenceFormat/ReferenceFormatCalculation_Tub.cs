@@ -7,14 +7,14 @@ namespace Domain.Implementations.ReferenceFormat
         public decimal Calculate(ReferenceDimensions referenceDimensions)
         {
             double result, diamInt, diamExt;
-            if ((referenceDimensions.Diameter > 0) && (referenceDimensions.Thickness > 0) && (referenceDimensions.Height > 0) && (referenceDimensions.Density > 0))
+            if ((referenceDimensions.Diameter > 0) && (referenceDimensions.Thickness > 0) && (referenceDimensions.Length > 0) && (referenceDimensions.Density > 0))
             {
                 diamExt = (double) referenceDimensions.Diameter;
                 diamInt = (double) (referenceDimensions.Diameter - referenceDimensions.Thickness);
-                var height = (double) referenceDimensions.Height;
+                var length = (double) referenceDimensions.Length;
                 var density = (double) referenceDimensions.Density;
 
-                result = (Math.Pow(diamExt / 2, 2) - Math.Pow(diamInt / 2, 2)) * Math.PI * height * density;
+                result = (Math.Pow(diamExt / 2, 2) - Math.Pow(diamInt / 2, 2)) * Math.PI * length * density;
             } 
             else 
             {
