@@ -7,6 +7,7 @@ namespace Application.Services.Sales
     public interface ISalesInvoiceService
     {
         Task<GenericResponse> Create(CreateHeaderRequest createInvoiceRequest);
+        Task<GenericResponse> CreateRectificative(Guid id);
 
         Task<SalesInvoice?> GetById(Guid id);
         Task<SalesInvoiceReportResponse?> GetByIdForReporting(Guid id);

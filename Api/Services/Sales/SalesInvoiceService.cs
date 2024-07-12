@@ -6,6 +6,7 @@ using Application.Services.Sales;
 using Domain.Entities;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
+using Infrastructure.Migrations;
 
 namespace Api.Services.Sales
 {
@@ -124,25 +125,21 @@ namespace Api.Services.Sales
             var invoices = _unitOfWork.SalesInvoices.Find(p => p.InvoiceDate >= startDate && p.InvoiceDate <= endDate && p.StatusId == statusId);
             return invoices;
         }
-
         public IEnumerable<SalesInvoice> GetBetweenDatesAndCustomer(DateTime startDate, DateTime endDate, Guid customerId)
         {
             var invoices = _unitOfWork.SalesInvoices.Find(p => p.InvoiceDate >= startDate && p.InvoiceDate <= endDate && p.CustomerId == customerId);
             return invoices;
         }
-
         public IEnumerable<SalesInvoice> GetByCustomer(Guid customerId)
         {
             var invoices = _unitOfWork.SalesInvoices.Find(p => p.CustomerId == customerId);
             return invoices;
         }
-
         public IEnumerable<SalesInvoice> GetByStatus(Guid statusId)
         {
             var invoices = _unitOfWork.SalesInvoices.Find(p => p.StatusId == statusId);
             return invoices;
         }
-
         public IEnumerable<SalesInvoice> GetByExercise(Guid exerciseId)
         {
             var invoices = _unitOfWork.SalesInvoices.Find(p => p.ExerciseId == exerciseId);
@@ -179,6 +176,78 @@ namespace Api.Services.Sales
             await _unitOfWork.SalesInvoices.Add(invoice);
 
             return new GenericResponse(true, invoice);
+        }
+        public async Task<GenericResponse> CreateRectificative(Guid id)
+        {
+            var order = await _unitOfWork.SalesInvoices.Get(id);
+
+            var orderId = Guid.NewGuid();
+            var rectificativeOrder = new SalesInvoice()
+            {
+                Id = orderId,
+                CustomerId = order.CustomerId,
+                SiteId = order.SiteId,
+                ExerciseId = order.ExerciseId,
+                StatusId = order.StatusId,
+                Name = order.Name,
+                Address = order.Address,
+                BaseAmount = order.BaseAmount,
+                City = order.City,
+                PostalCode = order.PostalCode,
+                Country = order.Country,
+                Region = order.Region,
+                VatNumber = order.VatNumber,
+                CreatedOn = DateTime.Now,
+                CustomerAccountNumber = order.CustomerAccountNumber,
+                CustomerAddress = order.CustomerAddress,
+                CustomerCity = order.CustomerCity,
+                CustomerCode = order.CustomerCode,
+                CustomerComercialName   = order.CustomerComercialName,
+                CustomerCountry = order.CustomerCountry,
+                CustomerPostalCode = order.CustomerPostalCode,
+                CustomerRegion = order.CustomerRegion,
+                CustomerTaxName = order.CustomerTaxName,
+                CustomerVatNumber   = order.CustomerVatNumber,
+                InvoiceDate = DateTime.Now,
+                InvoiceNumber = "TODO",
+                PaymentMethodId = order.PaymentMethodId,
+                GrossAmount = order.GrossAmount * -1,
+                TaxAmount = order.TaxAmount * -1,
+                NetAmount = order.NetAmount * -1,
+                TransportAmount = order.TransportAmount * -1,
+                SalesInvoiceDetails = order.SalesInvoiceDetails.Select(d => new SalesInvoiceDetail()
+                {
+                    Id = Guid.NewGuid(),
+                    SalesInvoiceId = orderId,
+                    Description = d.Description,
+                    Amount = d.Amount * -1,
+                    Quantity = d.Quantity,
+                    UnitCost = d.UnitCost * -1,
+                    UnitPrice = d.UnitPrice * -1,
+                    DeliveryNoteDetailId = d.DeliveryNoteDetailId,
+                    TaxId = d.TaxId,
+                    TotalCost = d.TotalCost * -1,
+                }).ToList(),
+                SalesInvoiceDueDates = order.SalesInvoiceDueDates.Select(d => new SalesInvoiceDueDate()
+                {
+                    Id = Guid.NewGuid(),
+                    SalesInvoiceId = orderId,
+                    Amount = d.Amount * -1,
+                    DueDate = d.DueDate,
+                }).ToList(),
+                SalesInvoiceImports = order.SalesInvoiceImports.Select(i => new SalesInvoiceImport()
+                {
+                    Id = Guid.NewGuid(),
+                    SalesInvoiceId = orderId,
+                    BaseAmount = i.BaseAmount * -1,
+                    NetAmount = i.NetAmount * -1,
+                    TaxAmount = i.TaxAmount * -1,
+                    TaxId = i.TaxId,
+                }).ToList()
+            };
+
+            await _unitOfWork.SalesInvoices.Add(rectificativeOrder);
+            return new GenericResponse(true, rectificativeOrder);
         }
 
         private async Task<GenericResponse> ValidateCreateInvoiceRequest(CreateHeaderRequest createInvoiceRequest)
