@@ -15,6 +15,17 @@ namespace Api.Controllers.Auth
             _unitOfWork = unitOfWork;
         }
 
+        [HttpGet("{userId:guid}/{page}/{key}")]
+        public IActionResult Get(Guid userId, string page, string key)
+        {
+            var userFilter = _unitOfWork.UserFilters.Find(r => userId == r.UserId && page == r.Page && key == r.Key);
+            if (userFilter == null)
+                return NotFound();
+
+            return Ok(userFilter);
+        }
+
+
         [HttpPost]
         public async Task<IActionResult> CreateOrUpdate(UserFilter request)
         {
