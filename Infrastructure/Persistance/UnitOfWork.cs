@@ -29,6 +29,7 @@ namespace Infrastructure.Persistance
         public IRepository<Role, Guid> Roles { get; private set; }
         public IRepository<User, Guid> Users { get; private set; }
         public IRepository<UserRefreshToken, Guid> UserRefreshTokens { get; private set; }
+        public IRepository<UserFilter, Guid> UserFilters { get; private set; }
 
         // Shared
         public IRepository<Domain.Entities.File, Guid> Files { get; private set; }
@@ -90,6 +91,7 @@ namespace Infrastructure.Persistance
 
             Roles = new Repository<Role, Guid>(context);
             Users = new Repository<User, Guid>(context);
+            UserFilters = new Repository<UserFilter, Guid>(context);
             UserRefreshTokens = new Repository<UserRefreshToken, Guid>(context);
 
             Files = new Repository<Domain.Entities.File, Guid>(context);    

@@ -22,6 +22,7 @@ namespace Application.Persistance
         IRepository<Role, Guid> Roles { get; }
         IRepository<User, Guid> Users { get; }
         IRepository<UserRefreshToken, Guid> UserRefreshTokens { get; }
+        IRepository<UserFilter, Guid> UserFilters { get; }
 
         // Shared
         IRepository<Domain.Entities.File, Guid> Files { get; }
