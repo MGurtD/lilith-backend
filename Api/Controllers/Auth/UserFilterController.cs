@@ -15,6 +15,16 @@ namespace Api.Controllers.Auth
             _unitOfWork = unitOfWork;
         }
 
+        [HttpGet("{userId:guid}")]
+        public IActionResult Get(Guid userId)
+        {
+            var userFilter = _unitOfWork.UserFilters.Find(r => userId == r.UserId);
+            if (userFilter == null)
+                return NotFound();
+
+            return Ok(userFilter);
+        }
+
         [HttpGet("{userId:guid}/{page}/{key}")]
         public IActionResult Get(Guid userId, string page, string key)
         {
@@ -31,16 +41,17 @@ namespace Api.Controllers.Auth
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.UserFilters.Find(r => request.UserId == r.UserId && request.Page == r.Page && request.Key == r.Key).Count() > 0;
-            if (!exists)
+            var userFilter = _unitOfWork.UserFilters.Find(r => request.UserId == r.UserId && request.Page == r.Page && request.Key == r.Key).FirstOrDefault();
+            if (userFilter == null)
             {
                 await _unitOfWork.UserFilters.Add(request);
                 return Ok(request);
             }
             else
             {
-                await _unitOfWork.UserFilters.Update(request);
-                return Ok(request);
+                userFilter.Filter = request.Filter;
+                await _unitOfWork.UserFilters.Update(userFilter);
+                return Ok(userFilter);
             }
         }
 
