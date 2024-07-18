@@ -103,13 +103,16 @@ namespace Api.Services.Sales
                     Id = Guid.NewGuid(),
                     SalesOrderHeaderId = salesOrder.Id,
                     ReferenceId = detail.ReferenceId,
+                    WorkMasterId = detail.WorkMasterId,
                     Quantity = detail.Quantity,
-                    UnitPrice = detail.UnitPrice,
-                    Amount = detail.Amount,
                     Description = detail.Description,
-                    IsDelivered = false,
+                    UnitPrice = detail.UnitPrice,
                     UnitCost = detail.UnitCost,
                     TotalCost = detail.TotalCost,
+                    Discount = detail.Discount,
+                    Profit = detail.Profit,
+                    Amount = detail.Amount,
+                    IsDelivered = false,
                     CreatedOn = DateTime.Now,
                     UpdatedOn = DateTime.Now
                 };
@@ -127,7 +130,7 @@ namespace Api.Services.Sales
             var orderEntities = (InvoiceEntities)response.Content!;
 
             var counterObj = await _exerciseService.GetNextCounter(orderEntities.Exercise.Id, "salesorder");
-            if (!counterObj.Result || counterObj.Content == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
+            if (!counterObj.Result || counterObj.Content == null) return new GenericResponse(false, "Error al crear el comptador");
             var order = new SalesOrderHeader
             {
                 Id = createRequest.Id,
@@ -144,9 +147,9 @@ namespace Api.Services.Sales
             {
                 var lifecycle = _unitOfWork.Lifecycles.Find(l => l.Name == "SalesOrder").FirstOrDefault();
                 if (lifecycle == null)
-                    return new GenericResponse(false, new List<string>() { "El cicle de vida 'SalesOrder' no existeix" });
+                    return new GenericResponse(false, "El cicle de vida 'SalesOrder' no existeix");
                 if (!lifecycle.InitialStatusId.HasValue)
-                    return new GenericResponse(false, new List<string>() { "El cicle de vida 'SalesOrder' no té estat inicial" });
+                    return new GenericResponse(false, "El cicle de vida 'SalesOrder' no té estat inicial" );
                 order.StatusId = lifecycle.InitialStatusId;
             }
 
