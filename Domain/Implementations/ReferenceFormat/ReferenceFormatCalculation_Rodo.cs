@@ -8,13 +8,13 @@ namespace Domain.Implementations.ReferenceFormat
         {
             double result;
             double factor = 0.000001;
-            if ((referenceDimensions.Diameter > 0) && (referenceDimensions.Height > 0) && (referenceDimensions.Density > 0))
+            if ((referenceDimensions.Diameter > 0) && (referenceDimensions.Length > 0) && (referenceDimensions.Density > 0))
             {
                 var diameter = (double) referenceDimensions.Diameter;
-                var height = (double) referenceDimensions.Height;
+                var length = (double) referenceDimensions.Length;
                 var density = (double) referenceDimensions.Density;
                 var radius = diameter / 2;
-                var volume = Math.Pow(radius, 2) * Math.PI * (height);
+                var volume = Math.Pow(radius, 2) * Math.PI * (length);
 
                 result = volume * density * factor;
             } 
