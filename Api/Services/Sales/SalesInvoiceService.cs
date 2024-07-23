@@ -6,6 +6,7 @@ using Application.Services.Sales;
 using Domain.Entities;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
+using Infrastructure.Migrations;
 
 namespace Api.Services.Sales
 {
@@ -124,25 +125,21 @@ namespace Api.Services.Sales
             var invoices = _unitOfWork.SalesInvoices.Find(p => p.InvoiceDate >= startDate && p.InvoiceDate <= endDate && p.StatusId == statusId);
             return invoices;
         }
-
         public IEnumerable<SalesInvoice> GetBetweenDatesAndCustomer(DateTime startDate, DateTime endDate, Guid customerId)
         {
             var invoices = _unitOfWork.SalesInvoices.Find(p => p.InvoiceDate >= startDate && p.InvoiceDate <= endDate && p.CustomerId == customerId);
             return invoices;
         }
-
         public IEnumerable<SalesInvoice> GetByCustomer(Guid customerId)
         {
             var invoices = _unitOfWork.SalesInvoices.Find(p => p.CustomerId == customerId);
             return invoices;
         }
-
         public IEnumerable<SalesInvoice> GetByStatus(Guid statusId)
         {
             var invoices = _unitOfWork.SalesInvoices.Find(p => p.StatusId == statusId);
             return invoices;
         }
-
         public IEnumerable<SalesInvoice> GetByExercise(Guid exerciseId)
         {
             var invoices = _unitOfWork.SalesInvoices.Find(p => p.ExerciseId == exerciseId);
@@ -179,6 +176,144 @@ namespace Api.Services.Sales
             await _unitOfWork.SalesInvoices.Add(invoice);
 
             return new GenericResponse(true, invoice);
+        }
+
+        private async Task<string> GetNextInvoiceCounter(Guid exerciceId)
+        {
+            var counterObj = await _exerciseService.GetNextCounter(exerciceId, "salesinvoice");
+            if (counterObj == null || counterObj.Content == null) return string.Empty;
+            var counter = counterObj.Content.ToString();
+            return counter!;
+        }
+
+        public async Task<GenericResponse> CreateRectificative(CreateRectificativeInvoiceRequest dto)
+        {
+            var originalInvoice = await _unitOfWork.SalesInvoices.Get(dto.Id);
+            if (originalInvoice == null) return new GenericResponse(false, "La factura a rectificar no existeix");
+            if (originalInvoice.SalesInvoiceDetails.Count == 0) return new GenericResponse(false, "La factura a rectificar no té detalls");
+            var negativeNumber = await GetNextInvoiceCounter(Guid.Parse(originalInvoice.ExerciseId!.Value.ToString()));
+
+            var orderId = Guid.NewGuid();
+            var negativeInvoice = new SalesInvoice()
+            {
+                Id = orderId,
+                ParentSalesInvoiceId = dto.Id,
+                InvoiceNumber = negativeNumber,
+                InvoiceDate = DateTime.Now,
+                PaymentMethodId = originalInvoice.PaymentMethodId,
+                CustomerId = originalInvoice.CustomerId,
+                SiteId = originalInvoice.SiteId,
+                ExerciseId = originalInvoice.ExerciseId,
+                StatusId = originalInvoice.StatusId,
+                Name = originalInvoice.Name,
+                Address = originalInvoice.Address,
+                BaseAmount = originalInvoice.BaseAmount,
+                City = originalInvoice.City,
+                PostalCode = originalInvoice.PostalCode,
+                Country = originalInvoice.Country,
+                Region = originalInvoice.Region,
+                VatNumber = originalInvoice.VatNumber,
+                CreatedOn = DateTime.Now,
+                CustomerAccountNumber = originalInvoice.CustomerAccountNumber,
+                CustomerAddress = originalInvoice.CustomerAddress,
+                CustomerCity = originalInvoice.CustomerCity,
+                CustomerCode = originalInvoice.CustomerCode,
+                CustomerComercialName   = originalInvoice.CustomerComercialName,
+                CustomerCountry = originalInvoice.CustomerCountry,
+                CustomerPostalCode = originalInvoice.CustomerPostalCode,
+                CustomerRegion = originalInvoice.CustomerRegion,
+                CustomerTaxName = originalInvoice.CustomerTaxName,
+                CustomerVatNumber   = originalInvoice.CustomerVatNumber,
+                GrossAmount = originalInvoice.GrossAmount * -1,
+                TaxAmount = originalInvoice.TaxAmount * -1,
+                NetAmount = originalInvoice.NetAmount * -1,
+                TransportAmount = originalInvoice.TransportAmount * -1,
+                SalesInvoiceDetails = originalInvoice.SalesInvoiceDetails.Select(d => new SalesInvoiceDetail()
+                {
+                    Id = Guid.NewGuid(),
+                    SalesInvoiceId = orderId,
+                    Description = d.Description,
+                    Amount = d.Amount * -1,
+                    Quantity = d.Quantity,
+                    UnitCost = d.UnitCost * -1,
+                    UnitPrice = d.UnitPrice * -1,
+                    DeliveryNoteDetailId = d.DeliveryNoteDetailId,
+                    TaxId = d.TaxId,
+                    TotalCost = d.TotalCost * -1,
+                }).ToList(),
+                SalesInvoiceDueDates = originalInvoice.SalesInvoiceDueDates.Select(d => new SalesInvoiceDueDate()
+                {
+                    Id = Guid.NewGuid(),
+                    SalesInvoiceId = orderId,
+                    Amount = d.Amount * -1,
+                    DueDate = d.DueDate,
+                }).ToList(),
+                SalesInvoiceImports = originalInvoice.SalesInvoiceImports.Select(i => new SalesInvoiceImport()
+                {
+                    Id = Guid.NewGuid(),
+                    SalesInvoiceId = orderId,
+                    BaseAmount = i.BaseAmount * -1,
+                    NetAmount = i.NetAmount * -1,
+                    TaxAmount = i.TaxAmount * -1,
+                    TaxId = i.TaxId,
+                }).ToList()
+            };
+            await _unitOfWork.SalesInvoices.Add(negativeInvoice);
+
+            // Crear la factura rectificativa
+            var import = originalInvoice.SalesInvoiceImports.FirstOrDefault();
+            var tax = await _unitOfWork.Taxes.Get(import!.TaxId);
+            if (tax == null) return new GenericResponse(false, "L'impost de la factura original no existeix");
+
+            var rectificativeNumber = await GetNextInvoiceCounter(Guid.Parse(originalInvoice.ExerciseId!.Value.ToString()));
+            var rectificativeInvoice = new SalesInvoice()
+            {
+                Id = Guid.NewGuid(),
+                ParentSalesInvoiceId = dto.Id,
+                InvoiceNumber = rectificativeNumber,
+                InvoiceDate = DateTime.Now,
+                PaymentMethodId = originalInvoice.PaymentMethodId,
+                CustomerId = originalInvoice.CustomerId,
+                SiteId = originalInvoice.SiteId,
+                ExerciseId = originalInvoice.ExerciseId,
+                StatusId = originalInvoice.StatusId,
+                Name = originalInvoice.Name,
+                Address = originalInvoice.Address,
+                BaseAmount = originalInvoice.BaseAmount,
+                City = originalInvoice.City,
+                PostalCode = originalInvoice.PostalCode,
+                Country = originalInvoice.Country,
+                Region = originalInvoice.Region,
+                VatNumber = originalInvoice.VatNumber,
+                CreatedOn = DateTime.Now,
+                CustomerAccountNumber = originalInvoice.CustomerAccountNumber,
+                CustomerAddress = originalInvoice.CustomerAddress,
+                CustomerCity = originalInvoice.CustomerCity,
+                CustomerCode = originalInvoice.CustomerCode,
+                CustomerComercialName = originalInvoice.CustomerComercialName,
+                CustomerCountry = originalInvoice.CustomerCountry,
+                CustomerPostalCode = originalInvoice.CustomerPostalCode,
+                CustomerRegion = originalInvoice.CustomerRegion,
+                CustomerTaxName = originalInvoice.CustomerTaxName,
+                CustomerVatNumber = originalInvoice.CustomerVatNumber
+            };
+            await _unitOfWork.SalesInvoices.Add(rectificativeInvoice);
+            await AddDetail(new SalesInvoiceDetail()
+            {
+                Id = Guid.NewGuid(),
+                SalesInvoiceId = rectificativeInvoice.Id,
+                Quantity = 1,
+                Description = $"Rectificativa de la factura {originalInvoice.InvoiceNumber}",
+                UnitPrice = dto.Quantity,
+                Amount = dto.Quantity,
+                UnitCost = dto.Quantity,
+                TotalCost = dto.Quantity,
+                TaxId = tax.Id,
+            });
+            //await GenerateDueDates(rectificativeInvoice);
+            await UpdateImportsAndHeaderAmounts(rectificativeInvoice);
+
+            return new GenericResponse(true, rectificativeInvoice);
         }
 
         private async Task<GenericResponse> ValidateCreateInvoiceRequest(CreateHeaderRequest createInvoiceRequest)

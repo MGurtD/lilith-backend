@@ -32,6 +32,18 @@ namespace Api.Controllers.Sales
             else
                 return BadRequest(response);
         }
+        [HttpPost("Rectificative")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreateRectificative([FromBody] CreateRectificativeInvoiceRequest dto)
+        {
+            var response = await _service.CreateRectificative(dto);
+
+            if (response.Result)
+                return Ok(response);
+            else
+                return BadRequest(response);
+        }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)

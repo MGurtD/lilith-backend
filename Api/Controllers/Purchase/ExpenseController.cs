@@ -47,9 +47,12 @@ namespace Api.Controllers.Purchase
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public IActionResult GetBetweenDatesAndType(DateTime startTime, DateTime endTime, Guid? expenseTypeId)
         {
-            var entities = await _unitOfWork.Expenses.GetAll();
+            var entities = _unitOfWork.Expenses.Find(e => e.PaymentDate >= startTime && e.PaymentDate <= endTime);
+            if (expenseTypeId.HasValue) {
+                entities = entities.Where(e => e.ExpenseTypeId == expenseTypeId.Value);
+            }
             return Ok(entities.OrderBy(e => e.PaymentDate));
         }
 

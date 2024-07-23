@@ -2,7 +2,7 @@
 
 namespace Domain.Entities.Sales
 {
-    public  class SalesInvoice : Entity
+    public class SalesInvoice : Entity
     {
         public string InvoiceNumber { get; set; } = string.Empty;
         public DateTime InvoiceDate { get; set; }
@@ -18,6 +18,8 @@ namespace Domain.Entities.Sales
         public Status? Status { get; set; }
         public PaymentMethod? PaymentMethod { get; set; }
         public Guid PaymentMethodId { get; set; }
+        public SalesInvoice? ParentSalesInvoice { get; set; }
+        public Guid? ParentSalesInvoiceId { get; set; }
 
         public Customer? Customer { get; set; }
         public Guid? CustomerId { get; set; }
@@ -74,9 +76,9 @@ namespace Domain.Entities.Sales
             VatNumber = site.VatNumber;
         }
 
-        public ICollection<SalesInvoiceDetail> SalesInvoiceDetails { get; set; } = new List<SalesInvoiceDetail>();
-        public ICollection<SalesInvoiceDueDate> SalesInvoiceDueDates { get; set; } = new List<SalesInvoiceDueDate>();
-        public ICollection<SalesInvoiceImport> SalesInvoiceImports { get; set; } = new List<SalesInvoiceImport>();
+        public ICollection<SalesInvoiceDetail> SalesInvoiceDetails { get; set; } = [];
+        public ICollection<SalesInvoiceDueDate> SalesInvoiceDueDates { get; set; } = [];
+        public ICollection<SalesInvoiceImport> SalesInvoiceImports { get; set; } = [];
 
         public void CalculateAmountsFromImports()
         {
