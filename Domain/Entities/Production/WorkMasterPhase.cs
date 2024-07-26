@@ -11,6 +11,7 @@ public class WorkMasterPhase : Entity
     public OperatorType? OperatorType { get; set; }
     public Guid? WorkcenterTypeId { get; set; }
     public WorkcenterType? WorkcenterType { get; set; }
+    public decimal ProfitPercentage { get; set; } = decimal.Zero;
     public Guid? PreferredWorkcenterId { get; set; }
     public Workcenter? PreferredWorkcenter { get; set; }
 
