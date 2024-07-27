@@ -85,6 +85,7 @@ namespace Api.Controllers.Purchase
             return Ok(entity);
         }
 
+        #region Contacts
         [Route("Contact")]
         [HttpPost]
         public async Task<IActionResult> CreateContact(SupplierContact request)
@@ -148,6 +149,93 @@ namespace Api.Controllers.Purchase
                 return NotFound();
             }
         }
-    }
+        #endregion
 
+        #region References
+        [Route("Reference/{supplierReferenceId:guid}")]
+        [HttpGet]
+        public IActionResult GetReference(Guid supplierReferenceId)
+        {
+            var references = _unitOfWork.Suppliers.GetSupplierReferenceById(supplierReferenceId);
+            return Ok(references);
+        }
+
+        [Route("{id:guid}/Reference")]
+        [HttpGet]
+        public IActionResult GetReferences(Guid id)
+        {
+            var references = _unitOfWork.Suppliers.GetSupplierReferences(id);
+            return Ok(references);
+        }
+
+        [Route("Reference")]
+        [HttpPost]
+        public async Task<IActionResult> CreateReference(SupplierReference request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+
+            var supplier = await _unitOfWork.Suppliers.Get(request.SupplierId);
+            if (supplier is null) return NotFound("El proveïdor no existeix");
+
+            var reference = await _unitOfWork.References.Get(request.ReferenceId);
+            if (reference is null) return NotFound("La referencia no existeix");
+
+            var references = _unitOfWork.Suppliers.GetSupplierReferences(request.SupplierId);
+            var exists = references.Where(r => r.ReferenceId == request.ReferenceId).Count() > 0;
+            if (!exists)
+            {
+                await _unitOfWork.Suppliers.AddSupplierReference(request);
+                return Ok(request);
+            }
+            else
+            {
+                return ValidationProblem("La referencia indicada ja existeix al proveïdor");
+            }
+        }
+
+        [Route("Reference/{id:guid}")]
+        [HttpPut]
+        public async Task<IActionResult> UpdateReference(Guid id, SupplierReference request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+
+            var supplierReference = await _unitOfWork.Suppliers.GetSupplierReferenceById(id);
+            if (supplierReference is not null)
+            {
+                supplierReference.UpdatedOn = DateTime.Now;
+                supplierReference.SupplierCode = request.SupplierCode;
+                supplierReference.SupplierDescription = request.SupplierDescription;
+                supplierReference.SupplierPrice = request.SupplierPrice;
+                supplierReference.SupplyDays = request.SupplyDays;
+
+                await _unitOfWork.Suppliers.UpdateSupplierReference(supplierReference);
+                return Ok(supplierReference);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [Route("Reference/{id:guid}")]
+        [HttpDelete]
+        public async Task<IActionResult> RemoveReference(Guid id)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+
+            var supplierReference = await _unitOfWork.Suppliers.GetSupplierReferenceById(id);
+            if (supplierReference is not null)
+            {
+                await _unitOfWork.Suppliers.RemoveSupplierReference(supplierReference);
+                return Ok(supplierReference);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+        #endregion
+
+
+    }
 }

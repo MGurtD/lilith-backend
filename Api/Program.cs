@@ -23,6 +23,8 @@ using Api.Services.Warehouse;
 using Application.Production.Warehouse;
 using Application.Services.Production;
 using Api.Services.Production;
+using Application.Persistance.Repositories.Purchase;
+using Infrastructure.Persistance.Repositories.Purchase;
 
 // Early init of NLog to allow startup and exception logging, before host is built
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();

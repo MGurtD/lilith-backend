@@ -1,4 +1,5 @@
 ﻿using Application.Persistance;
+using Application.Persistance.Repositories.Purchase;
 using Application.Services;
 using Domain.Entities.Shared;
 using Microsoft.AspNetCore.Mvc;
@@ -7,17 +8,11 @@ namespace Api.Controllers.Shared
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ReferenceController : ControllerBase
+    public class ReferenceController(IUnitOfWork unitOfWork, IReferenceService referenceService) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IReferenceService _referenceService;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IReferenceService _referenceService = referenceService;
 
-        public ReferenceController(IUnitOfWork unitOfWork, IReferenceService referenceService)
-        {
-            _unitOfWork = unitOfWork;
-            _referenceService = referenceService;
-        }
-        
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -47,7 +42,8 @@ namespace Api.Controllers.Shared
         {
             var entities = _unitOfWork.References.Find(r => r.Purchase).OrderBy(r => r.Code);
             return Ok(entities);
-        }
+        }        
+
         [Route("Production")]
         [HttpGet]
         public IActionResult GetAllProduction()
@@ -68,6 +64,14 @@ namespace Api.Controllers.Shared
             {
                 return NotFound();
             }
+        }
+
+        [Route("{id:guid}/Suppliers")]
+        [HttpGet]
+        public IActionResult GetReferenceSuppliers(Guid id)
+        {
+            var entities = _unitOfWork.Suppliers.GetReferenceSuppliers(id);
+            return Ok(entities);
         }
 
         [HttpPost]
