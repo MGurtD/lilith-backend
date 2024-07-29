@@ -33,25 +33,25 @@ namespace Infrastructure.Persistance.EntityConfiguration.Purchase
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                              ApplicationDbContextConstants.DECIMAL_SCALE);
+                              ApplicationDbContextConstants.PRICE_DECIMAL_SCALE);
             builder
                 .Property(b => b.TransportAmount)
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                              ApplicationDbContextConstants.DECIMAL_SCALE);
+                              ApplicationDbContextConstants.PRICE_DECIMAL_SCALE);
             builder
                 .Property(b => b.Subtotal)
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                              ApplicationDbContextConstants.DECIMAL_SCALE);
+                              ApplicationDbContextConstants.PRICE_DECIMAL_SCALE);
             builder
                 .Property(b => b.GrossAmount)
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                              ApplicationDbContextConstants.DECIMAL_SCALE);
+                              ApplicationDbContextConstants.PRICE_DECIMAL_SCALE);
             builder
                 .Property(b => b.NetAmount)
                 .IsRequired()
