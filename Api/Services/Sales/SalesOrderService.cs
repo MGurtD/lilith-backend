@@ -98,23 +98,9 @@ namespace Api.Services.Sales
 
             foreach (var detail in budget.Details)
             {
-                var salesOrderDetail = new SalesOrderDetail
+                var salesOrderDetail = new SalesOrderDetail(detail, DateTime.Now.AddDays(budget.DeliveryDays))
                 {
-                    Id = Guid.NewGuid(),
-                    SalesOrderHeaderId = salesOrder.Id,
-                    ReferenceId = detail.ReferenceId,
-                    WorkMasterId = detail.WorkMasterId,
-                    Quantity = detail.Quantity,
-                    Description = detail.Description,
-                    UnitPrice = detail.UnitPrice,
-                    UnitCost = detail.UnitCost,
-                    TotalCost = detail.TotalCost,
-                    Discount = detail.Discount,
-                    Profit = detail.Profit,
-                    Amount = detail.Amount,
-                    IsDelivered = false,
-                    CreatedOn = DateTime.Now,
-                    UpdatedOn = DateTime.Now
+                    SalesOrderHeaderId = salesOrder.Id
                 };
                 await AddDetail(salesOrderDetail);
             }
@@ -170,14 +156,6 @@ namespace Api.Services.Sales
             return new GenericResponse(true);
         }
 
-
-        /*
-         * var receipt = await _unitOfWork.Receipts.Get(id);
-            if (receipt == null) return new GenericResponse(false, new List<string>() { $"Id {id} inexistent" });
-
-            await _unitOfWork.Receipts.Remove(receipt);
-            return new GenericResponse(true);
-         */
         public async Task<GenericResponse> Remove(Guid id)
         {
             var salesOrder = await _unitOfWork.SalesOrderHeaders.Get(id);
@@ -227,7 +205,7 @@ namespace Api.Services.Sales
         {
             await _unitOfWork.SalesOrderHeaders.AddDetail(salesOrderDetail);
 
-            return new GenericResponse(true, new List<string> { });
+            return new GenericResponse(true);
         }
         public async Task<GenericResponse> UpdateDetail(SalesOrderDetail salesOrderDetail)
         {
@@ -235,7 +213,7 @@ namespace Api.Services.Sales
             salesOrderDetail.SalesOrderHeader = null;
 
             await _unitOfWork.SalesOrderHeaders.UpdateDetail(salesOrderDetail);
-            return new GenericResponse(true, new List<string> { });
+            return new GenericResponse(true);
         }
         public async Task<GenericResponse> RemoveDetail(Guid id)
         {

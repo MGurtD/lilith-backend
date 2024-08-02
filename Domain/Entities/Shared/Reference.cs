@@ -14,12 +14,16 @@ namespace Domain.Entities.Shared
         public ReferenceType? ReferenceType { get; set;}
         public Guid? CustomerId { get; set;}
         public Customer? Customer { get; set;}
+        public string? CategoryName { get; set; }
+        public ReferenceCategory? Category { get; set; }
         // deprecated
         public decimal Cost { get; set; } = decimal.Zero;
         public decimal Price { get; set; } = decimal.Zero;
+        public decimal TransportAmount { get; set; } = decimal.Zero;
         public bool Sales { get; set; }
         public bool Purchase { get; set; }
         public bool Production { get; set; }
+        // deprecated
         public bool IsService { get; set; }
         public Guid? ReferenceFormatId { get; set; }
         public ReferenceFormat? ReferenceFormat { get; set; }
