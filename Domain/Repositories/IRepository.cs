@@ -7,7 +7,10 @@ namespace Application.Persistance.Repositories
     {
         Task<TEntity?> Get(TId id);
         Task<IEnumerable<TEntity>> GetAll();
-        
+
+        Task<List<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate);
+
+
         IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate);
         Task<bool> Exists(Guid id);
 
@@ -19,6 +22,8 @@ namespace Application.Persistance.Repositories
 
         Task Remove(TEntity entity);
         Task RemoveRange(IEnumerable<TEntity> entities);
+
+        Task SaveChanges();
 
     }
 }
