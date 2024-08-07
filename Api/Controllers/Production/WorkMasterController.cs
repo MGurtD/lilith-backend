@@ -147,6 +147,20 @@ namespace Api.Controllers.Production
                 return NotFound(result);
 
         }
+        [HttpGet("Costs/{id:guid}")]
+        public async Task<IActionResult> GetWorkMasterCostsById(Guid id, int? quantity)
+        {
+            var workMaster = await _unitOfWork.WorkMasters.Get(id);
+            if (workMaster == null) return NotFound();
+
+            var result = await _costsService.GetWorkmasterCost(workMaster, quantity);
+
+            if (result.Result && result.Content is ProductionCosts workMasterCosts)
+                return Ok(new GenericResponse(true, workMasterCosts));
+            else
+                return NotFound(result);
+
+        }
 
         #region Phases
         [HttpGet("Phase/{id:guid}")]
