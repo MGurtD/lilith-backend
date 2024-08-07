@@ -36,12 +36,18 @@ namespace Api.Controllers.Shared
             return Ok(entities);
         }
 
-        [Route("Purchase")]
+        [Route("Purchase/{categoryName?}")]
         [HttpGet]
-        public IActionResult GetAllPurchase()
+        public async Task<IActionResult> GetAllPurchase(string? categoryName = null)
         {
-            var entities = _unitOfWork.References.Find(r => r.Purchase).OrderBy(r => r.Code);
-            return Ok(entities);
+            var entities = await _unitOfWork.References.FindAsync(r => r.Purchase);
+
+            if (!string.IsNullOrEmpty(categoryName))
+            {
+                entities = entities.Where(r => r.CategoryName == categoryName).ToList();
+            }
+
+            return Ok(entities.OrderBy(r => r.Code));
         }        
 
         [Route("Production")]
