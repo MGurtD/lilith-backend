@@ -1,6 +1,7 @@
 ﻿using Application.Contracts;
 using Application.Persistance;
 using Application.Services;
+using Domain.Entities.Shared;
 using System.Text;
 
 namespace Api.Services
@@ -48,6 +49,12 @@ namespace Api.Services
             }
 
             return new GenericResponse(resp, sb.ToString());
+        }
+
+        public async Task<List<Reference>> GetReferenceByCategory(string categoryName)
+        {
+            var categoryReferences = await _unitOfWork.References.FindAsync(r => r.CategoryName == categoryName);
+            return categoryReferences;
         }
     }
 }

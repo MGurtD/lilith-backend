@@ -31,7 +31,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                              ApplicationDbContextConstants.DECIMAL_SCALE);
+                              ApplicationDbContextConstants.PRICE_DECIMAL_SCALE);
             builder
                 .HasKey(b => b.Id)
                 .HasName($"PK_{TABLE_NAME}");

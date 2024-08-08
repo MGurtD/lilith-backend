@@ -30,7 +30,13 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                              ApplicationDbContextConstants.DECIMAL_SCALE);
+                              ApplicationDbContextConstants.PRICE_DECIMAL_SCALE);
+            builder
+                .Property(b => b.TransportAmount)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.PRICE_DECIMAL_SCALE);
             builder
                 .Property(b => b.Version)
                 .IsRequired()
@@ -69,6 +75,18 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .Property(b => b.IsService)
                 .IsRequired()
                 .HasColumnType("boolean");
+
+            builder
+                   .HasOne(rc => rc.ReferenceType)
+                   .WithMany(rc => rc.References)
+                   .HasForeignKey(r => r.ReferenceTypeId)
+                   .HasPrincipalKey(rc => rc.Id);
+
+            builder
+                   .HasOne(r => r.Category)
+                   .WithMany(rc => rc.References)
+                   .HasForeignKey(r => r.CategoryName)
+                   .HasPrincipalKey(rc => rc.Name);
 
             builder
                 .HasKey(b => b.Id)

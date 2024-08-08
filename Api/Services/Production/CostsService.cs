@@ -7,11 +7,8 @@ using Application.Services;
 using Application.Services.Production;
 using Application.Services.Sales;
 using Domain.Entities.Production;
-using Domain.Entities.Sales;
 using Domain.Entities.Warehouse;
 using Domain.Implementations.ReferenceFormat;
-using Infrastructure.Migrations;
-using System.Collections;
 
 namespace Api.Services.Production
 {
@@ -52,7 +49,8 @@ namespace Api.Services.Production
             var operatorCost = 0.0M;
             var machineCost = 0.0M;
             var materialCost = 0.0M;
-            var externalCost = 0.0M;
+            var externalServiceCost = 0.0M;
+            var externalServiceTransportCost = 0.0M;
             
             //Recorrer les phases
             //A cada fase, recollir el operatortypeId, i buscar el seu preu cost/hora
@@ -69,7 +67,8 @@ namespace Api.Services.Production
 
                 // Cálcul de fases externes
                 if (phase.IsExternalWork) {
-                    externalCost += phase.ExternalWorkCost;
+                    externalServiceCost += phase.ExternalWorkCost;
+                    externalServiceTransportCost += phase.TransportCost;
                     continue;
                 }
 
@@ -147,12 +146,12 @@ namespace Api.Services.Production
                 }
             }
 
-            return new GenericResponse(true, new ProductionCosts(operatorCost, machineCost, materialCost, externalCost));
+            return new GenericResponse(true, new ProductionCosts(operatorCost, machineCost, materialCost, externalServiceCost, externalServiceTransportCost));
         }
 
         public async Task<GenericResponse> GetProductionPartCosts(ProductionPart productionPart)
         {
-            var productionCosts = new ProductionCosts(0, 0, 0, 0);
+            var productionCosts = new ProductionCosts(0, 0, 0, 0, 0);
 
             // Get operator cost
             var operatorCostRequest = await GetOperatorCost(productionPart.OperatorId);

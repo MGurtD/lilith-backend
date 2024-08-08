@@ -35,15 +35,27 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                              ApplicationDbContextConstants.DECIMAL_SCALE);
+                              ApplicationDbContextConstants.PRICE_DECIMAL_SCALE);
             builder
                 .Property(b => b.Discount)
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                              ApplicationDbContextConstants.DECIMAL_SCALE);
+                              ApplicationDbContextConstants.PRICE_DECIMAL_SCALE);
             builder
                 .Property(b => b.UnitCost)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.TransportCost)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.ServiceCost)
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
@@ -53,7 +65,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                              ApplicationDbContextConstants.DECIMAL_SCALE);
+                              ApplicationDbContextConstants.PRICE_DECIMAL_SCALE);
             builder
                 .Property(b => b.TotalCost)
                 .IsRequired()
@@ -65,7 +77,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                              ApplicationDbContextConstants.DECIMAL_SCALE);
+                              ApplicationDbContextConstants.PRICE_DECIMAL_SCALE);
             builder
                 .Property(b => b.EstimatedDeliveryDate)
                 .IsRequired()

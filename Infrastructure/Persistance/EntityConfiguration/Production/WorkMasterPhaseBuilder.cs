@@ -30,11 +30,18 @@ public class WorkMasterPhaseBuilder : IEntityTypeConfiguration<WorkMasterPhase>
             .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                           ApplicationDbContextConstants.DECIMAL_SCALE);
         builder
-               .Property(b => b.ProfitPercentage)
-               .IsRequired()
-               .HasColumnType("decimal")
-               .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                             ApplicationDbContextConstants.DECIMAL_SCALE);
+            .Property(b => b.ProfitPercentage)
+            .IsRequired()
+            .HasColumnType("decimal")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
+                          
+        builder
+            .Property(b => b.TransportCost)
+            .IsRequired()
+            .HasColumnType("decimal")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
 
         builder
             .HasKey(b => b.Id)

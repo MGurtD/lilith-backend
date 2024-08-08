@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240729112100_Refactor_PricesToTwoDecimalPlaces")]
+    partial class Refactor_PricesToTwoDecimalPlaces
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1230,10 +1232,6 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar");
 
-                    b.Property<decimal>("ProfitPercentage")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp without time zone")
@@ -1348,17 +1346,6 @@ namespace Infrastructure.Migrations
                     b.Property<Guid?>("PreferredWorkcenterId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ServiceReferenceId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("TransportCost")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-                    
-                    b.Property<decimal>("ProfitPercentage")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp without time zone")
@@ -1376,8 +1363,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("OperatorTypeId");
 
                     b.HasIndex("PreferredWorkcenterId");
-
-                    b.HasIndex("ServiceReferenceId");
 
                     b.HasIndex("WorkMasterId");
 
@@ -1660,22 +1645,11 @@ namespace Infrastructure.Migrations
                     b.Property<Guid?>("PreferredWorkcenterId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ServiceReferenceId")
-                        .HasColumnType("uuid");
-                        
-                    b.Property<decimal>("ProfitPercentage")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
                     b.Property<DateTime?>("StartTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("StatusId")
                         .HasColumnType("uuid");
-
-                    b.Property<decimal>("TransportCost")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -1694,8 +1668,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("OperatorTypeId");
 
                     b.HasIndex("PreferredWorkcenterId");
-
-                    b.HasIndex("ServiceReferenceId");
 
                     b.HasIndex("StatusId");
 
@@ -2591,59 +2563,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("SupplierContacts", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.Purchase.SupplierReference", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<Guid>("ReferenceId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("SupplierCode")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar");
-
-                    b.Property<string>("SupplierDescription")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar");
-
-                    b.Property<Guid>("SupplierId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("SupplierPrice")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("SupplyDays")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.HasKey("Id")
-                        .HasName("PK_SupplierReferences");
-
-                    b.HasIndex("SupplierId");
-
-                    b.HasIndex("ReferenceId", "SupplierId")
-                        .IsUnique();
-
-                    b.ToTable("SupplierReferences", (string)null);
-                });
-
             modelBuilder.Entity("Domain.Entities.Purchase.SupplierType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2790,15 +2709,7 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("ReferenceId")
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("ServiceCost")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
                     b.Property<decimal>("TotalCost")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.Property<decimal>("TransportCost")
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)");
 
@@ -3589,15 +3500,7 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("SalesOrderHeaderId")
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("ServiceCost")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
                     b.Property<decimal>("TotalCost")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.Property<decimal>("TransportCost")
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)");
 
@@ -3815,9 +3718,6 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("CategoryName")
-                        .HasColumnType("varchar");
-
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -3874,10 +3774,6 @@ namespace Infrastructure.Migrations
                     b.Property<Guid?>("TaxId")
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("TransportAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp without time zone")
@@ -3895,8 +3791,6 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("PK_Reference");
 
-                    b.HasIndex("CategoryName");
-
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("ReferenceFormatId");
@@ -3908,26 +3802,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "Code", "Version" }, "UK_Reference_Code_Version");
 
                     b.ToTable("References", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.Shared.ReferenceCategory", b =>
-                {
-                    b.Property<string>("Name")
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar");
-
-                    b.Property<bool>("Disabled")
-                        .HasColumnType("boolean");
-
-                    b.HasKey("Name")
-                        .HasName("PK_ReferenceCategories");
-
-                    b.ToTable("ReferenceCategories", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Shared.ReferenceType", b =>
@@ -4510,10 +4384,6 @@ namespace Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("PreferredWorkcenterId");
 
-                    b.HasOne("Domain.Entities.Shared.Reference", "ServiceReference")
-                        .WithMany()
-                        .HasForeignKey("ServiceReferenceId");
-
                     b.HasOne("Domain.Entities.Production.WorkMaster", "WorkMaster")
                         .WithMany("Phases")
                         .HasForeignKey("WorkMasterId")
@@ -4527,8 +4397,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("OperatorType");
 
                     b.Navigation("PreferredWorkcenter");
-
-                    b.Navigation("ServiceReference");
 
                     b.Navigation("WorkMaster");
 
@@ -4618,10 +4486,6 @@ namespace Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("PreferredWorkcenterId");
 
-                    b.HasOne("Domain.Entities.Shared.Reference", "ServiceReference")
-                        .WithMany()
-                        .HasForeignKey("ServiceReferenceId");
-
                     b.HasOne("Domain.Entities.Status", "Status")
                         .WithMany()
                         .HasForeignKey("StatusId")
@@ -4641,8 +4505,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("OperatorType");
 
                     b.Navigation("PreferredWorkcenter");
-
-                    b.Navigation("ServiceReference");
 
                     b.Navigation("Status");
 
@@ -4872,25 +4734,6 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("SupplierId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Domain.Entities.Purchase.SupplierReference", b =>
-                {
-                    b.HasOne("Domain.Entities.Shared.Reference", "Reference")
-                        .WithMany()
-                        .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Purchase.Supplier", "Supplier")
-                        .WithMany()
-                        .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Reference");
-
-                    b.Navigation("Supplier");
                 });
 
             modelBuilder.Entity("Domain.Entities.Sales.Budget", b =>
@@ -5212,10 +5055,6 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Shared.Reference", b =>
                 {
-                    b.HasOne("Domain.Entities.Shared.ReferenceCategory", "Category")
-                        .WithMany("References")
-                        .HasForeignKey("CategoryName");
-
                     b.HasOne("Domain.Entities.Sales.Customer", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId");
@@ -5225,14 +5064,12 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("ReferenceFormatId");
 
                     b.HasOne("Domain.Entities.Shared.ReferenceType", "ReferenceType")
-                        .WithMany("References")
+                        .WithMany()
                         .HasForeignKey("ReferenceTypeId");
 
                     b.HasOne("Domain.Entities.Tax", "Tax")
                         .WithMany()
                         .HasForeignKey("TaxId");
-
-                    b.Navigation("Category");
 
                     b.Navigation("Customer");
 
@@ -5416,16 +5253,6 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.Sales.SalesOrderHeader", b =>
                 {
                     b.Navigation("SalesOrderDetails");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Shared.ReferenceCategory", b =>
-                {
-                    b.Navigation("References");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Shared.ReferenceType", b =>
-                {
-                    b.Navigation("References");
                 });
 
             modelBuilder.Entity("Domain.Entities.Status", b =>

@@ -1,6 +1,7 @@
 using Application.Contracts;
 using Application.Persistance;
 using Application.Services.Warehouse;
+using Domain.Entities.Shared;
 using Domain.Entities.Warehouse;
 
 namespace Api.Services.Warehouse
@@ -22,13 +23,13 @@ namespace Api.Services.Warehouse
 
         public async Task<GenericResponse> Create(StockMovement request)
         {
-            if (_defaultLocationId == null) return new GenericResponse(false, "No hi ha una ubicaci� per defecte definida al projecte");
+            if (_defaultLocationId == null) return new GenericResponse(false, "No hi ha una ubicació per defecte definida al projecte");
             request.LocationId = _defaultLocationId;
             // Comprovar si la refer?ncia es un servei. Si es un servei no es genera moviment ni error.
             var reference = _unitOfWork.References.Find(p => p.Id == request.ReferenceId).FirstOrDefault();
-            if (reference == null) return new GenericResponse(false, $"Refer?ncia {request.ReferenceId} inexistent");
+            if (reference == null) return new GenericResponse(false, $"Referència {request.ReferenceId} inexistent");
 
-            if (reference.IsService) return new GenericResponse(true, request);
+            if (reference.CategoryName == ReferenceCategories.Service) return new GenericResponse(true, request);
 
             // Comprovar si existeix un stock id per les dimensions i producte
             var stock = _stockService.GetByDimensions(_defaultLocationId.Value, request.ReferenceId,

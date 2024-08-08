@@ -98,23 +98,9 @@ namespace Api.Services.Sales
 
             foreach (var detail in budget.Details)
             {
-                var salesOrderDetail = new SalesOrderDetail
+                var salesOrderDetail = new SalesOrderDetail(detail, DateTime.Now.AddDays(budget.DeliveryDays))
                 {
-                    Id = Guid.NewGuid(),
-                    SalesOrderHeaderId = salesOrder.Id,
-                    ReferenceId = detail.ReferenceId,
-                    WorkMasterId = detail.WorkMasterId,
-                    Quantity = detail.Quantity,
-                    Description = detail.Description,
-                    UnitPrice = detail.UnitPrice,
-                    UnitCost = detail.UnitCost,
-                    TotalCost = detail.TotalCost,
-                    Discount = detail.Discount,
-                    Profit = detail.Profit,
-                    Amount = detail.Amount,
-                    IsDelivered = false,
-                    CreatedOn = DateTime.Now,
-                    UpdatedOn = DateTime.Now
+                    SalesOrderHeaderId = salesOrder.Id
                 };
                 await AddDetail(salesOrderDetail);
             }
@@ -170,14 +156,6 @@ namespace Api.Services.Sales
             return new GenericResponse(true);
         }
 
-
-        /*
-         * var receipt = await _unitOfWork.Receipts.Get(id);
-            if (receipt == null) return new GenericResponse(false, new List<string>() { $"Id {id} inexistent" });
-
-            await _unitOfWork.Receipts.Remove(receipt);
-            return new GenericResponse(true);
-         */
         public async Task<GenericResponse> Remove(Guid id)
         {
             var salesOrder = await _unitOfWork.SalesOrderHeaders.Get(id);
@@ -227,7 +205,7 @@ namespace Api.Services.Sales
         {
             await _unitOfWork.SalesOrderHeaders.AddDetail(salesOrderDetail);
 
-            return new GenericResponse(true, new List<string> { });
+            return new GenericResponse(true);
         }
         public async Task<GenericResponse> UpdateDetail(SalesOrderDetail salesOrderDetail)
         {
@@ -235,7 +213,7 @@ namespace Api.Services.Sales
             salesOrderDetail.SalesOrderHeader = null;
 
             await _unitOfWork.SalesOrderHeaders.UpdateDetail(salesOrderDetail);
-            return new GenericResponse(true, new List<string> { });
+            return new GenericResponse(true);
         }
         public async Task<GenericResponse> RemoveDetail(Guid id)
         {
@@ -259,21 +237,23 @@ namespace Api.Services.Sales
 
         private async Task<GenericResponse> ValidateCreateInvoiceRequest(CreateHeaderRequest createInvoiceRequest)
         {
+            if (createInvoiceRequest.Date == DateTime.MinValue) return new GenericResponse(false, "La data de la comanda no pot ser buida");
+
             var exercise = await _unitOfWork.Exercices.Get(createInvoiceRequest.ExerciseId);
-            if (exercise == null) return new GenericResponse(false, new List<string>() { "L'exercici no existex" });
+            if (exercise == null) return new GenericResponse(false, "L'exercici no existex" );
 
             var customer = await _unitOfWork.Customers.Get(createInvoiceRequest.CustomerId);
-            if (customer == null) return new GenericResponse(false, new List<string>() { "El client no existeix" });
+            if (customer == null) return new GenericResponse(false, "El client no existeix" );
             if (!customer.IsValidForSales())
-                return new GenericResponse(false, new List<string>() { "El client no és válid per a crear una factura. Revisa el nom fiscal, el número de compte i el NIF" });
+                return new GenericResponse(false, "El client no és válid per a crear una factura. Revisa el nom fiscal, el número de compte i el NIF" );
             if (customer.MainAddress() == null)
-                return new GenericResponse(false, new List<string>() { "El client no té direccions donades d'alta. Si us plau, creí una direcció." });
+                return new GenericResponse(false,  "El client no té direccions donades d'alta. Si us plau, creí una direcció." );
 
             var site = _unitOfWork.Sites.Find(s => s.Name == "Local Torelló").FirstOrDefault();
             if (site == null)
-                return new GenericResponse(false, new List<string>() { "La seu 'Temges' no existeix" });
+                return new GenericResponse(false, "La seu 'Temges' no existeix" );
             if (!site.IsValidForSales())
-                return new GenericResponse(false, new List<string>() { "Seu 'Temges' no és válida per crear una factura. Revisi les dades de facturació." });
+                return new GenericResponse(false, "Seu 'Temges' no és válida per crear una factura. Revisi les dades de facturació." );
 
             InvoiceEntities invoiceEntities;
             invoiceEntities.Exercise = exercise;

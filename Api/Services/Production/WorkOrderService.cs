@@ -140,6 +140,8 @@ namespace Api.Services.Production
                     Comment = workMasterPhase.Comment,
                     ExternalWorkCost = workMasterPhase.ExternalWorkCost,
                     IsExternalWork = workMasterPhase.IsExternalWork,
+                    TransportCost = workMasterPhase.TransportCost,
+                    ServiceReferenceId = workMasterPhase.ServiceReferenceId,
                     OperatorTypeId = workMasterPhase.OperatorTypeId,
                     PreferredWorkcenterId = workMasterPhase.PreferredWorkcenterId,
                     WorkcenterTypeId = workMasterPhase.WorkcenterTypeId,

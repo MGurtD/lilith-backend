@@ -9,6 +9,7 @@ namespace Infrastructure.Persistance
     {
         public const int DECIMAL_PRECISION = 18;
         public const int DECIMAL_SCALE = 4;
+        public const int PRICE_DECIMAL_SCALE = 2;
     }
     public static class ApplicationDbContextSchemas
     {

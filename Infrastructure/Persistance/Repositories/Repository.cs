@@ -25,9 +25,14 @@ namespace Infrastructure.Persistance.Repositories
             return await dbSet.AsNoTracking().ToListAsync();
         }
 
+        public async Task<List<Entity>> FindAsync(Expression<Func<Entity, bool>> predicate)
+        {
+            return await dbSet.AsNoTracking().Where(predicate).ToListAsync();
+        }
+
         public virtual IEnumerable<Entity> Find(Expression<Func<Entity, bool>> predicate)
         {
-            var entities = dbSet.AsNoTracking().Where(predicate).AsNoTracking();
+            var entities = dbSet.AsNoTracking().Where(predicate);
             return entities;
         }
 
@@ -80,6 +85,9 @@ namespace Infrastructure.Persistance.Repositories
             await context.SaveChangesAsync();
         }
 
-        
+        public async Task SaveChanges()
+        {
+            await context.SaveChangesAsync();
+        }
     }
 }

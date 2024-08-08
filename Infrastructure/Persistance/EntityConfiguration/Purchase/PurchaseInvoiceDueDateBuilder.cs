@@ -20,7 +20,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Purchase
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
-                              ApplicationDbContextConstants.DECIMAL_SCALE); ;
+                              ApplicationDbContextConstants.PRICE_DECIMAL_SCALE); ;
 
             builder
                 .HasKey(b => b.Id)
