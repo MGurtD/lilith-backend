@@ -357,6 +357,7 @@ namespace Api.Controllers.Production
         public async Task<IActionResult> DeletePhaseBillOfMaterials(Guid id)
         {
             if (!ModelState.IsValid)
+
                 return BadRequest(ModelState.ValidationState);
 
             var entity = _unitOfWork.WorkMasters.Phases.BillOfMaterials.Find(e => e.Id == id).FirstOrDefault();

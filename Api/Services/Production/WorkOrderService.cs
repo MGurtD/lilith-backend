@@ -145,6 +145,7 @@ namespace Api.Services.Production
                     OperatorTypeId = workMasterPhase.OperatorTypeId,
                     PreferredWorkcenterId = workMasterPhase.PreferredWorkcenterId,
                     WorkcenterTypeId = workMasterPhase.WorkcenterTypeId,
+                    ProfitPercentage = workMasterPhase.ProfitPercentage,
                     WorkOrderId = workOrder.Id,
                     StatusId = initialStatusId.Value
                 };

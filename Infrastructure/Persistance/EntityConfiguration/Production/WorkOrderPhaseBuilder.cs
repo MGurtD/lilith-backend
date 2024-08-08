@@ -29,6 +29,14 @@ public class WorkOrderPhaseBuilder : IEntityTypeConfiguration<WorkOrderPhase>
             .HasColumnType("decimal")
             .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                           ApplicationDbContextConstants.DECIMAL_SCALE);
+                          
+        builder
+            .Property(b => b.ProfitPercentage)
+            .IsRequired()
+            .HasColumnType("decimal")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
+                          
         builder
             .Property(b => b.TransportCost)
             .IsRequired()

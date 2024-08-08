@@ -31,6 +31,7 @@ namespace Infrastructure.Persistance.Repositories.Production
             return await dbSet
                         .Include(d => d.Reference)
                         .Include(d => d.Phases)
+                            .ThenInclude(d => d.Details)
                         .AsNoTracking()
                         .FirstOrDefaultAsync(e => e.Id == id);
         }
