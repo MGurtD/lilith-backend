@@ -18,6 +18,8 @@ namespace Domain.Entities.Sales
         public decimal Profit { get; set; }
         public decimal Discount { get; set; }
         public decimal UnitCost { get; set; }
+        public decimal TransportCost { get; set; }
+        public decimal ServiceCost { get; set; }
         public decimal TotalCost { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal Amount { get; set; }
@@ -37,6 +39,9 @@ namespace Domain.Entities.Sales
             LastCost = decimal.Zero;
             WorkMasterCost = decimal.Zero;
             UnitPrice = decimal.Zero;
+            UnitCost = decimal.Zero;
+            TransportCost = decimal.Zero;
+            ServiceCost = decimal.Zero;
             TotalCost = decimal.Zero;
             Amount = decimal.Zero;
             EstimatedDeliveryDate = DateTime.Now;
@@ -44,20 +49,24 @@ namespace Domain.Entities.Sales
             IsDelivered = false;
         }
 
-        public SalesOrderDetail(BudgetDetail budgetDetail)
+        public SalesOrderDetail(BudgetDetail budgetDetail, DateTime estimatedDeliveryDate)
         {
             Id = Guid.NewGuid();
             CreatedOn = DateTime.Now;
             UpdatedOn = DateTime.Now;
+            ReferenceId = budgetDetail.ReferenceId;
+            WorkMasterId = budgetDetail.WorkMasterId;
             Description = budgetDetail.Description;
             Quantity = budgetDetail.Quantity;
             Profit = budgetDetail.Profit;
             Discount = budgetDetail.Discount;
             UnitCost = budgetDetail.UnitCost;
+            TransportCost = budgetDetail.TransportCost;
+            ServiceCost = budgetDetail.ServiceCost;
             TotalCost = budgetDetail.TotalCost;
             UnitPrice = budgetDetail.UnitPrice;
             Amount = budgetDetail.Amount;
-            EstimatedDeliveryDate = DateTime.Now;
+            EstimatedDeliveryDate = estimatedDeliveryDate;
             Disabled = false;
             IsDelivered = false;
         }

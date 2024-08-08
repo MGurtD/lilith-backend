@@ -1,3 +1,5 @@
+using Domain.Entities.Shared;
+
 namespace Domain.Entities.Production;
 
 public class WorkMasterPhase : Entity
@@ -15,7 +17,10 @@ public class WorkMasterPhase : Entity
     public Workcenter? PreferredWorkcenter { get; set; }
 
     public bool IsExternalWork { get; set; }
+    public Guid? ServiceReferenceId { get; set; }
+    public Reference? ServiceReference { get; set; }
     public decimal ExternalWorkCost { get; set; }
+    public decimal TransportCost { get; set; }
     public string Comment { get; set; } = string.Empty;
 
     public ICollection<WorkMasterPhaseDetail> Details { get; set; } = new List<WorkMasterPhaseDetail>();

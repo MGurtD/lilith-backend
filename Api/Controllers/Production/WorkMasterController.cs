@@ -73,7 +73,7 @@ namespace Api.Controllers.Production
             {
                 request.operatorCost = workMasterCosts.OperatorCost;
                 request.machineCost = workMasterCosts.MachineCost;
-                request.externalCost = workMasterCosts.ExternalCost;
+                request.externalCost = workMasterCosts.ExternalServiceCost + workMasterCosts.ExternalTransportCost;
                 request.materialCost = workMasterCosts.MaterialCost;
             }
 
@@ -140,15 +140,23 @@ namespace Api.Controllers.Production
             if (workMaster == null) return NotFound();
 
             var result = await _costsService.GetWorkmasterCost(workMaster, quantity);
-            var cost = (decimal)0.0;
 
             if (result.Result && result.Content is ProductionCosts workMasterCosts)
-            {
-                cost = workMasterCosts.OperatorCost + workMasterCosts.MachineCost + workMasterCosts.ExternalCost + workMasterCosts.MaterialCost;
-            }
+                return Ok(new GenericResponse(true, workMasterCosts.TotalCost()));
+            else
+                return NotFound(result);
 
-            if (result.Result)                
-                return Ok(new GenericResponse(true, cost));
+        }
+        [HttpGet("Costs/{id:guid}")]
+        public async Task<IActionResult> GetWorkMasterCostsById(Guid id, int? quantity)
+        {
+            var workMaster = await _unitOfWork.WorkMasters.Get(id);
+            if (workMaster == null) return NotFound();
+
+            var result = await _costsService.GetWorkmasterCost(workMaster, quantity);
+
+            if (result.Result && result.Content is ProductionCosts workMasterCosts)
+                return Ok(new GenericResponse(true, workMasterCosts));
             else
                 return NotFound(result);
 
