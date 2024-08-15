@@ -58,7 +58,7 @@ namespace Api.Services.Purchase
             return receipts;
         }
 
-        public async Task<GenericResponse> Create(CreateReceiptRequest createRequest)
+        public async Task<GenericResponse> Create(CreatePurchaseDocumentRequest createRequest)
         {
             var exercise = await _unitOfWork.Exercices.Get(createRequest.ExerciseId);
             if (exercise == null) return new GenericResponse(false, new List<string>() { "Exercici inexistent" });

@@ -13,7 +13,7 @@ namespace Application.Services.Purchase
         IEnumerable<Receipt> GetByInvoice(Guid invoiceId);
         IEnumerable<Receipt> GetByStatus(Guid statusId);
 
-        Task<GenericResponse> Create(CreateReceiptRequest createRequest);
+        Task<GenericResponse> Create(CreatePurchaseDocumentRequest createRequest);
         Task<GenericResponse> Update(Receipt receipt);
         Task<GenericResponse> Remove(Guid id);
 

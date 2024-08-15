@@ -67,7 +67,7 @@ namespace Api.Controllers.Purchase
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create(CreateReceiptRequest createRequest)
+        public async Task<IActionResult> Create(CreatePurchaseDocumentRequest createRequest)
         {
             var response = await _service.Create(createRequest);
 

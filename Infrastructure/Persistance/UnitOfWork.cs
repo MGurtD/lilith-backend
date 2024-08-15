@@ -21,128 +21,70 @@ using Infrastructure.Persistance.Repositories.Warehouse;
 
 namespace Infrastructure.Persistance
 {
-    public class UnitOfWork : IUnitOfWork, IDisposable
+    public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork, IDisposable
     {
-        public readonly ApplicationDbContext context;
+        public readonly ApplicationDbContext context = context;
 
         // Authentication
-        public IRepository<Role, Guid> Roles { get; private set; }
-        public IRepository<User, Guid> Users { get; private set; }
-        public IRepository<UserRefreshToken, Guid> UserRefreshTokens { get; private set; }
-        public IRepository<UserFilter, Guid> UserFilters { get; private set; }
+        public IRepository<Role, Guid> Roles { get; private set; } = new Repository<Role, Guid>(context);
+        public IRepository<User, Guid> Users { get; private set; } = new Repository<User, Guid>(context);
+        public IRepository<UserRefreshToken, Guid> UserRefreshTokens { get; private set; } = new Repository<UserRefreshToken, Guid>(context);
+        public IRepository<UserFilter, Guid> UserFilters { get; private set; } = new Repository<UserFilter, Guid>(context);
 
         // Shared
-        public IRepository<Domain.Entities.File, Guid> Files { get; private set; }
-        public IRepository<Parameter, Guid> Parameters { get; private set; }
-        public IRepository<Exercise, Guid> Exercices { get; private set; }
-        public IRepository<Tax, Guid> Taxes { get; private set; }
-        public IRepository<PaymentMethod, Guid> PaymentMethods { get; private set; }
-        public ILifecycleRepository Lifecycles { get; private set; }
+        public IRepository<Domain.Entities.File, Guid> Files { get; private set; } = new Repository<Domain.Entities.File, Guid>(context);
+        public IRepository<Parameter, Guid> Parameters { get; private set; } = new Repository<Parameter, Guid>(context);
+        public IRepository<Exercise, Guid> Exercices { get; private set; } = new Repository<Exercise, Guid>(context);
+        public IRepository<Tax, Guid> Taxes { get; private set; } = new Repository<Tax, Guid>(context);
+        public IRepository<PaymentMethod, Guid> PaymentMethods { get; private set; } = new Repository<PaymentMethod, Guid>(context);
+        public ILifecycleRepository Lifecycles { get; private set; } = new LifecycleRepository(context);
 
         // Purchase
-        public IRepository<SupplierType, Guid> SupplierTypes { get; private set; }
-        public ISupplierRepository Suppliers { get; private set; }
-        public IPurchaseInvoiceStatusRepository PurchaseInvoiceStatuses { get; private set; }
-        public IPurchaseInvoiceRepository PurchaseInvoices { get; private set; }
-        public IRepository<PurchaseInvoiceDueDate, Guid> PurchaseInvoiceDueDates { get; private set; }
-        public IRepository<PurchaseInvoiceSerie, Guid> PurchaseInvoiceSeries { get; private set; }
-        public IRepository<ExpenseType, Guid> ExpenseTypes { get; private set; }
-        public IExpenseRepository Expenses { get; private set; }
-        public IRepository<ReferenceFormat, Guid> ReferenceFormats { get; private set; }
-        public IContractReader<ConsolidatedExpense> ConsolidatedExpenses { get; private set; }        
+        public IRepository<SupplierType, Guid> SupplierTypes { get; private set; } = new Repository<SupplierType, Guid>(context);
+        public ISupplierRepository Suppliers { get; private set; } = new SupplierRepository(context);
+        public IPurchaseInvoiceStatusRepository PurchaseInvoiceStatuses { get; private set; } = new PurchaseInvoiceStatusRepository(context);
+        public IPurchaseOrderRepository PurchaseOrders { get; private set; } = new PurchaseOrderRepository(context);
+        public IPurchaseInvoiceRepository PurchaseInvoices { get; private set; } = new PurchaseInvoiceRepository(context);
+        public IRepository<PurchaseInvoiceDueDate, Guid> PurchaseInvoiceDueDates { get; private set; } = new Repository<PurchaseInvoiceDueDate, Guid>(context);
+        public IRepository<PurchaseInvoiceSerie, Guid> PurchaseInvoiceSeries { get; private set; } = new Repository<PurchaseInvoiceSerie, Guid>(context);
+        public IRepository<ExpenseType, Guid> ExpenseTypes { get; private set; } = new Repository<ExpenseType, Guid>(context);
+        public IExpenseRepository Expenses { get; private set; } = new ExpenseRepository(context);
+        public IRepository<ReferenceFormat, Guid> ReferenceFormats { get; private set; } = new Repository<ReferenceFormat, Guid>(context);
+        public IContractReader<ConsolidatedExpense> ConsolidatedExpenses { get; private set; } = new ContractReader<ConsolidatedExpense>(context);
 
         // Sales
-        public IRepository<CustomerType, Guid> CustomerTypes { get; private set; }
-        public ICustomerRepository Customers { get; private set; }
-        public IRepository<Reference, Guid> References { get; private set; }
-        public ISalesOrderHeaderRepository SalesOrderHeaders { get; private set; }
-        public ISalesOrderDetailRepository SalesOrderDetails { get; private set; }
-        public ISalesInvoiceRepository SalesInvoices { get; private set; }
-        public IReceiptRepository Receipts { get; private set; }
-        public IDeliveryNoteRepository DeliveryNotes { get; private set; }
-        public IBudgetRepository Budgets { get; private set; }
+        public IRepository<CustomerType, Guid> CustomerTypes { get; private set; } = new Repository<CustomerType, Guid>(context);
+        public ICustomerRepository Customers { get; private set; } = new CustomerRepository(context);
+        public IRepository<Reference, Guid> References { get; private set; } = new Repository<Reference, Guid>(context);
+        public ISalesOrderHeaderRepository SalesOrderHeaders { get; private set; } = new SalesOrderHeaderRepository(context, new SalesOrderDetailRepository(context));
+        public ISalesOrderDetailRepository SalesOrderDetails { get; private set; } = new SalesOrderDetailRepository(context);
+        public ISalesInvoiceRepository SalesInvoices { get; private set; } = new SalesInvoiceRepository(context);
+        public IReceiptRepository Receipts { get; private set; } = new ReceiptRepository(context);
+        public IDeliveryNoteRepository DeliveryNotes { get; private set; } = new DeliveryNoteRepository(context);
+        public IBudgetRepository Budgets { get; private set; } = new BudgetRepository(context);
 
         // Production
-        public IRepository<Enterprise, Guid> Enterprises { get; private set; }
-        public IRepository<Site, Guid> Sites { get; private set; }
-        public IRepository<Area, Guid> Areas { get; private set; }
-        public IRepository<WorkcenterType, Guid> WorkcenterTypes { get; private set; }
-        public IWorkcenterRepository Workcenters { get; private set; }
-        public IRepository<WorkCenterCost, Guid> WorkcenterCosts { get; private set; }
-        public IRepository<Operator, Guid> Operators { get; private set; }
-        public IRepository<OperatorType, Guid> OperatorTypes { get; private set; }        
-        public IRepository<MachineStatus, Guid> MachineStatuses { get; private set; }
-        public IRepository<Shift, Guid> Shifts { get; private set; }
-        public IRepository<ShiftDetail, Guid> ShiftDetails { get; private set; }
-        public IWorkMasterRepository WorkMasters { get; private set; }
-        public IWorkOrderRepository WorkOrders { get; private set; }
-        public IProductionPartRepository ProductionParts { get; private set; }
-        public IContractReader<DetailedWorkOrder> DetailedWorkOrders { get; private set; }
+        public IRepository<Enterprise, Guid> Enterprises { get; private set; } = new Repository<Enterprise, Guid>(context);
+        public IRepository<Site, Guid> Sites { get; private set; } = new Repository<Site, Guid>(context);
+        public IRepository<Area, Guid> Areas { get; private set; } = new Repository<Area, Guid>(context);
+        public IRepository<WorkcenterType, Guid> WorkcenterTypes { get; private set; } = new Repository<WorkcenterType, Guid>(context);
+        public IWorkcenterRepository Workcenters { get; private set; } = new WorkcenterRepository(context);
+        public IRepository<WorkCenterCost, Guid> WorkcenterCosts { get; private set; } = new Repository<WorkCenterCost, Guid>(context);
+        public IRepository<Operator, Guid> Operators { get; private set; } = new Repository<Operator, Guid>(context);
+        public IRepository<OperatorType, Guid> OperatorTypes { get; private set; } = new Repository<OperatorType, Guid>(context);
+        public IRepository<MachineStatus, Guid> MachineStatuses { get; private set; } = new Repository<MachineStatus, Guid>(context);
+        public IRepository<Shift, Guid> Shifts { get; private set; } = new Repository<Shift, Guid>(context);
+        public IRepository<ShiftDetail, Guid> ShiftDetails { get; private set; } = new Repository<ShiftDetail, Guid>(context);
+        public IWorkMasterRepository WorkMasters { get; private set; } = new WorkMasterRepository(context);
+        public IWorkOrderRepository WorkOrders { get; private set; } = new WorkOrderRepository(context);
+        public IProductionPartRepository ProductionParts { get; private set; } = new ProductionPartRepository(context);
+        public IContractReader<DetailedWorkOrder> DetailedWorkOrders { get; private set; } = new ContractReader<DetailedWorkOrder>(context);
 
         // Warehouse
-        public IWarehouseRepository Warehouses { get; private set; }
-        public IRepository<ReferenceType, Guid> ReferenceTypes { get; private set; }
-        public IRepository<Stock, Guid> Stocks{ get; private set;}
-        public IRepository<StockMovement, Guid> StockMovements {get; private set;}
-
-        public UnitOfWork(ApplicationDbContext context)
-        {
-            this.context = context;
-
-            Roles = new Repository<Role, Guid>(context);
-            Users = new Repository<User, Guid>(context);
-            UserFilters = new Repository<UserFilter, Guid>(context);
-            UserRefreshTokens = new Repository<UserRefreshToken, Guid>(context);
-
-            Files = new Repository<Domain.Entities.File, Guid>(context);    
-            Parameters = new Repository<Parameter, Guid>(context);
-            PaymentMethods = new Repository<PaymentMethod, Guid>(context);
-            Taxes = new Repository<Tax, Guid>(context);
-            Exercices = new Repository<Exercise, Guid>(context);
-
-            SupplierTypes = new Repository<SupplierType, Guid>(context);
-            Suppliers = new SupplierRepository(context);
-            PurchaseInvoiceStatuses = new PurchaseInvoiceStatusRepository(context);
-            PurchaseInvoices = new PurchaseInvoiceRepository(context);
-            PurchaseInvoiceDueDates = new Repository<PurchaseInvoiceDueDate, Guid>(context);
-            PurchaseInvoiceSeries = new Repository<PurchaseInvoiceSerie, Guid>(context);
-            Receipts = new ReceiptRepository(context);
-            ReferenceFormats = new Repository<ReferenceFormat, Guid>(context);
-            ExpenseTypes = new Repository<ExpenseType, Guid>(context);
-            Expenses = new ExpenseRepository(context);
-            ConsolidatedExpenses = new ContractReader<ConsolidatedExpense>(context);
-
-            CustomerTypes = new Repository<CustomerType, Guid>(context);
-            Customers = new CustomerRepository(context);
-            Lifecycles = new LifecycleRepository(context);
-            References = new Repository<Reference, Guid>(context);
-            SalesOrderHeaders = new SalesOrderHeaderRepository(context, new SalesOrderDetailRepository(context));
-            SalesOrderDetails = new SalesOrderDetailRepository(context);
-            SalesInvoices = new SalesInvoiceRepository(context);
-            DeliveryNotes = new DeliveryNoteRepository(context);
-            Budgets = new BudgetRepository(context);
-
-            Enterprises = new Repository<Enterprise, Guid>(context);
-            Sites = new Repository<Site, Guid>(context);
-            Areas = new Repository<Area, Guid>(context);
-            WorkcenterTypes = new Repository<WorkcenterType, Guid>(context);
-            Workcenters = new WorkcenterRepository(context);
-            WorkcenterCosts = new Repository<WorkCenterCost, Guid>(context);
-            Operators = new Repository<Operator, Guid>(context);
-            OperatorTypes = new Repository<OperatorType, Guid>(context);            
-            MachineStatuses = new Repository<MachineStatus, Guid>(context);
-            Shifts = new Repository<Shift, Guid>(context);
-            ShiftDetails = new Repository<ShiftDetail, Guid>(context);
-            WorkMasters = new WorkMasterRepository(context);
-            WorkOrders = new WorkOrderRepository(context);
-            ProductionParts = new ProductionPartRepository(context);
-            DetailedWorkOrders = new ContractReader<DetailedWorkOrder>(context);
-
-            Warehouses = new WarehouseRepository(context);
-            ReferenceTypes = new Repository<ReferenceType, Guid>(context);
-            Stocks = new Repository<Stock, Guid>(context);
-            StockMovements = new Repository<StockMovement, Guid>(context);
-        }
+        public IWarehouseRepository Warehouses { get; private set; } = new WarehouseRepository(context);
+        public IRepository<ReferenceType, Guid> ReferenceTypes { get; private set; } = new Repository<ReferenceType, Guid>(context);
+        public IRepository<Stock, Guid> Stocks { get; private set; } = new Repository<Stock, Guid>(context);
+        public IRepository<StockMovement, Guid> StockMovements { get; private set; } = new Repository<StockMovement, Guid>(context);
 
         public async Task<int> CompleteAsync()
         {
