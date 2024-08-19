@@ -33,7 +33,7 @@ namespace Api.Controllers.Purchase
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var receipt = await _unitOfWork.Receipts.Get(id);
+            var receipt = await _unitOfWork.PurchaseOrders.Get(id);
 
             if (receipt == null) return BadRequest();
             else return Ok(receipt);
