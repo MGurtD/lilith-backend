@@ -78,6 +78,7 @@ namespace Infrastructure.Persistance
         public IWorkOrderRepository WorkOrders { get; private set; }
         public IProductionPartRepository ProductionParts { get; private set; }
         public IContractReader<DetailedWorkOrder> DetailedWorkOrders { get; private set; }
+        public IContractReader<ProductionCost> ProductionCosts { get; private set; }
 
         // Warehouse
         public IWarehouseRepository Warehouses { get; private set; }
@@ -111,6 +112,7 @@ namespace Infrastructure.Persistance
             ExpenseTypes = new Repository<ExpenseType, Guid>(context);
             Expenses = new ExpenseRepository(context);
             ConsolidatedExpenses = new ContractReader<ConsolidatedExpense>(context);
+            ProductionCosts = new ContractReader<ProductionCost>(context);
 
             CustomerTypes = new Repository<CustomerType, Guid>(context);
             Customers = new CustomerRepository(context);
