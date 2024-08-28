@@ -211,6 +211,10 @@ namespace Api.Services.Purchase
 
             return new GenericResponse(true, detailsToRetrive);
         }
-        
+
+        public async Task<List<PurchaseOrderReceiptDetail>> GetReceptions(Guid id)
+        {
+            return await _unitOfWork.Receipts.GetReceptions(id);
+        }
     }
 }

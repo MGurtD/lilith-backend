@@ -4,6 +4,7 @@ using Application.Persistance;
 using Application.Services;
 using Application.Services.Purchase;
 using Domain.Entities.Purchase;
+using System;
 
 namespace Api.Services.Purchase
 {
@@ -35,6 +36,11 @@ namespace Api.Services.Purchase
                 orders = await _unitOfWork.PurchaseOrders.FindAsync(p => p.Date >= startDate && p.Date <= endDate);
             }
             return orders;
+        }
+
+        public async Task<List<PurchaseOrder>> GetOrdersWithDetailsToReceiptBySupplier(Guid supplierId)
+        {
+            return await _unitOfWork.PurchaseOrders.GetOrdersWithDetailsToReceiptBySupplier(supplierId);
         }
 
         public async Task<List<PurchaseOrder>> GetBySupplier(Guid supplierId)
@@ -112,6 +118,32 @@ namespace Api.Services.Purchase
             await _unitOfWork.PurchaseOrders.Details.Remove(detail);
             return new GenericResponse(true);
         }
-        
+                
+
+        #region Receptions
+
+        public async Task<List<PurchaseOrderReceiptDetail>> GetReceptions(Guid id)
+        {
+            return await _unitOfWork.PurchaseOrders.GetReceptions(id);
+        }
+
+        /* TODO - LÒGICA DE NEGOCI */
+        public async Task<GenericResponse> AddReception(PurchaseOrderReceiptDetail reception)
+        {
+            await _unitOfWork.PurchaseOrders.Receptions.Add(reception);
+            return new GenericResponse(true);
+        }
+
+        /* TODO - LÒGICA DE NEGOCI */
+        public async Task<GenericResponse> RemoveReception(Guid id)
+        {
+            var reception = await _unitOfWork.PurchaseOrders.Receptions.Get(id);
+            if (reception == null) return new GenericResponse(false, $"Id {id} inexistent");
+
+            await _unitOfWork.PurchaseOrders.Receptions.Remove(reception);
+            return new GenericResponse(true);
+        }
+
+        #endregion
     }
 }

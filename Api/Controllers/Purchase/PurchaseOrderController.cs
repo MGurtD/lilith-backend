@@ -116,5 +116,34 @@ namespace Api.Controllers.Purchase
         }
         #endregion
 
+        #region Receiptions
+
+        [HttpGet("ToReceipt")]
+        [SwaggerOperation("GetOrdersToReceiptBySupplier")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetOrdersToReceiptBySupplier(Guid supplierId)
+        {
+            var orders = await _service.GetOrdersWithDetailsToReceiptBySupplier(supplierId);
+            if (orders != null) return Ok(orders.OrderBy(e => e.Number));
+            else return BadRequest();
+        }
+
+        [HttpGet("{id:guid}/Receptions")]
+        [SwaggerOperation("PurchaseOrderReceiptsFromOrder")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetReceptions(Guid id)
+        {
+            if (id == Guid.Empty) return BadRequest();
+            var order = await _unitOfWork.PurchaseOrders.Get(id);
+            if (order == null) return NotFound();
+
+            var receptions = await _service.GetReceptions(id);
+            return Ok(receptions);
+        }
+
+        #endregion
+
     }
 }

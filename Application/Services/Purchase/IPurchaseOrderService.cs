@@ -16,5 +16,10 @@ namespace Application.Services.Purchase
         Task<GenericResponse> AddDetail(PurchaseOrderDetail detail);
         Task<GenericResponse> UpdateDetail(PurchaseOrderDetail detail);
         Task<GenericResponse> RemoveDetail(Guid id);
+
+        Task<List<PurchaseOrderReceiptDetail>> GetReceptions(Guid id);
+        Task<List<PurchaseOrder>> GetOrdersWithDetailsToReceiptBySupplier(Guid supplierId);
+        Task<GenericResponse> AddReception(PurchaseOrderReceiptDetail reception);
+        Task<GenericResponse> RemoveReception(Guid id);
     }
 }

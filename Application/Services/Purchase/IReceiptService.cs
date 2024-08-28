@@ -24,5 +24,7 @@ namespace Application.Services.Purchase
         Task<GenericResponse> UpdateDetail(ReceiptDetail detail);
         Task<GenericResponse> RemoveDetail(Guid id);
         Task<GenericResponse> CalculateDetailWeightAndPrice(ReceiptDetail detail);
+
+        Task<List<PurchaseOrderReceiptDetail>> GetReceptions(Guid id);
     }
 }
