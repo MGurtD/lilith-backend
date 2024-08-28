@@ -109,8 +109,8 @@ namespace Api.Controllers.Production
             // Validacions
             if (request.ReferenceId.HasValue && request.ReferenceId != Guid.Empty)
             {
-                var exists = _unitOfWork.WorkMasters.Find(w => w.ReferenceId == request.ReferenceId).Any();
-                if (exists) return Conflict(new GenericResponse(false, $"Referencia de destí amb ruta de fabricació existent"));
+                var exists = _unitOfWork.WorkMasters.Find(w => w.ReferenceId == request.ReferenceId && w.Mode == request.Mode).Any();
+                if (exists) return Conflict(new GenericResponse(false, $"Referencia amb ruta de fabricació del mode seleccionat. Seleccioni un altre mode"));
             }
             
 
