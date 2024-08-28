@@ -39,7 +39,10 @@ namespace Infrastructure.Persistance
                 .Entity<DetailedWorkOrder>()
                 .ToView("vw_detailedworkorder")
                 .HasNoKey();
-
+            builder
+                .Entity<ProductionCost>()
+                .ToView("vw_productioncosts")
+                .HasNoKey();
             builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
 
