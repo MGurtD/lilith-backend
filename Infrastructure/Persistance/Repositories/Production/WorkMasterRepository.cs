@@ -56,10 +56,15 @@ namespace Infrastructure.Persistance.Repositories.Production
                 Direction = ParameterDirection.InputOutput
             };
 
+            var modeParam = new NpgsqlParameter("@modeId", NpgsqlDbType.Integer)
+            {
+                Value = workMasterCopy.Mode
+            };
+
 
 
             await context.Database.ExecuteSqlInterpolatedAsync(
-            $"CALL public.SP_Production_CopyWorkMaster({referenceCodeParam}, {workmasterIdParam}, {referenceIdParam})");
+            $"CALL public.SP_Production_CopyWorkMaster({referenceCodeParam}, {workmasterIdParam}, {referenceIdParam}, {modeParam})");
 
             return true;
         }

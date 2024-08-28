@@ -1,3 +1,4 @@
+
 using Domain.Entities.Production;
 using Infrastructure.Persistance.EntityConfiguration;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +46,11 @@ public class WorkMasterBuilder : IEntityTypeConfiguration<WorkMaster>
             .HasDefaultValue("0")
             .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                            ApplicationDbContextConstants.DECIMAL_SCALE);
+        builder
+            .Property(b => b.Mode)
+            .IsRequired()
+            .HasColumnType("integer")
+            .HasDefaultValue("1");
         builder
                 .HasKey(b => b.Id)
                 .HasName($"PK_{TABLE_NAME}");

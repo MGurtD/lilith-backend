@@ -45,6 +45,7 @@ namespace Application.Persistance
         IReceiptRepository Receipts { get; }
         IRepository<ReferenceFormat, Guid> ReferenceFormats { get; }
         IContractReader<ConsolidatedExpense> ConsolidatedExpenses { get; }
+        
 
         // Sales
         IRepository<CustomerType, Guid> CustomerTypes { get; }
@@ -72,6 +73,7 @@ namespace Application.Persistance
         IWorkOrderRepository WorkOrders { get; }
         IProductionPartRepository ProductionParts { get; }
         IContractReader<DetailedWorkOrder> DetailedWorkOrders { get; }
+        IContractReader<ProductionCost> ProductionCosts { get; }
 
         //Warehouse
         IWarehouseRepository Warehouses { get; }

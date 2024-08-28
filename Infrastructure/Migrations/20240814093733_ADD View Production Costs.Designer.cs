@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240814093733_ADD View Production Costs")]
+    partial class ADDViewProductionCosts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -488,19 +490,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("varchar")
                         .HasDefaultValue("0");
 
-                    b.Property<string>("PurchaseOrderCounter")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(10)
-                        .HasColumnType("varchar")
-                        .HasDefaultValue("0");
-
                     b.Property<string>("ReceiptCounter")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(10)
-                        .HasColumnType("varchar")
-                        .HasDefaultValue("0");
+                        .HasColumnType("text");
 
                     b.Property<string>("SalesInvoiceCounter")
                         .IsRequired()
@@ -1318,11 +1310,6 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bool")
                         .HasDefaultValue(false);
-
-                    b.Property<int>("Mode")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(1);
 
                     b.Property<Guid>("ReferenceId")
                         .HasColumnType("uuid");
@@ -2294,172 +2281,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ToStatusId");
 
                     b.ToTable("PurchaseInvoiceStatusTransitions", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.Purchase.PurchaseOrder", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<Guid>("ExerciseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Number")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar");
-
-                    b.Property<Guid>("StatusId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("SupplierId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.HasKey("Id")
-                        .HasName("PK_PurchaseOrder");
-
-                    b.HasIndex("ExerciseId");
-
-                    b.HasIndex("Number")
-                        .IsUnique()
-                        .HasDatabaseName("IX_PurchaseOrder_Number");
-
-                    b.HasIndex("StatusId");
-
-                    b.HasIndex("SupplierId");
-
-                    b.ToTable("PurchaseOrders", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.Purchase.PurchaseOrderDetail", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime?>("ExpectedReceiptDate")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid>("PurchaseOrderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Quantity")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<int>("ReceivedQuantity")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<Guid>("ReferenceId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("StatusId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<Guid?>("WorkOrderPhaseId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id")
-                        .HasName("PK_PurchaseOrderDetails");
-
-                    b.HasIndex("PurchaseOrderId");
-
-                    b.HasIndex("ReferenceId");
-
-                    b.HasIndex("StatusId");
-
-                    b.HasIndex("WorkOrderPhaseId");
-
-                    b.ToTable("PurchaseOrderDetails", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.Purchase.PurchaseOrderReceiptDetail", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<Guid>("PurchaseOrderDetailId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Quantity")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<Guid>("ReceiptDetailId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<string>("User")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar");
-
-                    b.HasKey("Id")
-                        .HasName("PK_PurchaseOrderReceiptDetails");
-
-                    b.HasIndex("PurchaseOrderDetailId");
-
-                    b.HasIndex("ReceiptDetailId");
-
-                    b.ToTable("PurchaseOrderReceiptDetails", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Purchase.Receipt", b =>
@@ -5014,85 +4835,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("ToStatus");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Purchase.PurchaseOrder", b =>
-                {
-                    b.HasOne("Domain.Entities.Exercise", "Exercise")
-                        .WithMany()
-                        .HasForeignKey("ExerciseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Status", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Purchase.Supplier", "Supplier")
-                        .WithMany()
-                        .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Exercise");
-
-                    b.Navigation("Status");
-
-                    b.Navigation("Supplier");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Purchase.PurchaseOrderDetail", b =>
-                {
-                    b.HasOne("Domain.Entities.Purchase.PurchaseOrder", "PurchaseOrder")
-                        .WithMany("Details")
-                        .HasForeignKey("PurchaseOrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Shared.Reference", "Reference")
-                        .WithMany()
-                        .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Status", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Production.WorkOrderPhase", "WorkOrderPhase")
-                        .WithMany()
-                        .HasForeignKey("WorkOrderPhaseId");
-
-                    b.Navigation("PurchaseOrder");
-
-                    b.Navigation("Reference");
-
-                    b.Navigation("Status");
-
-                    b.Navigation("WorkOrderPhase");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Purchase.PurchaseOrderReceiptDetail", b =>
-                {
-                    b.HasOne("Domain.Entities.Purchase.PurchaseOrderDetail", "PurchaseOrderDetail")
-                        .WithMany()
-                        .HasForeignKey("PurchaseOrderDetailId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Purchase.ReceiptDetail", "ReceiptDetail")
-                        .WithMany()
-                        .HasForeignKey("ReceiptDetailId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PurchaseOrderDetail");
-
-                    b.Navigation("ReceiptDetail");
-                });
-
             modelBuilder.Entity("Domain.Entities.Purchase.Receipt", b =>
                 {
                     b.HasOne("Domain.Entities.Exercise", "Exercise")
@@ -5678,11 +5420,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("PurchaseInvoiceDueDates");
 
                     b.Navigation("PurchaseInvoiceImports");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Purchase.PurchaseOrder", b =>
-                {
-                    b.Navigation("Details");
                 });
 
             modelBuilder.Entity("Domain.Entities.Purchase.Receipt", b =>
