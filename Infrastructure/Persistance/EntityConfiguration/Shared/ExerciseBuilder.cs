@@ -32,6 +32,18 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasColumnType("timestamp without time zone");
 
             builder
+                .Property(b => b.PurchaseOrderCounter)
+                .IsRequired()
+                .HasDefaultValue("0")
+                .HasColumnType("varchar")
+                .HasMaxLength(10);
+            builder
+                .Property(b => b.ReceiptCounter)
+                .IsRequired()
+                .HasDefaultValue("0")
+                .HasColumnType("varchar")
+                .HasMaxLength(10);
+            builder
                 .Property(b => b.PurchaseInvoiceCounter)
                 .IsRequired()
                 .HasDefaultValue("0")

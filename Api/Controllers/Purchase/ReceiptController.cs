@@ -63,11 +63,10 @@ namespace Api.Controllers.Purchase
             else return BadRequest();
         }
 
-
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create(CreateReceiptRequest createRequest)
+        public async Task<IActionResult> Create(CreatePurchaseDocumentRequest createRequest)
         {
             var response = await _service.Create(createRequest);
 
@@ -84,10 +83,10 @@ namespace Api.Controllers.Purchase
         {
             if (id != request.Id) return BadRequest();
             var receipt = _unitOfWork.Receipts.Find(r => r.Id == request.Id).FirstOrDefault();
-            if (receipt == null) return NotFound(new GenericResponse(false, new List<string>() { $"Albará amb ID {request.Id} inexistent" }));
+            if (receipt == null) return NotFound(new GenericResponse(false, $"Albará amb ID {request.Id} inexistent" ));
 
             var moveToWarehouseStatus = _unitOfWork.Lifecycles.StatusRepository.Find(s => s.Name == "Recepcionat").FirstOrDefault();
-            if (moveToWarehouseStatus == null) return NotFound(new GenericResponse(false, new List<string>() { $"Estat recepcionat inexistent" }));
+            if (moveToWarehouseStatus == null) return NotFound(new GenericResponse(false, $"Estat recepcionat inexistent"));
 
             var warehouseResponse = new GenericResponse(true);
             if (receipt.StatusId != moveToWarehouseStatus.Id && request.StatusId == moveToWarehouseStatus.Id)
@@ -162,6 +161,36 @@ namespace Api.Controllers.Purchase
             if (response.Result) return Ok(response);
             else return BadRequest(response);
         }
+        #endregion
+
+        #region Receiptions
+
+        [HttpGet("{id:guid}/Receptions")]
+        [SwaggerOperation("PurchaseOrderReceiptsFromReceipt")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetReceptions(Guid id)
+        {
+            if (id == Guid.Empty) return BadRequest();
+            var receipt = await _unitOfWork.Receipts.Get(id);
+            if (receipt == null) return NotFound();
+
+            var receptions = await _service.GetReceptions(id);
+            return Ok(receptions);
+        }
+
+        [HttpPost("AddReceptions")]
+        [SwaggerOperation("AddPurchaseOrderReceipts")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddReceptions(AddReceptionsRequest request)
+        {
+            var response = await _service.AddReceptions(request.ReceiptId, request.Receptions);
+
+            if (response.Result) return Ok(response);
+            else return BadRequest(response);
+        }
+
         #endregion
 
     }

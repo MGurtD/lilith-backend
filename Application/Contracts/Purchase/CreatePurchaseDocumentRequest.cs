@@ -2,7 +2,7 @@
 
 namespace Application.Contracts.Purchase
 {
-    public class CreateReceiptRequest
+    public class CreatePurchaseDocumentRequest
     {
         [Required]
         public Guid Id { get; set; }

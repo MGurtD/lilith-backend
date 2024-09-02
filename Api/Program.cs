@@ -1,30 +1,27 @@
-using Application.Persistance;
-using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
-using System.Text;
 using NLog;
 using NLog.Web;
-using Api.Middlewares;
-using Api;
+using Application.Persistance;
 using Application.Services;
-using Api.Services;
-using System.Text.Json.Serialization;
+using Application.Services.Production;
 using Application.Services.Sales;
-using Api.Services.Sales;
+using Application.Production.Warehouse;
 using Application.Services.Warehouse;
 using Application.Services.Purchase;
+using Api.Middlewares;
+using Api.Services;
+using Api.Services.Sales;
+using Api.Services.Production;
 using Api.Services.Purchase;
 using Api.Services.Warehouse;
-using Application.Production.Warehouse;
-using Application.Services.Production;
-using Api.Services.Production;
-using Application.Persistance.Repositories.Purchase;
-using Infrastructure.Persistance.Repositories.Purchase;
+using Infrastructure.Persistance;
+using System.Text;
+using System.Text.Json.Serialization;
 
 // Early init of NLog to allow startup and exception logging, before host is built
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
@@ -61,6 +58,7 @@ try
         builder.Services.AddScoped<IStockService, StockService>();
         builder.Services.AddScoped<IStockMovementService, StockMovementService>();
         builder.Services.AddScoped<IDeliveryNoteService, DeliveryNoteService>();
+        builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
         builder.Services.AddScoped<IReceiptService, ReceiptService>();
         builder.Services.AddScoped<IReferenceService, ReferenceService>();
         builder.Services.AddScoped<IExerciseService, ExerciseService>();

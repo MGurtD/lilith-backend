@@ -29,10 +29,15 @@ namespace Api.Services
                 return new GenericResponse(false, counter);
             }
 
-            var prefix = exercise.Name.Substring(exercise.Name.Length - 2);
+            var prefix = exercise.Name[^2..];
             int newcounter;
             switch (counterName.ToLower())
             {
+                case "purchaseorder":
+                    counter = prefix + exercise.PurchaseOrderCounter.PadLeft(3, '0');
+                    newcounter = int.Parse(counter) + 1;
+                    exercise.PurchaseOrderCounter = newcounter.ToString()[^3..];
+                    break;
                 case "purchaseinvoice":
                     counter = prefix + exercise.PurchaseInvoiceCounter.PadLeft(3, '0');
                     newcounter = int.Parse(counter) + 1;

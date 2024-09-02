@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240824075655_Add_PurchaseOrderReceiptDetails")]
+    partial class Add_PurchaseOrderReceiptDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -141,49 +143,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.ToView("vw_detailedworkorder");
-                });
-
-            modelBuilder.Entity("Application.Contracts.Production.ProductionCost", b =>
-                {
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("MachineHourCost")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Month")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("OperatorHourCost")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("OperatorTime")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("PartOperatorCost")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("PartWorkcenterCost")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Week")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("WorkcenterName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("WorkcenterTime")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("WorkcenterTypeName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.ToView("vw_productioncosts");
                 });
 
             modelBuilder.Entity("Application.Contracts.Purchase.ConsolidatedExpense", b =>
@@ -1318,11 +1277,6 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bool")
                         .HasDefaultValue(false);
-
-                    b.Property<int>("Mode")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(1);
 
                     b.Property<Guid>("ReferenceId")
                         .HasColumnType("uuid");

@@ -36,6 +36,7 @@ namespace Application.Persistance
         IRepository<SupplierType, Guid> SupplierTypes { get; }
         ISupplierRepository Suppliers { get; }
         IPurchaseInvoiceStatusRepository PurchaseInvoiceStatuses { get; }
+        IPurchaseOrderRepository PurchaseOrders { get; }
         IPurchaseInvoiceRepository PurchaseInvoices { get; }
         IRepository<PurchaseInvoiceDueDate, Guid> PurchaseInvoiceDueDates { get; }
         IRepository<PurchaseInvoiceSerie, Guid> PurchaseInvoiceSeries { get; }
