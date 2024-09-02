@@ -26,19 +26,6 @@ namespace Infrastructure.Persistance.Repositories.Purchase
                         .FirstOrDefaultAsync(e => e.Id == id);
         }
 
-        public async Task<List<PurchaseOrder>> GetOrdersWithDetailsToReceiptBySupplier(Guid supplierId)
-        {
-            return
-                await dbSet
-                    .Include(d => d.Details)
-                        .ThenInclude(d => d.Reference)
-                    .Include(d => d.Details)
-                        .ThenInclude(d => d.WorkOrderPhase)
-                        .ThenInclude(d => d.WorkOrder)
-                .Where(e => e.SupplierId == supplierId && e.Details.Any(d => d.ReceivedQuantity < d.Quantity))
-                .ToListAsync();
-        }
-
         public async Task<List<PurchaseOrderReceiptDetail>> GetReceptions(Guid id)
         {
             var order = await Get(id);
@@ -46,8 +33,38 @@ namespace Infrastructure.Persistance.Repositories.Purchase
                 return [];
 
             var detailIds = order.Details.Select(d => d.Id).ToList();
-            return await Receptions
-                        .FindAsync(d => detailIds.Contains(d.PurchaseOrderDetailId));
+            var receptions = await Receptions.FindAsync(d => detailIds.Contains(d.PurchaseOrderDetailId));
+
+            var receiptRepository = new ReceiptRepository(context);
+            foreach (var reception in receptions)
+            {
+                reception.ReceiptDetail = await receiptRepository.Details.Get(reception.ReceiptDetailId);
+                reception.ReceiptDetail!.Receipt = await receiptRepository.dbSet.FirstOrDefaultAsync(r => r.Id == reception.ReceiptDetail.ReceiptId);
+            }
+
+            return receptions;
         }
+
+        public async Task<List<PurchaseOrder>> GetOrdersWithDetailsToReceiptBySupplier(Guid supplierId, List<Guid> discartedStatuses)
+        {
+            return
+                await dbSet
+                    .Include(d => d.Details.Where(d => d.Quantity > d.ReceivedQuantity))
+                        .ThenInclude(d => d.Reference)
+                    .Include(d => d.Details)
+                        .ThenInclude(d => d.WorkOrderPhase)
+                        .ThenInclude(d => d.WorkOrder)
+                .Where(e => 
+                    e.SupplierId == supplierId && 
+                    e.Details.Any(d => !discartedStatuses.Contains(d.StatusId)))
+                .ToListAsync();
+        }
+
+        public async Task<List<PurchaseOrderDetail>> GetOrderDetailsFromReceptions(List<PurchaseOrderReceiptDetail> receptions)
+        {
+            var detailIds = receptions.Select(d => d.PurchaseOrderDetailId).ToList();
+            return await Details.FindAsync(d => detailIds.Contains(d.Id));
+        }
+
     }
 }

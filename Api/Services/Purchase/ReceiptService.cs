@@ -15,12 +15,14 @@ namespace Api.Services.Purchase
         private readonly IUnitOfWork _unitOfWork;
         private readonly IStockMovementService _stockMovementService;
         private readonly IExerciseService _exerciseService;
+        private readonly IPurchaseOrderService _orderService;
 
-        public ReceiptService(IUnitOfWork unitOfWork, IStockMovementService stockMovementService, IExerciseService exerciseService)
+        public ReceiptService(IUnitOfWork unitOfWork, IStockMovementService stockMovementService, IExerciseService exerciseService, IPurchaseOrderService orderService)
         {
             _unitOfWork = unitOfWork;
             _stockMovementService = stockMovementService;
             _exerciseService = exerciseService;
+            _orderService = orderService;
         }
 
         public IEnumerable<Receipt> GetBetweenDates(DateTime startDate, DateTime endDate)
@@ -138,8 +140,6 @@ namespace Api.Services.Purchase
 
         public async Task<GenericResponse> AddDetail(ReceiptDetail detail)
         {
-            // var calculationResponse = await CalculateDetailWeightAndPrice(detail);
-            // if (calculationResponse.Result) detail = (ReceiptDetail)calculationResponse.Content!;
             detail.Reference = null;
 
             await _unitOfWork.Receipts.Details.Add(detail);
@@ -151,9 +151,6 @@ namespace Api.Services.Purchase
             var exists = await _unitOfWork.Receipts.Details.Exists(detail.Id);
             if (!exists) return new GenericResponse(false, $"Id {detail.Id} inexistent");
 
-            // var calculationResponse = await CalculateDetailWeightAndPrice(detail);
-            // if (calculationResponse.Result) detail = (ReceiptDetail) calculationResponse.Content!;
-
             detail.Reference = null;
             await _unitOfWork.Receipts.Details.Update(detail);
             return new GenericResponse(true);
@@ -161,8 +158,17 @@ namespace Api.Services.Purchase
 
         public async Task<GenericResponse> RemoveDetail(Guid id)
         {
+            // Obtenir detall
             var detail = await _unitOfWork.Receipts.Details.Get(id);
             if (detail == null) return new GenericResponse(false, $"Id {id} inexistent");
+
+            // Comprobar si el detall té recepcions associades
+            var reception = (await _unitOfWork.PurchaseOrders.Receptions.FindAsync(r => r.ReceiptDetailId == id)).FirstOrDefault();
+            if (reception != null)
+            {
+                var response = await _orderService.RemoveReception(reception);
+                if (!response.Result) return response;
+            }            
 
             await _unitOfWork.Receipts.Details.Remove(detail);
             return new GenericResponse(true);
@@ -170,16 +176,15 @@ namespace Api.Services.Purchase
 
         public async Task<GenericResponse> MoveToWarehose(Receipt receipt)
         {
-            var warehouse = _unitOfWork.Warehouses.Find(w => w.Disabled == false).FirstOrDefault();
-            if (warehouse == null) return new GenericResponse(false, "No existeixen magatzems actius");
-            if (warehouse.DefaultLocationId == null) return new GenericResponse(false, "No hi ha una ubicació per defecte");
+            var defaultLocation = await _unitOfWork.Warehouses.GetDefaultLocation();
+            if (defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte");
 
             var detailsToMove = receipt.Details!.Where(d => d.StockMovementId == null);
             foreach (var detail in detailsToMove)
             {
                 var stockMovement = new StockMovement
                 {
-                    LocationId = warehouse.DefaultLocationId,
+                    LocationId = defaultLocation.Id,
                     MovementDate = DateTime.Now,
                     CreatedOn = DateTime.Now,
                     MovementType = StockMovementType.INPUT,
@@ -216,5 +221,44 @@ namespace Api.Services.Purchase
         {
             return await _unitOfWork.Receipts.GetReceptions(id);
         }
+
+        public async Task<GenericResponse> AddReceptions(Guid receiptId, List<PurchaseOrderReceiptDetail> receptions)         
+        {
+            // Obtenir els detalls de la comanda
+            var orderDetails = await _unitOfWork.PurchaseOrders.GetOrderDetailsFromReceptions(receptions);
+
+            foreach (var reception in receptions)
+            {
+                var detail = orderDetails.FirstOrDefault(orderDetails => orderDetails.Id == reception.PurchaseOrderDetailId);
+                if (detail == null) return new GenericResponse(false, $"Detall {reception.PurchaseOrderDetailId} inexistent");
+
+                // Actualizar detall de la comanda
+                var orderDetailResponse = await _orderService.AddReceivedQuantityAndCalculateStatus(detail, (int)reception.Quantity);
+                if (!orderDetailResponse.Result) return orderDetailResponse;
+
+                // Crear detall al albarà
+                var receiptDetail = new ReceiptDetail
+                {
+                    Id = reception.ReceiptDetailId,
+                    ReceiptId = receiptId,
+                    ReferenceId = detail.ReferenceId,
+                    Quantity = (int) reception.Quantity,
+                    UnitPrice = detail.UnitPrice,
+                    Amount = reception.Quantity * detail.UnitPrice,
+                };              
+                await _unitOfWork.Receipts.Details.Add(receiptDetail);
+
+                // Afegir recepció a la comanda
+                await _unitOfWork.PurchaseOrders.Receptions.Add(reception);
+            }
+
+            // Crear moviments de magatzem
+            var receipt = await _unitOfWork.Receipts.Get(receiptId);
+            if (receipt == null) return new GenericResponse(false, $"Albará {receiptId} inexistent");
+
+            // Recalcular l'estat de la comanda
+            return await _orderService.DeterminateStatus(orderDetails.First().PurchaseOrderId);
+        }
+
     }
 }

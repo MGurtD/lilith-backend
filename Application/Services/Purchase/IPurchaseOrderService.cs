@@ -12,14 +12,17 @@ namespace Application.Services.Purchase
         Task<GenericResponse> Create(CreatePurchaseDocumentRequest createRequest);
         Task<GenericResponse> Update(PurchaseOrder prder);
         Task<GenericResponse> Remove(Guid id);
+        Task<GenericResponse> DeterminateStatus(Guid id);
 
         Task<GenericResponse> AddDetail(PurchaseOrderDetail detail);
         Task<GenericResponse> UpdateDetail(PurchaseOrderDetail detail);
         Task<GenericResponse> RemoveDetail(Guid id);
+        Task<GenericResponse> AddReceivedQuantityAndCalculateStatus(PurchaseOrderDetail detail, int quantity);
+        Task<GenericResponse> SubstractReceivedQuantityAndCalculateStatus(PurchaseOrderDetail detail, int quantity);
 
         Task<List<PurchaseOrderReceiptDetail>> GetReceptions(Guid id);
         Task<List<PurchaseOrder>> GetOrdersWithDetailsToReceiptBySupplier(Guid supplierId);
         Task<GenericResponse> AddReception(PurchaseOrderReceiptDetail reception);
-        Task<GenericResponse> RemoveReception(Guid id);
+        Task<GenericResponse> RemoveReception(PurchaseOrderReceiptDetail reception);
     }
 }

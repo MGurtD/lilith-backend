@@ -13,6 +13,7 @@ namespace Api.Services.Purchase
         private readonly IUnitOfWork _unitOfWork;
         private readonly IExerciseService _exerciseService;
         private readonly string LifecycleName = "PurchaseOrder";
+        private readonly string LifecycleDetailsName = "PurchaseOrderDetail";
 
         public PurchaseOrderService(IUnitOfWork unitOfWork, IExerciseService exerciseService)
         {
@@ -40,7 +41,13 @@ namespace Api.Services.Purchase
 
         public async Task<List<PurchaseOrder>> GetOrdersWithDetailsToReceiptBySupplier(Guid supplierId)
         {
-            return await _unitOfWork.PurchaseOrders.GetOrdersWithDetailsToReceiptBySupplier(supplierId);
+            var discartedStatuses = new List<Guid>();
+            var statusReceived = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, "Rebuda");
+            if (statusReceived != null) discartedStatuses.Add(statusReceived.Id);
+            var statusCancelled = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, "Cancel·lada");
+            if (statusCancelled != null) discartedStatuses.Add(statusCancelled.Id);
+
+            return await _unitOfWork.PurchaseOrders.GetOrdersWithDetailsToReceiptBySupplier(supplierId, discartedStatuses);
         }
 
         public async Task<List<PurchaseOrder>> GetBySupplier(Guid supplierId)
@@ -94,9 +101,43 @@ namespace Api.Services.Purchase
             return new GenericResponse(true);
         }
 
+        public async Task<GenericResponse> DeterminateStatus(Guid id)
+        {
+            var order = await _unitOfWork.PurchaseOrders.Get(id);
+            if (order == null) return new GenericResponse(false, $"Id {id} inexistent");
+
+            var initialStatusId = order.StatusId;
+
+            var cancelledStatus = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, "Cancel·lada");
+            if (cancelledStatus == null) return new GenericResponse(false, "Estat 'Cancel·lada' inexistent");
+            var cancelledDetails = order.Details.Where(d => d.StatusId == cancelledStatus.Id);
+            
+            var receivedStatus = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, "Rebuda");
+            if (receivedStatus == null) return new GenericResponse(false, "Estat 'Rebuda' inexistent");
+            var receivedDetails = order.Details.Where(d => d.StatusId == receivedStatus.Id);
+
+            if (cancelledDetails.Count() == order.Details.Count)
+            {
+                var status = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleName, "Cancel·lada");
+                if (status != null) order.StatusId = status.Id;
+            }
+            else if (receivedDetails.Count() == order.Details.Count)
+            {
+                var status = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleName, "Rebuda");
+                if (status != null) order.StatusId = status.Id;
+            }
+
+            if (order.StatusId != initialStatusId)
+            {
+                await _unitOfWork.PurchaseOrders.Update(order);
+            }
+            return new GenericResponse(true);
+        }
+
         public async Task<GenericResponse> AddDetail(PurchaseOrderDetail detail)
         {
             detail.Reference = null;
+            detail.UnitPrice = detail.Quantity > 0 ? detail.Amount / detail.Quantity : 0;
 
             await _unitOfWork.PurchaseOrders.Details.Add(detail);
             return new GenericResponse(true);
@@ -107,6 +148,7 @@ namespace Api.Services.Purchase
             if (!exists) return new GenericResponse(false, $"Id {detail.Id} inexistent");
 
             detail.Reference = null;
+            detail.UnitPrice = detail.Quantity > 0 ? detail.Amount / detail.Quantity : 0;
             await _unitOfWork.PurchaseOrders.Details.Update(detail);
             return new GenericResponse(true);
         }
@@ -118,7 +160,27 @@ namespace Api.Services.Purchase
             await _unitOfWork.PurchaseOrders.Details.Remove(detail);
             return new GenericResponse(true);
         }
-                
+
+        public async Task<GenericResponse> AddReceivedQuantityAndCalculateStatus(PurchaseOrderDetail detail, int quantity)
+        {
+            detail.ReceivedQuantity += quantity;
+
+            var status = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, detail.ReceivedQuantity >= detail.Quantity ? "Rebuda" : "Rebuda parcialment");
+            if (status != null) detail.StatusId = status.Id;
+
+            return await UpdateDetail(detail);
+        }
+
+        public async Task<GenericResponse> SubstractReceivedQuantityAndCalculateStatus(PurchaseOrderDetail detail, int quantity)
+        {
+            detail.ReceivedQuantity -= quantity;
+
+            var status = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, detail.ReceivedQuantity == 0 ? "Pendent de rebre" : "Rebuda parcialment");
+            if (status != null) detail.StatusId = status.Id;
+
+            return await UpdateDetail(detail);
+        }
+
 
         #region Receptions
 
@@ -127,21 +189,24 @@ namespace Api.Services.Purchase
             return await _unitOfWork.PurchaseOrders.GetReceptions(id);
         }
 
-        /* TODO - LÒGICA DE NEGOCI */
         public async Task<GenericResponse> AddReception(PurchaseOrderReceiptDetail reception)
         {
             await _unitOfWork.PurchaseOrders.Receptions.Add(reception);
             return new GenericResponse(true);
         }
 
-        /* TODO - LÒGICA DE NEGOCI */
-        public async Task<GenericResponse> RemoveReception(Guid id)
+        public async Task<GenericResponse> RemoveReception(PurchaseOrderReceiptDetail reception)
         {
-            var reception = await _unitOfWork.PurchaseOrders.Receptions.Get(id);
-            if (reception == null) return new GenericResponse(false, $"Id {id} inexistent");
+            var orderDetail = (await _unitOfWork.PurchaseOrders.Details.FindAsync(d => d.Id == reception.PurchaseOrderDetailId)).FirstOrDefault();
+            if (orderDetail == null) return new GenericResponse(false, $"Detall de la comanda {reception.PurchaseOrderDetailId} inexistent");
 
+            // Eliminar recepció
             await _unitOfWork.PurchaseOrders.Receptions.Remove(reception);
-            return new GenericResponse(true);
+
+            // Actualitzar detall de comanda
+            await SubstractReceivedQuantityAndCalculateStatus(orderDetail, (int)reception.Quantity);
+
+            return await DeterminateStatus(orderDetail.PurchaseOrderId);
         }
 
         #endregion

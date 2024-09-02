@@ -7,6 +7,7 @@ public interface IPurchaseOrderRepository : IRepository<PurchaseOrder, Guid>
     IRepository<PurchaseOrderDetail, Guid> Details { get; }
     IRepository<PurchaseOrderReceiptDetail, Guid> Receptions { get; }
 
-    Task<List<PurchaseOrder>> GetOrdersWithDetailsToReceiptBySupplier(Guid supplierId);
     Task<List<PurchaseOrderReceiptDetail>> GetReceptions(Guid id);
+    Task<List<PurchaseOrder>> GetOrdersWithDetailsToReceiptBySupplier(Guid supplierId, List<Guid> discartedStatuses);
+    Task<List<PurchaseOrderDetail>> GetOrderDetailsFromReceptions(List<PurchaseOrderReceiptDetail> receptions);
 }

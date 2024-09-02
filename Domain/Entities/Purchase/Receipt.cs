@@ -15,6 +15,6 @@
         public Guid? PurchaseInvoiceId { get; set; }
         public PurchaseInvoice? PurchaseInvoice { get; set; }
 
-        public ICollection<ReceiptDetail>? Details { get; set; }
+        public ICollection<ReceiptDetail> Details { get; set; } = [];
     }
 }

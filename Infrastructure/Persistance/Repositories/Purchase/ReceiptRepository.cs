@@ -25,9 +25,14 @@ namespace Infrastructure.Persistance.Repositories.Purchase
                 return [];
 
             var detailIds = receipt.Details!.Select(d => d.Id).ToList();
-            return await Receptions
-                        .FindAsync(d => detailIds.Contains(d.ReceiptDetailId));
-      
+            var receptions = await Receptions.FindAsync(d => detailIds.Contains(d.ReceiptDetailId));
+
+            foreach (var reception in receptions)
+            {
+                reception.ReceiptDetail = await Details.Get(reception.ReceiptDetailId);
+                reception.ReceiptDetail!.Receipt = await Get(reception.ReceiptDetail.ReceiptId);
+            }
+            return receptions;
         }
     }
 }
