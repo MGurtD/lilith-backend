@@ -24,6 +24,11 @@ namespace Infrastructure.Persistance.Repositories
         {
             return dbSet.Where(predicate);
         }
+
+        public async Task<List<Entity>> FindAsync(Expression<Func<Entity, bool>> predicate)
+        {
+            return await dbSet.Where(predicate).ToListAsync();
+        }
         
     }
 }

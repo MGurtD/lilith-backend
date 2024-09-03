@@ -24,20 +24,23 @@ namespace Api.Controllers.Production
         [Route("GroupedByMonthAndWorkcenterType")]
         public async Task<IActionResult> GetByMonthAndWorkcenterType(DateTime startTime, DateTime endTime)
         {
-            var entities = await _unitOfWork.ProductionCosts.GetAll();
+            var entities = await _unitOfWork.ProductionCosts.FindAsync(p => p.Date >= startTime && p.Date < endTime);
+            if (entities.Count == 0)
+            {
+                return Ok(entities);
+            }
 
             var groupedData = entities
-                .Where(x => x.Date >= startTime && x.Date < endTime)
-                .GroupBy(x => new { x.WorkcenterTypeName, x.Year, x.Month})
+                .GroupBy(x => new { x.WorkcenterTypeName, x.Year, x.Month })
                 .Select(g => new
                 {
-                    WorkcenterTypeName = g.Key.WorkcenterTypeName,
-                    Year = g.Key.Year,
-                    Month = g.Key.Month,
-                    TotalTime = (g.Sum(x => x.WorkcenterTime))/60,
+                    g.Key.WorkcenterTypeName,
+                    g.Key.Year,
+                    g.Key.Month,
+                    TotalTime = (g.Sum(x => x.WorkcenterTime)) / 60,
                     TotalCost = g.Sum(x => x.PartWorkcenterCost)
-                })                
-                .ToList();
+                });
+
             return Ok(groupedData);
         }
 
@@ -45,21 +48,47 @@ namespace Api.Controllers.Production
         [Route("GroupedByMonthAndWorkcenter")]
         public async Task<IActionResult> GetByMonthAndWorkcenter(DateTime startTime, DateTime endTime)
         {
-            var entities = await _unitOfWork.ProductionCosts.GetAll();
+            var entities = await _unitOfWork.ProductionCosts.FindAsync(p => p.Date >= startTime && p.Date < endTime);
+            if (entities.Count == 0)
+            {
+                return Ok(entities);
+            }
 
             var groupedData = entities
-                .Where(x => x.Date >= startTime && x.Date < endTime)
                 .GroupBy(x => new { x.WorkcenterName, x.WorkcenterTypeName, x.Year, x.Month })
                 .Select(g => new
                 {
-                    WorkcenterName = g.Key.WorkcenterName,
-                    WorkcenterTypeName = g.Key.WorkcenterTypeName,
-                    Year = g.Key.Year,
-                    Month = g.Key.Month,
-                    TotalTime = (g.Sum(x => x.WorkcenterTime)) / 60,
+                    g.Key.WorkcenterName,
+                    g.Key.WorkcenterTypeName,
+                    g.Key.Year,
+                    g.Key.Month,
+                    TotalTime = g.Sum(x => x.WorkcenterTime) / 60,
                     TotalCost = g.Sum(x => x.PartWorkcenterCost)
-                })
-                .ToList();
+                });
+            return Ok(groupedData);
+        }
+
+        [HttpGet]
+        [Route("GroupedByMonthAndOperator")]
+        public async Task<IActionResult> GroupedByMonthAndOperator(DateTime startTime, DateTime endTime)
+        {
+            var entities = await _unitOfWork.ProductionCosts.FindAsync(p => p.Date >= startTime && p.Date < endTime);
+            if (entities.Count == 0)
+            {
+                return Ok(entities);
+            }
+
+            var groupedData = entities
+                .GroupBy(x => new { x.OperatorCode, x.OperatorName, x.Year, x.Month })
+                .Select(g => new
+                {
+                    g.Key.OperatorCode,
+                    g.Key.OperatorName,
+                    g.Key.Year,
+                    g.Key.Month,
+                    TotalTime = g.Sum(x => x.OperatorTime) / 60,
+                    TotalCost = g.Sum(x => x.PartOperatorCost)
+                });
             return Ok(groupedData);
         }
 
