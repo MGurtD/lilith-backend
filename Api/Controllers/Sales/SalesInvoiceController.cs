@@ -77,7 +77,7 @@ namespace Api.Controllers.Sales
             else
                 invoices = _service.GetBetweenDates(startTime, endTime);
 
-            if (invoices != null) return Ok(invoices);
+            if (invoices != null) return Ok(invoices.OrderByDescending(e => e.InvoiceNumber));
             else return BadRequest();
         }
 

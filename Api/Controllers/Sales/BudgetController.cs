@@ -42,7 +42,7 @@ namespace Api.Controllers.Sales
                 salesOrderHeaders = _service.GetBetweenDatesAndCustomer(startTime, endTime, customerId.Value);
             else
                 salesOrderHeaders = _service.GetBetweenDates(startTime, endTime);         
-            if (salesOrderHeaders != null) return Ok(salesOrderHeaders.OrderBy(e => e.Number));
+            if (salesOrderHeaders != null) return Ok(salesOrderHeaders.OrderByDescending(e => e.Number));
             else return BadRequest();
         }
 

@@ -24,6 +24,12 @@ namespace Infrastructure.Persistance.EntityConfiguration.Production
                 .Property(b => b.costHour)
                 .HasColumnType("decimal");
             builder
+               .Property(b => b.ProfitPercentage)
+               .IsRequired()
+               .HasColumnType("decimal")
+               .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                             ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
                 .HasKey(b => b.Id)
                 .HasName("PK_Workcenter");
             builder.HasIndex(builder => builder.Name, "UK_Workcenter_Name");

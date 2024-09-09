@@ -11,4 +11,5 @@ public class Workcenter : Entity
     public WorkcenterType? WorkcenterType { get; set; }
     public Guid ShiftId { get; set; }
     public Shift? Shift { get; set; }
+    public decimal ProfitPercentage { get; set; } = decimal.Zero;
 }

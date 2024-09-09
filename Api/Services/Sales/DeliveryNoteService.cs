@@ -102,7 +102,7 @@ namespace Application.Services
 
         public IEnumerable<DeliveryNote> GetDeliveryNotesToInvoice(Guid customerId)
         {
-            var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.SalesInvoiceId == null);
+            var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.SalesInvoiceId == null && p.CustomerId == customerId);
             return deliveryNotes;
         }
 
