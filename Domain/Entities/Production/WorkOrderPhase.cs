@@ -1,3 +1,4 @@
+using Domain.Entities.Purchase;
 using Domain.Entities.Shared;
 
 namespace Domain.Entities.Production;
@@ -29,6 +30,8 @@ public class WorkOrderPhase : Entity
     public DateTime? StartTime { get; set; }
     public DateTime? EndTime { get; set; }
 
+    public Guid? PurchaseOrderId { get; set; }
+    public PurchaseOrder PurchaseOrder { get; set; }
     public ICollection<WorkOrderPhaseDetail> Details { get; set; } = [];
     public ICollection<WorkOrderPhaseBillOfMaterials> BillOfMaterials { get; set; } = [];
 }

@@ -149,6 +149,18 @@ namespace Api.Controllers.Production
             return Ok(WorkOrderPhase);
         }
 
+        [HttpGet("Phase/External")]
+        [SwaggerOperation("GetExternalWorkOrderPhase")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetExternalWorkOrderPhase()
+        {
+            var WorkOrderPhases = _unitOfWork.WorkOrders.Phases.Find(w => w.IsExternalWork == true && w.ServiceReferenceId != null);
+            if (WorkOrderPhases == null) return NotFound(new GenericResponse(false, $"Fase de la ordre de fabricació inexistent"));            
+
+            return Ok(WorkOrderPhases);
+        }
+
         [HttpPost("Phase")]
         [SwaggerOperation("CreateWorkOrderPhase")]
         [ProducesResponseType(StatusCodes.Status200OK)]

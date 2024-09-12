@@ -1,3 +1,4 @@
+using Domain.Entities.Purchase;
 using Domain.Entities.Shared;
 
 namespace Domain.Entities.Production;
@@ -23,6 +24,7 @@ public class WorkMasterPhase : Entity
     public decimal ExternalWorkCost { get; set; }
     public decimal TransportCost { get; set; }
     public string Comment { get; set; } = string.Empty;
+    
 
     public ICollection<WorkMasterPhaseDetail> Details { get; set; } = new List<WorkMasterPhaseDetail>();
     public ICollection<WorkMasterPhaseBillOfMaterials> BillOfMaterials { get; set; } = new List<WorkMasterPhaseBillOfMaterials>();
