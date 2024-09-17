@@ -168,6 +168,14 @@ namespace Api.Controllers.Purchase
             return Ok(references);
         }
 
+        [Route("Reference/GetSupplierByReference/{referenceId:guid}")]
+        [HttpGet]
+        public IActionResult GetSuppliersByReference(Guid referenceId)
+        {
+            var suppliers = _unitOfWork.Suppliers.GetReferenceSuppliers(referenceId);
+            return Ok(suppliers);
+        }
+
         [Route("Reference")]
         [HttpPost]
         public async Task<IActionResult> CreateReference(SupplierReference request)

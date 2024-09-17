@@ -10,6 +10,7 @@ namespace Application.Services.Purchase
         Task<List<PurchaseOrder>> GetBySupplier(Guid supplierId);
 
         Task<GenericResponse> Create(CreatePurchaseDocumentRequest createRequest);
+        Task<GenericResponse> CreateFromWo(PurchaseOrderFromWO[] request);
         Task<GenericResponse> Update(PurchaseOrder prder);
         Task<GenericResponse> Remove(Guid id);
         Task<GenericResponse> DeterminateStatus(Guid id);

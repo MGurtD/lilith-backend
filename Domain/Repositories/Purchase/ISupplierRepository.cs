@@ -11,7 +11,9 @@ namespace Application.Persistance.Repositories.Purchase
 
         Task<SupplierReference?> GetSupplierReferenceById(Guid id);
         IEnumerable<SupplierReference> GetSupplierReferences(Guid supplierReferenceId);
-        IEnumerable<SupplierReference> GetReferenceSuppliers(Guid referenceId);
+        IEnumerable<Supplier> GetReferenceSuppliers(Guid referenceId);
+
+        IEnumerable<SupplierReference> GetSuppliersReferencesFromReference(Guid referenceId);
         Task AddSupplierReference(SupplierReference reference);
         Task UpdateSupplierReference(SupplierReference reference);
         Task RemoveSupplierReference(SupplierReference reference);

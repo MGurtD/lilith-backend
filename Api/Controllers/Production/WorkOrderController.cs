@@ -155,7 +155,7 @@ namespace Api.Controllers.Production
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetExternalWorkOrderPhase()
         {
-            var WorkOrderPhases = _unitOfWork.WorkOrders.Phases.Find(w => w.IsExternalWork == true && w.ServiceReferenceId != null);
+            var WorkOrderPhases = _unitOfWork.WorkOrders.Phases.Find(w => w.IsExternalWork == true && w.ServiceReferenceId != null && w.PurchaseOrderId == null);
             if (WorkOrderPhases == null) return NotFound(new GenericResponse(false, $"Fase de la ordre de fabricació inexistent"));            
 
             return Ok(WorkOrderPhases);

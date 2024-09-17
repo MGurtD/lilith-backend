@@ -76,7 +76,7 @@ namespace Api.Controllers.Shared
         [HttpGet]
         public IActionResult GetReferenceSuppliers(Guid id)
         {
-            var entities = _unitOfWork.Suppliers.GetReferenceSuppliers(id);
+            var entities = _unitOfWork.Suppliers.GetSuppliersReferencesFromReference(id);
             return Ok(entities);
         }
 

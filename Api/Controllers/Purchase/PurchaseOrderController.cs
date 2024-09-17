@@ -26,7 +26,7 @@ namespace Api.Controllers.Purchase
         {
             var orders = await _service.GetBetweenDates(startTime, endTime, supplierId, statusId);
 
-            if (orders != null) return Ok(orders.OrderBy(e => e.Number));
+            if (orders != null) return Ok(orders.OrderByDescending(e => e.Number));
             else return BadRequest();
         }
 
@@ -47,6 +47,18 @@ namespace Api.Controllers.Purchase
         {
             var response = await _service.Create(createRequest);
 
+            if (response.Result)
+                return Ok(response);
+            else
+                return BadRequest(response);
+        }
+        [HttpPost("FromWo")]
+        
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreateFromWo(PurchaseOrderFromWO[] request)
+        {
+            var response = await _service.CreateFromWo(request);
             if (response.Result)
                 return Ok(response);
             else

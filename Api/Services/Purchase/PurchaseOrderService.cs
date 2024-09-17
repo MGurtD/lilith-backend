@@ -55,6 +55,74 @@ namespace Api.Services.Purchase
             return await _unitOfWork.PurchaseOrders.FindAsync(p => p.SupplierId == supplierId);
         }
 
+        public async Task<GenericResponse> CreateFromWo(PurchaseOrderFromWO[] request)
+        {
+            if (request == null)
+            {
+                return new GenericResponse(false, "Petició incompleta");
+            }
+            //Recuperar exercici, genèric per totes les comandes
+            var exercise = _unitOfWork.Exercices.Find(ex => ex.StartDate <= DateTime.Today && ex.EndDate > DateTime.Today).FirstOrDefault();
+            if (exercise == null) return new GenericResponse(false, "Exercici inexistent");
+            //Crear un ID per cada bloc de proveïdor
+            var oldSupplier = Guid.Empty;
+            var purchaseOrderId = Guid.Empty;
+            var statusId = Guid.Empty;
+
+            var status = _unitOfWork.Lifecycles.Find(l => l.Name == LifecycleDetailsName).FirstOrDefault();
+            if (status == null) return new GenericResponse(false, $"Cicle de vida '{LifecycleDetailsName}' inexistent");
+            if (!status.InitialStatusId.HasValue) return new GenericResponse(false, $"El cicle de vida '{LifecycleDetailsName}' no té un estat inicial");
+            /*if (status != null)
+            {
+                statusId = status.InitialStatusId.Value;
+            }*/
+
+            foreach (PurchaseOrderFromWO purchaseOrder in request)
+            {
+                if (purchaseOrder == null) continue;
+                if(oldSupplier != purchaseOrder.supplierId)
+                {
+                    oldSupplier = purchaseOrder.supplierId;
+                    purchaseOrderId = Guid.NewGuid();
+                    var order = new CreatePurchaseDocumentRequest()
+                    {
+                        Id = purchaseOrderId,
+                        ExerciseId = exercise.Id,
+                        SupplierId = purchaseOrder.supplierId,
+                        Date = DateTime.Today
+                    };
+                    var response = await Create(order);
+                    if(!response.Result)
+                    {
+                        return new GenericResponse(false, "Error al crear la comanda");
+                    }
+                }
+                var reference = await _unitOfWork.References.Get(purchaseOrder.serviceReferenceId);
+                var detail = new PurchaseOrderDetail()
+                {
+                    PurchaseOrderId = purchaseOrderId,
+                    ReferenceId = purchaseOrder.serviceReferenceId,
+                    WorkOrderPhaseId = purchaseOrder.phaseId,
+                    StatusId = status.InitialStatusId.Value,
+                    Quantity = purchaseOrder.quantity,
+                    ReceivedQuantity = 0,
+                    UnitPrice = reference.LastCost,
+                    Amount = purchaseOrder.quantity * reference.LastCost
+                };
+                var detailResponse = await AddDetail(detail);
+                if (!detailResponse.Result) {                    
+                    return new GenericResponse(false, "Error al crear la linea de la comanda");
+                }
+                var phase = await _unitOfWork.WorkOrders.Phases.Get(purchaseOrder.phaseId);
+                phase.PurchaseOrderId = purchaseOrderId;
+                await _unitOfWork.WorkOrders.Phases.Update(phase);
+
+
+            }
+
+            return new GenericResponse(true);
+        }
+
         public async Task<GenericResponse> Create(CreatePurchaseDocumentRequest createRequest)
         {
             var exercise = await _unitOfWork.Exercices.Get(createRequest.ExerciseId);

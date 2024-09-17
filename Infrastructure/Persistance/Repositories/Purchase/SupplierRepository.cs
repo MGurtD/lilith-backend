@@ -72,15 +72,22 @@ namespace Infrastructure.Persistance.Repositories.Purchase
             await _supplierReferenceRepository.Remove(reference);
         }
 
-        public IEnumerable<SupplierReference> GetReferenceSuppliers(Guid referenceId)
+        public IEnumerable<Supplier> GetReferenceSuppliers(Guid referenceId)
         {
-            var suppliersReference = _supplierReferenceRepository.Find(r => r.ReferenceId == referenceId);
-            var suppliers = dbSet.ToList();
-            
-            foreach (var supplierReference in suppliersReference)
-                supplierReference.Supplier = suppliers.FirstOrDefault(s => s.Id == supplierReference.SupplierId);
+            var supplierReferences = _supplierReferenceRepository.Find(sr => sr.ReferenceId == referenceId).ToList();
 
-            return suppliersReference;
+            var supplierIds = supplierReferences.Select(sr => sr.SupplierId).Distinct();
+            
+            var suppliers = dbSet.Where(s => supplierIds.Contains(s.Id) && s.Disabled == false).ToList();
+
+            return suppliers;            
+        }
+
+        public IEnumerable<SupplierReference> GetSuppliersReferencesFromReference(Guid referenceId)
+        {
+            var supplierReferences = _supplierReferenceRepository.Find(sr => sr.ReferenceId == referenceId).ToList();
+            return supplierReferences;
+
         }
     }
 }
