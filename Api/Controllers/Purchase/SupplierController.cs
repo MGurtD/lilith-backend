@@ -152,6 +152,14 @@ namespace Api.Controllers.Purchase
         #endregion
 
         #region References
+        [Route("{supplierId:guid}/Reference/{referenceId:guid}")]
+        [HttpGet]
+        public async Task<IActionResult> GetSupplierReferenceBySupplierIdAndReferenceId(Guid supplierId, Guid referenceId)
+        {
+            var reference = await _unitOfWork.Suppliers.GetSupplierReferenceBySupplierIdAndReferenceId(supplierId, referenceId);
+            return Ok(reference);
+        }
+
         [Route("Reference/{supplierReferenceId:guid}")]
         [HttpGet]
         public IActionResult GetReference(Guid supplierReferenceId)
