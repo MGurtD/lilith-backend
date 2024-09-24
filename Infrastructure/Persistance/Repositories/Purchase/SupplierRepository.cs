@@ -83,9 +83,9 @@ namespace Infrastructure.Persistance.Repositories.Purchase
             return suppliers;            
         }
 
-        public IEnumerable<SupplierReference> GetSuppliersReferencesFromReference(Guid referenceId)
+        public async Task<List<SupplierReference>> GetSuppliersReferencesFromReference(Guid referenceId)
         {
-            var supplierReferences = _supplierReferenceRepository.Find(sr => sr.ReferenceId == referenceId).ToList();
+            var supplierReferences = await _supplierReferenceRepository.FindAsync(sr => sr.ReferenceId == referenceId);
             return supplierReferences;
 
         }
