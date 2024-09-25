@@ -5,6 +5,7 @@ using Application.Services.Purchase;
 using Domain.Entities.Purchase;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using Application.Services;
 
 namespace Api.Controllers.Purchase
 {
@@ -14,11 +15,13 @@ namespace Api.Controllers.Purchase
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IReceiptService _service;
+        private readonly IReferenceService _referenceService;
 
-        public ReceiptController(IReceiptService service, IUnitOfWork unitOfWork)
+        public ReceiptController(IReceiptService service, IUnitOfWork unitOfWork, IReferenceService referenceService)
         {
             _service = service;
             _unitOfWork = unitOfWork;
+            _referenceService = referenceService;
         }
 
         [HttpGet]
@@ -90,13 +93,16 @@ namespace Api.Controllers.Purchase
 
             var warehouseResponse = new GenericResponse(true);
             if (receipt.StatusId != moveToWarehouseStatus.Id && request.StatusId == moveToWarehouseStatus.Id)
-                warehouseResponse = await _service.MoveToWarehose(request);
+                warehouseResponse = await _service.MoveToWarehose(request);                  
+
             if (receipt.StatusId == moveToWarehouseStatus.Id && request.StatusId != moveToWarehouseStatus.Id)
                 warehouseResponse = await _service.RetriveFromWarehose(request);
 
             var globalResponse = new GenericResponse(true);
             if (warehouseResponse.Result)
                 globalResponse = await _service.Update(request);
+                request.Details = await _unitOfWork.Receipts.Details.FindAsync(r => r.ReceiptId == request.Id);
+                await _referenceService.UpdatePriceFromReceipt(request);
 
             if (globalResponse.Result && warehouseResponse.Result) return Ok(globalResponse);
             else return BadRequest(globalResponse);

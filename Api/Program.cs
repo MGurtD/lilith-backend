@@ -22,6 +22,8 @@ using Api.Services.Warehouse;
 using Infrastructure.Persistance;
 using System.Text;
 using System.Text.Json.Serialization;
+using Application.Persistance.Repositories;
+using Domain.Entities.Purchase;
 
 // Early init of NLog to allow startup and exception logging, before host is built
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
@@ -59,7 +61,7 @@ try
         builder.Services.AddScoped<IStockMovementService, StockMovementService>();
         builder.Services.AddScoped<IDeliveryNoteService, DeliveryNoteService>();
         builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
-        builder.Services.AddScoped<IReceiptService, ReceiptService>();
+        builder.Services.AddScoped<IReceiptService, ReceiptService>();        
         builder.Services.AddScoped<IReferenceService, ReferenceService>();
         builder.Services.AddScoped<IExerciseService, ExerciseService>();
         builder.Services.AddScoped<IWorkOrderService, WorkOrderService>();

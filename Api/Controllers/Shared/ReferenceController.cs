@@ -1,4 +1,5 @@
-﻿using Application.Persistance;
+﻿using Application.Contracts.Shared;
+using Application.Persistance;
 using Application.Persistance.Repositories.Purchase;
 using Application.Services;
 using Domain.Entities.Shared;
@@ -78,6 +79,13 @@ namespace Api.Controllers.Shared
         {
             var entities = _unitOfWork.Suppliers.GetSuppliersReferencesFromReference(id);
             return Ok(entities);
+        }
+        [HttpPost("GetPrice")]
+        public async Task<IActionResult> GetPrice(ReferenceGetPriceRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+            var price = await _referenceService.GetPrice(request.referenceId, request.supplierId);
+            return Ok(price);
         }
 
         [HttpPost]
