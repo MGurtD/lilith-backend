@@ -88,11 +88,17 @@ namespace Infrastructure.Persistance.Repositories.Purchase
             return suppliers;            
         }
 
-        public IEnumerable<SupplierReference> GetSuppliersReferencesFromReference(Guid referenceId)
+        public async Task<List<SupplierReference>> GetSuppliersReferencesFromReference(Guid referenceId)
         {
-            var supplierReferences = _supplierReferenceRepository.Find(sr => sr.ReferenceId == referenceId).ToList();
+            var supplierReferences = await _supplierReferenceRepository.FindAsync(sr => sr.ReferenceId == referenceId);
             return supplierReferences;
 
+        }
+
+        public async Task<SupplierReference?> GetSupplierReferenceBySupplierIdAndReferenceId(Guid supplierId, Guid referenceId)
+        {
+            var supplierReference = (await _supplierReferenceRepository.FindAsync(s => s.SupplierId == supplierId && s.ReferenceId == referenceId)).FirstOrDefault();
+            return supplierReference;
         }
     }
 }

@@ -10,11 +10,12 @@ namespace Application.Persistance.Repositories.Purchase
         Task RemoveContact(SupplierContact contact);
 
         Task<SupplierReference?> GetSupplierReferenceById(Guid id);
+        Task<SupplierReference?> GetSupplierReferenceBySupplierIdAndReferenceId(Guid supplierId, Guid referenceId);
         IEnumerable<SupplierReference> GetSupplierReferences(Guid supplierReferenceId);
         IEnumerable<Supplier> GetReferenceSuppliers(Guid referenceId);
         Task<SupplierReference?> GetSupplierReferenceBySupplierAndId(Guid referenceId, Guid supplierId);
 
-        IEnumerable<SupplierReference> GetSuppliersReferencesFromReference(Guid referenceId);
+        Task<List<SupplierReference>> GetSuppliersReferencesFromReference(Guid referenceId);
         Task AddSupplierReference(SupplierReference reference);
         Task UpdateSupplierReference(SupplierReference reference);
         Task RemoveSupplierReference(SupplierReference reference);

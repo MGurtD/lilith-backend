@@ -72,12 +72,8 @@ namespace Api.Services.Purchase
             var status = _unitOfWork.Lifecycles.Find(l => l.Name == LifecycleDetailsName).FirstOrDefault();
             if (status == null) return new GenericResponse(false, $"Cicle de vida '{LifecycleDetailsName}' inexistent");
             if (!status.InitialStatusId.HasValue) return new GenericResponse(false, $"El cicle de vida '{LifecycleDetailsName}' no té un estat inicial");
-            /*if (status != null)
-            {
-                statusId = status.InitialStatusId.Value;
-            }*/
 
-            foreach (PurchaseOrderFromWO purchaseOrder in request)
+            foreach (PurchaseOrderFromWO purchaseOrder in request.OrderBy(r => r.supplierId))
             {
                 if (purchaseOrder == null) continue;
                 if(oldSupplier != purchaseOrder.supplierId)
@@ -97,7 +93,16 @@ namespace Api.Services.Purchase
                         return new GenericResponse(false, "Error al crear la comanda");
                     }
                 }
+                // Obtenir referència
                 var reference = await _unitOfWork.References.Get(purchaseOrder.serviceReferenceId);
+                if (reference == null) return new GenericResponse(false, "Refèrencia inexistent");
+                // Obtenir relació proveïdor-referència
+                var supplierReference = await _unitOfWork.Suppliers.GetSupplierReferenceBySupplierIdAndReferenceId(purchaseOrder.supplierId, purchaseOrder.serviceReferenceId);
+
+                // Crear detall de comanda
+                var unitPrice = supplierReference != null ? supplierReference.SupplierPrice : reference.LastCost;
+                var expectedReceiptDate = DateTime.Today.AddDays(supplierReference != null ? supplierReference.SupplyDays : 0);
+
                 var detail = new PurchaseOrderDetail()
                 {
                     PurchaseOrderId = purchaseOrderId,
@@ -106,18 +111,21 @@ namespace Api.Services.Purchase
                     StatusId = status.InitialStatusId.Value,
                     Quantity = purchaseOrder.quantity,
                     ReceivedQuantity = 0,
-                    UnitPrice = reference.LastCost,
-                    Amount = purchaseOrder.quantity * reference.LastCost
+                    UnitPrice = unitPrice,
+                    Amount = purchaseOrder.quantity * unitPrice,
+                    ExpectedReceiptDate = expectedReceiptDate
                 };
+
                 var detailResponse = await AddDetail(detail);
                 if (!detailResponse.Result) {                    
                     return new GenericResponse(false, "Error al crear la linea de la comanda");
                 }
+
+                // Actualitzar fase de l'ordre de treball
                 var phase = await _unitOfWork.WorkOrders.Phases.Get(purchaseOrder.phaseId);
                 phase.PurchaseOrderId = purchaseOrderId;
+
                 await _unitOfWork.WorkOrders.Phases.Update(phase);
-
-
             }
 
             return new GenericResponse(true);

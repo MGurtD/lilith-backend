@@ -75,9 +75,9 @@ namespace Api.Controllers.Shared
 
         [Route("{id:guid}/Suppliers")]
         [HttpGet]
-        public IActionResult GetReferenceSuppliers(Guid id)
+        public async Task<IActionResult> GetReferenceSuppliers(Guid id)
         {
-            var entities = _unitOfWork.Suppliers.GetSuppliersReferencesFromReference(id);
+            var entities = await _unitOfWork.Suppliers.GetSuppliersReferencesFromReference(id);
             return Ok(entities);
         }
         [HttpPost("GetPrice")]
