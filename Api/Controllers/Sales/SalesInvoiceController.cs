@@ -58,7 +58,7 @@ namespace Api.Controllers.Sales
         [HttpGet("Report/{id:guid}")]
         public async Task<IActionResult> GetInvoiceForReport(Guid id)
         {
-            var salesOrders = await _service.GetByIdForReporting(id);
+            var salesOrders = await _service.GetDtoForReportingById(id);
             if (salesOrders is null) return NotFound();
 
             return Ok(salesOrders);
