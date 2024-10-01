@@ -6,6 +6,7 @@ namespace Application.Services.Purchase
 {
     public interface IPurchaseOrderService
     {
+        Task<PurchaseOrderReportResponse?> GetDtoForReportingById(Guid id);
         Task<List<PurchaseOrder>> GetBetweenDates(DateTime startDate, DateTime endDate, Guid? supplier, Guid? statusId);
         Task<List<PurchaseOrder>> GetBySupplier(Guid supplierId);
 
