@@ -17,6 +17,9 @@ namespace Domain.Entities.Shared
         public Customer? Customer { get; set;}
         public string? CategoryName { get; set; }
         public ReferenceCategory? Category { get; set; }
+        public Guid? AreaId { get; set; }
+        public Area? Area { get; set; }
+        
         // deprecated
         public decimal Cost { get; set; } = decimal.Zero;
         public decimal Price { get; set; } = decimal.Zero;
@@ -31,7 +34,15 @@ namespace Domain.Entities.Shared
         public decimal LastCost { get; set; } = decimal.Zero;
         public decimal WorkMasterCost { get; set; } = decimal.Zero;
 
-        public Guid? AreaId { get; set; }
-        public Area? Area { get; set; }
+        public string GetShortName()
+        {
+            return Purchase ? Code : $"{Code} (v. {Version})";
+        }
+
+        public string GetFullName()
+        {
+            return $"{GetShortName()} - {Description}";
+        }
+        
     }
 }

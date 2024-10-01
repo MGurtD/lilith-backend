@@ -23,8 +23,8 @@ namespace Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IStockMovementService _stockMovementService;
         private readonly ISalesOrderService _salesOrderService;
-        private readonly string lifecycleName = "DeliveryNote";
         private readonly IExerciseService _exerciseService;
+        private readonly string lifecycleName = "DeliveryNote";
 
         public DeliveryNoteService(IUnitOfWork unitOfWork, IStockMovementService stockMovementService, ISalesOrderService salesOrderService, IExerciseService exerciseService)
         {
@@ -34,7 +34,7 @@ namespace Application.Services
             _exerciseService = exerciseService;
         }
 
-        public async Task<DeliveryNoteReportResponse?> GetByIdForReporting(Guid id)
+        public async Task<DeliveryNoteReportResponse?> GetDtoForReportingById(Guid id)
         {
             var deliveryNote = await _unitOfWork.DeliveryNotes.Get(id);
             if (deliveryNote is null) return null;
@@ -47,10 +47,19 @@ namespace Application.Services
             var site = await _unitOfWork.Sites.Get(deliveryNote.SiteId);
             if (site is null) return null;
 
+            var deliveryNoteOrders = orders.Select(order => new DeliveryNoteOrderReportDto
+            {
+                Number = order.Number,
+                Date = order.Date,
+                CustomerNumber = order.CustomerNumber,
+                Details = order.SalesOrderDetails.ToList(),
+                Total = order.SalesOrderDetails.Sum(d => d.Amount)
+            }).ToList();
+
             var deliveryNoteReport = new DeliveryNoteReportResponse
             {
                 DeliveryNote = deliveryNote,
-                Orders = orders.ToList(),
+                Orders = deliveryNoteOrders,
                 Customer = customer,
                 Site = site,
                 Total = deliveryNote.Details.Sum(d => d.Amount),
