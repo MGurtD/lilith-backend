@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Purchase;
+﻿using Domain.Entities.Production;
+using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
 
 namespace Domain.Entities.Shared
@@ -16,6 +17,9 @@ namespace Domain.Entities.Shared
         public Customer? Customer { get; set;}
         public string? CategoryName { get; set; }
         public ReferenceCategory? Category { get; set; }
+        public Guid? AreaId { get; set; }
+        public Area? Area { get; set; }
+        
         // deprecated
         public decimal Cost { get; set; } = decimal.Zero;
         public decimal Price { get; set; } = decimal.Zero;
@@ -39,5 +43,6 @@ namespace Domain.Entities.Shared
         {
             return $"{GetShortName()} - {Description}";
         }
+        
     }
 }
