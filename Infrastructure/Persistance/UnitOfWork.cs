@@ -1,5 +1,6 @@
 ﻿using Application.Contracts.Production;
 using Application.Contracts.Purchase;
+using Application.Contracts.Sales;
 using Application.Persistance;
 using Application.Persistance.Repositories;
 using Application.Persistance.Repositories.Production;
@@ -62,6 +63,7 @@ namespace Infrastructure.Persistance
         public IReceiptRepository Receipts { get; private set; } = new ReceiptRepository(context);
         public IDeliveryNoteRepository DeliveryNotes { get; private set; } = new DeliveryNoteRepository(context);
         public IBudgetRepository Budgets { get; private set; } = new BudgetRepository(context);
+        public IContractReader<ConsolidatedIncomes> ConsolidatedIncomes { get; private set; } = new ContractReader<ConsolidatedIncomes>(context);
 
         // Production
         public IRepository<Enterprise, Guid> Enterprises { get; private set; } = new Repository<Enterprise, Guid>(context);

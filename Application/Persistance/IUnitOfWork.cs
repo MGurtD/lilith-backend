@@ -1,6 +1,7 @@
 ﻿
 using Application.Contracts.Production;
 using Application.Contracts.Purchase;
+using Application.Contracts.Sales;
 using Application.Persistance.Repositories;
 using Application.Persistance.Repositories.Production;
 using Application.Persistance.Repositories.Purchase;
@@ -56,6 +57,7 @@ namespace Application.Persistance
         ISalesInvoiceRepository SalesInvoices { get; }
         IDeliveryNoteRepository DeliveryNotes { get; }
         IBudgetRepository Budgets { get; }
+        IContractReader<ConsolidatedIncomes> ConsolidatedIncomes { get; }
 
         // Production
         IRepository<Enterprise, Guid> Enterprises { get; }
