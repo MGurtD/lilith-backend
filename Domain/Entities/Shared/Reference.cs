@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Purchase;
+﻿using Domain.Entities.Production;
+using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
 
 namespace Domain.Entities.Shared
@@ -29,5 +30,8 @@ namespace Domain.Entities.Shared
         public ReferenceFormat? ReferenceFormat { get; set; }
         public decimal LastCost { get; set; } = decimal.Zero;
         public decimal WorkMasterCost { get; set; } = decimal.Zero;
+
+        public Guid? AreaId { get; set; }
+        public Area? Area { get; set; }
     }
 }

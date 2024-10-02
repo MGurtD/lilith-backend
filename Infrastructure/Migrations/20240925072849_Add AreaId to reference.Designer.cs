@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240925072849_Add AreaId to reference")]
+    partial class AddAreaIdtoreference
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1730,9 +1732,6 @@ namespace Infrastructure.Migrations
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)");
 
-                    b.Property<Guid?>("PurchaseOrderId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid?>("ServiceReferenceId")
                         .HasColumnType("uuid");
 
@@ -1763,8 +1762,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("OperatorTypeId");
 
                     b.HasIndex("PreferredWorkcenterId");
-
-                    b.HasIndex("PurchaseOrderId");
 
                     b.HasIndex("ServiceReferenceId");
 
@@ -4231,9 +4228,6 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Color")
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp without time zone")
@@ -4863,10 +4857,6 @@ namespace Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("PreferredWorkcenterId");
 
-                    b.HasOne("Domain.Entities.Purchase.PurchaseOrder", "PurchaseOrder")
-                        .WithMany()
-                        .HasForeignKey("PurchaseOrderId");
-
                     b.HasOne("Domain.Entities.Shared.Reference", "ServiceReference")
                         .WithMany()
                         .HasForeignKey("ServiceReferenceId");
@@ -4890,8 +4880,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("OperatorType");
 
                     b.Navigation("PreferredWorkcenter");
-
-                    b.Navigation("PurchaseOrder");
 
                     b.Navigation("ServiceReference");
 
