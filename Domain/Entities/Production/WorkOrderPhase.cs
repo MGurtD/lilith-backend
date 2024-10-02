@@ -31,7 +31,7 @@ public class WorkOrderPhase : Entity
     public DateTime? EndTime { get; set; }
 
     public Guid? PurchaseOrderId { get; set; }
-    public PurchaseOrder PurchaseOrder { get; set; }
+    public PurchaseOrder? PurchaseOrder { get; set; }
     public ICollection<WorkOrderPhaseDetail> Details { get; set; } = [];
     public ICollection<WorkOrderPhaseBillOfMaterials> BillOfMaterials { get; set; } = [];
 }
