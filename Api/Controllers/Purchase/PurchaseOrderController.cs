@@ -30,6 +30,13 @@ namespace Api.Controllers.Purchase
             else return BadRequest();
         }
 
+        [HttpGet("Report/{id:guid}")]
+        public async Task<IActionResult> GetSalesOrderForReport(Guid id)
+        {
+            var reportDto = await _service.GetDtoForReportingById(id);
+            return Ok(reportDto);
+        }
+
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {

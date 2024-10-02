@@ -4,21 +4,60 @@ using Application.Persistance;
 using Application.Services;
 using Application.Services.Purchase;
 using Domain.Entities.Purchase;
-using System;
 
 namespace Api.Services.Purchase
 {
-    public class PurchaseOrderService : IPurchaseOrderService
+    public class PurchaseOrderService(IUnitOfWork unitOfWork, IExerciseService exerciseService) : IPurchaseOrderService
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IExerciseService _exerciseService;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IExerciseService _exerciseService = exerciseService;
         private readonly string LifecycleName = "PurchaseOrder";
         private readonly string LifecycleDetailsName = "PurchaseOrderDetail";
 
-        public PurchaseOrderService(IUnitOfWork unitOfWork, IExerciseService exerciseService)
+        public async Task<PurchaseOrderReportResponse?> GetDtoForReportingById(Guid id)
         {
-            _unitOfWork = unitOfWork;
-            _exerciseService = exerciseService;
+            var order = await _unitOfWork.PurchaseOrders.Get(id);
+            if (order == null) return null;
+
+            var supplier = await _unitOfWork.Suppliers.Get(order.SupplierId);
+            if (supplier == null) return null;
+
+            var site = (await _unitOfWork.Sites.FindAsync(s => !s.Disabled)).FirstOrDefault();
+            if (site == null) return null;
+
+            var orderDto = new PurchaseOrderReportDto()
+            {
+                Number = order.Number,
+                Date = order.Date,
+                Total = order.Details.Sum(d => d.Amount)
+            };
+
+            var orderDetails = new List<PurchaseOrderDetailReportDto>();
+            var referenceIds = order.Details.Select(detail => detail.ReferenceId).ToList();
+            var references = await _unitOfWork.References.FindAsync(r => referenceIds.Contains(r.Id));
+            var supplierReferences = _unitOfWork.Suppliers.GetSupplierReferences(supplier.Id);
+
+            foreach (var detail in order.Details)
+            {
+                var reference = references.FirstOrDefault(r => r.Id == detail.ReferenceId);
+                var supplierReference = supplierReferences.FirstOrDefault(sr => sr.ReferenceId == detail.ReferenceId);
+
+                orderDetails.Add(new PurchaseOrderDetailReportDto()
+                {
+                    Description = supplierReference != null ? $"{supplierReference.SupplierCode} - {supplierReference.SupplierDescription}" : reference!.GetFullName(),
+                    Quantity = detail.Quantity,
+                    UnitPrice = detail.UnitPrice,
+                    Amount = detail.Amount
+                });
+            }
+
+            return new PurchaseOrderReportResponse()
+            {
+                Supplier = supplier,
+                Site = site,
+                Order = orderDto,
+                Details = orderDetails
+            }; 
         }
 
         public async Task<List<PurchaseOrder>> GetBetweenDates(DateTime startDate, DateTime endDate, Guid? supplierId, Guid? statusId)
@@ -283,7 +322,7 @@ namespace Api.Services.Purchase
             await SubstractReceivedQuantityAndCalculateStatus(orderDetail, (int)reception.Quantity);
 
             return await DeterminateStatus(orderDetail.PurchaseOrderId);
-        }
+        }        
 
         #endregion
     }

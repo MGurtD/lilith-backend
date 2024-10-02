@@ -33,7 +33,7 @@ namespace Api.Controllers.Purchase
         [HttpGet("Report/{id:guid}")]
         public async Task<IActionResult> GetDeliveryNoteForReport(Guid id)
         {
-            var deliveryNote = await _service.GetByIdForReporting(id);
+            var deliveryNote = await _service.GetDtoForReportingById(id);
             return Ok(deliveryNote);
         }
 
