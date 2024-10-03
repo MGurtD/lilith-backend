@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241003101905_Create InvoiceNotes field on customer entity")]
+    partial class CreateInvoiceNotesfieldoncustomerentity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3133,8 +3135,9 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("InvoiceNotes")
                         .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("varchar");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar")
+                        .HasDefaultValue("4000");
 
                     b.Property<string>("Observations")
                         .IsRequired()

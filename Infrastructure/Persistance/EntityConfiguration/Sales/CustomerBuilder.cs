@@ -51,6 +51,11 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .IsRequired()
                 .HasColumnType("varchar")
                 .HasDefaultValue(4000);
+            builder
+                .Property(b => b.InvoiceNotes)
+                .IsRequired()
+                .HasColumnType("varchar")
+                .HasMaxLength(4000);
 
             builder
                 .Property(b => b.Disabled)
