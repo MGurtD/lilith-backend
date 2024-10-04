@@ -12,6 +12,7 @@ namespace Domain.Entities.Sales
         public string Web { get; set; } = string.Empty;
         public string AccountNumber { get; set; } = string.Empty;
         public string Observations { get; set; } = string.Empty;
+        public string InvoiceNotes { get; set; } = string.Empty;
 
         public bool IsValidForSales()
         {

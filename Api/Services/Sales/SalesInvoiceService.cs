@@ -77,29 +77,26 @@ namespace Api.Services.Sales
                     TaxAmount = import.TaxAmount,
                     Percentatge = import.Tax!.Percentatge
                 }).ToList()
-            };
-
-            
+            };            
 
             // Obtenir albarans de la factura
             var deliveryNotes = _deliveryNoteService.GetBySalesInvoice(id).OrderBy(d => d.Number);
             
-            // Obtener referencies de les línies
+            // Obtener referencies de les línies de l'albarà
             var referenceIds = deliveryNotes.SelectMany(deliveryNotes => deliveryNotes.Details).Select(d => d.ReferenceId).ToList();
             var references = _unitOfWork.References.Find(r => referenceIds.Contains(r.Id)).ToList();
 
             foreach ( var deliveryNote in deliveryNotes )
             {
-                // Obtener les comandes de l'albarà
                 var orders = _salesOrderService.GetByDeliveryNoteId(deliveryNote.Id);
+                var customerOrderNumbers = String.Join(",", orders.Select(orders => orders.CustomerNumber).ToArray());
 
-                reportDto.Orders.AddRange(orders.Select(order => new InvoiceReportDtoDeliveryNoteOrder()
+                reportDto.DeliveryNotes.Add(new InvoiceReportDtoDeliveryNote()
                 {
-                    CustomerNumber = $"Comanda {order.CustomerNumber}",
-                    DeliveryNoteNumber = deliveryNote.Number,
-                    Date = order.Date,
-                    Number = order.Number,
-                    Details = order.SalesOrderDetails.Select(detail => new SalesInvoiceDetail()
+                    Header = $"Albarà: {deliveryNote.Number} - Entrega: {deliveryNote.DeliveryDate:dd/MM/yyy} - Comanda client: {customerOrderNumbers}",
+                    Number = deliveryNote.Number,
+                    Date = deliveryNote.CreatedOn,
+                    Details = deliveryNote.Details.Select(detail => new SalesInvoiceDetail()
                     {
                         Amount = detail?.Amount ?? 0,
                         Description = $"{references.FirstOrDefault(r => r.Id == detail!.ReferenceId)!.GetShortName()} - {detail?.Description}",
@@ -108,25 +105,23 @@ namespace Api.Services.Sales
                         UnitCost = detail?.UnitCost ?? 0,
                         UnitPrice = detail?.UnitPrice ?? 0
                     }).ToList(),
-                    Total = order.SalesOrderDetails.Sum(detail => detail.Amount)
-                }).OrderBy(o => o.Number));
+                    Total = deliveryNote.Details.Sum(detail => detail.Amount)
+                });
             }
 
             // Linies lliures
             var hasDetailsWithoutDeliveryNote = invoice.SalesInvoiceDetails.Any(d => d.DeliveryNoteDetailId == null);
             if (hasDetailsWithoutDeliveryNote)
             {
-                reportDto.Orders.Add(new InvoiceReportDtoDeliveryNoteOrder()
+                reportDto.DeliveryNotes.Add(new InvoiceReportDtoDeliveryNote()
                 {
-                    CustomerNumber = "Linies sense comanda",
-                    DeliveryNoteNumber = "--",
+                    Header = "Sense albarà",
                     Date = invoice.InvoiceDate,
                     Number = "--",
                     Details = invoice.SalesInvoiceDetails.Where(d => d.DeliveryNoteDetailId == null).ToList(),
                     Total = invoice.SalesInvoiceDetails.Where(d => d.DeliveryNoteDetailId == null).Sum(d => d.Amount)
                 });
             }
-            var lastDueDate = invoice.SalesInvoiceDueDates.Count != 0 ? invoice.SalesInvoiceDueDates.OrderByDescending(d => d.DueDate).FirstOrDefault()!.DueDate : invoice.InvoiceDate;
 
             return reportDto;
         }        
