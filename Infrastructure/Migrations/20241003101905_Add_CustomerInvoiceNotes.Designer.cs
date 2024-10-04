@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241003103242_Create invoicenotes field on customer entity v2")]
-    partial class Createinvoicenotesfieldoncustomerentityv2
+    [Migration("20241003101905_Add_CustomerInvoiceNotes")]
+    partial class CreateInvoiceNotesfieldoncustomerentity
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -3135,8 +3135,9 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("InvoiceNotes")
                         .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("varchar");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar")
+                        .HasDefaultValue("4000");
 
                     b.Property<string>("Observations")
                         .IsRequired()

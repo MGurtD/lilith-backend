@@ -12,8 +12,9 @@ namespace Infrastructure.Migrations
                 name: "InvoiceNotes",
                 table: "Customers",
                 type: "varchar",
+                maxLength: 4000,
                 nullable: false,
-                defaultValue: "4000");
+                defaultValue: "");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
