@@ -461,9 +461,22 @@ namespace Api.Services.Sales
                 {
                     SalesInvoiceId = id
                 };
+                
                 salesInvoiceDetail.SetDeliveryNoteDetail(deliveryNoteDetail);
                 if (salesInvoiceDetail.TaxId == Guid.Empty)
-                    salesInvoiceDetail.TaxId = tax.Id;
+                {
+                    var reference =  _unitOfWork.References.Find(d => d.Id == deliveryNoteDetail.ReferenceId).FirstOrDefault();
+                    if(reference != null)
+                    {
+                        salesInvoiceDetail.TaxId = reference.TaxId ?? tax.Id;
+                    }
+                    else
+                    {
+                        salesInvoiceDetail.TaxId = tax.Id;
+                    }
+                        
+                }
+                
 
                 invoiceDetails.Add(salesInvoiceDetail);
             }
