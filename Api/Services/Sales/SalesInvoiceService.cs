@@ -465,7 +465,7 @@ namespace Api.Services.Sales
                 salesInvoiceDetail.SetDeliveryNoteDetail(deliveryNoteDetail);
                 if (salesInvoiceDetail.TaxId == Guid.Empty)
                 {
-                    var reference =  _unitOfWork.References.Find(d => d.Id == deliveryNoteDetail.ReferenceId).FirstOrDefault();
+                    var reference =  await _unitOfWork.References.Get(deliveryNoteDetail.ReferenceId);
                     if(reference != null)
                     {
                         salesInvoiceDetail.TaxId = reference.TaxId ?? tax.Id;
@@ -474,9 +474,7 @@ namespace Api.Services.Sales
                     {
                         salesInvoiceDetail.TaxId = tax.Id;
                     }
-                        
                 }
-                
 
                 invoiceDetails.Add(salesInvoiceDetail);
             }
