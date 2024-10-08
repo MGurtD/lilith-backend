@@ -26,6 +26,24 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                               ApplicationDbContextConstants.PRICE_DECIMAL_SCALE);
             builder
+                .Property(b => b.ProductionProfit)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.PRICE_DECIMAL_SCALE);
+            builder
+                .Property(b => b.MaterialProfit)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.PRICE_DECIMAL_SCALE);
+            builder
+                .Property(b => b.ExternalProfit)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.PRICE_DECIMAL_SCALE);
+            builder
                 .Property(b => b.Discount)
                 .IsRequired()
                 .HasColumnType("decimal")
@@ -33,6 +51,18 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                               ApplicationDbContextConstants.PRICE_DECIMAL_SCALE);
             builder
                 .Property(b => b.UnitCost)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.ProductionCost)
+                .IsRequired()
+                .HasColumnType("decimal")
+                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                              ApplicationDbContextConstants.DECIMAL_SCALE);
+            builder
+                .Property(b => b.MaterialCost)
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,

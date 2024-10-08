@@ -14,8 +14,13 @@ public class BudgetDetail : Entity
     public string Description { get; set; }
     public int Quantity { get; set; }
     public decimal Profit { get; set; }
+    public decimal ProductionProfit { get; set; }
+    public decimal MaterialProfit { get; set; }
+    public decimal ExternalProfit { get; set; }
     public decimal Discount { get; set; }
     public decimal UnitCost { get; set; }
+    public decimal ProductionCost { get; set; }
+    public decimal MaterialCost { get; set; }
     public decimal TransportCost { get; set; }
     public decimal ServiceCost { get; set; }
     public decimal TotalCost { get; set; } 
@@ -27,7 +32,12 @@ public class BudgetDetail : Entity
         Description = string.Empty;
         Quantity = 0;
         Profit = decimal.Zero;
+        ProductionProfit = decimal.Zero;
+        MaterialProfit = decimal.Zero;
+        ExternalProfit = decimal.Zero;
         Discount = decimal.Zero;
+        ProductionCost = decimal.Zero;
+        MaterialCost = decimal.Zero;
         TransportCost = decimal.Zero;
         ServiceCost = decimal.Zero;
         UnitCost = decimal.Zero;
