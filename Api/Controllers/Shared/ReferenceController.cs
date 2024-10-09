@@ -4,6 +4,7 @@ using Application.Persistance.Repositories.Purchase;
 using Application.Services;
 using Domain.Entities.Shared;
 using Microsoft.AspNetCore.Mvc;
+using NLog.LayoutRenderers.Wrappers;
 
 namespace Api.Controllers.Shared
 {
@@ -92,6 +93,7 @@ namespace Api.Controllers.Shared
         public async Task<IActionResult> Create(Reference request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+            request.Code = request.Code.Trim();
 
             var exists = _unitOfWork.References.Find(r => request.Code == r.Code && request.Version == r.Version).Any();
             if (!exists)
@@ -137,6 +139,7 @@ namespace Api.Controllers.Shared
                 return NotFound();
 
             request.Code = await GetReferenceCode(request);
+            request.Code = request.Code.Trim();
             await _unitOfWork.References.Update(request);
             return Ok(request);
         }
