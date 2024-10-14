@@ -4,6 +4,7 @@ using Application.Persistance;
 using Application.Services;
 using Application.Services.Purchase;
 using Domain.Entities.Purchase;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.Purchase
 {
@@ -209,8 +210,15 @@ namespace Api.Services.Purchase
         }
         public async Task<GenericResponse> Remove(Guid id)
         {
-            var receipt = await _unitOfWork.PurchaseOrders.Get(id);
-            if (receipt == null) return new GenericResponse(false, $"Id {id} inexistent" );
+            var receipt = await _unitOfWork.PurchaseOrders.GetHeaders(id);
+            if (receipt == null) return new GenericResponse(false, $"Id {id} inexistent" );            
+            var workorderphases = await _unitOfWork.WorkOrders.Phases.Find(w => w.PurchaseOrderId == id).AsQueryable().AsNoTracking().ToListAsync();
+
+            foreach (var phase in workorderphases)
+            {
+                phase.PurchaseOrderId = null;
+                await _unitOfWork.WorkOrders.Phases.Update(phase);
+            }
 
             await _unitOfWork.PurchaseOrders.Remove(receipt);
             return new GenericResponse(true);

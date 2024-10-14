@@ -4,6 +4,7 @@ using Application.Persistance;
 using Application.Services;
 using Application.Services.Sales;
 using Domain.Entities.Sales;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.Sales
 {
@@ -164,7 +165,7 @@ namespace Api.Services.Sales
                 return new GenericResponse(false, $"La comanda amb ID {id} no existeix");
             }
             else
-            {
+            {                
                 await _unitOfWork.SalesOrderHeaders.Remove(salesOrder);
                 return new GenericResponse(true, new List<string> { });
             }
