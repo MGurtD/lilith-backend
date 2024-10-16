@@ -167,8 +167,11 @@ namespace Application.Services
 
             var orderServiceResponse = await _salesOrderService.Deliver(deliveryNote.Id);
             if (!orderServiceResponse.Result) return orderServiceResponse;
-
-            deliveryNote.DeliveryDate = DateTime.Now;
+            if (deliveryNote.DeliveryDate is null)
+            {
+                deliveryNote.DeliveryDate = DateTime.Now;
+            }
+            
             await Update(deliveryNote);
 
             return new GenericResponse(true);
