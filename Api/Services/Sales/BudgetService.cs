@@ -4,6 +4,7 @@ using Application.Persistance;
 using Application.Services;
 using Application.Services.Sales;
 using Domain.Entities.Sales;
+using Microsoft.Extensions.Logging;
 
 namespace Api.Services.Sales
 {
@@ -11,11 +12,13 @@ namespace Api.Services.Sales
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IExerciseService _exerciseService;
+        private readonly ILogger<BudgetService> _logger;
 
-        public BudgetService(IUnitOfWork unitOfWork, IExerciseService exerciseService)
+        public BudgetService(IUnitOfWork unitOfWork, IExerciseService exerciseService, ILogger<BudgetService> logger)
         {
             _unitOfWork = unitOfWork;
             _exerciseService = exerciseService;
+            _logger = logger;
         }        
         
         public async Task<Budget?> GetById(Guid id)
@@ -147,6 +150,24 @@ namespace Api.Services.Sales
                 Total = budget.Details.Sum(d => d.Amount),
             };
             return salesOrderReport;
+        }
+
+        public async Task<GenericResponse> RejectOutdatedBudgets()
+        {
+            var status = await _unitOfWork.Lifecycles.GetStatusByName("Budget", "Pendent d'acceptar");
+            var rejectedstatus = await _unitOfWork.Lifecycles.GetStatusByName("Budget", "Rebutjat");
+            var budgets =  _unitOfWork.Budgets.Find(b => b.StatusId == status.Id && b.UpdatedOn.AddDays(30) <= DateTime.UtcNow).ToList();
+            
+
+            foreach (var budget in budgets)
+            {
+                budget.StatusId = rejectedstatus.Id;
+                budget.AutoRejectedDate = DateTime.UtcNow;
+                budget.Notes = "Pressupost rebutjat automaticament en data: " + DateTime.UtcNow.ToString();
+                await _unitOfWork.Budgets.Update(budget);
+                
+            }
+            return (new GenericResponse(true));
         }
     }
 }

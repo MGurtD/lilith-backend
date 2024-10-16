@@ -13,6 +13,8 @@ namespace Domain.Entities.Sales
         public Guid CustomerId { get; set; }
         public Guid? StatusId { get; set; }
         public Status? Status { get; set; }
+        public DateTime? AutoRejectedDate { get; set; }
+        public string Notes { get; set; } = String.Empty;
 
         public ICollection<BudgetDetail> Details { get; set; } = new List<BudgetDetail>();
 
