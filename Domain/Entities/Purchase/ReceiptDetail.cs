@@ -10,6 +10,7 @@ namespace Domain.Entities.Purchase
 
         public Guid ReferenceId { get; set; }
         public Reference? Reference { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         public Guid? StockMovementId { get; set; }
         public StockMovement? StockMovement { get; set; }

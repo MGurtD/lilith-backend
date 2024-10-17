@@ -11,6 +11,10 @@ namespace Infrastructure.Persistance.EntityConfiguration.Purchase
         {
             builder.ConfigureBase();
             builder
+                .Property(b => b.Description)
+                .HasColumnType("varchar")
+                .HasMaxLength(400);
+            builder
                 .Property(b => b.Quantity)
                 .IsRequired()
                 .HasColumnType("int")

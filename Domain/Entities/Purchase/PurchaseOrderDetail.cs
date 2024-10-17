@@ -9,6 +9,7 @@ namespace Domain.Entities.Purchase
         public PurchaseOrder? PurchaseOrder { get; set; }
         public Guid ReferenceId { get; set; }
         public Reference? Reference { get; set; }
+        public string Description { get; set; } = string.Empty;
         public Guid? WorkOrderPhaseId { get; set; }
         public WorkOrderPhase? WorkOrderPhase { get; set; }
         public Guid StatusId { get; set; }
