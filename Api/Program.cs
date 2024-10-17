@@ -66,6 +66,7 @@ try
         builder.Services.AddScoped<IExerciseService, ExerciseService>();
         builder.Services.AddScoped<IWorkOrderService, WorkOrderService>();
         builder.Services.AddScoped<ICostsService, CostsService>();
+        builder.Services.AddHostedService<BudgetBackgroundService>();
 
         // JWT Service    
         var signKey = Encoding.ASCII.GetBytes(Configuration.JwtSecret);
