@@ -24,7 +24,14 @@ namespace Infrastructure.Persistance.Repositories.Purchase
                             .ThenInclude(d => d.Reference)
                         .AsNoTracking()
                         .FirstOrDefaultAsync(e => e.Id == id);
+            
         }
+
+        public async Task<PurchaseOrder> GetHeaders(Guid purchaseOrderId)
+        {
+            return await dbSet.Include(d => d.Details).AsNoTracking().FirstOrDefaultAsync(e => e.Id == purchaseOrderId);
+        }
+
 
         public async Task<List<PurchaseOrderReceiptDetail>> GetReceptions(Guid id)
         {
