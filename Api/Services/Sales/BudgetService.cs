@@ -4,7 +4,6 @@ using Application.Persistance;
 using Application.Services;
 using Application.Services.Sales;
 using Domain.Entities.Sales;
-using Microsoft.Extensions.Logging;
 
 namespace Api.Services.Sales
 {
@@ -156,9 +155,12 @@ namespace Api.Services.Sales
         {
             var status = await _unitOfWork.Lifecycles.GetStatusByName("Budget", "Pendent d'acceptar");
             var rejectedstatus = await _unitOfWork.Lifecycles.GetStatusByName("Budget", "Rebutjat");
-            var budgets =  _unitOfWork.Budgets.Find(b => b.StatusId == status.Id && b.UpdatedOn.AddDays(30) <= DateTime.UtcNow).ToList();
-            
+            if (status == null || rejectedstatus == null)
+            {
+                return new GenericResponse(false, "No s'han trobat els estats 'Pendent d'acceptar' i 'Rebutjat' al cicle de vida 'Budget'");
+            }
 
+            var budgets =  await _unitOfWork.Budgets.FindAsync(b => b.StatusId == status.Id && b.Date.AddDays(30) <= DateTime.UtcNow);           
             foreach (var budget in budgets)
             {
                 budget.StatusId = rejectedstatus.Id;
