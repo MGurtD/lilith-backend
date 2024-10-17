@@ -27,11 +27,18 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .Property(b => b.AcceptanceDate)
                 .HasColumnType("timestamp without time zone");
             builder
+                .Property(b => b.AutoRejectedDate)
+                .HasColumnType("timestamp without time zone");
+            builder
                 .Property(b => b.Amount)                
                 .IsRequired()
                 .HasColumnType("decimal")
                 .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                               ApplicationDbContextConstants.PRICE_DECIMAL_SCALE);
+            builder
+                .Property(b => b.Notes)
+                .HasColumnType("varchar")
+                .HasMaxLength(4000);
             builder
                 .HasKey(b => b.Id)
                 .HasName($"PK_{TABLE_NAME}");

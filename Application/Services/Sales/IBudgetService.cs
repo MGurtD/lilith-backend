@@ -18,6 +18,7 @@ namespace Application.Services.Sales
         Task<GenericResponse> AddDetail(BudgetDetail detail);
         Task<GenericResponse> UpdateDetail(BudgetDetail detail);
         Task<GenericResponse> RemoveDetail(Guid id);
+        Task<GenericResponse> RejectOutdatedBudgets();
 
     }
 }
