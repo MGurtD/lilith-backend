@@ -69,12 +69,25 @@ namespace Api.Services
             }
             var supplierId = receipt.SupplierId;
             var price = Decimal.Zero;
+            var format = new ReferenceFormat();
             foreach (ReceiptDetail detail in receipt.Details)
             {
                 detail.Reference = await _unitOfWork.References.Get(detail.ReferenceId);
+                if (detail.Reference != null && detail.Reference.ReferenceFormatId.HasValue)
+                {
+                    format = await _unitOfWork.ReferenceFormats.Get(detail.Reference.ReferenceFormatId.Value);
+                }
                 if (detail.Reference.CategoryName == "Material")
                 {
-                    price = detail.KilogramPrice;
+                    if(format.Code != "UNITATS")
+                    {
+                        price = detail.KilogramPrice;
+                    }
+                    else
+                    {
+                        price = detail.UnitPrice;
+                    }
+                    
                 }
                 else
                 {
