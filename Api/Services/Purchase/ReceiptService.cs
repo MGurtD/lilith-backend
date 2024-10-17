@@ -242,6 +242,7 @@ namespace Api.Services.Purchase
                     Id = reception.ReceiptDetailId,
                     ReceiptId = receiptId,
                     ReferenceId = detail.ReferenceId,
+                    Description = detail.Description,
                     Quantity = (int) reception.Quantity,
                     UnitPrice = detail.UnitPrice,
                     Amount = reception.Quantity * detail.UnitPrice,
