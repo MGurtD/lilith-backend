@@ -173,5 +173,16 @@ namespace Api.Controllers.Shared
             var entities = await _unitOfWork.ReferenceFormats.GetAll();
             return Ok(entities);
         }
+
+        [Route("Formats/{id:guid}")]
+        [HttpGet]
+        public async Task<IActionResult> GetReferenceFormatById(Guid id)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.ValidationState);
+            var entities = await _unitOfWork.ReferenceFormats.Get(id);
+            return Ok(entities);
+        }
+
     }
 }
