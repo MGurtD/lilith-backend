@@ -1,4 +1,5 @@
-﻿using Application.Contracts;
+﻿using Application.Contract;
+using Application.Contracts;
 using Application.Contracts.Sales;
 using Application.Persistance;
 using Application.Services;
@@ -134,6 +135,11 @@ namespace Api.Services.Sales
         public IEnumerable<SalesInvoice> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid statusId)
         {
             var invoices = _unitOfWork.SalesInvoices.Find(p => p.InvoiceDate >= startDate && p.InvoiceDate <= endDate && p.StatusId == statusId);
+            return invoices;
+        }
+        public IEnumerable<SalesInvoice> GetBetweenDatesAndExcludeStatus(DateTime startDate, DateTime endDate, Guid excludeStatusId)
+        {
+            var invoices = _unitOfWork.SalesInvoices.Find(p => p.InvoiceDate >= startDate && p.InvoiceDate <= endDate && p.StatusId != excludeStatusId);
             return invoices;
         }
         public IEnumerable<SalesInvoice> GetBetweenDatesAndCustomer(DateTime startDate, DateTime endDate, Guid customerId)
@@ -442,6 +448,26 @@ namespace Api.Services.Sales
             if (dueDates.Any()) await _unitOfWork.SalesInvoices.InvoiceDueDates.AddRange(newDueDates);
 
             return new GenericResponse(true, newDueDates);
+        }
+
+        public async Task<GenericResponse> ChangeStatuses(ChangeStatusOfInvoicesRequest changeStatusesRequest)
+        {
+            var statusToId = changeStatusesRequest.StatusToId;
+            var status = await _unitOfWork.Lifecycles.StatusRepository.Get(statusToId);
+            if (status == null || status.Disabled)
+            {
+                return new GenericResponse(false, $"L'estat de factura amb ID {statusToId} no existeix o está deshabilitat");
+            }
+
+            var invoices = _unitOfWork.SalesInvoices.Find(pi => changeStatusesRequest.Ids.Contains(pi.Id));
+            foreach (var invoice in invoices)
+            {
+                invoice.StatusId = statusToId;
+                _unitOfWork.SalesInvoices.UpdateWithoutSave(invoice);
+            }
+            await _unitOfWork.CompleteAsync();
+
+            return new GenericResponse(true);
         }
 
         #region Details
