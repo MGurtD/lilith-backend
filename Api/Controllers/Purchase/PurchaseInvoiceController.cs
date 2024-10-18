@@ -1,4 +1,5 @@
 ﻿using Api.Services;
+using Application.Contract;
 using Application.Contracts.Purchase;
 using Application.Persistance;
 using Application.Services;
@@ -94,7 +95,7 @@ namespace Api.Controllers.Purchase
         [Route("UpdateStatuses")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UpdateStatuses(ChangeStatusOfPurchaseInvoicesRequest request)
+        public async Task<IActionResult> UpdateStatuses(ChangeStatusOfInvoicesRequest request)
         {
             if (!ModelState.IsValid) return BadRequest();
 
