@@ -40,6 +40,11 @@ namespace Api.Services.Sales
             var invoices = await _unitOfWork.SalesInvoices.Get(id);
             return invoices;
         }
+        public async Task<SalesInvoice?> GetHeaderById(Guid id)
+        {
+            var invoices = await _unitOfWork.SalesInvoices.GetHeader(id);
+            return invoices;
+        }
 
         public async  Task<InvoiceReportDto?> GetDtoForReportingById(Guid id)
         {

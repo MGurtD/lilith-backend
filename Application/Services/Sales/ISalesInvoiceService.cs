@@ -10,6 +10,7 @@ public interface ISalesInvoiceService
     Task<GenericResponse> CreateRectificative(CreateRectificativeInvoiceRequest dto);
 
     Task<SalesInvoice?> GetById(Guid id);
+    Task<SalesInvoice?> GetHeaderById(Guid id);
     Task<InvoiceReportDto?> GetDtoForReportingById(Guid id);
     IEnumerable<SalesInvoice> GetBetweenDates(DateTime startDate, DateTime endDate);
     IEnumerable<SalesInvoice> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid statusId);
