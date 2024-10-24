@@ -14,7 +14,7 @@ namespace Domain.Implementations.ReferenceFormat
             }
             else 
             {
-                throw new Exception($"L'amplada, la longitud, l'alçada i la densitat han de ser superiors a 0 per calcular les plaques");
+                throw new Exception($"L'amplada, l'alçada, la longitud i la densitat han de ser superiors a 0 per calcular les plaques");
             }            
             return result;
         }
