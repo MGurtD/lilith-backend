@@ -54,6 +54,15 @@ namespace Api.Controllers.Sales
             else 
                 return Ok(invoice);
         }
+        [HttpGet("Header/{id:guid}")]
+        public async Task<IActionResult> GetHeaderById(Guid id)
+        {
+            var invoice = await _service.GetById(id);
+            if (invoice == null)
+                return NotFound();
+            else
+                return Ok(invoice);
+        }
 
         [HttpGet("Report/{id:guid}")]
         public async Task<IActionResult> GetInvoiceForReport(Guid id)

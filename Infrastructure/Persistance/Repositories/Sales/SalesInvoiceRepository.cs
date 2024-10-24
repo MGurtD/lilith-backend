@@ -31,6 +31,13 @@ namespace Infrastructure.Persistance.Repositories.Sales
                         .FirstOrDefaultAsync(e => e.Id == id);
         }
 
+        public async Task<SalesInvoice?> GetHeader(Guid id)
+        {
+            return await dbSet
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(e => e.Id == id);
+        }
+
         public async Task<IEnumerable<SalesInvoiceImport>> GetImportsByInvoiceId(Guid id)
         {
             var imports = new List<SalesInvoiceImport>();
