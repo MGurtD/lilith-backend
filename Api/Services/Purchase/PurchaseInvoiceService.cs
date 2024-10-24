@@ -1,3 +1,4 @@
+using Application.Contract;
 using Application.Contracts;
 using Application.Contracts.Purchase;
 using Application.Persistance;
@@ -104,16 +105,16 @@ namespace Api.Services.Purchase
             return new GenericResponse(true, new List<string> { });
         }
 
-        public async Task<GenericResponse> ChangeStatuses(ChangeStatusOfPurchaseInvoicesRequest changeStatusOfPurchaseInvoicesRequest)
+        public async Task<GenericResponse> ChangeStatuses(ChangeStatusOfInvoicesRequest changeStatusesRequest)
         {
-            var statusToId = changeStatusOfPurchaseInvoicesRequest.StatusToId;
+            var statusToId = changeStatusesRequest.StatusToId;
             var status = await _unitOfWork.Lifecycles.StatusRepository.Get(statusToId);
             if (status == null || status.Disabled)
             {
-                return new GenericResponse(false, new List<string> { $"L'estat de factura amb ID {statusToId} no existeix o est� deshabilitat" });
+                return new GenericResponse(false, $"L'estat de factura amb ID {statusToId} no existeix o est� deshabilitat" );
             }
 
-            var purchaseInvoices = _unitOfWork.PurchaseInvoices.Find(pi => changeStatusOfPurchaseInvoicesRequest.Ids.Contains(pi.Id));
+            var purchaseInvoices = _unitOfWork.PurchaseInvoices.Find(pi => changeStatusesRequest.Ids.Contains(pi.Id));
             foreach (var invoice in purchaseInvoices)
             {
                 invoice.StatusId = statusToId;

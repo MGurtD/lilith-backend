@@ -1,3 +1,4 @@
+using Application.Contract;
 using Application.Contracts;
 using Application.Contracts.Purchase;
 using Domain.Entities.Purchase;
@@ -17,7 +18,7 @@ namespace Application.Services.Purchase
 
         Task<GenericResponse> RecreateDueDates(PurchaseInvoice purchaseInvoice);
         Task<GenericResponse> ChangeStatus(ChangeStatusRequest changeStatusOfPurchaseInvoiceRequest);
-        Task<GenericResponse> ChangeStatuses(ChangeStatusOfPurchaseInvoicesRequest changeStatusOfPurchaseInvoicesRequest);
+        Task<GenericResponse> ChangeStatuses(ChangeStatusOfInvoicesRequest changeStatusOfPurchaseInvoicesRequest);
         Task<GenericResponse> Update(PurchaseInvoice purchaseInvoice);
         Task<GenericResponse> Remove(Guid id);
 
