@@ -35,7 +35,7 @@ namespace Api.Controllers.Purchase
             else
                 receipts = _service.GetBetweenDates(startTime, endTime);
 
-            if (receipts != null) return Ok(receipts.OrderBy(e => e.Number));
+            if (receipts != null) return Ok(receipts.OrderByDescending(e => e.Number));
             else return BadRequest();
         }
 

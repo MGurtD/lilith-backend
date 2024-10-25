@@ -1,4 +1,5 @@
-﻿using Application.Contracts.Sales;
+﻿using Application.Contract;
+using Application.Contracts.Sales;
 using Application.Persistance;
 using Application.Services.Sales;
 using Domain.Entities.Sales;
@@ -54,6 +55,15 @@ namespace Api.Controllers.Sales
             else 
                 return Ok(invoice);
         }
+        [HttpGet("Header/{id:guid}")]
+        public async Task<IActionResult> GetHeaderById(Guid id)
+        {
+            var invoice = await _service.GetById(id);
+            if (invoice == null)
+                return NotFound();
+            else
+                return Ok(invoice);
+        }
 
         [HttpGet("Report/{id:guid}")]
         public async Task<IActionResult> GetInvoiceForReport(Guid id)
@@ -65,7 +75,7 @@ namespace Api.Controllers.Sales
         }
 
         [HttpGet]
-        public IActionResult GetInvoices(DateTime startTime, DateTime endTime, Guid? customerId, Guid? statusId, Guid? exerciceId)
+        public IActionResult GetInvoices(DateTime startTime, DateTime endTime, Guid? customerId, Guid? statusId, Guid? exerciceId, Guid? excludeStatusId)
         {
             IEnumerable<SalesInvoice> invoices;
             if (exerciceId.HasValue)
@@ -74,6 +84,8 @@ namespace Api.Controllers.Sales
                 invoices = _service.GetBetweenDatesAndCustomer(startTime, endTime, customerId.Value);
             else if (statusId.HasValue)
                 invoices = _service.GetBetweenDatesAndStatus(startTime, endTime, statusId.Value);
+            else if (excludeStatusId.HasValue)
+                invoices = _service.GetBetweenDatesAndExcludeStatus(startTime, endTime, excludeStatusId.Value);
             else
                 invoices = _service.GetBetweenDates(startTime, endTime);
 
@@ -90,6 +102,21 @@ namespace Api.Controllers.Sales
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
+        }
+
+        [HttpPost]
+        [Route("UpdateStatuses")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateStatuses(ChangeStatusOfInvoicesRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            var response = await _service.ChangeStatuses(request);
+            if (response.Result)
+                return Ok();
+            else
+                return BadRequest(response.Errors);
         }
 
         [HttpDelete("{id:guid}")]

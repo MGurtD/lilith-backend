@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.Contracts.Purchase
+namespace Application.Contract
 {
-    public class ChangeStatusOfPurchaseInvoicesRequest
+    public class ChangeStatusOfInvoicesRequest
     {
         [Required]
         public IEnumerable<Guid> Ids { get; set; } = Enumerable.Empty<Guid>();

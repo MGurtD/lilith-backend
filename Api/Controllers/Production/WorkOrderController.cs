@@ -153,13 +153,42 @@ namespace Api.Controllers.Production
         [SwaggerOperation("GetExternalWorkOrderPhase")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetExternalWorkOrderPhase()
+        public async Task<IActionResult> GetExternalWorkOrderPhase(DateTime startTime, DateTime endTime)
         {
-            var WorkOrderPhases = _unitOfWork.WorkOrders.Phases.Find(w => w.IsExternalWork == true && w.ServiceReferenceId != null && w.PurchaseOrderId == null);
-            if (WorkOrderPhases == null) return NotFound(new GenericResponse(false, $"Fase de la ordre de fabricació inexistent"));            
+            var status = await _unitOfWork.Lifecycles.GetStatusByName("WorkOrder", "Producció");
+            if (status == null)
+            {
+                return NotFound(new GenericResponse(false, $"No s'ha trobat l'estat adequat per l'ordre de fabricació"));
+            }
 
-            return Ok(WorkOrderPhases);
+            // Asíncron per trobar les ordres de treball
+            var workOrders = await _unitOfWork.WorkOrders.FindAsync(w =>
+                                w.StatusId == status.Id &&
+                                w.PlannedDate >= startTime &&
+                                w.PlannedDate < endTime);
+
+            // Asíncron per trobar les fases externes
+            var workOrderPhases = await _unitOfWork.WorkOrders.Phases.FindAsync(p =>
+                                p.IsExternalWork == true &&
+                                p.ServiceReferenceId != null &&
+                                p.PurchaseOrderId == null);
+
+            // Uneix les fases amb les ordres de treball
+            var workOrderPhaseJoin = from w in workOrders
+                                     join p in workOrderPhases
+                                     on w.Id equals p.WorkOrderId
+                                     select new
+                                     {
+                                         WorkOrder = w,
+                                         Phase = p
+                                     };
+
+            if (workOrderPhaseJoin == null || !workOrderPhaseJoin.Any())
+                return NotFound(new GenericResponse(false, $"Fase de l'ordre de fabricació inexistent"));
+
+            return Ok(workOrderPhaseJoin);
         }
+
 
         [HttpPost("Phase")]
         [SwaggerOperation("CreateWorkOrderPhase")]

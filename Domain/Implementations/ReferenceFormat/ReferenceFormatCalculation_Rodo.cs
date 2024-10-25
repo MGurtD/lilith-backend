@@ -20,7 +20,7 @@ namespace Domain.Implementations.ReferenceFormat
             } 
             else 
             {
-                throw new Exception($"El diàmetre, l'alçada i la densitat han de ser superiors a 0 per calcular el format rodó");
+                throw new Exception($"El diàmetre, la longitud i la densitat han de ser superiors a 0 per calcular el format rodó");
             }            
             return (decimal) result;
         }
