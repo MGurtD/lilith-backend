@@ -191,7 +191,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddReceptions(AddReceptionsRequest request)
         {
-            var response = await _service.AddReceptions(request.ReceiptId, request.Receptions);
+            var response = await _service.AddReceptions(request);
 
             if (response.Result) return Ok(response);
             else return BadRequest(response);

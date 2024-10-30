@@ -143,8 +143,8 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetOrdersToReceiptBySupplier(Guid supplierId)
         {
-            var orders = await _service.GetOrdersWithDetailsToReceiptBySupplier(supplierId);
-            if (orders != null) return Ok(orders.OrderBy(e => e.Number));
+            var groupedOrderDetails = await _service.GetGroupedOrdersWithDetailsToReceiptBySupplier(supplierId);
+            if (groupedOrderDetails != null) return Ok(groupedOrderDetails.OrderBy(e => e.Reference.Code));
             else return BadRequest();
         }
 

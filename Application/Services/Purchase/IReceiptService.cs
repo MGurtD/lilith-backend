@@ -26,5 +26,5 @@ public interface IReceiptService
     Task<GenericResponse> CalculateDetailWeightAndPrice(ReceiptDetail detail);
 
     Task<List<PurchaseOrderReceiptDetail>> GetReceptions(Guid id);
-    Task<GenericResponse> AddReceptions(Guid receiptId, List<PurchaseOrderReceiptDetail> receptions);
+    Task<GenericResponse> AddReceptions(AddReceptionsRequest request);
 }

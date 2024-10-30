@@ -17,6 +17,8 @@ namespace Infrastructure
 
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
             optionsBuilder.UseNpgsql(connectionString);
+            optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+            
             return new ApplicationDbContext(optionsBuilder.Options);
         }
 

@@ -17,8 +17,9 @@ namespace Infrastructure.Persistance.Repositories.Production
                     .Include(d => d.WorkOrder)
                     .Include(d => d.WorkOrderPhase)
                     .Include(d => d.WorkOrderPhaseDetail)
-                    .Where(predicate)
-                    .AsNoTracking();
+                    .AsSplitQuery()
+                    .AsNoTracking()
+                    .Where(predicate);
         } 
     }
 }
