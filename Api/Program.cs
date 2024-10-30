@@ -121,11 +121,14 @@ try
         app.UseAuthentication();
         app.UseAuthorization();
 
+        //http logging
+        app.UseMiddleware<HttpLoggingMiddleware>();
         // global cors policy
         app.UseCors(x => x
             .AllowAnyOrigin()
             .AllowAnyMethod()
             .AllowAnyHeader());
+
 
         // global error handler
         app.UseMiddleware<ErrorHandlerMiddleware>();
