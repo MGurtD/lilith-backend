@@ -13,7 +13,7 @@ public static class Configuration
     {
         ConfigurationManager = configurationManager;
         ConfigurationManager.AddUserSecrets(USER_SECRET_ID).AddEnvironmentVariables();
-        
+
         ConnectionString = GetConfigurationKey("ConnectionStrings:Default");
         JwtSecret = GetConfigurationKey("JwtConfig:Secret");
         JwtExpirationTime = TimeSpan.Parse(GetConfigurationKey("JwtConfig:ExpirationTimeFrame"));
