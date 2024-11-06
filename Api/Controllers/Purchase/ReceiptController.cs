@@ -48,6 +48,15 @@ namespace Api.Controllers.Purchase
             else return Ok(receipt);
         }
 
+        [HttpGet("ByReferenceId/{id:guid}")]
+        public async Task<IActionResult> GetByReferenceId(Guid id)
+        {
+            var receipts = await _unitOfWork.Receipts.GetReceiptsByReferenceId(id);
+
+            if (receipts == null) return BadRequest();
+            else return Ok(receipts);
+        }
+
         [HttpGet("ToInvoice/{supplierId:guid}")]
         public IActionResult GetSupplierInvoiceableReceipts(Guid supplierId)
         {
