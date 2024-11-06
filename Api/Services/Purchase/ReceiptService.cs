@@ -5,6 +5,7 @@ using Application.Services;
 using Application.Services.Purchase;
 using Application.Services.Warehouse;
 using Domain.Entities.Purchase;
+using Domain.Entities.Shared;
 using Domain.Entities.Warehouse;
 using Domain.Implementations.ReferenceFormat;
 
@@ -184,6 +185,7 @@ namespace Api.Services.Purchase
             {
                 var stockMovement = new StockMovement
                 {
+                    Id = Guid.NewGuid(),
                     LocationId = defaultLocation.Id,
                     MovementDate = DateTime.Now,
                     CreatedOn = DateTime.Now,
@@ -191,10 +193,14 @@ namespace Api.Services.Purchase
                     Description = $"Albará {receipt.Number}"
                 };
                 stockMovement.SetFromReceiptDetail(detail);
-                detail.Reference = null;
-                detail.StockMovementId = stockMovement.Id;
 
-                await _stockMovementService.Create(stockMovement);
+                if (detail.Reference != null && detail.Reference.CategoryName != ReferenceCategories.Service)
+                {
+                    await _stockMovementService.Create(stockMovement);
+                    detail.StockMovementId = stockMovement.Id;
+                }
+
+                detail.Reference = null;
                 await _unitOfWork.Receipts.Details.Update(detail);
             }
 
