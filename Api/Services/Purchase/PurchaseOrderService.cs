@@ -85,6 +85,56 @@ namespace Api.Services.Purchase
             return orders;
         }
 
+        public async Task<List<ReceiptOrderDetailGroup>> GetGroupedOrdersWithDetailsToReceiptBySupplier(Guid supplierId)
+        {
+            // Obtenir comandes amb detalls a rebre per proveïdor
+            var supplierOrders = await GetOrdersWithDetailsToReceiptBySupplier(supplierId);
+
+            // Obtenir referències, fases d'ordre de treball i ordres de treball associades als detalls
+            var referenceIds = supplierOrders.SelectMany(o => o.Details).Select(d => d.ReferenceId).Distinct().ToList();
+            var references = await _unitOfWork.References.FindAsync(r => referenceIds.Contains(r.Id));
+            var workorderPhaseIds = supplierOrders.SelectMany(o => o.Details)
+                .Where(d => d.WorkOrderPhaseId.HasValue)
+                .Select(d => d.WorkOrderPhaseId!.Value)
+                .Distinct()
+                .ToList();
+            var workorderPhases = await _unitOfWork.WorkOrders.Phases.FindAsync(p => workorderPhaseIds.Contains(p.Id));
+            var workorders = await _unitOfWork.WorkOrders.FindAsync(w => workorderPhases.Select(p => p.WorkOrderId).Contains(w.Id));
+            foreach (var phase in workorderPhases) 
+                phase.WorkOrder = workorders.FirstOrDefault(w => w.Id == phase.WorkOrderId);
+
+            // Agrupar detalls per referència i descripció
+            var groupedDetails = supplierOrders.SelectMany(o => o.Details)
+                .GroupBy(d => new { d.ReferenceId, d.Description })
+                .Select(g => new ReceiptOrderDetailGroup()
+                {
+                    Reference = references.FirstOrDefault(r => r.Id == g.Key.ReferenceId)!,
+                    Description = g.Key.Description,
+                    Quantity = g.Sum(d => d.Quantity),
+                    ReceivedQuantity = g.Sum(d => d.ReceivedQuantity),
+                    Price = 0
+                }).ToList();
+
+            // Afegir detalls a cada grup
+            foreach (var group in groupedDetails)
+            {
+                group.Details = supplierOrders.SelectMany(o => o.Details)
+                    .Where(d => d.ReferenceId == group.Reference.Id && d.Description == group.Description)
+                    .Select(d => new ReceiptOrderDetail()
+                    {
+                        Id = d.Id,
+                        OrderNumber = supplierOrders.FirstOrDefault(o => o.Details.Any(d => d.Id == d.Id))!.Number,
+                        ExpectedReceiptDate = d.ExpectedReceiptDate,
+                        WorkOrder = workorderPhases.FirstOrDefault(w => w.Id == d.WorkOrderPhaseId) != null ? workorderPhases.FirstOrDefault(w => w.Id == d.WorkOrderPhaseId)!.WorkOrder!.Code : string.Empty,
+                        WorkOrderPhase = workorderPhases.FirstOrDefault(w => w.Id == d.WorkOrderPhaseId) != null ? workorderPhases.FirstOrDefault(w => w.Id == d.WorkOrderPhaseId)!.Description : string.Empty,
+                        Quantity = d.Quantity,
+                        ReceivedQuantity = d.ReceivedQuantity
+                    }).ToList();
+            }
+
+            return groupedDetails;
+        }
+
         public async Task<List<PurchaseOrder>> GetOrdersWithDetailsToReceiptBySupplier(Guid supplierId)
         {
             var discartedStatuses = new List<Guid>();
@@ -169,9 +219,10 @@ namespace Api.Services.Purchase
 
                 // Actualitzar fase de l'ordre de treball
                 var phase = await _unitOfWork.WorkOrders.Phases.Get(purchaseOrder.phaseId);
-                phase.PurchaseOrderId = purchaseOrderId;
-
-                await _unitOfWork.WorkOrders.Phases.Update(phase);
+                if (phase != null) {
+                    phase.PurchaseOrderId = purchaseOrderId;
+                    await _unitOfWork.WorkOrders.Phases.Update(phase);
+                }
             }
 
             return new GenericResponse(true);

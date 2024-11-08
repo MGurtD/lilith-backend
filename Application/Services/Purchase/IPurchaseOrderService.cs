@@ -23,6 +23,7 @@ namespace Application.Services.Purchase
         Task<GenericResponse> SubstractReceivedQuantityAndCalculateStatus(PurchaseOrderDetail detail, int quantity);
 
         Task<List<PurchaseOrderReceiptDetail>> GetReceptions(Guid id);
+        Task<List<ReceiptOrderDetailGroup>> GetGroupedOrdersWithDetailsToReceiptBySupplier(Guid supplierId);
         Task<List<PurchaseOrder>> GetOrdersWithDetailsToReceiptBySupplier(Guid supplierId);
         Task<GenericResponse> AddReception(PurchaseOrderReceiptDetail reception);
         Task<GenericResponse> RemoveReception(PurchaseOrderReceiptDetail reception);

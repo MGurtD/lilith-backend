@@ -1,6 +1,4 @@
-﻿using Domain.Entities.Production;
-
-namespace Domain.Entities.Purchase;
+﻿namespace Domain.Entities.Purchase;
 
 public class PurchaseOrder : Entity
 {

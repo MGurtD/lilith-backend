@@ -1,11 +1,9 @@
-﻿using Application.Contracts;
-using Application.Persistance.Repositories.Production;
+﻿using Application.Persistance.Repositories.Production;
 using Domain.Entities.Production;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using NpgsqlTypes;
 using System.Data;
-using System.Data.SqlClient;
 
 namespace Infrastructure.Persistance.Repositories.Production
 {

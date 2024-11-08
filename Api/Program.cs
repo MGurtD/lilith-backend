@@ -37,9 +37,8 @@ try
         builder.Host.UseNLog();
 
         // Database Context
-        builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        {
-            options.UseNpgsql(Configuration.ConnectionString);
+        builder.Services.AddDbContext<ApplicationDbContext>(options => {
+            options.UseNpgsql(Configuration.ConnectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
             options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -121,11 +120,14 @@ try
         app.UseAuthentication();
         app.UseAuthorization();
 
+        //http logging
+        app.UseMiddleware<HttpLoggingMiddleware>();
         // global cors policy
         app.UseCors(x => x
             .AllowAnyOrigin()
             .AllowAnyMethod()
             .AllowAnyHeader());
+
 
         // global error handler
         app.UseMiddleware<ErrorHandlerMiddleware>();

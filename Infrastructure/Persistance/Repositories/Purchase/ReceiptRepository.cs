@@ -34,5 +34,15 @@ namespace Infrastructure.Persistance.Repositories.Purchase
             }
             return receptions;
         }
+
+        public async Task<List<Receipt>> GetReceiptsByReferenceId(Guid referenceId)
+        {
+            return await dbSet
+                    .Include(r => r.Details)
+                    .Where(r => r.Details.Any(d => d.ReferenceId == referenceId))
+                    .AsSplitQuery() 
+                    .AsNoTracking()
+                    .ToListAsync();
+        }
     }
 }
