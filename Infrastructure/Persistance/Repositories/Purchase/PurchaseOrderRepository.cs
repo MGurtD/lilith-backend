@@ -67,10 +67,9 @@ namespace Infrastructure.Persistance.Repositories.Purchase
                 .ToListAsync();
         }
 
-        public async Task<List<PurchaseOrderDetail>> GetOrderDetailsFromReceptions(List<PurchaseOrderReceiptDetail> receptions)
+        public async Task<List<PurchaseOrderDetail>> GetOrderDetailsFromReceptions(List<Guid> ids)
         {
-            var detailIds = receptions.Select(d => d.PurchaseOrderDetailId).ToList();
-            return await Details.FindAsync(d => detailIds.Contains(d.Id));
+            return await Details.FindAsync(d => ids.Contains(d.Id));
         }
 
     }

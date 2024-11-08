@@ -53,9 +53,9 @@ namespace Api.Controllers.Production
             }
         }
         [HttpGet("workcenter/{workcenterId:guid}/status/{statusId:guid}")]
-        public async Task<IActionResult>GetByWorkcenterAndStatusId(Guid workcenterId, Guid statusId)
+        public async Task<IActionResult> GetByWorkcenterAndStatusId(Guid workcenterId, Guid statusId)
         {
-            var workcentercost = _unitOfWork.WorkcenterCosts.Find(r => r.WorkcenterId == workcenterId && r.MachineStatusId == statusId).FirstOrDefault();
+            var workcentercost = (await _unitOfWork.WorkcenterCosts.FindAsync(r => r.WorkcenterId == workcenterId && r.MachineStatusId == statusId)).FirstOrDefault();
             if(workcentercost == null)
             {
                 return NotFound();

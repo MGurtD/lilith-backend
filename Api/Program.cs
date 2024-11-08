@@ -22,8 +22,6 @@ using Api.Services.Warehouse;
 using Infrastructure.Persistance;
 using System.Text;
 using System.Text.Json.Serialization;
-using Application.Persistance.Repositories;
-using Domain.Entities.Purchase;
 
 // Early init of NLog to allow startup and exception logging, before host is built
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
@@ -40,7 +38,7 @@ try
 
         // Database Context
         builder.Services.AddDbContext<ApplicationDbContext>(options => {
-            options.UseNpgsql(Configuration.ConnectionString);
+            options.UseNpgsql(Configuration.ConnectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
             options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
