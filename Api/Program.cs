@@ -1,25 +1,25 @@
+using Api.Middlewares;
+using Api.Services;
+using Api.Services.Production;
+using Api.Services.Purchase;
+using Api.Services.Sales;
+using Api.Services.Warehouse;
+using Application.Persistance;
+using Application.Production.Warehouse;
+using Application.Services;
+using Application.Services.Production;
+using Application.Services.Purchase;
+using Application.Services.Sales;
+using Application.Services.Warehouse;
+using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.Filters;
 using NLog;
 using NLog.Web;
-using Application.Persistance;
-using Application.Services;
-using Application.Services.Production;
-using Application.Services.Sales;
-using Application.Production.Warehouse;
-using Application.Services.Warehouse;
-using Application.Services.Purchase;
-using Api.Middlewares;
-using Api.Services;
-using Api.Services.Sales;
-using Api.Services.Production;
-using Api.Services.Purchase;
-using Api.Services.Warehouse;
-using Infrastructure.Persistance;
+using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -59,7 +59,7 @@ try
         builder.Services.AddScoped<IStockMovementService, StockMovementService>();
         builder.Services.AddScoped<IDeliveryNoteService, DeliveryNoteService>();
         builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
-        builder.Services.AddScoped<IReceiptService, ReceiptService>();        
+        builder.Services.AddScoped<IReceiptService, ReceiptService>();
         builder.Services.AddScoped<IReferenceService, ReferenceService>();
         builder.Services.AddScoped<IExerciseService, ExerciseService>();
         builder.Services.AddScoped<IWorkOrderService, WorkOrderService>();
@@ -78,7 +78,8 @@ try
             ValidateLifetime = true,
         };
         builder.Services
-            .AddAuthentication(options => {
+            .AddAuthentication(options =>
+            {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;

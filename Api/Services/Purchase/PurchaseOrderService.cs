@@ -26,6 +26,10 @@ namespace Api.Services.Purchase
             var site = (await _unitOfWork.Sites.FindAsync(s => !s.Disabled)).FirstOrDefault();
             if (site == null) return null;
 
+            var referenceIds = order.Details.Select(detail => detail.ReferenceId).ToList();
+            var references = await _unitOfWork.References.FindAsync(r => referenceIds.Contains(r.Id));
+            var supplierReferences = _unitOfWork.Suppliers.GetSupplierReferences(supplier.Id);
+
             var orderDto = new PurchaseOrderReportDto()
             {
                 Number = order.Number,
@@ -34,10 +38,6 @@ namespace Api.Services.Purchase
             };
 
             var orderDetails = new List<PurchaseOrderDetailReportDto>();
-            var referenceIds = order.Details.Select(detail => detail.ReferenceId).ToList();
-            var references = await _unitOfWork.References.FindAsync(r => referenceIds.Contains(r.Id));
-            var supplierReferences = _unitOfWork.Suppliers.GetSupplierReferences(supplier.Id);
-
             foreach (var detail in order.Details)
             {
                 var reference = references.FirstOrDefault(r => r.Id == detail.ReferenceId);
@@ -57,7 +57,13 @@ namespace Api.Services.Purchase
                 Supplier = supplier,
                 Site = site,
                 Order = orderDto,
-                Details = orderDetails
+                Details = orderDetails.GroupBy(d => d.Description).Select(g => new PurchaseOrderDetailReportDto()
+                {
+                    Description = g.Key,
+                    Quantity = g.Sum(d => d.Quantity),
+                    UnitPrice = g.First().UnitPrice,
+                    Amount = g.Sum(d => d.Amount)
+                }).ToList()
             }; 
         }
 
