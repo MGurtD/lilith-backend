@@ -42,10 +42,13 @@ namespace Api.Services.Purchase
             {
                 var reference = references.FirstOrDefault(r => r.Id == detail.ReferenceId);
                 var supplierReference = supplierReferences.FirstOrDefault(sr => sr.ReferenceId == detail.ReferenceId);
+                var description = supplierReference != null ? $"{supplierReference.SupplierCode} - {supplierReference.SupplierDescription}" : reference!.GetFullName();
+
+                if (!string.IsNullOrEmpty(detail.Description)) description = $"{description} - {detail.Description}";
 
                 orderDetails.Add(new PurchaseOrderDetailReportDto()
                 {
-                    Description = supplierReference != null ? $"{supplierReference.SupplierCode} - {supplierReference.SupplierDescription}" : reference!.GetFullName(),
+                    Description = description,
                     Quantity = detail.Quantity,
                     UnitPrice = detail.UnitPrice,
                     Amount = detail.Amount
