@@ -68,7 +68,6 @@ namespace Api.Services
                 return new GenericResponse(false, "Albará mal format o incorrecte");
             }
             var supplierId = receipt.SupplierId;
-            var price = Decimal.Zero;
             var format = new ReferenceFormat();
             foreach (ReceiptDetail detail in receipt.Details)
             {
@@ -77,9 +76,10 @@ namespace Api.Services
                 {
                     format = await _unitOfWork.ReferenceFormats.Get(detail.Reference.ReferenceFormatId.Value);
                 }
-                if (detail.Reference.CategoryName == "Material")
+                decimal price;
+                if (detail.Reference!.CategoryName == "Material")
                 {
-                    if(format.Code != "UNITATS")
+                    if (format!.Code != "UNITATS")
                     {
                         price = detail.KilogramPrice;
                     }
@@ -87,7 +87,7 @@ namespace Api.Services
                     {
                         price = detail.UnitPrice;
                     }
-                    
+
                 }
                 else
                 {
@@ -123,21 +123,17 @@ namespace Api.Services
         }
         public async Task<decimal> GetPrice(Guid referenceId, Guid? supplierId)
         {
-            var reference = new Reference();
             var supplierReference = new SupplierReference();
             if (supplierId != null)
-            {
                 supplierReference = await _unitOfWork.Suppliers.GetSupplierReferenceBySupplierAndId(referenceId, supplierId.Value);
-                
-            }
-            reference = await _unitOfWork.References.Get(referenceId);
 
-
-            if (supplierReference == null)
-            {
-                return reference.Price;
-            }
+            var reference = await _unitOfWork.References.Get(referenceId);
+            if (supplierReference != null)
                 return supplierReference.SupplierPrice;
+            if (reference != null)
+                return reference.Price;
+
+            return decimal.Zero;
         }
     }
 }

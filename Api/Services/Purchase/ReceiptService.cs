@@ -5,6 +5,7 @@ using Application.Services;
 using Application.Services.Purchase;
 using Application.Services.Warehouse;
 using Domain.Entities.Purchase;
+using Domain.Entities.Shared;
 using Domain.Entities.Warehouse;
 using Domain.Implementations.ReferenceFormat;
 
@@ -184,6 +185,7 @@ namespace Api.Services.Purchase
             {
                 var stockMovement = new StockMovement
                 {
+                    Id = Guid.NewGuid(),
                     LocationId = defaultLocation.Id,
                     MovementDate = DateTime.Now,
                     CreatedOn = DateTime.Now,
@@ -191,10 +193,14 @@ namespace Api.Services.Purchase
                     Description = $"Albará {receipt.Number}"
                 };
                 stockMovement.SetFromReceiptDetail(detail);
-                detail.Reference = null;
-                detail.StockMovementId = stockMovement.Id;
 
-                await _stockMovementService.Create(stockMovement);
+                if (detail.Reference != null && detail.Reference.CategoryName != ReferenceCategories.Service)
+                {
+                    await _stockMovementService.Create(stockMovement);
+                    detail.StockMovementId = stockMovement.Id;
+                }
+
+                detail.Reference = null;
                 await _unitOfWork.Receipts.Details.Update(detail);
             }
 
@@ -222,12 +228,12 @@ namespace Api.Services.Purchase
             return await _unitOfWork.Receipts.GetReceptions(id);
         }
 
-        public async Task<GenericResponse> AddReceptions(Guid receiptId, List<PurchaseOrderReceiptDetail> receptions)         
+        public async Task<GenericResponse> AddReceptions(AddReceptionsRequest request)         
         {
             // Obtenir els detalls de la comanda
-            var orderDetails = await _unitOfWork.PurchaseOrders.GetOrderDetailsFromReceptions(receptions);
+            var orderDetails = await _unitOfWork.PurchaseOrders.GetOrderDetailsFromReceptions(request.Receptions.Select(r => r.PurchaseOrderDetailId).ToList());
 
-            foreach (var reception in receptions)
+            foreach (var reception in request.Receptions)
             {
                 var detail = orderDetails.FirstOrDefault(orderDetails => orderDetails.Id == reception.PurchaseOrderDetailId);
                 if (detail == null) return new GenericResponse(false, $"Detall {reception.PurchaseOrderDetailId} inexistent");
@@ -240,22 +246,29 @@ namespace Api.Services.Purchase
                 var receiptDetail = new ReceiptDetail
                 {
                     Id = reception.ReceiptDetailId,
-                    ReceiptId = receiptId,
+                    ReceiptId = request.ReceiptId,
                     ReferenceId = detail.ReferenceId,
                     Description = detail.Description,
                     Quantity = (int) reception.Quantity,
-                    UnitPrice = detail.UnitPrice,
-                    Amount = reception.Quantity * detail.UnitPrice,
+                    UnitPrice = reception.UnitPrice > 0 ? reception.UnitPrice : detail.UnitPrice,
+                    Amount = reception.Price,
                 };              
                 await _unitOfWork.Receipts.Details.Add(receiptDetail);
 
                 // Afegir recepció a la comanda
-                await _unitOfWork.PurchaseOrders.Receptions.Add(reception);
+                await _unitOfWork.PurchaseOrders.Receptions.Add(new PurchaseOrderReceiptDetail
+                {
+                    PurchaseOrderDetailId = detail.Id,
+                    ReceiptDetailId = receiptDetail.Id,
+                    Quantity = (int)reception.Quantity,
+                    User = reception.User,
+                    CreatedOn = DateTime.Now
+                });
             }
 
             // Crear moviments de magatzem
-            var receipt = await _unitOfWork.Receipts.Get(receiptId);
-            if (receipt == null) return new GenericResponse(false, $"Albará {receiptId} inexistent");
+            var receipt = await _unitOfWork.Receipts.Get(request.ReceiptId);
+            if (receipt == null) return new GenericResponse(false, $"Albará {request.ReceiptId} inexistent");
 
             // Recalcular l'estat de la comanda
             return await _orderService.DeterminateStatus(orderDetails.First().PurchaseOrderId);
