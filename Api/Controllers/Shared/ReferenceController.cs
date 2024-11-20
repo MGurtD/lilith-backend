@@ -98,6 +98,12 @@ namespace Api.Controllers.Shared
             var exists = _unitOfWork.References.Find(r => request.Code == r.Code && request.Version == r.Version).Any();
             if (!exists)
             {
+                //Get reference format "unitats"
+                if(request.CategoryName == "Service")
+                {
+                    var referenceFormat = _unitOfWork.ReferenceFormats.Find(r => r.Code == "UNITATS").FirstOrDefault();
+                    request.ReferenceFormatId = referenceFormat.Id;
+                }
                 request.Code = await GetReferenceCode(request);
                 await _unitOfWork.References.Add(request);
 
