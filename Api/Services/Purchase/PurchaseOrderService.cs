@@ -14,8 +14,7 @@ namespace Api.Services.Purchase
         private readonly IExerciseService _exerciseService = exerciseService;
         private readonly string LifecycleName = "PurchaseOrder";
         private readonly string LifecycleDetailsName = "PurchaseOrderDetail";
-
-        public async Task<PurchaseOrderReportResponse?> GetDtoForReportingById(Guid id)
+public async Task<PurchaseOrderReportResponse?> GetDtoForReportingById(Guid id)
         {
             var order = await _unitOfWork.PurchaseOrders.Get(id);
             if (order == null) return null;
