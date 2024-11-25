@@ -63,7 +63,7 @@ try
         builder.Services.AddScoped<IReferenceService, ReferenceService>();
         builder.Services.AddScoped<IExerciseService, ExerciseService>();
         builder.Services.AddScoped<IWorkOrderService, WorkOrderService>();
-        builder.Services.AddScoped<ICostsService, CostsService>();
+        builder.Services.AddScoped<IMetricsService, MetricsService>();
         builder.Services.AddHostedService<BudgetBackgroundService>();
 
         // JWT Service    

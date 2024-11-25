@@ -15,9 +15,9 @@ namespace Api.Controllers.Production
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IWorkOrderService _workOrderService;
-        private readonly ICostsService _costsService;
+        private readonly IMetricsService _costsService;
 
-        public ProductionPartController(IUnitOfWork unitOfWork, IWorkOrderService workOrderService, ICostsService costsService)
+        public ProductionPartController(IUnitOfWork unitOfWork, IWorkOrderService workOrderService, IMetricsService costsService)
         {
             _unitOfWork = unitOfWork;
             _workOrderService = workOrderService;
@@ -62,7 +62,7 @@ namespace Api.Controllers.Production
 
             // Get current costs from master data
             var costsRequest = await _costsService.GetProductionPartCosts(productionPart);
-            if (costsRequest.Result && costsRequest.Content is ProductionCosts costs)
+            if (costsRequest.Result && costsRequest.Content is ProductionMetrics costs)
             {
                 productionPart.MachineHourCost = costs.MachineCost;
                 productionPart.OperatorHourCost = costs.OperatorCost;
