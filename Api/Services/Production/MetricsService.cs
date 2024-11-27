@@ -12,11 +12,11 @@ using Domain.Implementations.ReferenceFormat;
 
 namespace Api.Services.Production
 {
-    public class CostsService : ICostsService
+    public class MetricsService : IMetricsService
     {
         private readonly IUnitOfWork _unitOfWork;
 
-        public CostsService(IUnitOfWork unitOfWork)
+        public MetricsService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
@@ -42,7 +42,7 @@ namespace Api.Services.Production
             return Task.FromResult(new GenericResponse(true, workcenterCost.Cost));
         }
 
-        public async Task<GenericResponse> GetWorkmasterCost(WorkMaster workMaster, decimal? productedQuantity)
+        public async Task<GenericResponse> GetWorkmasterMetrics(WorkMaster workMaster, decimal? productedQuantity)
         {
             // Recollir la quantitat a calcular, si no es passa es calcula per la quantitat base
             var baseQuantity = productedQuantity.HasValue ? productedQuantity.Value : workMaster.BaseQuantity;
@@ -51,6 +51,7 @@ namespace Api.Services.Production
             var materialCost = 0.0M;
             var externalServiceCost = 0.0M;
             var externalServiceTransportCost = 0.0M;
+            var totalWeight = 0.0M;
             
             //Recorrer les phases
             //A cada fase, recollir el operatortypeId, i buscar el seu preu cost/hora
@@ -131,10 +132,11 @@ namespace Api.Services.Production
                         try {
                             // Calcular el pes
                             var UnitWeight = Math.Round(dimensionsCalculator.Calculate(dimensions), 2);
-                            var TotalWeight = UnitWeight * bom.Quantity * baseQuantity;
+                            totalWeight  = UnitWeight * bom.Quantity * baseQuantity;
+                             
                             // Calcular el preu
                             var UnitPrice = reference.LastCost * UnitWeight;
-                            var Amount = reference.LastCost * TotalWeight;
+                            var Amount = reference.LastCost * totalWeight;
 
                             // Acumular el cost del material
                             materialCost += Amount;
@@ -146,18 +148,18 @@ namespace Api.Services.Production
                 }
             }
 
-            return new GenericResponse(true, new ProductionCosts(operatorCost, machineCost, materialCost, externalServiceCost, externalServiceTransportCost));
+            return new GenericResponse(true, new ProductionMetrics(operatorCost, machineCost, materialCost, externalServiceCost, externalServiceTransportCost, totalWeight));
         }
 
         public async Task<GenericResponse> GetProductionPartCosts(ProductionPart productionPart)
         {
-            var productionCosts = new ProductionCosts(0, 0, 0, 0, 0);
+            var productionMetrics = new ProductionMetrics(0, 0, 0, 0, 0, 0);
 
             // Get operator cost
             var operatorCostRequest = await GetOperatorCost(productionPart.OperatorId);
             if (operatorCostRequest.Result)
             {
-                productionCosts.OperatorCost = (decimal)operatorCostRequest.Content!;
+                productionMetrics.OperatorCost = (decimal)operatorCostRequest.Content!;
             }
 
             // Get workcenter cost
@@ -166,10 +168,10 @@ namespace Api.Services.Production
             {
                 var workcenterCostRequest = await GetWorkcenterStatusCost(productionPart.WorkcenterId, workOrderPhaseDetail.MachineStatusId.Value);
                 if (!workcenterCostRequest.Result) return workcenterCostRequest;
-                productionCosts.MachineCost = (decimal)workcenterCostRequest.Content!;
+                productionMetrics.MachineCost = (decimal)workcenterCostRequest.Content!;
             }            
 
-            return new GenericResponse(true, productionCosts);
+            return new GenericResponse(true, productionMetrics);
         }
     }
 }

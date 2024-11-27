@@ -21,20 +21,21 @@ public static class ApplicationServicesSetup
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IFileService, FileService>();
+        services.AddScoped<IExerciseService, ExerciseService>();
+        services.AddScoped<IDueDateService, DueDateService>();
+        services.AddScoped<IReferenceService, ReferenceService>();
         services.AddScoped<IPurchaseInvoiceService, PurchaseInvoiceService>();
+        services.AddScoped<IReceiptService, ReceiptService>();
+        services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
         services.AddScoped<IBudgetService, BudgetService>();
         services.AddScoped<ISalesOrderService, SalesOrderService>();
+        services.AddScoped<IDeliveryNoteService, DeliveryNoteService>();
         services.AddScoped<ISalesInvoiceService, SalesInvoiceService>();
-        services.AddScoped<IDueDateService, DueDateService>();
+        services.AddScoped<IWorkOrderService, WorkOrderService>();
+        services.AddScoped<IMetricsService, MetricsService>();
         services.AddScoped<IStockService, StockService>();
         services.AddScoped<IStockMovementService, StockMovementService>();
-        services.AddScoped<IDeliveryNoteService, DeliveryNoteService>();
-        services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
-        services.AddScoped<IReceiptService, ReceiptService>();
-        services.AddScoped<IReferenceService, ReferenceService>();
-        services.AddScoped<IExerciseService, ExerciseService>();
-        services.AddScoped<IWorkOrderService, WorkOrderService>();
-        services.AddScoped<ICostsService, CostsService>();
+
         services.AddHostedService<BudgetBackgroundService>();
 
         return services;

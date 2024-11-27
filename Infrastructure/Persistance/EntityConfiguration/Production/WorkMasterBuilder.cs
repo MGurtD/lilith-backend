@@ -47,6 +47,13 @@ public class WorkMasterBuilder : IEntityTypeConfiguration<WorkMaster>
             .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                            ApplicationDbContextConstants.DECIMAL_SCALE);
         builder
+            .Property(b => b.totalWeight)
+            .IsRequired()
+            .HasColumnType("decimal")
+            .HasDefaultValue("0")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                           ApplicationDbContextConstants.DECIMAL_SCALE);
+        builder
             .Property(b => b.Mode)
             .IsRequired()
             .HasColumnType("integer")
