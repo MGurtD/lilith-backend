@@ -205,8 +205,6 @@ namespace Api.Controllers.Production
             var WorkOrder = await _unitOfWork.WorkOrders.Get(request.WorkOrderId);
             if (WorkOrder is null) return NotFound(new GenericResponse(false, $"ordre de fabricació inexistent"));
 
-            request.Code = $"{(WorkOrder.Phases.Count() + 1) * 10}";
-
             // Creació
             await _unitOfWork.WorkOrders.Phases.Add(request);
             return Ok(new GenericResponse(true, request));

@@ -11,6 +11,7 @@ public class WorkMaster : Entity
     public decimal machineCost { get; set; } = decimal.Zero;
     public decimal externalCost { get; set; } = decimal.Zero;
     public decimal materialCost { get; set; } = decimal.Zero;
+    public decimal totalWeight { get; set; } = decimal.Zero;
     public int Mode { get; set; } //1 - prototip, 2 - sèrie curta, 3 - sèrie llarga
 
     public ICollection<WorkMasterPhase> Phases { get; set; } = new List<WorkMasterPhase>();

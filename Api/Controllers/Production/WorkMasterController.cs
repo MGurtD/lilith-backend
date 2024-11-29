@@ -12,9 +12,9 @@ namespace Api.Controllers.Production
     public class WorkMasterController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ICostsService _costsService;
+        private readonly IMetricsService _costsService;
 
-        public WorkMasterController(IUnitOfWork unitOfWork, ICostsService costsService)
+        public WorkMasterController(IUnitOfWork unitOfWork, IMetricsService costsService)
         {
             _unitOfWork = unitOfWork;
             _costsService = costsService;
@@ -68,13 +68,14 @@ namespace Api.Controllers.Production
             if (!exists)
                 return NotFound();
 
-            var resultCosts = await _costsService.GetWorkmasterCost(request, request.BaseQuantity);
-            if (resultCosts.Result && resultCosts.Content is ProductionCosts workMasterCosts)
+            var resultCosts = await _costsService.GetWorkmasterMetrics(request, request.BaseQuantity);
+            if (resultCosts.Result && resultCosts.Content is ProductionMetrics workMasterMetrics)
             {
-                request.operatorCost = workMasterCosts.OperatorCost;
-                request.machineCost = workMasterCosts.MachineCost;
-                request.externalCost = workMasterCosts.ExternalServiceCost + workMasterCosts.ExternalTransportCost;
-                request.materialCost = workMasterCosts.MaterialCost;
+                request.operatorCost = workMasterMetrics.OperatorCost;
+                request.machineCost = workMasterMetrics.MachineCost;
+                request.externalCost = workMasterMetrics.ExternalServiceCost + workMasterMetrics.ExternalTransportCost;
+                request.materialCost = workMasterMetrics.MaterialCost;
+                request.totalWeight = workMasterMetrics.TotalWeight;
             }
 
             await _unitOfWork.WorkMasters.Update(request);
@@ -139,9 +140,9 @@ namespace Api.Controllers.Production
             var workMaster = await _unitOfWork.WorkMasters.Get(id);
             if (workMaster == null) return NotFound();
 
-            var result = await _costsService.GetWorkmasterCost(workMaster, quantity);
+            var result = await _costsService.GetWorkmasterMetrics(workMaster, quantity);
 
-            if (result.Result && result.Content is ProductionCosts workMasterCosts)
+            if (result.Result && result.Content is ProductionMetrics workMasterCosts)
                 return Ok(new GenericResponse(true, workMasterCosts.TotalCost()));
             else
                 return NotFound(result);
@@ -153,9 +154,9 @@ namespace Api.Controllers.Production
             var workMaster = await _unitOfWork.WorkMasters.Get(id);
             if (workMaster == null) return NotFound();
 
-            var result = await _costsService.GetWorkmasterCost(workMaster, quantity);
+            var result = await _costsService.GetWorkmasterMetrics(workMaster, quantity);
 
-            if (result.Result && result.Content is ProductionCosts workMasterCosts)
+            if (result.Result && result.Content is ProductionMetrics workMasterCosts)
                 return Ok(new GenericResponse(true, workMasterCosts));
             else
                 return NotFound(result);
@@ -189,8 +190,6 @@ namespace Api.Controllers.Production
 
             var workmaster = await _unitOfWork.WorkMasters.Get(request.WorkMasterId);
             if (workmaster is null) return NotFound(new GenericResponse(false, $"Ruta de fabricació inexistent"));
-
-            request.Code = $"{(workmaster.Phases.Count() + 1) * 10}";
 
             // Creació
             await _unitOfWork.WorkMasters.Phases.Add(request);
