@@ -6,16 +6,16 @@ namespace Domain.Implementations.ReferenceFormat
     {
         public decimal Calculate(ReferenceDimensions referenceDimensions)
         {
-            double result, diamInt, diamExt;
+            double result, radiInt, diamExt;
             double factor = 0.000001;
             if ((referenceDimensions.Diameter > 0) && (referenceDimensions.Thickness > 0) && (referenceDimensions.Length > 0) && (referenceDimensions.Density > 0))
             {
                 diamExt = (double) referenceDimensions.Diameter;
-                diamInt = (double) (referenceDimensions.Diameter - referenceDimensions.Thickness);
+                radiInt = (double) (referenceDimensions.Diameter - referenceDimensions.Thickness);
                 var length = (double) referenceDimensions.Length;
                 var density = (double) referenceDimensions.Density;
 
-                result = ((Math.Pow(diamExt / 2, 2) - Math.Pow(diamInt / 2, 2)) * Math.PI * length * density)*factor;
+                result = ((Math.Pow(diamExt / 2, 2) - Math.Pow(radiInt, 2)) * Math.PI * length * density)*factor;
             } 
             else 
             {
