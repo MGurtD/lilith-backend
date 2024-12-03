@@ -11,7 +11,7 @@ namespace Domain.Implementations.ReferenceFormat
             if ((referenceDimensions.Diameter > 0) && (referenceDimensions.Thickness > 0) && (referenceDimensions.Length > 0) && (referenceDimensions.Density > 0))
             {
                 diamExt = (double) referenceDimensions.Diameter;
-                radiInt = (double) (referenceDimensions.Diameter - referenceDimensions.Thickness);
+                radiInt = (double) ((referenceDimensions.Diameter/2) - referenceDimensions.Thickness);
                 var length = (double) referenceDimensions.Length;
                 var density = (double) referenceDimensions.Density;
 
