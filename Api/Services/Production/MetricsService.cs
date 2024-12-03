@@ -52,6 +52,7 @@ namespace Api.Services.Production
             var externalServiceCost = 0.0M;
             var externalServiceTransportCost = 0.0M;
             var totalWeight = 0.0M;
+            var Amount = 0.0M;
             
             //Recorrer les phases
             //A cada fase, recollir el operatortypeId, i buscar el seu preu cost/hora
@@ -131,12 +132,20 @@ namespace Api.Services.Production
 
                         try {
                             // Calcular el pes
-                            var UnitWeight = Math.Round(dimensionsCalculator.Calculate(dimensions), 2);
-                            totalWeight  = UnitWeight * bom.Quantity * baseQuantity;
-                             
-                            // Calcular el preu
-                            var UnitPrice = reference.LastCost * UnitWeight;
-                            var Amount = reference.LastCost * totalWeight;
+                            if (format.Code == "UNITATS")
+                            {                                                              
+                                Amount = reference.LastCost * bom.Quantity;
+                            }
+                            else
+                            {
+                                var UnitWeight = Math.Round(dimensionsCalculator.Calculate(dimensions), 2);
+                                totalWeight =totalWeight + (UnitWeight * bom.Quantity);
+
+                                // Calcular el preu
+                                var UnitPrice = reference.LastCost * UnitWeight;
+                                Amount = reference.LastCost * totalWeight;
+
+                            }
 
                             // Acumular el cost del material
                             materialCost += Amount;
