@@ -1,6 +1,7 @@
 ﻿using Domain.Entities.Production;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
+using Domain.Entities;
 
 namespace Infrastructure.Persistance.EntityConfiguration.Production;
 
@@ -10,7 +11,9 @@ public class WorkcenterShiftBuilder : IEntityTypeConfiguration<WorkcenterShift>
 
     public void Configure(EntityTypeBuilder<WorkcenterShift> builder)
     {
-        builder.ConfigureBase(true);
+        builder.ConfigureBase();
+        builder.Ignore(e => e.CreatedOn);
+        builder.Ignore(e => e.UpdatedOn);
 
         builder
             .Property(b => b.StartTime)
@@ -27,6 +30,7 @@ public class WorkcenterShiftBuilder : IEntityTypeConfiguration<WorkcenterShift>
           .HasIndex(e => new { e.WorkcenterId, e.StartTime })
           .HasDatabaseName($"IX_{TableName}_Unique") // Nombre opcional del índice
           .IsUnique(); // Opcional: índice único
+        
 
         builder.ToTable(TableName, "data");
     }

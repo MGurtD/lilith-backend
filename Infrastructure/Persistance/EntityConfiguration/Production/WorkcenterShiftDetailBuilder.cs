@@ -10,7 +10,9 @@ public class WorkcenterShiftDetailBuilder : IEntityTypeConfiguration<WorkcenterS
 
     public void Configure(EntityTypeBuilder<WorkcenterShiftDetail> builder)
     {
-        builder.ConfigureBase(true);
+        builder.ConfigureBase();
+        builder.Ignore(e => e.CreatedOn);
+        builder.Ignore(e => e.UpdatedOn);
 
         builder
             .Property(b => b.StartTime)

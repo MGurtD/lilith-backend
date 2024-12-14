@@ -6,7 +6,7 @@ namespace Infrastructure.Persistance.EntityConfiguration
 {
     public static class EntityBaseConfiguration
     {
-        public static void ConfigureBase<TEntity>(this EntityTypeBuilder<TEntity> builder, bool? ignoreDates = false)
+        public static void ConfigureBase<TEntity>(this EntityTypeBuilder<TEntity> builder)
             where TEntity : Entity
         {
             builder
