@@ -1,7 +1,6 @@
 ﻿using Application.Persistance;
 using Domain.Entities.Production;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Policy;
 
 namespace Api.Controllers.Production
 {

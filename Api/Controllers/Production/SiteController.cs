@@ -1,6 +1,5 @@
 ﻿using Application.Persistance;
 using Domain.Entities.Production;
-using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Production

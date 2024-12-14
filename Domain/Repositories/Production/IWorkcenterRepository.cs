@@ -1,13 +1,7 @@
 ﻿using Domain.Entities.Production;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Application.Persistance.Repositories.Production
+namespace Application.Persistance.Repositories.Production;
+
+public interface IWorkcenterRepository : IRepository<Workcenter, Guid>
 {
-    public interface IWorkcenterRepository : IRepository<Workcenter, Guid>
-    {
-    }
 }
