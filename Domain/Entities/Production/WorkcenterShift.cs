@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Domain.Entities.Production;
 
@@ -13,7 +14,9 @@ public class WorkcenterShift : Entity
     public ICollection<WorkcenterShiftDetail> Details { get; set; } = [];
 
     [NotMapped]
+    [JsonIgnore]
     public override DateTime CreatedOn { get => base.CreatedOn; set => base.CreatedOn = value; }
     [NotMapped]
+    [JsonIgnore]
     public override DateTime UpdatedOn { get => base.UpdatedOn; set => base.UpdatedOn = value; }
 }

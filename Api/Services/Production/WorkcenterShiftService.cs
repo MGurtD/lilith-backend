@@ -24,7 +24,7 @@ namespace Api.Services.Production
 
         public async Task<List<WorkcenterShift>> GetWorkcenterShifts(Guid workcenterId)
         {
-            var workcenterShifts = await _unitOfWork.WorkcenterShifts.FindAsync(wsd => wsd.WorkcenterId == workcenterId && wsd.EndTime == null);
+            var workcenterShifts = await _unitOfWork.WorkcenterShifts.FindWithDetails(wsd => wsd.WorkcenterId == workcenterId && wsd.EndTime == null).ToListAsync();
             return [.. workcenterShifts];
         }
 
