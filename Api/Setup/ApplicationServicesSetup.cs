@@ -35,6 +35,7 @@ public static class ApplicationServicesSetup
         services.AddScoped<IMetricsService, MetricsService>();
         services.AddScoped<IStockService, StockService>();
         services.AddScoped<IStockMovementService, StockMovementService>();
+        services.AddScoped<IWorkcenterShiftService, WorkcenterShiftService>();
 
         services.AddHostedService<BudgetBackgroundService>();
 
