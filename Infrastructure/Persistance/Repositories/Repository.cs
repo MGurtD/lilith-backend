@@ -55,6 +55,11 @@ namespace Infrastructure.Persistance.Repositories
             await context.SaveChangesAsync();
         }
 
+        public async Task AddRangeWithoutSave(IEnumerable<Entity> entities)
+        {
+            await dbSet.AddRangeAsync(entities);
+        }
+
         public async Task Update(Entity entity)
         {
             entity.UpdatedOn = DateTime.Now;
@@ -89,5 +94,6 @@ namespace Infrastructure.Persistance.Repositories
         {
             await context.SaveChangesAsync();
         }
+
     }
 }

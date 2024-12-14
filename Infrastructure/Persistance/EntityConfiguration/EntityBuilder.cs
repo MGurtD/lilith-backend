@@ -6,13 +6,18 @@ namespace Infrastructure.Persistance.EntityConfiguration
 {
     public static class EntityBaseConfiguration
     {
-        public static void ConfigureBase<TEntity>(this EntityTypeBuilder<TEntity> builder)
+        public static void ConfigureBase<TEntity>(this EntityTypeBuilder<TEntity> builder, bool? ignoreDates = false)
             where TEntity : Entity
         {
             builder
                 .Property(b => b.Id)
                 .ValueGeneratedNever()
                 .HasColumnType("uuid");
+            builder
+                .Property(b => b.Disabled)
+                .IsRequired()
+                .HasColumnType("bool")
+                .HasDefaultValue(false);
             builder
                 .Property(e => e.CreatedOn)
                 .HasColumnType("timestamp without time zone")
@@ -23,11 +28,6 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasColumnType("timestamp without time zone")
                 .ValueGeneratedOnAddOrUpdate()
                 .HasDefaultValueSql("NOW()");
-            builder
-                .Property(b => b.Disabled)
-                .IsRequired()
-                .HasColumnType("bool")
-                .HasDefaultValue(false);
         }
     }
 }
