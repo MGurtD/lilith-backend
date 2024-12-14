@@ -74,6 +74,7 @@ namespace Application.Persistance
         IWorkMasterRepository WorkMasters { get; }
         IWorkOrderRepository WorkOrders { get; }
         IProductionPartRepository ProductionParts { get; }
+        IWorkcenterShiftRepository WorkcenterShifts { get; }
         IContractReader<DetailedWorkOrder> DetailedWorkOrders { get; }
         IContractReader<ProductionCost> ProductionCosts { get; }
 
