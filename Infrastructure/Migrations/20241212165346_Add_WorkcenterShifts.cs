@@ -32,13 +32,13 @@ namespace Infrastructure.Migrations
                         column: x => x.ShiftDetailId,
                         principalTable: "ShiftDetails",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_WorkcenterShifts_Workcenters_WorkcenterId",
                         column: x => x.WorkcenterId,
                         principalTable: "Workcenters",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -65,7 +65,7 @@ namespace Infrastructure.Migrations
                         column: x => x.MachineStatusId,
                         principalTable: "MachineStatuses",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_WorkcenterShiftDetails_Operators_OperatorId",
                         column: x => x.OperatorId,
@@ -77,7 +77,7 @@ namespace Infrastructure.Migrations
                         principalSchema: "data",
                         principalTable: "WorkcenterShifts",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_WorkcenterShiftDetails_WorkOrderPhase_WorkOrderPhaseId",
                         column: x => x.WorkOrderPhaseId,
