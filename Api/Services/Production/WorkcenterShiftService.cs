@@ -109,6 +109,20 @@ namespace Api.Services.Production
             return newWorkcenterShifts;
         }
 
+        // ClockIn  > WorkcenterId, OperatorId, Timestamp
+            // - Comprovar si l'operari està en una altra CT > Tallar i crear nous registres amb timestamp DTO
+            // - Tallar registres de CT oberts > Crear nous registres amb timestamp DTO
+        // ClockOut > WorkcenterId, OperatorId, Timestamp
+            // - Comprovar si l'operari està en una altra CT > Tallar i crear nous registres amb timestamp DTO
+            // - Tallar registres de CT oberts > Crear nous registres amb timestamp DTO
+
+        // ChangeStatus > WorkcenterId, OperatorId, Timestamp
+            // - Tallar tot l'ho actiu al CT > Crear nous registres amb timestamp DTO
+
+        // WorkOrderPhaseIn > El mateix que els operaris però sense la concurrencia
+        // WorkOrderPhaseOut > El mateix que els operaris però sense la concurrencia
+
+
         public async Task<GenericResponse> CreateWorkcenterShiftDetail(CreateWorkcenterShiftDetailDto dto)
         {
             var moment = DateTime.Now;
@@ -144,7 +158,7 @@ namespace Api.Services.Production
             var recentDetail = await _unitOfWork.WorkcenterShifts
                                                 .FindWithDetails(ws => ws.WorkcenterId == dto.WorkcenterId)
                                                 .SelectMany(ws => ws.Details
-                                                    .Where(wsd => wsd.WorkOrderPhaseId == dto.WorkOrderPhaseId))
+                                                    .Where(wsd => wsd.WorkOrderPhaseId == dto.WorkOrderPhaseId && wsd.EndTime == null))
                                                 .OrderByDescending(wsd => wsd.StartTime)
                                                 .FirstOrDefaultAsync();
             if (recentDetail != null)
