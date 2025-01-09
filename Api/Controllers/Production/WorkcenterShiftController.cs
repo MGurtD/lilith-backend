@@ -32,10 +32,10 @@ public class WorkcenterShiftController : Controller
         }
     }
 
-    [HttpGet("Workcenter/{workcenterId:guid}")]
-    public async Task<IActionResult> GetWorkcenterShifts(Guid workcenterId)
+    [HttpGet("Current")]
+    public async Task<IActionResult> GetCurrentWorkcenterShifts()
     {
-        var workcenterShifts = await _workcenterShiftService.GetWorkcenterShifts(workcenterId);
+        var workcenterShifts = await _workcenterShiftService.GetCurrentWorkcenterShifts();
         return Ok(workcenterShifts);
     }
 
@@ -53,10 +53,50 @@ public class WorkcenterShiftController : Controller
         }
     }
 
-    [HttpPost("CreateWorkcenterShiftDetail")]
-    public async Task<IActionResult> CreateWorkcenterShiftDetail(CreateWorkcenterShiftDetailDto dto)
+    [HttpPost("Operator/In")]
+    public async Task<IActionResult> OperatorIn(OperatorInOutRequest request)
     {
-        var response = await _workcenterShiftService.CreateWorkcenterShiftDetail(dto);
+        var response = await _workcenterShiftService.OperatorIn(request);
+        if (response.Result)
+        {
+            return Ok(response);
+        }
+        else
+        {
+            return BadRequest(response);
+        }
+    }
+    [HttpPost("Operator/Out")]
+    public async Task<IActionResult> OperatorOut(OperatorInOutRequest request)
+    {
+        var response = await _workcenterShiftService.OperatorOut(request);
+        if (response.Result)
+        {
+            return Ok(response);
+        }
+        else
+        {
+            return BadRequest(response);
+        }
+    }
+
+    [HttpPost("Phase/In")]
+    public async Task<IActionResult> WorkOrderPhaseIn(WorkOrderPhaseInOutRequest request)
+    {
+        var response = await _workcenterShiftService.WorkOrderPhaseIn(request);
+        if (response.Result)
+        {
+            return Ok(response);
+        }
+        else
+        {
+            return BadRequest(response);
+        }
+    }
+    [HttpPost("Phase/Out")]
+    public async Task<IActionResult> WorkOrderPhaseOut(WorkOrderPhaseInOutRequest request)
+    {
+        var response = await _workcenterShiftService.WorkOrderPhaseOut(request);
         if (response.Result)
         {
             return Ok(response);

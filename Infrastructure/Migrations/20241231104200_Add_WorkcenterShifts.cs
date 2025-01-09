@@ -20,6 +20,7 @@ namespace Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     WorkcenterId = table.Column<Guid>(type: "uuid", nullable: false),
                     ShiftDetailId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Current = table.Column<bool>(type: "boolean", nullable: false),
                     StartTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     EndTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     Disabled = table.Column<bool>(type: "bool", nullable: false, defaultValue: false)
@@ -32,13 +33,13 @@ namespace Infrastructure.Migrations
                         column: x => x.ShiftDetailId,
                         principalTable: "ShiftDetails",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_WorkcenterShifts_Workcenters_WorkcenterId",
                         column: x => x.WorkcenterId,
                         principalTable: "Workcenters",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -53,6 +54,8 @@ namespace Infrastructure.Migrations
                     WorkOrderPhaseId = table.Column<Guid>(type: "uuid", nullable: true),
                     QuantityOk = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     QuantityKo = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    ConcurrentOperatorWorkcenters = table.Column<int>(type: "integer", nullable: false),
+                    Current = table.Column<bool>(type: "boolean", nullable: false),
                     StartTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     EndTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     Disabled = table.Column<bool>(type: "bool", nullable: false, defaultValue: false)
@@ -65,7 +68,7 @@ namespace Infrastructure.Migrations
                         column: x => x.MachineStatusId,
                         principalTable: "MachineStatuses",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_WorkcenterShiftDetails_Operators_OperatorId",
                         column: x => x.OperatorId,
@@ -77,7 +80,7 @@ namespace Infrastructure.Migrations
                         principalSchema: "data",
                         principalTable: "WorkcenterShifts",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_WorkcenterShiftDetails_WorkOrderPhase_WorkOrderPhaseId",
                         column: x => x.WorkOrderPhaseId,

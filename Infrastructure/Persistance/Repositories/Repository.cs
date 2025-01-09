@@ -48,6 +48,10 @@ namespace Infrastructure.Persistance.Repositories
 
             context.Entry(entity).State = EntityState.Detached;
         }
+        public async Task AddWithoutSave(Entity entity)
+        {
+            await dbSet.AddAsync(entity);
+        }
 
         public async Task AddRange(IEnumerable<Entity> entities)
         {

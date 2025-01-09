@@ -9,6 +9,7 @@ public class WorkcenterShift : Entity
     public Workcenter? Workcenter { get; set; }
     public Guid ShiftDetailId { get; set; }
     public ShiftDetail? ShiftDetail { get; set; }
+    public bool Current { get; set; } = true;
     public DateTime StartTime { get; set; }
     public DateTime? EndTime { get; set; }
     public ICollection<WorkcenterShiftDetail> Details { get; set; } = [];

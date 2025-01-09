@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241212165346_Add_WorkcenterShifts")]
+    [Migration("20241231104200_Add_WorkcenterShifts")]
     partial class Add_WorkcenterShifts
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1342,8 +1342,8 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<bool>("Current")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("Disabled")
                         .ValueGeneratedOnAdd()
@@ -1358,9 +1358,6 @@ namespace Infrastructure.Migrations
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("timestamp without time zone");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("WorkcenterId")
                         .HasColumnType("uuid");
@@ -1382,8 +1379,11 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<int>("ConcurrentOperatorWorkcenters")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Current")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("Disabled")
                         .ValueGeneratedOnAdd()
@@ -1411,9 +1411,6 @@ namespace Infrastructure.Migrations
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("timestamp without time zone");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("WorkOrderPhaseId")
                         .HasColumnType("uuid");
@@ -5010,7 +5007,7 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("WorkOrderPhaseId");
 
                     b.HasOne("Domain.Entities.Production.WorkcenterShift", "WorkcenterShift")
-                        .WithMany()
+                        .WithMany("Details")
                         .HasForeignKey("WorkcenterShiftId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -5970,6 +5967,11 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.Production.Shift", b =>
                 {
                     b.Navigation("ShiftDetails");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Production.WorkcenterShift", b =>
+                {
+                    b.Navigation("Details");
                 });
 
             modelBuilder.Entity("Domain.Entities.Production.WorkMaster", b =>

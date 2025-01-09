@@ -15,9 +15,7 @@ public class WorkcenterShiftDetail : Entity
     public WorkOrderPhase? WorkOrderPhase { get; set; }
     public decimal QuantityOk { get; set; }
     public decimal QuantityKo { get; set; }
-    public int ConcurrentOperatorWorkcenters { get; set; };
-
-    // TODO: MIGRATION !!!
+    public int ConcurrentOperatorWorkcenters { get; set; }
     public bool Current { get; set; } = true;
     public DateTime StartTime { get; set; }
     public DateTime? EndTime { get; set; }

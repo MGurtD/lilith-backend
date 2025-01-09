@@ -4,6 +4,7 @@ using Application.Persistance;
 using Application.Services.Production;
 using Domain.Entities.Production;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Immutable;
 
 namespace Api.Services.Production
 {
@@ -22,9 +23,9 @@ namespace Api.Services.Production
             return workcenterShift;
         }
 
-        public async Task<List<WorkcenterShift>> GetWorkcenterShifts(Guid workcenterId)
+        public async Task<List<WorkcenterShift>> GetCurrentWorkcenterShifts()
         {
-            var workcenterShifts = await _unitOfWork.WorkcenterShifts.FindWithDetails(wsd => wsd.WorkcenterId == workcenterId && wsd.EndTime == null).ToListAsync();
+            var workcenterShifts = await _unitOfWork.WorkcenterShifts.FindWithDetails(wsd => wsd.Current).ToListAsync();
             return [.. workcenterShifts];
         }
 
@@ -32,7 +33,7 @@ namespace Api.Services.Production
         {
             // Obtenir els torns actius dels centres de treball indicats en els DTOs
             var currentWorkcenterShifts = await _unitOfWork.WorkcenterShifts
-                .FindWithDetails(ws => dtos.Select(dto => dto.WorkcenterId).Contains(ws.WorkcenterId) && ws.EndTime == null)
+                .FindWithDetails(ws => dtos.Select(dto => dto.WorkcenterId).Contains(ws.WorkcenterId) && ws.Current)
                 .ToListAsync();
 
             var newWorkcenterShifts = CreateUnexistingWorkcenterShifts(dtos, currentWorkcenterShifts);
@@ -42,6 +43,7 @@ namespace Api.Services.Production
             {
                 var dto = dtos.First(dto => dto.WorkcenterId == workcenterShift.WorkcenterId)!;
 
+                workcenterShift.Current = false;
                 workcenterShift.EndTime = dto.StartTime;
                 _unitOfWork.WorkcenterShifts.UpdateWithoutSave(workcenterShift);
 
@@ -49,6 +51,7 @@ namespace Api.Services.Production
                 {
                     WorkcenterId = dto.WorkcenterId,
                     ShiftDetailId = dto.ShiftDetailId,
+                    Current = true,
                     StartTime = dto.StartTime,
                     EndTime = null
                 };
@@ -56,6 +59,7 @@ namespace Api.Services.Production
 
                 foreach (var detail in workcenterShift.Details)
                 {
+                    detail.Current = false;
                     detail.EndTime = dto.StartTime;
                     _unitOfWork.WorkcenterShifts.Details.UpdateWithoutSave(detail);
 
@@ -66,6 +70,7 @@ namespace Api.Services.Production
                         OperatorId = detail.OperatorId,
                         WorkOrderPhaseId = detail.WorkOrderPhaseId,
                         StartTime = dto.StartTime,
+                        Current = true,
                         EndTime = null
                     });
                 }
@@ -109,48 +114,96 @@ namespace Api.Services.Production
             return newWorkcenterShifts;
         }
 
-        // ClockIn  > WorkcenterId, OperatorId, Timestamp
-            // - Comprovar si l'operari està en una altra CT > Tallar i crear nous registres amb timestamp DTO
-            // - Tallar registres de CT oberts > Crear nous registres amb timestamp DTO
-        // ClockOut > WorkcenterId, OperatorId, Timestamp
-            // - Comprovar si l'operari està en una altra CT > Tallar i crear nous registres amb timestamp DTO
-            // - Tallar registres de CT oberts > Crear nous registres amb timestamp DTO
+        #region ClockInOutOperator
+        private async Task<GenericResponse> ClockInOutOperator(OperatorInOutRequest request, OperatorDirection direction)
+        {
+            var currentWorkcenterShifts = await _unitOfWork.WorkcenterShifts
+                                                    .FindWithDetails(ws => ws.Current)
+                                                    .ToListAsync();
 
-        // ChangeStatus > WorkcenterId, OperatorId, Timestamp
-            // - Tallar tot l'ho actiu al CT > Crear nous registres amb timestamp DTO
+            var currentOtherWorkcenterDetailsWithOperator = currentWorkcenterShifts
+                                                    .Where(ws => ws.WorkcenterId != request.WorkcenterId)
+                                                    .SelectMany(ws => ws.Details.Where(wsd => wsd.OperatorId == request.OperatorId))
+                                                    .ToList();
+
+            var currentWorkcenterDetails = currentWorkcenterShifts
+                                                    .Where(wsd => wsd.WorkcenterId == request.WorkcenterId)
+                                                    .SelectMany(ws => ws.Details)
+                                                    .ToList();
+
+            var detailsToClose = currentOtherWorkcenterDetailsWithOperator.Concat(currentWorkcenterDetails).ToList();
+
+            foreach (var currentDetail in detailsToClose)
+            {
+                currentDetail.Current = false;
+                currentDetail.EndTime = request.Timestamp;
+                _unitOfWork.WorkcenterShifts.Details.UpdateWithoutSave(currentDetail);
+
+                var newDetail = new WorkcenterShiftDetail()
+                {
+                    WorkcenterShiftId = currentDetail.WorkcenterShiftId,
+                    MachineStatusId = currentDetail.MachineStatusId,
+                    OperatorId = (direction == OperatorDirection.In ? request.OperatorId : null),
+                    StartTime = request.Timestamp,
+                    ConcurrentOperatorWorkcenters = currentDetail.ConcurrentOperatorWorkcenters + (direction == OperatorDirection.In ? 1 : -1),
+                    Current = true
+                };
+                await _unitOfWork.WorkcenterShifts.Details.AddWithoutSave(newDetail);
+            }
+
+            if (direction == OperatorDirection.In && currentWorkcenterDetails.Count == 0)
+            {
+                var defaultMachineStatus = (await _unitOfWork.MachineStatuses.FindAsync(ms => ms.Name == "Parada")).FirstOrDefault();
+                if (defaultMachineStatus == null) return new GenericResponse(false, "L'estat per defecte no existeix");
+
+                var newDetail = new WorkcenterShiftDetail()
+                {
+                    WorkcenterShiftId = currentWorkcenterShifts.First(ws => ws.WorkcenterId == request.WorkcenterId).Id,
+                    MachineStatusId = defaultMachineStatus.Id,
+                    OperatorId = request.OperatorId,
+                    StartTime = request.Timestamp,
+                    ConcurrentOperatorWorkcenters = currentOtherWorkcenterDetailsWithOperator.Count + 1,
+                    Current = true
+                };
+                await _unitOfWork.WorkcenterShifts.Details.AddWithoutSave(newDetail);
+            }
+
+            await _unitOfWork.CompleteAsync();
+            return new GenericResponse(true);
+        }
+
+        public async Task<GenericResponse> OperatorIn(OperatorInOutRequest request)
+        {
+            return await ClockInOutOperator(request, OperatorDirection.In);
+        }
+        public async Task<GenericResponse> OperatorOut(OperatorInOutRequest request)
+        {
+            return await ClockInOutOperator(request, OperatorDirection.Out);
+        }
+        #endregion
+
+        #region WorkOrderPhaseInOut
+        public Task<GenericResponse> WorkOrderPhaseIn(WorkOrderPhaseInOutRequest request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<GenericResponse> WorkOrderPhaseOut(WorkOrderPhaseInOutRequest request)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
+
+        public Task<GenericResponse> ChangeWorkcenterStatus(WorkcenterChangeStatusRequest request)
+        {
+            throw new NotImplementedException();
+        }
+
+        // ChangeStatus > WorkcenterId, StatusId, Timestamp
+        // - Tallar tot l'ho actiu al CT > Crear nous registres amb timestamp DTO
 
         // WorkOrderPhaseIn > El mateix que els operaris però sense la concurrencia
         // WorkOrderPhaseOut > El mateix que els operaris però sense la concurrencia
-
-
-        public async Task<GenericResponse> CreateWorkcenterShiftDetail(CreateWorkcenterShiftDetailDto dto)
-        {
-            var moment = DateTime.Now;
-
-            var currentWorkcenterShift = (await _unitOfWork.WorkcenterShifts.FindAsync(ws => ws.WorkcenterId == dto.WorkcenterId && ws.EndTime == null)).FirstOrDefault();
-            if (currentWorkcenterShift == null)
-            {
-                return new GenericResponse(false, "No open workcenter shift found");
-            }
-
-            var currentDetail = (await _unitOfWork.WorkcenterShifts.Details.FindAsync(wsd => wsd.WorkcenterShiftId == currentWorkcenterShift.Id && wsd.EndTime == null)).FirstOrDefault();
-            if (currentDetail != null)
-            {
-                currentDetail.EndTime = moment;
-                _unitOfWork.WorkcenterShifts.Details.UpdateWithoutSave(currentDetail);
-            }
-
-            var workcenterShiftDetail = new WorkcenterShiftDetail
-            {
-                WorkcenterShiftId = currentWorkcenterShift.Id,
-                MachineStatusId = dto.MachineStatusId,
-                OperatorId = dto.OperatorId,
-                WorkOrderPhaseId = dto.WorkOrderPhaseId,
-                StartTime = moment
-            };
-            await _unitOfWork.WorkcenterShifts.Details.Add(workcenterShiftDetail);
-            return new GenericResponse(true);
-        }
 
         public async Task<GenericResponse> UpdateWorkcenterShiftDetailQuantities(UpdateWorkcenterShiftDetailQuantitiesDto dto)
         {
@@ -158,7 +211,7 @@ namespace Api.Services.Production
             var recentDetail = await _unitOfWork.WorkcenterShifts
                                                 .FindWithDetails(ws => ws.WorkcenterId == dto.WorkcenterId)
                                                 .SelectMany(ws => ws.Details
-                                                    .Where(wsd => wsd.WorkOrderPhaseId == dto.WorkOrderPhaseId && wsd.EndTime == null))
+                                                    .Where(wsd => wsd.WorkOrderPhaseId == dto.WorkOrderPhaseId && wsd.Current))
                                                 .OrderByDescending(wsd => wsd.StartTime)
                                                 .FirstOrDefaultAsync();
             if (recentDetail != null)
@@ -207,7 +260,6 @@ namespace Api.Services.Production
             await _unitOfWork.WorkcenterShifts.Details.Update(workcenterShiftDetail);
             return new GenericResponse(true);
         }
-
 
     }
 }

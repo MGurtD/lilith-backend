@@ -15,6 +15,9 @@ public class WorkcenterShiftDetailBuilder : IEntityTypeConfiguration<WorkcenterS
         builder.Ignore(e => e.UpdatedOn);
 
         builder
+            .Property(b => b.Current)
+            .IsRequired();
+        builder
             .Property(b => b.StartTime)
             .IsRequired()
             .HasColumnType("timestamp without time zone");
