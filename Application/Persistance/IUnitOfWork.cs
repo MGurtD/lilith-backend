@@ -58,6 +58,7 @@ namespace Application.Persistance
         IDeliveryNoteRepository DeliveryNotes { get; }
         IBudgetRepository Budgets { get; }
         IContractReader<ConsolidatedIncomes> ConsolidatedIncomes { get; }
+        IContractReader<Revenue> Revenues { get; }
 
         // Production
         IRepository<Enterprise, Guid> Enterprises { get; }

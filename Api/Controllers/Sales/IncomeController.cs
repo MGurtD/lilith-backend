@@ -21,5 +21,12 @@ namespace Api.Controllers.Sales
             entities = _unitOfWork.ConsolidatedIncomes.Find(c => c.Date >= startTime && c.Date <= endTime);
             return Ok(entities);
         }
+        [HttpGet]
+        [Route("Monthly")]
+        public IActionResult GetMonthly(int year, int month)
+        {
+            var incomes = _unitOfWork.ConsolidatedIncomes.Find(c => c.Year == year && c.Month == month).Sum(c => c.Amount);
+            return Ok(incomes);
+        }
     }
 }

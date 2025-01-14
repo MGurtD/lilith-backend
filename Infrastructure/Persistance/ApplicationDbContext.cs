@@ -49,6 +49,10 @@ namespace Infrastructure.Persistance
                 .Entity<ConsolidatedIncomes>()
                 .ToView("vw_consolidatedIncomes")
                 .HasNoKey();
+            builder
+                .Entity<Revenue>()
+                .ToView("vw_monthlyrevenue")
+                .HasNoKey();
             builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
 

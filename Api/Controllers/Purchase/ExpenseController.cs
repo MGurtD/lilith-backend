@@ -55,6 +55,14 @@ namespace Api.Controllers.Purchase
             }
             return Ok(entities.OrderBy(e => e.PaymentDate));
         }
+        [HttpGet]
+        [Route("Monthly")]
+        public IActionResult GetMonthly(int year, int month)
+        {
+            var entities = _unitOfWork.Expenses.Find(e => e.PaymentDate.Month == month && e.PaymentDate.Year == year);
+            
+            return Ok(entities.Sum(e => e.Amount));
+        }
 
         [Route("ExpenseType/{id:guid}")]
         [HttpGet]        

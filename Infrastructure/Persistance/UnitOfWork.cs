@@ -64,6 +64,7 @@ namespace Infrastructure.Persistance
         public IDeliveryNoteRepository DeliveryNotes { get; private set; } = new DeliveryNoteRepository(context);
         public IBudgetRepository Budgets { get; private set; } = new BudgetRepository(context);
         public IContractReader<ConsolidatedIncomes> ConsolidatedIncomes { get; private set; } = new ContractReader<ConsolidatedIncomes>(context);
+        public IContractReader<Revenue> Revenues { get; private set; } = new ContractReader<Revenue>(context);
 
         // Production
         public IRepository<Enterprise, Guid> Enterprises { get; private set; } = new Repository<Enterprise, Guid>(context);
