@@ -42,10 +42,10 @@ namespace Api.Services.Production
             return Task.FromResult(new GenericResponse(true, workcenterCost.Cost));
         }
 
-        public async Task<GenericResponse> GetWorkmasterMetrics(WorkMaster workMaster, decimal? productedQuantity)
+        public async Task<GenericResponse> GetWorkmasterMetrics(WorkMaster workMaster, decimal? producedQuantity)
         {
             // Recollir la quantitat a calcular, si no es passa es calcula per la quantitat base
-            var baseQuantity = productedQuantity.HasValue ? productedQuantity.Value : workMaster.BaseQuantity;
+            var baseQuantity = producedQuantity.HasValue ? producedQuantity.Value : workMaster.BaseQuantity;
             var operatorCost = 0.0M;
             var machineCost = 0.0M;
             var materialCost = 0.0M;
@@ -53,6 +53,7 @@ namespace Api.Services.Production
             var externalServiceTransportCost = 0.0M;
             var totalWeight = 0.0M;
             var Amount = 0.0M;
+            var materialFactor = producedQuantity.HasValue ? producedQuantity.Value / workMaster.BaseQuantity : 1;
             
             //Recorrer les phases
             //A cada fase, recollir el operatortypeId, i buscar el seu preu cost/hora
@@ -134,15 +135,15 @@ namespace Api.Services.Production
                             // Calcular el pes
                             if (format.Code == "UNITATS")
                             {                                                              
-                                Amount = reference.LastCost * bom.Quantity;
+                                Amount = reference.LastCost * bom.Quantity * materialFactor;
                             }
                             else
                             {
                                 var UnitWeight = Math.Round(dimensionsCalculator.Calculate(dimensions), 2);
-                                totalWeight =totalWeight + (UnitWeight * bom.Quantity);
+                                totalWeight =totalWeight + (UnitWeight * bom.Quantity * materialFactor);
 
                                 // Calcular el preu
-                                var UnitPrice = reference.LastCost * UnitWeight;
+                                //var UnitPrice = reference.LastCost * UnitWeight;
                                 Amount = reference.LastCost * totalWeight;
 
                             }
