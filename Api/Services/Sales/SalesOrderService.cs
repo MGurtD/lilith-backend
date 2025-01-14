@@ -84,9 +84,16 @@ namespace Api.Services.Sales
             {
                 Id = Guid.NewGuid(),
                 Date = DateTime.Now,
-                ExerciseId = budget.ExerciseId,
                 CustomerId = budget.CustomerId
             };
+
+            // Obtenir l'exercici actual pel nou document
+            var currentExercise = _exerciseService.GetExerciceByDate(createDto.Date);
+            if (currentExercise == null)
+            {
+                return new GenericResponse(false, "No s'ha trobat cap exercici per a la data actual");
+            }
+            createDto.ExerciseId = currentExercise.Id;   
 
             var createResponse = await Create(createDto);
             if (!createResponse.Result) return createResponse;
