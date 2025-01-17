@@ -10,8 +10,6 @@ namespace Api.Services
         {
             var dueDates = new List<DueDate>();
 
-            date = date.AddDays(-1).Date;
-
             // Factura de pagament immediat
             if (paymentMethod.PaymentDay == 0 && paymentMethod.DueDays == 0)
             {
@@ -28,7 +26,16 @@ namespace Api.Services
             for (var i = 0; i < paymentMethod.NumberOfPayments; i++)
             {
                 var dueDateAmount = netAmount / paymentMethod.NumberOfPayments;
-                date = date.AddDays(paymentMethod.Frequency > 0 ? paymentMethod.Frequency : paymentMethod.DueDays);
+
+                var dueDays = paymentMethod.Frequency > 0 ? paymentMethod.Frequency : paymentMethod.DueDays;
+                if (dueDays % 30 == 0)
+                {
+                    date = date.AddMonths(dueDays / 30);
+                }
+                else
+                {
+                    date = date.AddDays(dueDays);
+                }
 
                 if (paymentMethod.PaymentDay > 0)
                 {
