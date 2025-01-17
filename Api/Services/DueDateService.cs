@@ -10,6 +10,8 @@ namespace Api.Services
         {
             var dueDates = new List<DueDate>();
 
+            date = date.AddDays(-1).Date;
+
             // Factura de pagament immediat
             if (paymentMethod.PaymentDay == 0 && paymentMethod.DueDays == 0)
             {
