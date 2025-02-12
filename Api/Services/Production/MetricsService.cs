@@ -143,8 +143,7 @@ namespace Api.Services.Production
                                 totalWeight =totalWeight + (UnitWeight * bom.Quantity * materialFactor);
 
                                 // Calcular el preu
-                                //var UnitPrice = reference.LastCost * UnitWeight;
-                                //Amount = reference.LastCost * totalWeight;
+
                                 Amount = reference.LastCost * (UnitWeight * bom.Quantity * materialFactor);
 
                             }
