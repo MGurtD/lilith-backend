@@ -518,6 +518,20 @@ namespace Api.Services.Sales
             deliveryNote.SalesInvoiceId = id;
             await _deliveryNoteService.Update(deliveryNote);
 
+            //Marcar la comanda com a comanda facturada
+            //Recuperar la comanda 
+            var salesOrder  = _unitOfWork.SalesOrderHeaders.Find(q => q.DeliveryNoteId == deliveryNote.Id).FirstOrDefault();
+            
+            var status = await _unitOfWork.Lifecycles.GetStatusByName("SalesOrder", "Comanda Facturada");
+            if (status == null || status.Disabled)
+            {
+                return new GenericResponse(false, $"L'estat de factura amb ID {status.Name} no existeix o está deshabilitat");
+            }
+            salesOrder.StatusId = status.Id;
+            await _unitOfWork.SalesOrderHeaders.Update(salesOrder);
+
+            
+
             return new GenericResponse(true, invoiceDetails);
         }
 
@@ -537,6 +551,17 @@ namespace Api.Services.Sales
             // Alliberar l'albarà perquè sigui assignable de nou a una factura
             deliveryNote.SalesInvoiceId = null;
             await _deliveryNoteService.Update(deliveryNote);
+
+            var salesOrder = _unitOfWork.SalesOrderHeaders.Find(q => q.DeliveryNoteId == deliveryNote.Id).FirstOrDefault();
+
+            var status = await _unitOfWork.Lifecycles.GetStatusByName("SalesOrder", "Comanda Servida");
+            if (status == null || status.Disabled)
+            {
+                return new GenericResponse(false, $"L'estat de factura amb ID {status.Name} no existeix o está deshabilitat");
+            }
+            salesOrder.StatusId = status.Id;
+            await _unitOfWork.SalesOrderHeaders.Update(salesOrder);
+
 
             return new GenericResponse(true, deliveryNoteDetails);
         }
