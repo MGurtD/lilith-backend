@@ -11,7 +11,7 @@ public static class DatabaseSetup
         // Database Context
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.UseNpgsql(Configuration.ConnectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            options.UseNpgsql(Settings.ConnectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
             options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);

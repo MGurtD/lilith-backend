@@ -11,11 +11,17 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
     {
-        Configuration.Load(builder.Configuration);
+        Settings.Load(builder.Configuration);
 
         // Logging with NLog
         builder.Logging.ClearProviders();
         builder.Host.UseNLog();
+
+        // Set server request body size limit
+        builder.WebHost.ConfigureKestrel(options =>
+        {
+            options.Limits.MaxRequestBodySize = Settings.FileUploadLimitSize;
+        });
 
         builder.Services
             .AddDatabaseServices()

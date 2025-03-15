@@ -137,7 +137,7 @@ namespace Api.Services
 
         private async Task<AuthResponse> GenerateJwtToken(User user)
         {
-            var signKey = Encoding.ASCII.GetBytes(Configuration.JwtSecret);
+            var signKey = Encoding.ASCII.GetBytes(Settings.JwtSecret);
 
             // Token specifications
             var jwtTokenHandler = new JwtSecurityTokenHandler();
@@ -150,7 +150,7 @@ namespace Api.Services
                     new Claim(JwtRegisteredClaimNames.Sub, user.Username),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 }),
-                Expires = DateTime.UtcNow.Add(Configuration.JwtExpirationTime),
+                Expires = DateTime.UtcNow.Add(Settings.JwtExpirationTime),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(signKey), SecurityAlgorithms.HmacSha256)
             };
 
