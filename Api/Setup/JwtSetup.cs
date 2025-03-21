@@ -9,7 +9,7 @@ public static class JwtSetup
     public static IServiceCollection AddJwtSetup(this IServiceCollection services, bool isDevelopment)
     {
         // JWT Service    
-        var signKey = Encoding.ASCII.GetBytes(Configuration.JwtSecret);
+        var signKey = Encoding.ASCII.GetBytes(Settings.JwtSecret);
         var tokenValidationParameters = new TokenValidationParameters()
         {
             IssuerSigningKey = new SymmetricSecurityKey(signKey),
