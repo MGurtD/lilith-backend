@@ -20,6 +20,17 @@ public class WorkcenterShiftDetail : Entity
     public DateTime StartTime { get; set; }
     public DateTime? EndTime { get; set; }
 
+    public void Open(DateTime StartTime)
+    {
+        Current = true;
+        this.StartTime = StartTime;
+    }
+    public void Close(DateTime EndTime)
+    {
+        Current = false;
+        this.EndTime = EndTime;
+    }
+
     [NotMapped]
     [JsonIgnore]
     public override DateTime CreatedOn { get => base.CreatedOn; set => base.CreatedOn = value; }

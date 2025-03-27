@@ -80,6 +80,20 @@ public class WorkcenterShiftController : Controller
         }
     }
 
+    [HttpPost("Workcenter/ChangeStatus")]
+    public async Task<IActionResult> WorkOrderPhaseOut(WorkcenterChangeStatusRequest request)
+    {
+        var response = await _workcenterShiftService.ChangeWorkcenterStatus(request);
+        if (response.Result)
+        {
+            return Ok(response);
+        }
+        else
+        {
+            return BadRequest(response);
+        }
+    }
+
     [HttpPost("Phase/In")]
     public async Task<IActionResult> WorkOrderPhaseIn(WorkOrderPhaseInOutRequest request)
     {
