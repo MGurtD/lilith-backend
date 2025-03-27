@@ -15,7 +15,7 @@ namespace Api.Controllers.Production
             _unitOfWork = unitOfWork;
         }
         [HttpPost]
-        public async Task<IActionResult> Create(WorkCenterCost request)
+        public async Task<IActionResult> Create(WorkcenterCost request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
@@ -63,7 +63,7 @@ namespace Api.Controllers.Production
             return Ok(workcentercost);
         }
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid Id, WorkCenterCost request)
+        public async Task<IActionResult> Update(Guid Id, WorkcenterCost request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);

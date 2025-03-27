@@ -1,6 +1,6 @@
 ﻿namespace Domain.Entities.Production
 {
-    public class WorkCenterCost : Entity
+    public class WorkcenterCost : Entity
     {
         public Guid WorkcenterId { get; set; }
         public Workcenter? Workcenter { get; set; }
