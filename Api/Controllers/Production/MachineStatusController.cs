@@ -23,13 +23,16 @@ namespace Api.Controllers.Production
             var exists = _unitOfWork.MachineStatuses.Find(r => request.Name == r.Name).Any();
             if (!exists)
             {
+                if (request.Default)
+                    DisableCurrentDefault();
+
                 await _unitOfWork.MachineStatuses.Add(request);
                 var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
                 return Created(location, request);
             }
             else
             {
-                return Conflict($"Enterprise {request.Name} existent");
+                return Conflict($"Estat de máquina '{request.Name}' existent");
             }
         }
         [HttpGet]
@@ -53,6 +56,17 @@ namespace Api.Controllers.Production
                 return NotFound();
             }
         }
+
+        private void DisableCurrentDefault()
+        {
+            var currentDefault = _unitOfWork.MachineStatuses.Find(e => e.Default).FirstOrDefault();
+            if (currentDefault is not null)
+            {
+                currentDefault.Default = false;
+                _unitOfWork.MachineStatuses.UpdateWithoutSave(currentDefault);
+            }
+        }
+
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid Id, MachineStatus request)
         {
@@ -65,7 +79,11 @@ namespace Api.Controllers.Production
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.MachineStatuses.Update(request);
+            if (request.Default)
+                DisableCurrentDefault();
+
+            _unitOfWork.MachineStatuses.UpdateWithoutSave(request);
+            await _unitOfWork.CompleteAsync();
             return Ok(request);
         }
 
