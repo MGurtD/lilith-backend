@@ -7,6 +7,8 @@ namespace Application.Persistance.Repositories.Production
     {
         IWorkcenterShiftDetailRepository Details { get; }
 
+        Task<WorkcenterShift?> GetCurrentWorkcenterShiftWithCurrentDetails(Guid workcenterId);
+
         IQueryable<WorkcenterShift> FindWithDetails(Expression<Func<WorkcenterShift, bool>> predicate);
     }
 }

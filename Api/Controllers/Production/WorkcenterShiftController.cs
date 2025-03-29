@@ -56,7 +56,7 @@ public class WorkcenterShiftController : Controller
     [HttpPost("Operator/In")]
     public async Task<IActionResult> OperatorIn(OperatorInOutRequest request)
     {
-        var response = await _workcenterShiftService.OperatorIn(request);
+        var response = await _workcenterShiftService.DetailsService.OperatorIn(request);
         if (response.Result)
         {
             return Ok(response);
@@ -69,7 +69,7 @@ public class WorkcenterShiftController : Controller
     [HttpPost("Operator/Out")]
     public async Task<IActionResult> OperatorOut(OperatorInOutRequest request)
     {
-        var response = await _workcenterShiftService.OperatorOut(request);
+        var response = await _workcenterShiftService.DetailsService.OperatorOut(request);
         if (response.Result)
         {
             return Ok(response);
@@ -83,7 +83,7 @@ public class WorkcenterShiftController : Controller
     [HttpPost("Workcenter/ChangeStatus")]
     public async Task<IActionResult> WorkOrderPhaseOut(WorkcenterChangeStatusRequest request)
     {
-        var response = await _workcenterShiftService.ChangeWorkcenterStatus(request);
+        var response = await _workcenterShiftService.DetailsService.ChangeWorkcenterStatus(request);
         if (response.Result)
         {
             return Ok(response);
@@ -94,10 +94,10 @@ public class WorkcenterShiftController : Controller
         }
     }
 
-    [HttpPost("Phase/In")]
+    [HttpPost("WorkOrderPhase/In")]
     public async Task<IActionResult> WorkOrderPhaseIn(WorkOrderPhaseInOutRequest request)
     {
-        var response = await _workcenterShiftService.WorkOrderPhaseIn(request);
+        var response = await _workcenterShiftService.DetailsService.WorkOrderPhaseIn(request);
         if (response.Result)
         {
             return Ok(response);
@@ -107,10 +107,10 @@ public class WorkcenterShiftController : Controller
             return BadRequest(response);
         }
     }
-    [HttpPost("Phase/Out")]
+    [HttpPost("WorkOrderPhase/Out")]
     public async Task<IActionResult> WorkOrderPhaseOut(WorkOrderPhaseInOutRequest request)
     {
-        var response = await _workcenterShiftService.WorkOrderPhaseOut(request);
+        var response = await _workcenterShiftService.DetailsService.WorkOrderPhaseOut(request);
         if (response.Result)
         {
             return Ok(response);
@@ -124,7 +124,7 @@ public class WorkcenterShiftController : Controller
     [HttpPut("UpdateWorkcenterShiftDetailQuantities")]
     public async Task<IActionResult> UpdateWorkcenterShiftDetailQuantities(UpdateWorkcenterShiftDetailQuantitiesDto dto)
     {
-        var response = await _workcenterShiftService.UpdateWorkcenterShiftDetailQuantities(dto);
+        var response = await _workcenterShiftService.DetailsService.UpdateWorkcenterShiftDetailQuantities(dto);
         if (response.Result)
         {
             return Ok(response);
@@ -152,7 +152,7 @@ public class WorkcenterShiftController : Controller
     [HttpPut("DisableWorkcenterShiftDetail/{workcenterShiftDetailId:guid}")]
     public async Task<IActionResult> DisableWorkcenterShiftDetail(Guid workcenterShiftDetailId)
     {
-        var response = await _workcenterShiftService.DisableWorkcenterShiftDetail(workcenterShiftDetailId);
+        var response = await _workcenterShiftService.DetailsService.DisableWorkcenterShiftDetail(workcenterShiftDetailId);
         if (response.Result)
         {
             return Ok(response);
