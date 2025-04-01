@@ -11,6 +11,8 @@
         public string Country { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+        public string EmailSales { get; set; } = string.Empty;
+        public string EmailPurchase { get; set; } = string.Empty;
         public string VatNumber { get; set; } = string.Empty;
 
         public bool IsValidForSales()
