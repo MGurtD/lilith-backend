@@ -57,6 +57,18 @@ namespace Infrastructure.Persistance.EntityConfiguration.Production
                 .HasColumnType("varchar")
                 .HasMaxLength(250);
             builder
+                .Property(b => b.EmailSales)
+                .IsRequired()
+                .HasDefaultValue(string.Empty)
+                .HasColumnType("varchar")
+                .HasMaxLength(250);
+            builder
+                .Property(b => b.EmailPurchase)
+                .IsRequired()
+                .HasDefaultValue(string.Empty)
+                .HasColumnType("varchar")
+                .HasMaxLength(250);
+            builder
                 .Property(b => b.VatNumber)
                 .IsRequired()
                 .HasColumnType("varchar")

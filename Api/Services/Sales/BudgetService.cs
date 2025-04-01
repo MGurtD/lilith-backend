@@ -123,7 +123,7 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> RemoveDetail(Guid id)
         {
             var detail = _unitOfWork.Budgets.Details.Find(d => d.Id == id).FirstOrDefault();
-            if (detail == null) return new GenericResponse(false, new List<string> { $"El detall de comanda amb ID {id} no existeix" });
+            if (detail == null) return new GenericResponse(false, $"El detall de comanda amb ID {id} no existeix");
             await _unitOfWork.Budgets.Details.Remove(detail);
 
             return new GenericResponse(true, detail);
@@ -137,8 +137,8 @@ namespace Api.Services.Sales
             var customer = await _unitOfWork.Customers.Get(budget.CustomerId);
             if (customer is null) return null;
 
-            var site = _unitOfWork.Sites.Find(s => s.VatNumber == "B09680521").FirstOrDefault();
-            if (site is null) return null;
+            var site = (await _unitOfWork.Sites.FindAsync(s => !s.Disabled)).FirstOrDefault();
+            if (site == null) return null;
 
             budget.Details = budget.Details.OrderBy(d => d.Reference!.Code).ToList();
             var salesOrderReport = new BudgetReportResponse
