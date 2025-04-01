@@ -64,6 +64,7 @@ namespace Domain.Entities.Sales
         public string Country { get; set; } = string.Empty;
         public string VatNumber { get; set; } = string.Empty;
 
+        public SalesInvoiceHash? SalesInvoiceHash { get; set; }
         public void SetSite(Site site)
         {
             SiteId = site.Id;
