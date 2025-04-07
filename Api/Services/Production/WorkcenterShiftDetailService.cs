@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.Production
 {
-    public class WorkcenterShiftDetailService(IUnitOfWork unitOfWork) : IWorkcenterShiftDetailService
+    public class WorkcenterShiftDetailService(IUnitOfWork unitOfWork, IMetricsService metricsService) : IWorkcenterShiftDetailService
     {
 
         public async Task<WorkcenterShiftDetail?> GetWorkcenterShiftDetailById(Guid id)
@@ -64,6 +64,13 @@ namespace Api.Services.Production
                 return validationResponse;
             }
 
+            decimal operatorCost = 0;
+            var getOperatorCostResponse = await metricsService.GetOperatorCost(request.OperatorId);
+            if (getOperatorCostResponse.Result)
+            {
+                operatorCost = (decimal)getOperatorCostResponse.Content!;
+            }
+
             if (currentWorkcenterDetails.Count == 0)
             {
                 // Cas 1 : No hi ha detalls actius al centre de treball
@@ -96,8 +103,11 @@ namespace Api.Services.Production
                     {
                         WorkcenterShiftId = currentWorkcenterDetail.WorkcenterShiftId,
                         MachineStatusId = currentWorkcenterDetail.MachineStatusId,
+                        WorkcenterCost = currentWorkcenterDetail.WorkcenterCost,
                         WorkOrderPhaseId = currentWorkcenterDetail.WorkOrderPhaseId,
+                        ConcurrentWorkorderPhases = currentWorkcenterDetail.ConcurrentWorkorderPhases,
                         OperatorId = request.OperatorId,
+                        OperatorCost = operatorCost,
                         ConcurrentOperatorWorkcenters = currentDetailsWithOperator.Count + 1
                     };
                     newDetail.Open(request.Timestamp);
@@ -116,8 +126,11 @@ namespace Api.Services.Production
                 {
                     WorkcenterShiftId = otherWorkcenterDetail.WorkcenterShiftId,
                     MachineStatusId = otherWorkcenterDetail.MachineStatusId,
+                    WorkcenterCost = otherWorkcenterDetail.WorkcenterCost,
                     WorkOrderPhaseId = otherWorkcenterDetail.WorkOrderPhaseId,
+                    ConcurrentWorkorderPhases = otherWorkcenterDetail.ConcurrentWorkorderPhases,
                     OperatorId = request.OperatorId,
+                    OperatorCost = operatorCost,
                     ConcurrentOperatorWorkcenters = currentDetailsWithOperator.Count + 1
                 };
                 newDetail.Open(request.Timestamp);
@@ -159,7 +172,9 @@ namespace Api.Services.Production
                 {
                     WorkcenterShiftId = currentWorkcenterDetail.WorkcenterShiftId,
                     MachineStatusId = currentWorkcenterDetail.MachineStatusId,
-                    WorkOrderPhaseId = currentWorkcenterDetail.WorkOrderPhaseId
+                    WorkOrderPhaseId = currentWorkcenterDetail.WorkOrderPhaseId,
+                    WorkcenterCost = currentWorkcenterDetail.WorkcenterCost,
+                    ConcurrentWorkorderPhases = currentWorkcenterDetail.ConcurrentWorkorderPhases
                 };
                 if (currentWorkcenterShift.Id == currentWorkcenterDetail.WorkcenterShiftId)
                 {
@@ -226,7 +241,8 @@ namespace Api.Services.Production
                 {
                     WorkcenterShiftId = currentWorkcenterShift.Id,
                     MachineStatusId = defaultMachineStatus.Id,
-                    WorkOrderPhaseId = request.WorkOrderPhaseId
+                    WorkOrderPhaseId = request.WorkOrderPhaseId,
+                    ConcurrentWorkorderPhases = 1
                 };
                 newDetail.Open(request.Timestamp);
 
@@ -243,8 +259,11 @@ namespace Api.Services.Production
                     {
                         WorkcenterShiftId = currentDetail.WorkcenterShiftId,
                         MachineStatusId = currentDetail.MachineStatusId,
-                        OperatorId = currentDetail.OperatorId,
+                        WorkcenterCost = currentDetail.WorkcenterCost,
                         WorkOrderPhaseId = request.WorkOrderPhaseId,
+                        ConcurrentWorkorderPhases = currentDetail.ConcurrentWorkorderPhases + 1,
+                        OperatorId = currentDetail.OperatorId,
+                        OperatorCost = currentDetail.OperatorCost,
                         ConcurrentOperatorWorkcenters = currentDetail.ConcurrentOperatorWorkcenters
                     };
                     newDetail.Open(request.Timestamp);
@@ -282,9 +301,12 @@ namespace Api.Services.Production
                 {
                     WorkcenterShiftId = currentDetail.WorkcenterShiftId,
                     MachineStatusId = currentDetail.MachineStatusId,
+                    WorkcenterCost = currentDetail.WorkcenterCost,
+                    WorkOrderPhaseId = null,
+                    ConcurrentWorkorderPhases = currentDetail.ConcurrentWorkorderPhases - 1,
                     OperatorId = currentDetail.OperatorId,
-                    ConcurrentOperatorWorkcenters = currentDetail.ConcurrentOperatorWorkcenters,
-                    WorkOrderPhaseId = null
+                    OperatorCost = currentDetail.OperatorCost,
+                    ConcurrentOperatorWorkcenters = currentDetail.ConcurrentOperatorWorkcenters
                 };
                 newDetail.Open(request.Timestamp);
                 await unitOfWork.WorkcenterShifts.Details.AddWithoutSave(newDetail);
@@ -320,12 +342,20 @@ namespace Api.Services.Production
                 return validationResponse;
             }
 
+            decimal workcenterCost = 0;
+            var getWorkcenterStatusCostResponse = await metricsService.GetWorkcenterStatusCost(request.WorkcenterId, request.MachineStatusId);
+            if (getWorkcenterStatusCostResponse.Result)
+            {
+                workcenterCost = (decimal)getWorkcenterStatusCostResponse.Content!;
+            }
+
             if (currentDetails.Count == 0)
             {
                 var newDetail = new WorkcenterShiftDetail()
                 {
                     WorkcenterShiftId = currentWorkcenterShift.Id,
-                    MachineStatusId = request.MachineStatusId
+                    MachineStatusId = request.MachineStatusId,
+                    WorkcenterCost = workcenterCost
                 };
                 newDetail.Open(request.Timestamp);
 
@@ -342,8 +372,11 @@ namespace Api.Services.Production
                     {
                         WorkcenterShiftId = detail.WorkcenterShiftId,
                         MachineStatusId = request.MachineStatusId,
-                        OperatorId = detail.OperatorId,
+                        WorkcenterCost = workcenterCost,
                         WorkOrderPhaseId = detail.WorkOrderPhaseId,
+                        ConcurrentWorkorderPhases = detail.ConcurrentWorkorderPhases,
+                        OperatorId = detail.OperatorId,
+                        OperatorCost = detail.OperatorCost,
                         ConcurrentOperatorWorkcenters = detail.ConcurrentOperatorWorkcenters
                     };
                     newDetail.Open(request.Timestamp);

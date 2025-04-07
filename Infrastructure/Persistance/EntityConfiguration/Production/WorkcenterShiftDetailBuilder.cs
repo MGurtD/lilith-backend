@@ -20,21 +20,44 @@ public class WorkcenterShiftDetailBuilder : IEntityTypeConfiguration<WorkcenterS
         builder
             .Property(b => b.StartTime)
             .IsRequired()
-            .HasColumnType("timestamp without time zone");
+            .HasColumnType(ApplicationDbContextConstants.TIMESTAMP_WITHOUT_TIMEZONE);
         builder
             .Property(b => b.EndTime)
-            .HasColumnType("timestamp without time zone");
-
+            .HasColumnType(ApplicationDbContextConstants.TIMESTAMP_WITHOUT_TIMEZONE);
         builder
-               .Property(b => b.QuantityOk)
-               .HasDefaultValue(0)
-               .IsRequired()
-               .HasColumnType("int");
+            .Property(b => b.OperatorCost)
+            .HasDefaultValue(0)
+            .IsRequired()
+            .HasColumnType("decimal")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
         builder
-               .Property(b => b.QuantityKo)
-               .HasDefaultValue(0)
-               .IsRequired()
-               .HasColumnType("int");
+            .Property(b => b.WorkcenterCost)
+            .HasDefaultValue(0)
+            .IsRequired()
+            .HasColumnType("decimal")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
+        builder
+            .Property(b => b.ConcurrentOperatorWorkcenters)
+            .HasDefaultValue(0)
+            .IsRequired()
+            .HasColumnType("int");
+        builder
+            .Property(b => b.ConcurrentWorkorderPhases)
+            .HasDefaultValue(0)
+            .IsRequired()
+            .HasColumnType("int");
+        builder
+            .Property(b => b.QuantityOk)
+            .HasDefaultValue(0)
+            .IsRequired()
+            .HasColumnType("int");
+        builder
+            .Property(b => b.QuantityKo)
+            .HasDefaultValue(0)
+            .IsRequired()
+            .HasColumnType("int");
 
         builder
             .HasKey(b => b.Id)

@@ -13,12 +13,15 @@ public class WorkcenterShiftDetail : Entity
     public Operator? Operator { get; set; }
     public Guid? WorkOrderPhaseId { get; set; }
     public WorkOrderPhase? WorkOrderPhase { get; set; }
-    public decimal QuantityOk { get; set; }
-    public decimal QuantityKo { get; set; }
-    public int ConcurrentOperatorWorkcenters { get; set; }
     public bool Current { get; set; } = true;
     public DateTime StartTime { get; set; }
     public DateTime? EndTime { get; set; }
+    public decimal OperatorCost { get; set; }
+    public decimal WorkcenterCost { get; set; }
+    public int ConcurrentOperatorWorkcenters { get; set; }
+    public int ConcurrentWorkorderPhases { get; set; }
+    public decimal QuantityOk { get; set; }
+    public decimal QuantityKo { get; set; }
 
     public void Open(DateTime StartTime)
     {

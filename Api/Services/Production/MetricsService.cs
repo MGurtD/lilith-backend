@@ -1,31 +1,22 @@
-﻿using Api.Services.Sales;
-using Application.Contracts;
-using Application.Contracts.Production;
+﻿using Application.Contracts;
 using Application.Persistance;
-using Application.Production.Warehouse;
-using Application.Services;
 using Application.Services.Production;
-using Application.Services.Sales;
 using Domain.Entities.Production;
 using Domain.Entities.Warehouse;
 using Domain.Implementations.ReferenceFormat;
 
 namespace Api.Services.Production
 {
-    public class MetricsService : IMetricsService
+    public class MetricsService(IUnitOfWork unitOfWork) : IMetricsService
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public MetricsService(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
         public async Task<GenericResponse> GetOperatorCost(Guid operatorId)
         {
             var oper = await _unitOfWork.Operators.Get(operatorId);
-            if (oper == null) {
-                return new GenericResponse(false, "No s'ha trobat l'operari"); 
+            if (oper == null)
+            {
+                return new GenericResponse(false, "No s'ha trobat l'operari");
             }
 
             var operatorType = await _unitOfWork.OperatorTypes.Get(oper.OperatorTypeId);
@@ -54,22 +45,23 @@ namespace Api.Services.Production
             var totalWeight = 0.0M;
             var Amount = 0.0M;
             var materialFactor = producedQuantity.HasValue ? producedQuantity.Value / workMaster.BaseQuantity : 1;
-            
+
             //Recorrer les phases
             //A cada fase, recollir el operatortypeId, i buscar el seu preu cost/hora
             //Per cada fase recorrer els detalls i obtenim el temps+estat maquina, es busca el cost del binomi
             //Si es temps de cicle es multiplica per la quantitat base, sinó es el temps del bloc. Es multiplica el temps pel cost
             //temps en minuts cost en hores
-            foreach(var phase in workMaster.Phases)
+            foreach (var phase in workMaster.Phases)
             {
                 var operatorType = _unitOfWork.OperatorTypes.Find(o => o.Id == phase.OperatorTypeId).FirstOrDefault();
                 var operatorTypeCost = operatorType != null ? operatorType.Cost : 0;
 
                 var phaseDetails = await _unitOfWork.WorkMasters.Phases.Get(phase.Id);
-                if(phaseDetails == null) continue;
+                if (phaseDetails == null) continue;
 
                 // Cálcul de fases externes
-                if (phase.IsExternalWork) {
+                if (phase.IsExternalWork)
+                {
                     externalServiceCost += phase.ExternalWorkCost;
                     externalServiceTransportCost += phase.TransportCost;
                     continue;
@@ -77,7 +69,7 @@ namespace Api.Services.Production
 
                 // Temps
                 foreach (var detail in phaseDetails.Details)
-                {                                          
+                {
                     var estimatedWorkcenterTime = detail.EstimatedTime;
                     var estimatedOperatorTime = detail.EstimatedOperatorTime;
                     if (detail.IsCycleTime)
@@ -85,36 +77,39 @@ namespace Api.Services.Production
                         estimatedWorkcenterTime = baseQuantity * detail.EstimatedTime;
                         estimatedOperatorTime = baseQuantity * detail.EstimatedOperatorTime;
                     }
-                    
+
                     // Cost Operari
                     operatorCost += (estimatedOperatorTime / 60) * operatorTypeCost;
 
                     // Cost Màquina                    
                     var workCenterCost = _unitOfWork.WorkcenterCosts.Find(wc => wc.WorkcenterId == phase.PreferredWorkcenterId && wc.MachineStatusId == detail.MachineStatusId).FirstOrDefault();
-                    if (workCenterCost == null) {
+                    if (workCenterCost == null)
+                    {
                         return new GenericResponse(false, "No s'ha trobat la combinació de centre de treball i estat de màquina");
                     }
-                    machineCost += (estimatedWorkcenterTime / 60) * workCenterCost.Cost;    
-                    
+                    machineCost += (estimatedWorkcenterTime / 60) * workCenterCost.Cost;
+
                 }
 
                 // Material
                 foreach (var bom in phaseDetails.BillOfMaterials)
                 {
-                    
+
                     var reference = await _unitOfWork.References.Get(bom.ReferenceId);
-                    if(reference == null) continue;
+                    if (reference == null) continue;
                     if (!reference.ReferenceTypeId.HasValue)
                     {
                         return new GenericResponse(false, "No s'ha trobat el tipus de material");
                     }
 
-                    if (reference.ReferenceFormatId.HasValue) {
+                    if (reference.ReferenceFormatId.HasValue)
+                    {
                         var referenceType = await _unitOfWork.ReferenceTypes.Get(reference.ReferenceTypeId.Value);
 
                         // Obtenir calculadora segons el format
                         var format = await _unitOfWork.ReferenceFormats.Get(reference.ReferenceFormatId.Value);
-                        if (format == null) {
+                        if (format == null)
+                        {
                             return new GenericResponse(false, "No s'ha trobat el format del material");
                         }
 
@@ -131,16 +126,17 @@ namespace Api.Services.Production
                             Density = referenceType!.Density
                         };
 
-                        try {
+                        try
+                        {
                             // Calcular el pes
                             if (format.Code == "UNITATS")
-                            {                                                              
+                            {
                                 Amount = reference.LastCost * bom.Quantity * materialFactor;
                             }
                             else
                             {
                                 var UnitWeight = Math.Round(dimensionsCalculator.Calculate(dimensions), 2);
-                                totalWeight =totalWeight + (UnitWeight * bom.Quantity * materialFactor);
+                                totalWeight = totalWeight + (UnitWeight * bom.Quantity * materialFactor);
 
                                 // Calcular el preu
 
@@ -150,7 +146,9 @@ namespace Api.Services.Production
 
                             // Acumular el cost del material
                             materialCost += Amount;
-                        } catch (Exception e) {
+                        }
+                        catch (Exception e)
+                        {
                             return new GenericResponse(false, e.Message);
                         }
                     }
@@ -179,7 +177,7 @@ namespace Api.Services.Production
                 var workcenterCostRequest = await GetWorkcenterStatusCost(productionPart.WorkcenterId, workOrderPhaseDetail.MachineStatusId.Value);
                 if (!workcenterCostRequest.Result) return workcenterCostRequest;
                 productionMetrics.MachineCost = (decimal)workcenterCostRequest.Content!;
-            }            
+            }
 
             return new GenericResponse(true, productionMetrics);
         }

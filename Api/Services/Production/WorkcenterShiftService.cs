@@ -8,9 +8,9 @@ using System.Collections.Immutable;
 
 namespace Api.Services.Production
 {
-    public class WorkcenterShiftService(IUnitOfWork unitOfWork) : IWorkcenterShiftService
+    public class WorkcenterShiftService(IUnitOfWork unitOfWork, IMetricsService metricsService) : IWorkcenterShiftService
     {
-        public IWorkcenterShiftDetailService DetailsService => new WorkcenterShiftDetailService(unitOfWork);
+        public IWorkcenterShiftDetailService DetailsService => new WorkcenterShiftDetailService(unitOfWork, metricsService);
 
         public async Task<WorkcenterShift?> GetWorkcenterShift(Guid workcenterShiftId)
         {
