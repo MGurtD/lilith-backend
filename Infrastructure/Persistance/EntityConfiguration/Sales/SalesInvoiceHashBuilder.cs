@@ -61,7 +61,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
             builder
                 .Property(b => b.FechaHoraHusoGenRegistro)
                 .IsRequired()
-                .HasColumnType("timestamp")
+                .HasColumnType("varchar")
                 .HasMaxLength(512);
             builder
                 .Property(b => b.IDEmisorFacturaAnulada)
@@ -76,7 +76,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
             builder
                 .Property(b => b.FechaExpedicionFacturaAnulada)
                 .IsRequired()
-                .HasColumnType("timestamp")
+                .HasColumnType("varchar")
                 .HasMaxLength(512);
             builder
                 .Property(b => b.Response)

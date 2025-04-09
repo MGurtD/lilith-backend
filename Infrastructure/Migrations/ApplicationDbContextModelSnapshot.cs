@@ -3870,13 +3870,15 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("varchar");
 
-                    b.Property<DateTime>("FechaExpedicionFacturaAnulada")
+                    b.Property<string>("FechaExpedicionFacturaAnulada")
+                        .IsRequired()
                         .HasMaxLength(512)
-                        .HasColumnType("timestamp");
+                        .HasColumnType("varchar");
 
-                    b.Property<DateTime>("FechaHoraHusoGenRegistro")
+                    b.Property<string>("FechaHoraHusoGenRegistro")
+                        .IsRequired()
                         .HasMaxLength(512)
-                        .HasColumnType("timestamp");
+                        .HasColumnType("varchar");
 
                     b.Property<string>("Huella")
                         .IsRequired()

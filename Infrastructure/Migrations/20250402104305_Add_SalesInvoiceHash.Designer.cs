@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250401135021_Add_SalesInvoiceHash")]
+    [Migration("20250402104305_Add_SalesInvoiceHash")]
     partial class Add_SalesInvoiceHash
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -3872,13 +3872,15 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("varchar");
 
-                    b.Property<DateTime>("FechaExpedicionFacturaAnulada")
+                    b.Property<string>("FechaExpedicionFacturaAnulada")
+                        .IsRequired()
                         .HasMaxLength(512)
-                        .HasColumnType("timestamp");
+                        .HasColumnType("varchar");
 
-                    b.Property<DateTime>("FechaHoraHusoGenRegistro")
+                    b.Property<string>("FechaHoraHusoGenRegistro")
+                        .IsRequired()
                         .HasMaxLength(512)
-                        .HasColumnType("timestamp");
+                        .HasColumnType("varchar");
 
                     b.Property<string>("Huella")
                         .IsRequired()
