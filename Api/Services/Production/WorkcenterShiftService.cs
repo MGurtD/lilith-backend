@@ -27,9 +27,9 @@ namespace Api.Services.Production
         public async Task<GenericResponse> CreateWorkcenterShifts(List<CreateWorkcenterShiftDto> dtos)
         {
             // Obtenir els torns actius dels centres de treball indicats en els DTOs
-            var currentWorkcenterShifts = await unitOfWork.WorkcenterShifts
-                .FindWithDetails(ws => dtos.Select(dto => dto.WorkcenterId).Contains(ws.WorkcenterId) && ws.Current)
-                .ToListAsync();
+            var currentWorkcenterShifts = (await GetCurrentWorkcenterShifts())
+                .Where(ws => dtos.Select(dto => dto.WorkcenterId).Contains(ws.WorkcenterId))
+                .ToList();
 
             var newWorkcenterShifts = CreateUnexistingWorkcenterShifts(dtos, currentWorkcenterShifts);
             var newWorkcenterShiftDetails = new List<WorkcenterShiftDetail>();
@@ -52,7 +52,7 @@ namespace Api.Services.Production
                 };
                 newWorkcenterShifts.Add(newWorkcenterShift);
 
-                foreach (var detail in workcenterShift.Details)
+                foreach (var detail in workcenterShift.Details.Where(wsd => wsd.Current))
                 {
                     detail.Current = false;
                     detail.EndTime = dto.StartTime;
@@ -62,8 +62,12 @@ namespace Api.Services.Production
                     {
                         WorkcenterShiftId = newWorkcenterShift.Id,
                         MachineStatusId = detail.MachineStatusId,
+                        WorkcenterCost = detail.WorkcenterCost,
                         OperatorId = detail.OperatorId,
+                        OperatorCost = detail.OperatorCost,
+                        ConcurrentOperatorWorkcenters = detail.ConcurrentOperatorWorkcenters,
                         WorkOrderPhaseId = detail.WorkOrderPhaseId,
+                        ConcurrentWorkorderPhases = detail.ConcurrentWorkorderPhases,
                         StartTime = dto.StartTime,
                         Current = true,
                         EndTime = null

@@ -82,6 +82,7 @@ namespace Api.Services.Production
                     WorkcenterShiftId = currentWorkcenterShift.Id,
                     MachineStatusId = defaultMachineStatus.Id,
                     OperatorId = request.OperatorId,
+                    OperatorCost = operatorCost,
                     ConcurrentOperatorWorkcenters = currentDetailsWithOperator.Count + 1
                 };
                 newDetail.Open(request.Timestamp);
