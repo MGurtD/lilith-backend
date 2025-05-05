@@ -14,6 +14,7 @@ using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
 using Domain.Entities.Shared;
 using Domain.Entities.Warehouse;
+using Domain.Repositories.Sales;
 using Infrastructure.Persistance.Repositories;
 using Infrastructure.Persistance.Repositories.Production;
 using Infrastructure.Persistance.Repositories.Purchase;
@@ -60,6 +61,7 @@ namespace Infrastructure.Persistance
         public ISalesOrderHeaderRepository SalesOrderHeaders { get; private set; } = new SalesOrderHeaderRepository(context, new SalesOrderDetailRepository(context));
         public ISalesOrderDetailRepository SalesOrderDetails { get; private set; } = new SalesOrderDetailRepository(context);
         public ISalesInvoiceRepository SalesInvoices { get; private set; } = new SalesInvoiceRepository(context);
+        public IRepository<SalesInvoiceVerifactuRequest, Guid> VerifactuRequests { get; private set; } = new Repository<SalesInvoiceVerifactuRequest, Guid>(context);
         public IReceiptRepository Receipts { get; private set; } = new ReceiptRepository(context);
         public IDeliveryNoteRepository DeliveryNotes { get; private set; } = new DeliveryNoteRepository(context);
         public IBudgetRepository Budgets { get; private set; } = new BudgetRepository(context);

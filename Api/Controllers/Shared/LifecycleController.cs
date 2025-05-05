@@ -1,6 +1,7 @@
 ﻿using Application.Persistance;
 using Domain.Entities;
 using Domain.Entities.Sales;
+using Domain.Entities.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Sales

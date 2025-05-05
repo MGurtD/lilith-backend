@@ -1,6 +1,5 @@
 using Application.Contract;
 using Application.Contracts;
-using Application.Contracts.Purchase;
 using Application.Contracts.Sales;
 using Domain.Entities.Sales;
 
@@ -21,6 +20,7 @@ public interface ISalesInvoiceService
     IEnumerable<SalesInvoice> GetByCustomer(Guid customerId);
     IEnumerable<SalesInvoice> GetByStatus(Guid statusId);
     IEnumerable<SalesInvoice> GetByExercise(Guid exerciseId);
+    IEnumerable<SalesInvoice> GetToExport();
 
     Task<GenericResponse> Update(SalesInvoice SalesInvoice);
     Task<GenericResponse> ChangeStatuses(ChangeStatusOfInvoicesRequest changeStatusOfPurchaseInvoicesRequest);

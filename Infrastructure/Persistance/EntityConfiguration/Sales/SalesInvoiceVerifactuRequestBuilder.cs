@@ -20,28 +20,26 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .IsRequired()
                 .HasColumnType("text");
             builder
-                .Property(b => b.Response)
+                .Property(b => b.Hash)
                 .IsRequired()
-                .HasColumnType("varchar");
+                .HasColumnType("varchar")
+                .HasMaxLength(512);
             builder
                 .Property(b => b.Response)
                 .IsRequired()
-                .HasColumnType("varchar");
+                .HasColumnType("text");
             builder
                 .Property(b => b.TimestampResponse)
                 .IsRequired()
-                .HasColumnType("timestamp");
-
-            builder
-            .HasOne(sih => sih.SalesInvoice)
-            .WithOne(si => si.VerifactuRequest)
-            .HasForeignKey<SalesInvoiceVerifactuRequest>(sih => sih.SalesInvoiceId)
-            .OnDelete(DeleteBehavior.Restrict);
+                .HasColumnType("timestamp without time zone");
 
             builder
                 .HasKey(b => b.Id)
                 .HasName($"PK_{nameof(SalesInvoiceVerifactuRequest)}");
 
+            builder
+                .HasIndex(b => b.SalesInvoiceId)
+                .HasDatabaseName($"IX_{nameof(SalesInvoiceVerifactuRequest)}_{nameof(SalesInvoiceVerifactuRequest.SalesInvoiceId)}");
         }
     }
 }

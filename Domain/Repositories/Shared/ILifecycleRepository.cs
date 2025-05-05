@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Domain.Entities.Shared;
 
 namespace Application.Persistance.Repositories
 {

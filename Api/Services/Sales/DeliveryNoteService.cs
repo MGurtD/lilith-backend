@@ -6,6 +6,7 @@ using Application.Services.Warehouse;
 using Domain.Entities;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
+using Domain.Entities.Shared;
 using Domain.Entities.Warehouse;
 
 namespace Application.Services

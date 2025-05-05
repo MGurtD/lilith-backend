@@ -1,27 +1,22 @@
 ﻿using Application.Persistance.Repositories;
-using Application.Persistance.Repositories.Sales;
 using Domain.Entities.Sales;
+using Domain.Repositories.Sales;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace Infrastructure.Persistance.Repositories.Sales
 {
-    public class SalesInvoiceRepository : Repository<SalesInvoice, Guid>, ISalesInvoiceRepository
+    public class SalesInvoiceRepository(ApplicationDbContext context) : Repository<SalesInvoice, Guid>(context), ISalesInvoiceRepository
     {
-        public IRepository<SalesInvoiceDetail, Guid> InvoiceDetails { get; }
-        public IRepository<SalesInvoiceImport, Guid> InvoiceImports { get; }
-        public IRepository<SalesInvoiceDueDate, Guid> InvoiceDueDates { get; }
-
-        public SalesInvoiceRepository(ApplicationDbContext context) : base(context)
-        {
-            InvoiceDetails = new Repository<SalesInvoiceDetail, Guid>(context);
-            InvoiceImports = new Repository<SalesInvoiceImport, Guid>(context);
-            InvoiceDueDates = new Repository<SalesInvoiceDueDate, Guid>(context);
-        }
+        public IRepository<SalesInvoiceDetail, Guid> InvoiceDetails { get; } = new Repository<SalesInvoiceDetail, Guid>(context);
+        public IRepository<SalesInvoiceImport, Guid> InvoiceImports { get; } = new Repository<SalesInvoiceImport, Guid>(context);
+        public IRepository<SalesInvoiceDueDate, Guid> InvoiceDueDates { get; } = new Repository<SalesInvoiceDueDate, Guid>(context);
 
         public override async Task<SalesInvoice?> Get(Guid id)
         {
             return await dbSet
+                        .Include(s => s.Customer)
+                        .Include(s => s.Site)
                         .Include(s => s.SalesInvoiceDetails)
                             .ThenInclude(d => d.DeliveryNoteDetail)
                         .Include(s => s.SalesInvoiceImports)
@@ -35,7 +30,7 @@ namespace Infrastructure.Persistance.Repositories.Sales
         {
             return await dbSet
                         .AsNoTracking()
-                        .FirstOrDefaultAsync(e => e.Id == id);
+                        .SingleOrDefaultAsync(e => e.Id == id);
         }
 
         public async Task<IEnumerable<SalesInvoiceImport>> GetImportsByInvoiceId(Guid id)
@@ -48,6 +43,23 @@ namespace Infrastructure.Persistance.Repositories.Sales
 
             if (invoice is not null) imports.AddRange(invoice.SalesInvoiceImports);
             return imports;
+        }
+
+        public IEnumerable<SalesInvoice> GetPendingVerifactu(Guid statusId)
+        {
+            return dbSet
+                    .Include(s => s.Customer)
+                    .Include(s => s.Site)
+                    .Include(s => s.SalesInvoiceDetails)
+                        .ThenInclude(d => d.DeliveryNoteDetail)
+                    .Include(s => s.SalesInvoiceImports)
+                        .ThenInclude(d => d.Tax)
+                    .Include(s => s.SalesInvoiceDueDates)
+                    .Include(s => s.VerifactuRequests)
+                    .Where(e => e.StatusId == statusId &&
+                                (!e.VerifactuRequests.Any() ||
+                                 e.VerifactuRequests.All(v => v.Status == false)))
+                    .OrderBy(e => e.InvoiceNumber);
         }
 
         public override IEnumerable<SalesInvoice> Find(Expression<Func<SalesInvoice, bool>> predicate)
