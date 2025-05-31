@@ -635,5 +635,34 @@ namespace Api.Services.Sales
 
         #endregion
 
+        #region Verifactu
+        public async Task<IEnumerable<SalesInvoice>> GetPendingInvoicesToSendToVerifactu()
+        {
+            var salesInvoiceLifeCycle = await unitOfWork.Lifecycles.GetByName("SalesInvoice");
+            if (salesInvoiceLifeCycle == null)
+                throw new Exception("SalesInvoice lifecycle not found");
+
+            if (salesInvoiceLifeCycle.FinalStatusId == null)
+                throw new Exception("SalesInvoice lifecycle does not have a final status");
+
+            return unitOfWork.SalesInvoices.GetPendingVerifactu(salesInvoiceLifeCycle.FinalStatusId.Value);
+        }
+
+        public async Task<GenericResponse> CreateVerifactuRequest(SalesInvoiceVerifactuRequest verifactuRequest)
+        {
+            await unitOfWork.VerifactuRequests.Add(verifactuRequest);
+            return new GenericResponse(true, verifactuRequest);
+        }
+
+        public string GetLastHashSentToVerifactu()
+        {
+            var lastSucceedRequest = unitOfWork.VerifactuRequests.Find(vr => vr.Status == true)
+                .OrderByDescending(vr => vr.CreatedOn)
+                .FirstOrDefault();
+            return lastSucceedRequest?.Hash ?? string.Empty;
+        }
+
+        #endregion
+
     }
 }

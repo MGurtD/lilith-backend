@@ -39,6 +39,7 @@ public static class ApplicationServicesSetup
         services.AddScoped<IVerifactuInvoiceService, VerifactuInvoiceService>();
 
         services.AddHostedService<BudgetBackgroundService>();
+        services.AddHostedService<SalesInvoiceToVerifactuBackgroundService>();
 
         return services;
     }

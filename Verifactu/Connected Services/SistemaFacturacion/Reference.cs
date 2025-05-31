@@ -4551,7 +4551,7 @@ namespace SistemaFacturacion
         
         private SistemaInformaticoType sistemaInformaticoField;
         
-        private System.DateTime fechaHoraHusoGenRegistroField;
+        private string fechaHoraHusoGenRegistroField;
         
         private TipoHuellaType tipoHuellaField;
         
@@ -4729,7 +4729,7 @@ namespace SistemaFacturacion
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=9)]
-        public System.DateTime FechaHoraHusoGenRegistro
+        public string FechaHoraHusoGenRegistro
         {
             get
             {

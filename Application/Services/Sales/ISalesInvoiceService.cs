@@ -20,7 +20,6 @@ public interface ISalesInvoiceService
     IEnumerable<SalesInvoice> GetByCustomer(Guid customerId);
     IEnumerable<SalesInvoice> GetByStatus(Guid statusId);
     IEnumerable<SalesInvoice> GetByExercise(Guid exerciseId);
-    IEnumerable<SalesInvoice> GetToExport();
 
     Task<GenericResponse> Update(SalesInvoice SalesInvoice);
     Task<GenericResponse> ChangeStatuses(ChangeStatusOfInvoicesRequest changeStatusOfPurchaseInvoicesRequest);
@@ -32,4 +31,9 @@ public interface ISalesInvoiceService
     Task<GenericResponse> AddDetail(SalesInvoiceDetail detail);
     Task<GenericResponse> UpdateDetail(SalesInvoiceDetail detail);
     Task<GenericResponse> RemoveDetail(Guid id);
+
+    Task<IEnumerable<SalesInvoice>> GetPendingInvoicesToSendToVerifactu();
+    string GetLastHashSentToVerifactu();
+    Task<GenericResponse> CreateVerifactuRequest(SalesInvoiceVerifactuRequest verifactuRequest);
+
 }

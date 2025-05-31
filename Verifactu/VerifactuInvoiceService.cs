@@ -3,12 +3,14 @@ using Domain.Entities.Sales;
 using Microsoft.Extensions.Options;
 using SistemaFacturacion;
 using System.Security.Cryptography.X509Certificates;
+using System.Xml.Serialization;
+using Verifactu.Contracts;
 
 namespace Verifactu;
 
 public interface IVerifactuInvoiceService
 {
-    Task<RespuestaRegFactuSistemaFacturacionType> RegisterInvoice(Enterprise enterprise, SalesInvoice invoice);
+    Task<RegisterInvoiceResponse> RegisterInvoice(RegisterInvoiceRequest request);
 }
 
 public class VerifactuInvoiceService : IVerifactuInvoiceService
@@ -43,8 +45,12 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
         binding.Security.Transport.ClientCredentialType = System.ServiceModel.HttpClientCredentialType.Certificate;
     }
 
-    public async Task<RespuestaRegFactuSistemaFacturacionType> RegisterInvoice(Enterprise enterprise, SalesInvoice invoice)
+    public async Task<RegisterInvoiceResponse> RegisterInvoice(RegisterInvoiceRequest request)
     {
+        var response = new RegisterInvoiceResponse();
+        var enterprise = request.Enterprise;
+        var invoice = request.SalesInvoice;
+
         var peticion = new RegFactuSistemaFacturacion
         {
             Cabecera = new CabeceraType
@@ -136,18 +142,42 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
 
                         FechaHoraHusoGenRegistro = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ssK"),
 
-                        TipoHuella = TipoHuellaType.Item01, // "01"
-                        Huella = "DE49BAAB8058292DEA7CD8ABA7A397AAC17EF28EB212FAA619C636068F70A7E8"
+                        TipoHuella = TipoHuellaType.Item01,
                     }
                 }
             ]
         };
 
-        // 4. Invocar el método asíncrono "RegFactuSistemaFacturacionAsync"
-        var response = await _client!.RegFactuSistemaFacturacionAsync(peticion);
+        // Generar hash de la factura
+        var registroFactura = peticion.RegistroFactura[0].Item;
+        if (registroFactura is RegistroFacturacionAltaType alta)
+        {
+            alta.Huella = GeneradorHuella.GenerarHuellaRegistroAlta(alta, request.PreviousHash);
+            response.Hash = alta.Huella;
+        }
 
+        // Enviar factura al sistema Verifactu
+        var respuesta = await _client!.RegFactuSistemaFacturacionAsync(peticion);
 
-        // 5. Procesar la respuesta
-        return response.RespuestaRegFactuSistemaFacturacion;
+        response.XmlRequest = SerializeToXml(peticion);
+        response.XmlResponse = SerializeToXml(respuesta.RespuestaRegFactuSistemaFacturacion);
+        response.Success = respuesta.RespuestaRegFactuSistemaFacturacion.EstadoEnvio == EstadoEnvioType.Correcto;
+
+        if (!response.Success)
+        {
+            response.ErrorMessage = $"{respuesta.RespuestaRegFactuSistemaFacturacion.RespuestaLinea[0].CodigoErrorRegistro} - {respuesta.RespuestaRegFactuSistemaFacturacion.RespuestaLinea[0].DescripcionErrorRegistro}";
+            return response;
+        }
+
+        return response;
+    }
+
+    private static string SerializeToXml<T>(T obj)
+    {
+        if (obj == null) return string.Empty;
+        var xmlSerializer = new XmlSerializer(typeof(T));
+        using var stringWriter = new StringWriter();
+        xmlSerializer.Serialize(stringWriter, obj);
+        return stringWriter.ToString();
     }
 }
