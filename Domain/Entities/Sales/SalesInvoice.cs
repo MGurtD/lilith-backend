@@ -1,4 +1,5 @@
 ﻿using Domain.Entities.Production;
+using Domain.Entities.Shared;
 
 namespace Domain.Entities.Sales
 {
@@ -14,6 +15,8 @@ namespace Domain.Entities.Sales
 
         public Exercise? Exercise { get; set; }
         public Guid? ExerciseId { get; set; }
+        public InvoiceSerie? InvoiceSerie { get; set; }
+        public Guid? InvoiceSerieId { get; set; }
         public Guid? StatusId { get; set; }
         public Status? Status { get; set; }
         public PaymentMethod? PaymentMethod { get; set; }

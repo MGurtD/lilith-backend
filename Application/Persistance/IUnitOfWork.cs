@@ -41,7 +41,7 @@ namespace Application.Persistance
         IPurchaseOrderRepository PurchaseOrders { get; }
         IPurchaseInvoiceRepository PurchaseInvoices { get; }
         IRepository<PurchaseInvoiceDueDate, Guid> PurchaseInvoiceDueDates { get; }
-        IRepository<PurchaseInvoiceSerie, Guid> PurchaseInvoiceSeries { get; }
+        IRepository<InvoiceSerie, Guid> InvoiceSeries { get; }
         IRepository<ExpenseType, Guid> ExpenseTypes { get; }
         IExpenseRepository Expenses { get; }
         IReceiptRepository Receipts { get; }

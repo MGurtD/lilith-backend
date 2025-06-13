@@ -1,7 +1,4 @@
-﻿using Domain.Entities.Production;
-using Domain.Entities.Sales;
-using Microsoft.Extensions.Options;
-using SistemaFacturacion;
+﻿using SistemaFacturacion;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml.Serialization;
 using Verifactu.Contracts;
@@ -15,21 +12,19 @@ public interface IVerifactuInvoiceService
 
 public class VerifactuInvoiceService : IVerifactuInvoiceService
 {
-    private readonly VerifactuSettings _settings;
     private readonly sfPortTypeVerifactuClient _client;
 
-    public VerifactuInvoiceService(IOptions<VerifactuSettings> settings)
+    public VerifactuInvoiceService(string baseUrl, string certificatePath, string certificatePassword)
     {
-        _settings = settings.Value;
-        if (string.IsNullOrWhiteSpace(_settings.Url))
+        if (string.IsNullOrWhiteSpace(baseUrl))
         {
             throw new ArgumentException("La URL de Verifactu no está configurada.");
         }
-        if (string.IsNullOrWhiteSpace(_settings.Certificate.Path))
+        if (string.IsNullOrWhiteSpace(certificatePath))
         {
             throw new ArgumentException("La ruta del certificado no está configurada.");
         }
-        if (string.IsNullOrWhiteSpace(_settings.Certificate.Password))
+        if (string.IsNullOrWhiteSpace(certificatePassword))
         {
             throw new ArgumentException("La contraseña del certificado no está configurada.");
         }
@@ -37,7 +32,7 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
         _client = new sfPortTypeVerifactuClient(sfPortTypeVerifactuClient.EndpointConfiguration.SistemaVerifactuPruebas);
 
         // 2.1) Asignar el certificado  
-        _client.ClientCredentials.ClientCertificate.Certificate = new X509Certificate2(_settings.Certificate.Path, _settings.Certificate.Password);
+        _client.ClientCredentials.ClientCertificate.Certificate = new X509Certificate2(certificatePath, certificatePassword);
 
         // 2.2) Asegurar que el binding es BasicHttpBinding con modo Transport y credencial de cliente por certificado:  
         var binding = (System.ServiceModel.BasicHttpBinding)_client.Endpoint.Binding;

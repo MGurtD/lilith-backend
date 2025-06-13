@@ -5,6 +5,7 @@ using Application.Persistance;
 using Application.Services;
 using Domain.Entities;
 using Domain.Entities.Auth;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -12,21 +13,12 @@ using System.Text;
 
 namespace Api.Services
 {
-    public class AuthenticationService : IAuthenticationService
+    public class AuthenticationService(IOptions<AppSettings> settings, IUnitOfWork unitOfWork, TokenValidationParameters tokenValidationParameters) : IAuthenticationService
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly TokenValidationParameters _tokenValidationParameters;
-
-        public AuthenticationService(IUnitOfWork unitOfWork, TokenValidationParameters tokenValidationParameters)
-        {
-            _unitOfWork = unitOfWork;
-            _tokenValidationParameters = tokenValidationParameters;
-        }
-
         public async Task<AuthResponse> Register(UserRegisterRequest request)
         {
             // Validate existence of the unique user key
-            var exists = _unitOfWork.Users.Find(u => u.Username == request.Username).FirstOrDefault();
+            var exists = unitOfWork.Users.Find(u => u.Username == request.Username).FirstOrDefault();
             if (exists is not null)
             {
                 return new AuthResponse() 
@@ -37,7 +29,7 @@ namespace Api.Services
             }
 
             // Retrive the default role
-            var defaultRole = _unitOfWork.Roles.Find(r => r.Name == "user").FirstOrDefault();
+            var defaultRole = unitOfWork.Roles.Find(r => r.Name == "user").FirstOrDefault();
             if (defaultRole is null)
             {
                 return new AuthResponse()
@@ -57,7 +49,7 @@ namespace Api.Services
                 Disabled = true,
                 RoleId = defaultRole.Id
             };
-            await _unitOfWork.Users.Add(user);
+            await unitOfWork.Users.Add(user);
 
             var authResponse = await GenerateJwtToken(user);
             return authResponse;
@@ -65,20 +57,20 @@ namespace Api.Services
 
         public async Task<bool> ChangePassword(UserLoginRequest request)
         {
-            var user = _unitOfWork.Users.Find((u) => u.Username == request.Username).FirstOrDefault();
+            var user = unitOfWork.Users.Find((u) => u.Username == request.Username).FirstOrDefault();
             if (user is null) 
             {
                 return false;
             }
 
             var encrPassword = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password);
-            await _unitOfWork.Users.Update(user);
+            await unitOfWork.Users.Update(user);
             return true;
         }
 
         public async Task<AuthResponse> Login(UserLoginRequest request)
         {
-            var user = _unitOfWork.Users.Find(u => u.Username == request.Username).FirstOrDefault();
+            var user = unitOfWork.Users.Find(u => u.Username == request.Username).FirstOrDefault();
             if (user is null)
             {
                 return new AuthResponse()
@@ -121,11 +113,11 @@ namespace Api.Services
         }
         public async Task<bool> Enable(Guid id)
         {
-            var user = await _unitOfWork.Users.Get(id);
+            var user = await unitOfWork.Users.Get(id);
             if (user is null) return false;
 
             user.Disabled = false;
-            await _unitOfWork.Users.Update(user);
+            await unitOfWork.Users.Update(user);
 
             return true;
         }
@@ -137,7 +129,7 @@ namespace Api.Services
 
         private async Task<AuthResponse> GenerateJwtToken(User user)
         {
-            var signKey = Encoding.ASCII.GetBytes(Settings.JwtSecret);
+            var signKey = Encoding.ASCII.GetBytes(settings.Value.JwtConfig.Secret);
 
             // Token specifications
             var jwtTokenHandler = new JwtSecurityTokenHandler();
@@ -150,7 +142,7 @@ namespace Api.Services
                     new Claim(JwtRegisteredClaimNames.Sub, user.Username),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 }),
-                Expires = DateTime.UtcNow.Add(Settings.JwtExpirationTime),
+                Expires = DateTime.UtcNow.Add(settings.Value.JwtConfig.ExpirationTime),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(signKey), SecurityAlgorithms.HmacSha256)
             };
 
@@ -168,7 +160,7 @@ namespace Api.Services
                 UserId = user.Id
             };
 
-            await _unitOfWork.UserRefreshTokens.Add(userRefreshToken);
+            await unitOfWork.UserRefreshTokens.Add(userRefreshToken);
 
             return new AuthResponse()
             {
@@ -184,7 +176,7 @@ namespace Api.Services
 
             try
             {
-                var tokenInVerification = jwtTokenHandler.ValidateToken(tokenRequest.Token, _tokenValidationParameters, out var validatedToken);
+                var tokenInVerification = jwtTokenHandler.ValidateToken(tokenRequest.Token, tokenValidationParameters, out var validatedToken);
                 if (validatedToken is JwtSecurityToken jwtSecurityToken)
                 {
 
@@ -213,7 +205,7 @@ namespace Api.Services
                 }
 
                 // Exist on the persistance layer?
-                var storedToken = _unitOfWork.UserRefreshTokens.Find(urt => urt.Token == tokenRequest.RefreshToken).FirstOrDefault();
+                var storedToken = unitOfWork.UserRefreshTokens.Find(urt => urt.Token == tokenRequest.RefreshToken).FirstOrDefault();
                 if (storedToken is null)
                 {
                     return new AuthResponse()
@@ -264,9 +256,9 @@ namespace Api.Services
                 }
 
                 storedToken.Used = true;
-                await _unitOfWork.UserRefreshTokens.Update(storedToken);
+                await unitOfWork.UserRefreshTokens.Update(storedToken);
 
-                var user = await _unitOfWork.Users.Get(storedToken.UserId);
+                var user = await unitOfWork.Users.Get(storedToken.UserId);
                 if (user is null)
                 {
                     return new AuthResponse()

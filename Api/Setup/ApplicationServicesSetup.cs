@@ -36,7 +36,6 @@ public static class ApplicationServicesSetup
         services.AddScoped<IMetricsService, MetricsService>();
         services.AddScoped<IStockService, StockService>();
         services.AddScoped<IStockMovementService, StockMovementService>();
-        services.AddScoped<IVerifactuInvoiceService, VerifactuInvoiceService>();
 
         services.AddHostedService<BudgetBackgroundService>();
         services.AddHostedService<SalesInvoiceToVerifactuBackgroundService>();

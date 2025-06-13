@@ -48,7 +48,7 @@ namespace Infrastructure.Persistance
         public IPurchaseOrderRepository PurchaseOrders { get; private set; } = new PurchaseOrderRepository(context);
         public IPurchaseInvoiceRepository PurchaseInvoices { get; private set; } = new PurchaseInvoiceRepository(context);
         public IRepository<PurchaseInvoiceDueDate, Guid> PurchaseInvoiceDueDates { get; private set; } = new Repository<PurchaseInvoiceDueDate, Guid>(context);
-        public IRepository<PurchaseInvoiceSerie, Guid> PurchaseInvoiceSeries { get; private set; } = new Repository<PurchaseInvoiceSerie, Guid>(context);
+        public IRepository<InvoiceSerie, Guid> InvoiceSeries { get; private set; } = new Repository<InvoiceSerie, Guid>(context);
         public IRepository<ExpenseType, Guid> ExpenseTypes { get; private set; } = new Repository<ExpenseType, Guid>(context);
         public IExpenseRepository Expenses { get; private set; } = new ExpenseRepository(context);
         public IRepository<ReferenceFormat, Guid> ReferenceFormats { get; private set; } = new Repository<ReferenceFormat, Guid>(context);
