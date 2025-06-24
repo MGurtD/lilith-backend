@@ -45,20 +45,17 @@ namespace Infrastructure.Persistance.Repositories.Sales
             return imports;
         }
 
-        public IEnumerable<SalesInvoice> GetPendingVerifactu(Guid statusId)
+        public IEnumerable<SalesInvoice> GetPendingToIntegrate(Guid statusId)
         {
             return dbSet
                     .Include(s => s.Customer)
                     .Include(s => s.Site)
-                    .Include(s => s.SalesInvoiceDetails)
-                        .ThenInclude(d => d.DeliveryNoteDetail)
+                    .Include(s => s.ParentSalesInvoice)
                     .Include(s => s.SalesInvoiceImports)
                         .ThenInclude(d => d.Tax)
                     .Include(s => s.SalesInvoiceDueDates)
                     .Include(s => s.VerifactuRequests)
-                    .Where(e => e.StatusId == statusId &&
-                                (!e.VerifactuRequests.Any() ||
-                                 e.VerifactuRequests.All(v => v.Status == false)))
+                    .Where(e => e.IntegrationStatusId == statusId)
                     .OrderBy(e => e.InvoiceNumber);
         }
 

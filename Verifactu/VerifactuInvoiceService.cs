@@ -1,4 +1,5 @@
 ﻿using SistemaFacturacion;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml.Serialization;
 using Verifactu.Contracts;
@@ -29,7 +30,10 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
             throw new ArgumentException("La contraseña del certificado no está configurada.");
         }
 
-        _client = new sfPortTypeVerifactuClient(sfPortTypeVerifactuClient.EndpointConfiguration.SistemaVerifactuPruebas);
+        _client = new sfPortTypeVerifactuClient(
+            baseUrl.Contains("prewww")
+                ? sfPortTypeVerifactuClient.EndpointConfiguration.SistemaVerifactuPruebas
+                : sfPortTypeVerifactuClient.EndpointConfiguration.SistemaVerifactu);
 
         // 2.1) Asignar el certificado  
         _client.ClientCredentials.ClientCertificate.Certificate = new X509Certificate2(certificatePath, certificatePassword);
@@ -71,7 +75,7 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
                         {
                             IDEmisorFactura = invoice.Site!.VatNumber,
                             NumSerieFactura = invoice.InvoiceNumber,
-                            FechaExpedicionFactura = invoice.InvoiceDate.ToString("dd-MM-yyyy")
+                            FechaExpedicionFactura = FormatDate(invoice.InvoiceDate)
                         },
 
                         NombreRazonEmisor = enterprise.Name,
@@ -102,14 +106,14 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
                                 // Como el WSDL lo modela con "Item" (puede ser CalificacionOperacionType o OperacionExentaType),
                                 // hacemos:
                                 Item = CalificacionOperacionType.S1,
-                                TipoImpositivo = i.Tax!.Percentatge.ToString("F2"),
-                                BaseImponibleOimporteNoSujeto = i.BaseAmount.ToString("F2"),
-                                CuotaRepercutida = i.TaxAmount.ToString("F2")
+                                TipoImpositivo = FormatNumberWithLeadingZeros(((int) i.Tax!.Percentatge), 2),
+                                BaseImponibleOimporteNoSujeto = FormatDecimal(i.BaseAmount),
+                                CuotaRepercutida = FormatDecimal(i.TaxAmount)
                             }).ToArray()
                         ,
 
-                        CuotaTotal = invoice.TaxAmount.ToString("F2"),
-                        ImporteTotal = (invoice.NetAmount + invoice.TaxAmount).ToString("F2"),
+                        CuotaTotal = FormatDecimal(invoice.TaxAmount),
+                        ImporteTotal = FormatDecimal(invoice.BaseAmount + invoice.TaxAmount),
 
                         // Encadenamiento con un <PrimerRegistro>S</PrimerRegistro>
                         Encadenamiento = new RegistroFacturacionAltaTypeEncadenamiento
@@ -125,17 +129,17 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
                         {
                             NombreRazon = enterprise.Name,
                             // De nuevo, en esta clase para el NIF se usa la propiedad 'Item'
-                            Item = invoice.Site !.VatNumber,
-                            NombreSistemaInformatico = enterprise.Description,
-                            IdSistemaInformatico = "10",
-                            Version = "1.0",
+                            Item = invoice.Site!.VatNumber,
+                            NombreSistemaInformatico = "Zenith",
+                            IdSistemaInformatico = "01",
+                            Version = "1.0.0",
                             NumeroInstalacion = "1",
-                            TipoUsoPosibleSoloVerifactu = SiNoType.S,
+                            TipoUsoPosibleSoloVerifactu = SiNoType.N,
                             TipoUsoPosibleMultiOT = SiNoType.N,
                             IndicadorMultiplesOT = SiNoType.N
                         },
 
-                        FechaHoraHusoGenRegistro = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ssK"),
+                        FechaHoraHusoGenRegistro = FormatDateTime(DateTime.Now),
 
                         TipoHuella = TipoHuellaType.Item01,
                     }
@@ -149,6 +153,21 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
         {
             alta.Huella = GeneradorHuella.GenerarHuellaRegistroAlta(alta, request.PreviousHash);
             response.Hash = alta.Huella;
+
+            if (request.PreviousNotificatedInvoice == null)
+            {
+                alta.Encadenamiento.Item = PrimerRegistroCadenaType.S; // Primer registro
+            }
+            else
+            {
+                alta.Encadenamiento.Item = new EncadenamientoFacturaAnteriorType
+                {
+                    NumSerieFactura = request.PreviousNotificatedInvoice.InvoiceNumber,
+                    FechaExpedicionFactura = FormatDate(request.PreviousNotificatedInvoice.InvoiceDate),
+                    IDEmisorFactura = request.PreviousNotificatedInvoice.VatNumber,
+                    Huella = request.PreviousHash
+                };
+            }
         }
 
         // Enviar factura al sistema Verifactu
@@ -156,7 +175,9 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
 
         response.XmlRequest = SerializeToXml(peticion);
         response.XmlResponse = SerializeToXml(respuesta.RespuestaRegFactuSistemaFacturacion);
-        response.Success = respuesta.RespuestaRegFactuSistemaFacturacion.EstadoEnvio == EstadoEnvioType.Correcto;
+        response.Success = respuesta.RespuestaRegFactuSistemaFacturacion.EstadoEnvio == EstadoEnvioType.Correcto ||
+                           respuesta.RespuestaRegFactuSistemaFacturacion.EstadoEnvio == EstadoEnvioType.ParcialmenteCorrecto;
+        response.Timestamp = DateTime.Now;
 
         if (!response.Success)
         {
@@ -165,6 +186,26 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
         }
 
         return response;
+    }
+
+    private static string FormatDateTime(DateTime dateTime)
+    {
+        return dateTime.ToString("yyyy-MM-ddTHH:mm:ssK");
+    }
+
+    private static string FormatDate(DateTime date)
+    {
+        return date.ToString("dd-MM-yyyy");
+    }
+
+    private static string FormatNumberWithLeadingZeros(int number, int totalDigits)
+    {
+        return number.ToString().PadLeft(totalDigits, '0');
+    }
+
+    private static string FormatDecimal(decimal value)
+    {
+        return value.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
     }
 
     private static string SerializeToXml<T>(T obj)

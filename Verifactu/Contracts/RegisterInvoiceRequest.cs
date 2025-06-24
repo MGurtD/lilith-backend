@@ -7,5 +7,6 @@ public class RegisterInvoiceRequest
 {
     public required SalesInvoice SalesInvoice { get; set; }
     public required Enterprise Enterprise { get; set; }
-    public string? PreviousHash { get; set; } = null;
+    public SalesInvoice? PreviousNotificatedInvoice { get; set; } = null;
+    public string? PreviousHash { get; set; } = null;   
 }

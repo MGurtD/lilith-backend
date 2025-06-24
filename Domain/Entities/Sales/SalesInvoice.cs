@@ -19,6 +19,8 @@ namespace Domain.Entities.Sales
         public Guid? InvoiceSerieId { get; set; }
         public Guid? StatusId { get; set; }
         public Status? Status { get; set; }
+        public Guid? IntegrationStatusId { get; set; }
+        public Status? IntegrationStatus { get; set; }
         public PaymentMethod? PaymentMethod { get; set; }
         public Guid PaymentMethodId { get; set; }
         public SalesInvoice? ParentSalesInvoice { get; set; }

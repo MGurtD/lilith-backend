@@ -10,35 +10,27 @@ namespace Api.Controllers.Sales
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class SalesInvoiceController : ControllerBase
+    public class SalesInvoiceController(ISalesInvoiceService service) : ControllerBase
     {
-        private readonly ISalesInvoiceService _service;
-        private readonly IUnitOfWork _unitOfWork;
-
-        public SalesInvoiceController(ISalesInvoiceService service, IUnitOfWork unitOfWork)
-        {
-            _service = service;
-            _unitOfWork = unitOfWork;
-        }        
-
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create(CreateHeaderRequest createInvoiceRequest)
         {
-            var response = await _service.Create(createInvoiceRequest);
+            var response = await service.Create(createInvoiceRequest);
 
             if (response.Result)
                 return Ok(response);
             else
                 return BadRequest(response);
         }
+
         [HttpPost("Rectificative")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateRectificative([FromBody] CreateRectificativeInvoiceRequest dto)
         {
-            var response = await _service.CreateRectificative(dto);
+            var response = await service.CreateRectificative(dto);
 
             if (response.Result)
                 return Ok(response);
@@ -49,7 +41,7 @@ namespace Api.Controllers.Sales
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var invoice = await _service.GetById(id);
+            var invoice = await service.GetById(id);
             if (invoice == null)
                 return NotFound();
             else 
@@ -58,7 +50,7 @@ namespace Api.Controllers.Sales
         [HttpGet("Header/{id:guid}")]
         public async Task<IActionResult> GetHeaderById(Guid id)
         {
-            var invoice = await _service.GetById(id);
+            var invoice = await service.GetById(id);
             if (invoice == null)
                 return NotFound();
             else
@@ -68,7 +60,7 @@ namespace Api.Controllers.Sales
         [HttpGet("Report/{id:guid}")]
         public async Task<IActionResult> GetInvoiceForReport(Guid id)
         {
-            var salesOrders = await _service.GetDtoForReportingById(id);
+            var salesOrders = await service.GetDtoForReportingById(id);
             if (salesOrders is null) return NotFound();
 
             return Ok(salesOrders);
@@ -79,15 +71,15 @@ namespace Api.Controllers.Sales
         {
             IEnumerable<SalesInvoice> invoices;
             if (exerciceId.HasValue)
-                invoices = _service.GetByExercise(exerciceId.Value);
+                invoices = service.GetByExercise(exerciceId.Value);
             else if (customerId.HasValue)
-                invoices = _service.GetBetweenDatesAndCustomer(startTime, endTime, customerId.Value);
+                invoices = service.GetBetweenDatesAndCustomer(startTime, endTime, customerId.Value);
             else if (statusId.HasValue)
-                invoices = _service.GetBetweenDatesAndStatus(startTime, endTime, statusId.Value);
+                invoices = service.GetBetweenDatesAndStatus(startTime, endTime, statusId.Value);
             else if (excludeStatusId.HasValue)
-                invoices = _service.GetBetweenDatesAndExcludeStatus(startTime, endTime, excludeStatusId.Value);
+                invoices = service.GetBetweenDatesAndExcludeStatus(startTime, endTime, excludeStatusId.Value);
             else
-                invoices = _service.GetBetweenDates(startTime, endTime);
+                invoices = service.GetBetweenDates(startTime, endTime);
 
             if (invoices != null) return Ok(invoices.OrderByDescending(e => e.InvoiceNumber));
             else return BadRequest();
@@ -98,7 +90,7 @@ namespace Api.Controllers.Sales
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Update(Guid id, [FromBody] SalesInvoice invoice)
         {
-            var response = await _service.Update(invoice);
+            var response = await service.Update(invoice);
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
@@ -112,7 +104,7 @@ namespace Api.Controllers.Sales
         {
             if (!ModelState.IsValid) return BadRequest();
 
-            var response = await _service.ChangeStatuses(request);
+            var response = await service.ChangeStatuses(request);
             if (response.Result)
                 return Ok();
             else
@@ -124,32 +116,20 @@ namespace Api.Controllers.Sales
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Remove(Guid id)
         {
-            var response = await _service.Remove(id);
+            var response = await service.Remove(id);
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
         }
 
-        #region Details
-        [HttpPost("Detail")]
-        [SwaggerOperation("AddSalesInvoiceDetail")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddSalesInvoiceDetail(SalesInvoiceDetail detail)
-        {
-            var response = await _service.AddDetail(detail);
-
-            if (response.Result) return Ok();
-            else return BadRequest(response.Errors);
-        }
-
+        #region DeliveryNote
         [HttpPost("{id:guid}/AddDeliveryNote")]
         [SwaggerOperation("SalesInvoiceAddDeliveryNote")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddDetailsFromDeliveryNote(Guid id, [FromBody] DeliveryNote deliveryNote)
         {
-            var response = await _service.AddDeliveryNote(id, deliveryNote);
+            var response = await service.AddDeliveryNote(id, deliveryNote);
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
@@ -161,11 +141,38 @@ namespace Api.Controllers.Sales
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RemoveOrder(Guid id, [FromBody] DeliveryNote deliveryNote)
         {
-            var response = await _service.RemoveDeliveryNote(id, deliveryNote);
+            var response = await service.RemoveDeliveryNote(id, deliveryNote);
 
             if (response.Result) return Ok(response);
             else return BadRequest(response);
         }
+        #endregion
+
+        #region Verifactu
+        [HttpPost("{id:guid}/SendToVerifactu")]
+        [SwaggerOperation("SalesInvoiceSendToVerifactu")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> SendToVerifactu(Guid id)
+        {
+            var response = await service.SendToVerifactu(id);
+            if (response.Result) return Ok(response);
+            else return BadRequest(response.Errors);
+        }
+        #endregion
+
+        #region Details
+        [HttpPost("Detail")]
+        [SwaggerOperation("AddSalesInvoiceDetail")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddSalesInvoiceDetail(SalesInvoiceDetail detail)
+        {
+            var response = await service.AddDetail(detail);
+
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
+        }        
 
         [HttpPut("Detail/{id:guid}")]
         [SwaggerOperation("SalesInvoiceDetailUpdate")]
@@ -173,7 +180,7 @@ namespace Api.Controllers.Sales
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateDetail(Guid id, [FromBody] SalesInvoiceDetail detail)
         {
-            var response = await _service.UpdateDetail(detail);
+            var response = await service.UpdateDetail(detail);
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
@@ -185,12 +192,12 @@ namespace Api.Controllers.Sales
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RemoveDetail(Guid id)
         {
-            var response = await _service.RemoveDetail(id);
+            var response = await service.RemoveDetail(id);
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
         }
-        #endregion
+        #endregion        
 
     }
 }

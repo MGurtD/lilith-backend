@@ -45,5 +45,12 @@ namespace Infrastructure.Persistance.Repositories.Purchase
 
             return lifecycle.Statuses.FirstOrDefault(s => s.Name == name);
         }
+
+        public async Task<Guid?> GetInitialStatusByName(string name)
+        {
+            var lifecycle = await GetByName(name);
+            if (lifecycle == null || lifecycle.Statuses == null) return null;
+            return lifecycle.InitialStatusId;
+        }
     }
 }

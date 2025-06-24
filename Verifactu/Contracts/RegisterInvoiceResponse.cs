@@ -13,4 +13,5 @@ public class RegisterInvoiceResponse
     public string Hash { get; set; } = string.Empty;
     public string XmlRequest { get; set; } = string.Empty;
     public string XmlResponse { get; set; } = string.Empty;
+    public DateTime Timestamp { get; set; }
 }

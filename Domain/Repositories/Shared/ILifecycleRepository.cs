@@ -9,5 +9,6 @@ namespace Application.Persistance.Repositories
 
         Task<Lifecycle?> GetByName(string code);
         Task<Status?> GetStatusByName(string lifecycleCode, string statusCode);
+        Task<Guid?> GetInitialStatusByName(string name);
     }
 }

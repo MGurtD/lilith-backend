@@ -1,4 +1,5 @@
 ﻿using SistemaFacturacion;
+using System.Drawing;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -51,27 +52,19 @@ public static class GeneradorHuella
     {
         ArgumentNullException.ThrowIfNull(msg);
 
-        try
+        using (SHA256 sha256 = SHA256.Create())
         {
-            // Obtener los bytes UTF-8 de la cadena
             byte[] bytes = Encoding.UTF8.GetBytes(msg);
-            // Calcular SHA-256 de forma estática (disponible en .NET Core / .NET 5+)
-            byte[] hashBytes = SHA256.HashData(bytes);
+            byte[] hashBytes = sha256.ComputeHash(bytes);
 
-            // Convertir a hexadecimal en MAYÚSCULAS
-            var sb = new StringBuilder(hashBytes.Length * 2);
+            // Convertir el hash a una cadena hexadecimal
+            StringBuilder hash = new StringBuilder();
             foreach (byte b in hashBytes)
             {
-                // "X2" -> 2 dígitos hex en MAYÚSCULAS
-                sb.Append(b.ToString("X2"));
+                hash.Append(b.ToString("x2"));
             }
 
-            // La longitud resultante siempre será 64 caracteres (32 bytes * 2 dígitos)
-            return sb.ToString();
-        }
-        catch (Exception e)
-        {
-            throw new ArgumentException("Error al generar la huella SHA", e);
+            return hash.ToString().ToUpper();
         }
     }
 
