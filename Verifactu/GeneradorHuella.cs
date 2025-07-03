@@ -14,6 +14,7 @@ public static class GeneradorHuella
     /// </summary>
     public static string GenerarHuellaRegistroAlta(RegistroFacturacionAltaType alta, string? huellaAnterior)
     {
+        //IDEmisorFactura=B09680521&amp;NumSerieFactura=25077&amp;FechaExpedicionFactura=03-07-2025&amp;TipoFactura=F1&amp;CuotaTotal=33.60&amp;ImporteTotal=193.60&amp;Huella=27A8309B67AED06176F80F204BB25F59874806A4CCE9EB475F31F040505A2745&amp;FechaHoraHusoGenRegistro=2025-07-03T18:28:08+02:00
         var sb = new StringBuilder();
         sb
             .Append(GetValorCampo("IDEmisorFactura", alta.IDFactura.IDEmisorFactura, true))
@@ -23,9 +24,10 @@ public static class GeneradorHuella
             .Append(GetValorCampo("CuotaTotal", alta.CuotaTotal, true))
             .Append(GetValorCampo("ImporteTotal", alta.ImporteTotal, true))
             .Append(GetValorCampo("Huella", huellaAnterior, true))
-            .Append(GetValorCampo("FechaHoraUsoRegistro", alta.FechaHoraHusoGenRegistro, false));
+            .Append(GetValorCampo("FechaHoraHusoGenRegistro", alta.FechaHoraHusoGenRegistro, false));
 
-        return GetHashVerifFactu(sb.ToString());
+        var stringToHash = sb.ToString();
+        return GetHashVerifFactu(stringToHash);
     }
 
     /// <summary>
@@ -39,7 +41,7 @@ public static class GeneradorHuella
             .Append(GetValorCampo("NumSerieFacturaAnulada", anulacion.IDFactura.NumSerieFacturaAnulada, true))
             .Append(GetValorCampo("FechaExpedicionFacturaAnulada", anulacion.IDFactura.FechaExpedicionFacturaAnulada, true))
             .Append(GetValorCampo("Huella", huellaAnterior, true))
-            .Append(GetValorCampo("FechaHoraUsoRegistro", anulacion.FechaHoraHusoGenRegistro, false));
+            .Append(GetValorCampo("FechaHoraHusoGenRegistro", anulacion.FechaHoraHusoGenRegistro, false));
 
         return GetHashVerifFactu(sb.ToString());
     }
