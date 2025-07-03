@@ -684,7 +684,8 @@ namespace Api.Services.Sales
                 Request = response.XmlRequest,
                 Response = response.XmlResponse,
                 SalesInvoiceId = invoice.Id,
-                Status = response.Success,
+                Success = response.Success,
+                Status = response.StatusRegister,
                 TimestampResponse = response.Timestamp
             };
             await CreateVerifactuRequest(verifactuRequest);
@@ -713,6 +714,11 @@ namespace Api.Services.Sales
             return unitOfWork.SalesInvoices.GetPendingToIntegrate(salesInvoiceLifeCycle.InitialStatusId.Value);
         }
 
+        public async Task<IEnumerable<SalesInvoiceVerifactuRequest>> GetSalesInvoiceRequests(Guid invoiceId)
+        {
+            return await unitOfWork.VerifactuRequests.FindAsync(i => i.SalesInvoiceId == invoiceId);
+        }
+
         public async Task<GenericResponse> CreateVerifactuRequest(SalesInvoiceVerifactuRequest verifactuRequest)
         {
             await unitOfWork.VerifactuRequests.Add(verifactuRequest);
@@ -721,11 +727,11 @@ namespace Api.Services.Sales
 
         public SalesInvoiceVerifactuRequest? GetLastSuccessfullRequest()
         {
-            var lastSuccessfullRequest = unitOfWork.VerifactuRequests.Find(vr => vr.Status == true)
+            var lastSuccessfullRequest = unitOfWork.VerifactuRequests.Find(vr => vr.Success == true)
                 .OrderByDescending(vr => vr.CreatedOn)
                 .FirstOrDefault();
             return lastSuccessfullRequest;
-        }
+        }        
 
         #endregion
 

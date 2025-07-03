@@ -159,6 +159,7 @@ namespace Api.Controllers.Sales
             if (response.Result) return Ok(response);
             else return BadRequest(response.Errors);
         }
+                
         #endregion
 
         #region Details

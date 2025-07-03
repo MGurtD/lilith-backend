@@ -7,6 +7,7 @@ public class SalesInvoiceVerifactuRequest : Entity
     public required string Hash { get; set; }
     public required string Request { get; set; }
     public string? Response { get; set; }
-    public bool? Status { get; set; }
+    public bool Success { get; set; }
+    public string? Status { get; set; }
     public DateTime? TimestampResponse { get; set; }
 }

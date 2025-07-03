@@ -5,14 +5,15 @@ public class AppSettings
     public ConnectionStringsSettings ConnectionStrings { get; set; } = new();
     public JwtConfigSettings JwtConfig { get; set; } = new();
     public FileManagmentSettings FileManagment { get; set; } = new();
-    public VerifactuSettings? Verifactu { get; set; } = new();
+    public VerifactuSettings? Verifactu { get; set; }
 
     public void Validate()
     {
         ConnectionStrings.Validate();
         JwtConfig.Validate();
         FileManagment.Validate();
-        Verifactu?.Validate();
+        if (Verifactu != null)
+            Verifactu?.Validate();
     }
 }
 

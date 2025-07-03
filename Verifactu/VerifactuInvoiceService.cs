@@ -1,5 +1,7 @@
-﻿using SistemaFacturacion;
+﻿using Domain.Entities.Production;
+using SistemaFacturacion;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml.Serialization;
 using Verifactu.Contracts;
@@ -42,6 +44,66 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
         var binding = (System.ServiceModel.BasicHttpBinding)_client.Endpoint.Binding;
         binding.Security.Mode = System.ServiceModel.BasicHttpSecurityMode.Transport;
         binding.Security.Transport.ClientCredentialType = System.ServiceModel.HttpClientCredentialType.Certificate;
+    }
+
+    public async Task<FindInvoicesResponse> FindInvoices(FindInvoicesRequest inputRequest)
+    {
+        if (!Enum.TryParse<TipoPeriodoType>($"Item{inputRequest.Month:D2}", out var periodoEnum))
+            throw new ArgumentException($"Mes inválido para el periodo: {inputRequest.Month}");
+        var periodo = periodoEnum;
+        var desde = new DateTime(inputRequest.Year, inputRequest.Month, 1);
+        var hasta = new DateTime(inputRequest.Year, inputRequest.Month, DateTime.DaysInMonth(inputRequest.Year, inputRequest.Month));
+
+        var request = new ConsultaFactuSistemaFacturacionType()
+        {
+            Cabecera = new CabeceraConsultaSf()
+            {
+                IDVersion = VersionType.Item10, // "1.0" de tu XML
+                Item = new ObligadoEmisionConsultaType()
+                {
+                    NombreRazon = inputRequest.EnterpriseName,
+                    NIF = inputRequest.VatNumber
+                }
+            },
+            FiltroConsulta = new LRFiltroRegFacturacionType()
+            {
+                PeriodoImputacion = new PeriodoImputacionType()
+                {
+                    Ejercicio = inputRequest.Year.ToString(),
+                    Periodo = periodo
+                },
+                FechaExpedicionFactura = new FechaExpedicionConsultaType()
+                {
+                    Item = new RangoFechaExpedicionType()
+                    {
+                        Desde = FormatDate(desde),
+                        Hasta = FormatDate(hasta)
+                    }
+                },
+            }
+        };
+
+        var response = await _client.ConsultaFactuSistemaFacturacionAsync(request);
+        if (response.RespuestaConsultaFactuSistemaFacturacion.ResultadoConsulta == ResultadoConsultaType.SinDatos)
+        {
+            return new FindInvoicesResponse();
+        }
+        else
+        {
+            var invoices = response.RespuestaConsultaFactuSistemaFacturacion.RegistroRespuestaConsultaFactuSistemaFacturacion
+                .Select(r => new Factura
+                {
+                    IDEmisorFactura = r.IDFactura.IDEmisorFactura,
+                    NumSerieFactura = r.IDFactura.NumSerieFactura,
+                    FechaExpedicionFactura = r.IDFactura.FechaExpedicionFactura,
+                    ImporteTotal = r.DatosRegistroFacturacion.ImporteTotal,
+                    TipoFactura = r.DatosRegistroFacturacion.TipoFactura.ToString(),
+                    CuotaTotal = r.DatosRegistroFacturacion.CuotaTotal,
+                    FechaHoraUsoRegistro = r.DatosRegistroFacturacion.FechaHoraHusoGenRegistro,
+                    Huella = r.DatosRegistroFacturacion.Huella
+                }).ToList();
+            return new FindInvoicesResponse { Invoices = invoices };
+        }
     }
 
     public async Task<RegisterInvoiceResponse> RegisterInvoice(RegisterInvoiceRequest request)
@@ -116,13 +178,7 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
                         ImporteTotal = FormatDecimal(invoice.BaseAmount + invoice.TaxAmount),
 
                         // Encadenamiento con un <PrimerRegistro>S</PrimerRegistro>
-                        Encadenamiento = new RegistroFacturacionAltaTypeEncadenamiento
-                        {
-                            // El WSDL define una propiedad "Item"
-                            // que puede ser "PrimerRegistro" o "RegistroAnterior".
-                            // "PrimerRegistro" se mapea al enum "PrimerRegistroCadenaType.S"
-                            Item = PrimerRegistroCadenaType.S
-                        },
+                        Encadenamiento = new RegistroFacturacionAltaTypeEncadenamiento(),
 
                         // SistemaInformatico
                         SistemaInformatico = new SistemaInformaticoType
@@ -173,11 +229,12 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
         // Enviar factura al sistema Verifactu
         var respuesta = await _client!.RegFactuSistemaFacturacionAsync(peticion);
 
+        response.Timestamp = DateTime.Now;
         response.XmlRequest = SerializeToXml(peticion);
         response.XmlResponse = SerializeToXml(respuesta.RespuestaRegFactuSistemaFacturacion);
-        response.Success = respuesta.RespuestaRegFactuSistemaFacturacion.EstadoEnvio == EstadoEnvioType.Correcto ||
-                           respuesta.RespuestaRegFactuSistemaFacturacion.EstadoEnvio == EstadoEnvioType.ParcialmenteCorrecto;
-        response.Timestamp = DateTime.Now;
+        response.Success = respuesta.RespuestaRegFactuSistemaFacturacion.RespuestaLinea[0].EstadoRegistro == EstadoRegistroType.Correcto ||
+                           respuesta.RespuestaRegFactuSistemaFacturacion.RespuestaLinea[0].EstadoRegistro == EstadoRegistroType.AceptadoConErrores;
+        response.StatusRegister = respuesta.RespuestaRegFactuSistemaFacturacion.RespuestaLinea[0].EstadoRegistro.ToString();
 
         if (!response.Success)
         {
@@ -186,6 +243,34 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
         }
 
         return response;
+    }
+    
+    public async Task CancelInvoice(RegisterInvoiceRequest request)
+    {
+        //var response;  TODO > Crear DTOs;
+        var enterprise = request.Enterprise;
+        var invoice = request.SalesInvoice;
+
+        var peticion = new RegFactuSistemaFacturacion
+        {
+            Cabecera = new CabeceraType
+            {
+                ObligadoEmision = new PersonaFisicaJuridicaESType
+                {
+                    NombreRazon = enterprise.Name,
+                    NIF = invoice.Site!.VatNumber
+                }
+            },
+
+            RegistroFactura =
+            []
+        };
+
+        // Generar hash de la factura
+
+        // Enviar petición de cancelación al sistema Verifactu
+
+        // Devolver respuesta
     }
 
     private static string FormatDateTime(DateTime dateTime)

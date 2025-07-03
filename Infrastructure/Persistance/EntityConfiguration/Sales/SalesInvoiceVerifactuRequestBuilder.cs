@@ -32,6 +32,15 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .Property(b => b.TimestampResponse)
                 .IsRequired()
                 .HasColumnType("timestamp without time zone");
+            builder
+                .Property(b => b.Success)
+                .IsRequired()
+                .HasColumnType("boolean");
+            builder.
+                Property(b => b.Status)
+                .IsRequired()
+                .HasColumnType("varchar")
+                .HasMaxLength(512);
 
             builder
                 .HasKey(b => b.Id)
