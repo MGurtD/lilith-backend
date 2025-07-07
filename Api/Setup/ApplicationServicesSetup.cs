@@ -2,6 +2,7 @@
 using Api.Services.Production;
 using Api.Services.Purchase;
 using Api.Services.Sales;
+using Api.Services.Verifactu;
 using Api.Services.Warehouse;
 using Application.Persistance;
 using Application.Production.Warehouse;
@@ -36,6 +37,7 @@ public static class ApplicationServicesSetup
         services.AddScoped<IMetricsService, MetricsService>();
         services.AddScoped<IStockService, StockService>();
         services.AddScoped<IStockMovementService, StockMovementService>();
+        services.AddScoped<IVerifactuIntegrationService, VerifactuIntegrationService>();
 
         services.AddHostedService<BudgetBackgroundService>();
         services.AddHostedService<SalesInvoiceToVerifactuBackgroundService>();

@@ -32,11 +32,4 @@ public interface ISalesInvoiceService
     Task<GenericResponse> UpdateDetail(SalesInvoiceDetail detail);
     Task<GenericResponse> RemoveDetail(Guid id);
 
-    Task<GenericResponse> SendToVerifactu(Guid id);
-    Task<GenericResponse> RemoveFromVerifactu(Guid id);
-    Task<IEnumerable<SalesInvoice>> GetInvoicesPendingIntegrationWithVerifactu();
-    Task<IEnumerable<SalesInvoiceVerifactuRequest>> GetSalesInvoiceRequests(Guid invoiceId);
-    SalesInvoiceVerifactuRequest? GetLastSuccessfullRequest();
-    Task<GenericResponse> CreateVerifactuRequest(SalesInvoiceVerifactuRequest verifactuRequest);
-
 }

@@ -1,6 +1,5 @@
 ﻿using Application.Contract;
 using Application.Contracts.Sales;
-using Application.Persistance;
 using Application.Services.Sales;
 using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
@@ -146,20 +145,6 @@ namespace Api.Controllers.Sales
             if (response.Result) return Ok(response);
             else return BadRequest(response);
         }
-        #endregion
-
-        #region Verifactu
-        [HttpPost("{id:guid}/SendToVerifactu")]
-        [SwaggerOperation("SalesInvoiceSendToVerifactu")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> SendToVerifactu(Guid id)
-        {
-            var response = await service.SendToVerifactu(id);
-            if (response.Result) return Ok(response);
-            else return BadRequest(response.Errors);
-        }
-                
         #endregion
 
         #region Details

@@ -7,9 +7,6 @@ using Application.Services.Sales;
 using Domain.Entities;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
-using Verifactu.Contracts;
-using Verifactu;
-using Microsoft.Extensions.Options;
 
 namespace Api.Services.Sales
 {
@@ -20,12 +17,11 @@ namespace Api.Services.Sales
         internal Site Site;
     }
 
-    public class SalesInvoiceService(IUnitOfWork unitOfWork, 
-        IDueDateService dueDateService, 
-        ISalesOrderService salesOrderService, 
-        IDeliveryNoteService deliveryNoteService, 
-        IExerciseService exerciseService,
-        IOptions<AppSettings> settings) : ISalesInvoiceService
+    public class SalesInvoiceService(IUnitOfWork unitOfWork,
+        IDueDateService dueDateService,
+        ISalesOrderService salesOrderService,
+        IDeliveryNoteService deliveryNoteService,
+        IExerciseService exerciseService) : ISalesInvoiceService
     {
         private readonly string LifecycleName = "SalesInvoice";
 
@@ -470,96 +466,6 @@ namespace Api.Services.Sales
         }
 
         #region Details
-        public async Task<GenericResponse> AddDeliveryNote(Guid id, DeliveryNote deliveryNote)
-        {
-            var invoice = unitOfWork.SalesInvoices.Find(i => i.Id == id).FirstOrDefault();
-            if (invoice == null) return new GenericResponse(false, $"La factura amb ID {id} no existeix");
-            var tax = unitOfWork.Taxes.Find(t => t.Percentatge == 21).FirstOrDefault();
-            if (tax == null) return new GenericResponse(false, $"No existeix l'import IVA 21%");
-
-            // Crear les lines de la factura segons les línes de l'albarà
-            var deliveryNoteDetails = unitOfWork.DeliveryNotes.Details.Find(d => d.DeliveryNoteId == deliveryNote.Id);
-            var invoiceDetails = new List<SalesInvoiceDetail>();
-            foreach (var deliveryNoteDetail in deliveryNoteDetails.ToList())
-            {
-                var salesInvoiceDetail = new SalesInvoiceDetail
-                {
-                    SalesInvoiceId = id
-                };
-
-                salesInvoiceDetail.SetDeliveryNoteDetail(deliveryNoteDetail);
-                if (salesInvoiceDetail.TaxId == Guid.Empty)
-                {
-                    var reference = await unitOfWork.References.Get(deliveryNoteDetail.ReferenceId);
-                    if (reference != null)
-                    {
-                        salesInvoiceDetail.TaxId = reference.TaxId ?? tax.Id;
-                    }
-                    else
-                    {
-                        salesInvoiceDetail.TaxId = tax.Id;
-                    }
-                }
-
-                invoiceDetails.Add(salesInvoiceDetail);
-            }
-            await unitOfWork.SalesInvoices.InvoiceDetails.AddRange(invoiceDetails);
-
-            // Actualizar taules relacionades
-            await UpdateImportsAndHeaderAmounts(invoice);
-
-            // Associar la factura per evitar la selecció de l'albarà d'entrega a altre factures
-            deliveryNote.SalesInvoiceId = id;
-            await deliveryNoteService.Update(deliveryNote);
-
-            //Marcar la comanda com a comanda facturada
-            //Recuperar la comanda 
-            var salesOrder = unitOfWork.SalesOrderHeaders.Find(q => q.DeliveryNoteId == deliveryNote.Id).FirstOrDefault();
-
-            var status = await unitOfWork.Lifecycles.GetStatusByName("SalesOrder", "Comanda Facturada");
-            if (status == null || status.Disabled)
-            {
-                return new GenericResponse(false, $"L'estat de factura amb ID {status.Name} no existeix o está deshabilitat");
-            }
-            salesOrder.StatusId = status.Id;
-            await unitOfWork.SalesOrderHeaders.Update(salesOrder);
-
-
-
-            return new GenericResponse(true, invoiceDetails);
-        }
-
-        public async Task<GenericResponse> RemoveDeliveryNote(Guid id, DeliveryNote deliveryNote)
-        {
-            var invoice = unitOfWork.SalesInvoices.Find(i => i.Id == id).FirstOrDefault();
-            if (invoice == null) return new GenericResponse(false, $"La factura amb ID {id} no existeix");
-            var detailIds = unitOfWork.DeliveryNotes.Details.Find(d => d.DeliveryNoteId == deliveryNote.Id).Select(d => d.Id).ToList();
-
-            var deliveryNoteDetails = unitOfWork.SalesInvoices.InvoiceDetails.Find(d => d.DeliveryNoteDetailId != null && detailIds.Contains(d.DeliveryNoteDetailId.Value));
-            // Eliminar els detalls associats a l'albarà
-            await unitOfWork.SalesInvoices.InvoiceDetails.RemoveRange(deliveryNoteDetails);
-
-            // Actualizar taules relacionades
-            await UpdateImportsAndHeaderAmounts(invoice);
-
-            // Alliberar l'albarà perquè sigui assignable de nou a una factura
-            deliveryNote.SalesInvoiceId = null;
-            await deliveryNoteService.Update(deliveryNote);
-
-            var salesOrder = unitOfWork.SalesOrderHeaders.Find(q => q.DeliveryNoteId == deliveryNote.Id).FirstOrDefault();
-
-            var status = await unitOfWork.Lifecycles.GetStatusByName("SalesOrder", "Comanda Servida");
-            if (status == null || status.Disabled)
-            {
-                return new GenericResponse(false, $"L'estat de factura amb ID {status.Name} no existeix o está deshabilitat");
-            }
-            salesOrder.StatusId = status.Id;
-            await unitOfWork.SalesOrderHeaders.Update(salesOrder);
-
-
-            return new GenericResponse(true, deliveryNoteDetails);
-        }
-
         public async Task<GenericResponse> AddDetail(SalesInvoiceDetail invoiceDetail)
         {
             var invoice = await unitOfWork.SalesInvoices.Get(invoiceDetail.SalesInvoiceId);
@@ -644,96 +550,102 @@ namespace Api.Services.Sales
 
         #endregion
 
-        #region Verifactu
-
-        public async Task<GenericResponse> SendToVerifactu(Guid id)
+        #region DeliveryNotes
+        public async Task<GenericResponse> AddDeliveryNote(Guid id, DeliveryNote deliveryNote)
         {
-            var invoice = await unitOfWork.SalesInvoices.Get(id);
+            var invoice = unitOfWork.SalesInvoices.Find(i => i.Id == id).FirstOrDefault();
             if (invoice == null) return new GenericResponse(false, $"La factura amb ID {id} no existeix");
-            if (invoice.SalesInvoiceDetails.Count == 0)
-                return new GenericResponse(false, "La factura no té detalls. No es pot enviar a Verifactu");
+            var tax = unitOfWork.Taxes.Find(t => t.Percentatge == 21).FirstOrDefault();
+            if (tax == null) return new GenericResponse(false, $"No existeix l'import IVA 21%");
 
-            var enterprise = (await unitOfWork.Enterprises.FindAsync(e => !e.Disabled)).FirstOrDefault();
-            if (enterprise == null)
-                return new GenericResponse(false, "No s'ha trobat l'empresa per enviar la factura a Verifactu");
-
-            // Recuperar l'última factura enviada per l'encadenament
-            var lastSuccessfullRequest = GetLastSuccessfullRequest();
-            var lastSuccessfullInvoice = lastSuccessfullRequest != null
-                ? await GetHeaderById(lastSuccessfullRequest.SalesInvoiceId)
-                : null;
-
-            // Construir la petició
-            var request = new RegisterInvoiceRequest
+            // Crear les lines de la factura segons les línes de l'albarà
+            var deliveryNoteDetails = unitOfWork.DeliveryNotes.Details.Find(d => d.DeliveryNoteId == deliveryNote.Id);
+            var invoiceDetails = new List<SalesInvoiceDetail>();
+            foreach (var deliveryNoteDetail in deliveryNoteDetails.ToList())
             {
-                Enterprise = enterprise,
-                SalesInvoice = invoice,
-                PreviousNotificatedInvoice = lastSuccessfullInvoice,
-                PreviousHash = lastSuccessfullRequest?.Hash
-            };
+                var salesInvoiceDetail = new SalesInvoiceDetail
+                {
+                    SalesInvoiceId = id
+                };
 
-            // Enviar la factura a Verifactu
-            var verifactuSettings = settings.Value.Verifactu!;
-            var verifactuInvoiceService = new VerifactuInvoiceService(verifactuSettings.Url, verifactuSettings.Certificate.Path, verifactuSettings.Certificate.Password);
-            var response = await verifactuInvoiceService.RegisterInvoice(request);
+                salesInvoiceDetail.SetDeliveryNoteDetail(deliveryNoteDetail);
+                if (salesInvoiceDetail.TaxId == Guid.Empty)
+                {
+                    var reference = await unitOfWork.References.Get(deliveryNoteDetail.ReferenceId);
+                    if (reference != null)
+                    {
+                        salesInvoiceDetail.TaxId = reference.TaxId ?? tax.Id;
+                    }
+                    else
+                    {
+                        salesInvoiceDetail.TaxId = tax.Id;
+                    }
+                }
 
-            // Registrar la petición en la base de datos
-            var verifactuRequest = new SalesInvoiceVerifactuRequest
+                invoiceDetails.Add(salesInvoiceDetail);
+            }
+            await unitOfWork.SalesInvoices.InvoiceDetails.AddRange(invoiceDetails);
+
+            // Actualizar taules relacionades
+            await UpdateImportsAndHeaderAmounts(invoice);
+
+            // Associar la factura per evitar la selecció de l'albarà d'entrega a altre factures
+            deliveryNote.SalesInvoiceId = id;
+            await deliveryNoteService.Update(deliveryNote);
+
+            //Marcar la comanda com a comanda facturada
+            //Recuperar la comanda 
+            var salesOrder = unitOfWork.SalesOrderHeaders.Find(q => q.DeliveryNoteId == deliveryNote.Id).FirstOrDefault();
+
+            var status = await unitOfWork.Lifecycles.GetStatusByName("SalesOrder", "Comanda Facturada");
+            if (status == null || status.Disabled)
             {
-                Hash = response.Hash,
-                Request = response.XmlRequest,
-                Response = response.XmlResponse,
-                SalesInvoiceId = invoice.Id,
-                Success = response.Success,
-                Status = response.StatusRegister,
-                TimestampResponse = response.Timestamp
-            };
-            await CreateVerifactuRequest(verifactuRequest);
+                return new GenericResponse(false, $"L'estat de factura amb ID {status?.Name ?? "null"} no existeix o está deshabilitat");
+            }
+            if (salesOrder != null)
+            {
+                salesOrder.StatusId = status.Id;
+                await unitOfWork.SalesOrderHeaders.Update(salesOrder);
+            }
 
-            // Actualitzar l'estat de la integració de la factura
-            invoice.IntegrationStatusId = response.Success
-                ? (await unitOfWork.Lifecycles.GetStatusByName("Verifactu", "OK"))?.Id
-                : (await unitOfWork.Lifecycles.GetStatusByName("Verifactu", "Error"))?.Id;
 
-            return new GenericResponse(true, verifactuRequest);
+
+            return new GenericResponse(true, invoiceDetails);
         }
 
-        public Task<GenericResponse> RemoveFromVerifactu(Guid id)
+        public async Task<GenericResponse> RemoveDeliveryNote(Guid id, DeliveryNote deliveryNote)
         {
-            throw new NotImplementedException("RemoveFromVerifactu is not implemented yet.");
+            var invoice = unitOfWork.SalesInvoices.Find(i => i.Id == id).FirstOrDefault();
+            if (invoice == null) return new GenericResponse(false, $"La factura amb ID {id} no existeix");
+            var detailIds = unitOfWork.DeliveryNotes.Details.Find(d => d.DeliveryNoteId == deliveryNote.Id).Select(d => d.Id).ToList();
+
+            var deliveryNoteDetails = unitOfWork.SalesInvoices.InvoiceDetails.Find(d => d.DeliveryNoteDetailId != null && detailIds.Contains(d.DeliveryNoteDetailId.Value));
+            // Eliminar els detalls associats a l'albarà
+            await unitOfWork.SalesInvoices.InvoiceDetails.RemoveRange(deliveryNoteDetails);
+
+            // Actualizar taules relacionades
+            await UpdateImportsAndHeaderAmounts(invoice);
+
+            // Alliberar l'albarà perquè sigui assignable de nou a una factura
+            deliveryNote.SalesInvoiceId = null;
+            await deliveryNoteService.Update(deliveryNote);
+
+            var salesOrder = unitOfWork.SalesOrderHeaders.Find(q => q.DeliveryNoteId == deliveryNote.Id).FirstOrDefault();
+
+            var status = await unitOfWork.Lifecycles.GetStatusByName("SalesOrder", "Comanda Servida");
+            if (status == null || status.Disabled)
+            {
+                return new GenericResponse(false, $"L'estat de factura amb ID {status?.Name ?? "null"} no existeix o está deshabilitat");
+            }
+            if (salesOrder != null)
+            {
+                salesOrder.StatusId = status.Id;
+                await unitOfWork.SalesOrderHeaders.Update(salesOrder);
+            }
+
+
+            return new GenericResponse(true, deliveryNoteDetails);
         }
-
-        public async Task<IEnumerable<SalesInvoice>> GetInvoicesPendingIntegrationWithVerifactu()
-        {
-            var salesInvoiceLifeCycle = await unitOfWork.Lifecycles.GetByName("Verifactu");
-            if (salesInvoiceLifeCycle == null)
-                throw new Exception("Verifactu lifecycle not found");
-            if (salesInvoiceLifeCycle.InitialStatusId == null)
-                throw new Exception("Verifactu lifecycle does not have a inital status");
-
-            return unitOfWork.SalesInvoices.GetPendingToIntegrate(salesInvoiceLifeCycle.InitialStatusId.Value);
-        }
-
-        public async Task<IEnumerable<SalesInvoiceVerifactuRequest>> GetSalesInvoiceRequests(Guid invoiceId)
-        {
-            return await unitOfWork.VerifactuRequests.FindAsync(i => i.SalesInvoiceId == invoiceId);
-        }
-
-        public async Task<GenericResponse> CreateVerifactuRequest(SalesInvoiceVerifactuRequest verifactuRequest)
-        {
-            await unitOfWork.VerifactuRequests.Add(verifactuRequest);
-            return new GenericResponse(true, verifactuRequest);
-        }
-
-        public SalesInvoiceVerifactuRequest? GetLastSuccessfullRequest()
-        {
-            var lastSuccessfullRequest = unitOfWork.VerifactuRequests.Find(vr => vr.Success == true)
-                .OrderByDescending(vr => vr.CreatedOn)
-                .FirstOrDefault();
-            return lastSuccessfullRequest;
-        }        
-
         #endregion
-
     }
 }
