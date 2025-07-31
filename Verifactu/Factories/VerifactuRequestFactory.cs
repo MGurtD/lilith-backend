@@ -127,4 +127,59 @@ public static class VerifactuRequestFactory
             ]
         };
     }
+
+    /// <summary>
+    /// Crea una solicitud de anulación de factura
+    /// </summary>
+    /// <param name="request">Datos de la solicitud de anulación</param>
+    /// <returns>Solicitud de anulación formateada</returns>
+    public static RegFactuSistemaFacturacion CreateCancelInvoiceRequest(CancelInvoiceRequest request)
+    {
+        var enterprise = request.Enterprise;
+        var invoiceToCancel = request.InvoiceToCancel;
+
+        var registroAnulacion = new RegistroFacturacionAnulacionType
+        {
+            IDVersion = VersionType.Item10,
+            IDFactura = new IDFacturaExpedidaBajaType
+            {
+                IDEmisorFacturaAnulada = invoiceToCancel.Site!.VatNumber,
+                NumSerieFacturaAnulada = invoiceToCancel.InvoiceNumber,
+                FechaExpedicionFacturaAnulada = VerifactuFormatUtils.FormatDate(invoiceToCancel.InvoiceDate)
+            },
+            Encadenamiento = new RegistroFacturacionAnulacionTypeEncadenamiento(),
+            SistemaInformatico = new SistemaInformaticoType
+            {
+                NombreRazon = enterprise.Name,
+                Item = invoiceToCancel.Site!.VatNumber,
+                NombreSistemaInformatico = VerifactuConstants.SystemName,
+                IdSistemaInformatico = VerifactuConstants.SystemId,
+                Version = VerifactuConstants.SystemVersion,
+                NumeroInstalacion = VerifactuConstants.InstallationNumber,
+                TipoUsoPosibleSoloVerifactu = SiNoType.N,
+                TipoUsoPosibleMultiOT = SiNoType.N,
+                IndicadorMultiplesOT = SiNoType.N
+            },
+            FechaHoraHusoGenRegistro = VerifactuFormatUtils.FormatDateTime(DateTime.Now),
+            TipoHuella = TipoHuellaType.Item01
+        };
+
+        return new RegFactuSistemaFacturacion
+        {
+            Cabecera = new CabeceraType
+            {
+                ObligadoEmision = new PersonaFisicaJuridicaESType
+                {
+                    NombreRazon = enterprise.Name,
+                    NIF = invoiceToCancel.Site!.VatNumber
+                }
+            },
+            RegistroFactura = [
+                new RegistroFacturaType
+                {
+                    Item = registroAnulacion
+                }
+            ]
+        };
+    }
 }

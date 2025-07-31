@@ -9,6 +9,7 @@ namespace Verifactu.Utils;
 /// </summary>
 public static class VerifactuFormatUtils
 {
+
     /// <summary>
     /// Formatea una fecha y hora en el formato requerido por Verifactu (yyyy-MM-ddTHH:mm:ssK)
     /// </summary>
@@ -64,5 +65,36 @@ public static class VerifactuFormatUtils
         using var stringWriter = new StringWriter();
         xmlSerializer.Serialize(stringWriter, obj);
         return stringWriter.ToString();
+    }
+
+    /// <summary>
+    /// Genera la URL completa para validar un QR de Verifactu
+    /// </summary>
+    /// <param name="url">URL base del servicio de validación</param>
+    /// <param name="nif">NIF del emisor de la factura</param>
+    /// <param name="numSerie">Número de serie de la factura</param>
+    /// <param name="fecha">Fecha de expedición de la factura en formato dd-MM-yyyy</param>
+    /// <param name="importe">Importe total de la factura</param>
+    /// <returns>URL completa para la validación del QR</returns>
+    public static string GenerateQrValidationUrl(string url, string nif, string numSerie, DateTime fecha, decimal importe)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            throw new ArgumentException("La URL base no puede estar vacía", nameof(url));
+        if (string.IsNullOrWhiteSpace(nif))
+            throw new ArgumentException("El NIF no puede estar vacío", nameof(nif));
+        if (string.IsNullOrWhiteSpace(numSerie))
+            throw new ArgumentException("El número de serie no puede estar vacío", nameof(numSerie));
+
+        // Formatear el importe usando la cultura invariante
+        var importeFormatted = FormatDecimal(importe);
+        // Formatear la fecha en el formato dd-MM-yyyy
+        var fechaFormatted = FormatDate(fecha);
+
+        // Extraer solo la base del dominio (scheme + authority)
+        var uri = new Uri(url);
+        var baseUrl = $"{uri.Scheme}://{uri.Authority}";
+
+        // Construir la URL con los parámetros de consulta
+        return $"{baseUrl}/wlpl/TIKE-CONT/ValidarQR?nif={nif}&numserie={numSerie}&fecha={fechaFormatted}&importe={importeFormatted}";
     }
 }

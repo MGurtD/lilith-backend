@@ -1,18 +1,17 @@
 ﻿using SistemaFacturacion;
-using System.Drawing;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Verifactu;
 
-public static class GeneradorHuella
+public static class HashGenerator
 {
 
     /// <summary>
     /// Construye la referencia de registro para alta concatenando pares "nombre=valor" separados por '&'.
     /// </summary>
-    public static string GenerarHuellaRegistroAlta(RegistroFacturacionAltaType alta, string? huellaAnterior)
+    public static string GenerateHashForInvoiceRegistration(RegistroFacturacionAltaType alta, string? huellaAnterior)
     {
         //IDEmisorFactura=B09680521&amp;NumSerieFactura=25077&amp;FechaExpedicionFactura=03-07-2025&amp;TipoFactura=F1&amp;CuotaTotal=33.60&amp;ImporteTotal=193.60&amp;Huella=27A8309B67AED06176F80F204BB25F59874806A4CCE9EB475F31F040505A2745&amp;FechaHoraHusoGenRegistro=2025-07-03T18:28:08+02:00
         var sb = new StringBuilder();
@@ -27,13 +26,13 @@ public static class GeneradorHuella
             .Append(GetValorCampo("FechaHoraHusoGenRegistro", alta.FechaHoraHusoGenRegistro, false));
 
         var stringToHash = sb.ToString();
-        return GetHashVerifFactu(stringToHash);
+        return GetHashVerifactu(stringToHash);
     }
 
     /// <summary>
     /// Construye la referencia de registro para alta concatenando pares "nombre=valor" separados por '&'.
     /// </summary>
-    public static string GenerarHuellaRegistroAnulacion(RegistroFacturacionAnulacionType anulacion, string? huellaAnterior)
+    public static string GenerateHashForInvoiceCancelation(RegistroFacturacionAnulacionType anulacion, string? huellaAnterior)
     {
         var sb = new StringBuilder();
         sb
@@ -43,14 +42,14 @@ public static class GeneradorHuella
             .Append(GetValorCampo("Huella", huellaAnterior, true))
             .Append(GetValorCampo("FechaHoraHusoGenRegistro", anulacion.FechaHoraHusoGenRegistro, false));
 
-        return GetHashVerifFactu(sb.ToString());
+        return GetHashVerifactu(sb.ToString());
     }
 
     /// <summary>
     /// Genera el hash SHA-256 de la cadena de texto dada y lo devuelve en
     /// formato hexadecimal en MAYÚSCULAS (64 caracteres: 32 bytes * 2 dígitos).
     /// </summary>
-    public static string GetHashVerifFactu(string msg)
+    public static string GetHashVerifactu(string msg)
     {
         ArgumentNullException.ThrowIfNull(msg);
 

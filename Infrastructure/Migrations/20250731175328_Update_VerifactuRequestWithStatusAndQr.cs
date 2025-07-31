@@ -4,20 +4,24 @@
 
 namespace Infrastructure.Migrations
 {
-    public partial class Update_VerifactuRequestWithStatusName : Migration
+    /// <inheritdoc />
+    public partial class Update_VerifactuRequestWithStatusAndQr : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
-                name: "Status",
+            migrationBuilder.AddColumn<string>(
+                name: "QrCodeBase64",
+                table: "SalesInvoiceVerifactuRequest",
+                type: "text",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "QrCodeUrl",
                 table: "SalesInvoiceVerifactuRequest",
                 type: "varchar",
                 maxLength: 512,
-                nullable: false,
-                defaultValue: "",
-                oldClrType: typeof(bool),
-                oldType: "boolean",
-                oldNullable: true);
+                nullable: true);
 
             migrationBuilder.AddColumn<bool>(
                 name: "Success",
@@ -27,20 +31,21 @@ namespace Infrastructure.Migrations
                 defaultValue: false);
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropColumn(
+                name: "QrCodeBase64",
+                table: "SalesInvoiceVerifactuRequest");
+
+            migrationBuilder.DropColumn(
+                name: "QrCodeUrl",
+                table: "SalesInvoiceVerifactuRequest");
+
             migrationBuilder.DropColumn(
                 name: "Success",
                 table: "SalesInvoiceVerifactuRequest");
 
-            migrationBuilder.AlterColumn<bool>(
-                name: "Status",
-                table: "SalesInvoiceVerifactuRequest",
-                type: "boolean",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "varchar",
-                oldMaxLength: 512);
         }
     }
 }

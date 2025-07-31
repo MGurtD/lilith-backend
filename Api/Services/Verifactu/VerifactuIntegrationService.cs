@@ -5,10 +5,13 @@ using Domain.Entities.Sales;
 using Microsoft.Extensions.Options;
 using Verifactu.Contracts;
 using Verifactu;
+using Application.Services;
+using Verifactu.Utils;
 
 namespace Api.Services.Verifactu;
 public class VerifactuIntegrationService(IUnitOfWork unitOfWork,
     ISalesInvoiceService salesInvoiceService,
+    IQrCodeService qrCodeService,
     IOptions<AppSettings> settings) : IVerifactuIntegrationService
 {
     private readonly AppSettings settings = settings.Value;
@@ -54,7 +57,9 @@ public class VerifactuIntegrationService(IUnitOfWork unitOfWork,
             SalesInvoiceId = invoice.Id,
             Success = response.Success,
             Status = response.StatusRegister,
-            TimestampResponse = response.Timestamp
+            TimestampResponse = response.Timestamp,
+            QrCodeUrl = response.QrCodeUrl,
+            QrCodeBase64 = qrCodeService.GeneratePngBase64(response.QrCodeUrl)
         };
         await CreateInvoiceRequest(verifactuRequest);
 

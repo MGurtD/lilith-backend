@@ -94,7 +94,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Purchase
                 .IsUnique();
             builder
                 .HasIndex(builder => builder.PurchaseInvoiceDate, $"IX_{TABLE_NAME}_PurchaseDate")
-                .HasSortOrder(SortOrder.Descending);
+                .IsDescending();
 
             builder.ToTable(TABLE_NAME);
         }

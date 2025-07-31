@@ -1,6 +1,8 @@
-﻿using Domain.Entities.Production;
+﻿using Domain.Entities;
+using Domain.Entities.Production;
+using Domain.Entities.Sales;
 
-namespace Domain.Entities.Sales;
+namespace Application.Contracts.Sales;
 
 public class InvoiceReportDto
 {
@@ -11,6 +13,7 @@ public class InvoiceReportDto
     public required Customer Customer { get; set; }
     public required Site Site { get; set; }
     public required PaymentMethod PaymentMethod { get; set; }
+    public required string Base64Image { get; set; }
     public List<InvoiceReportDtoDeliveryNote> DeliveryNotes { get; set; } = [];
     public List<InvoiceReportDtoTaxImport> Imports { get; set; } = [];
 }

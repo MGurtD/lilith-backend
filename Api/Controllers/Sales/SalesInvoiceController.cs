@@ -9,7 +9,7 @@ namespace Api.Controllers.Sales
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class SalesInvoiceController(ISalesInvoiceService service) : ControllerBase
+    public class SalesInvoiceController(ISalesInvoiceService service, ISalesInvoiceReportService reportService) : ControllerBase
     {
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -59,10 +59,10 @@ namespace Api.Controllers.Sales
         [HttpGet("Report/{id:guid}")]
         public async Task<IActionResult> GetInvoiceForReport(Guid id)
         {
-            var salesOrders = await service.GetDtoForReportingById(id);
-            if (salesOrders is null) return NotFound();
+            var invoiceDto = await reportService.GetDtoForReportingById(id);
+            if (invoiceDto is null) return NotFound();
 
-            return Ok(salesOrders);
+            return Ok(invoiceDto);
         }
 
         [HttpGet]

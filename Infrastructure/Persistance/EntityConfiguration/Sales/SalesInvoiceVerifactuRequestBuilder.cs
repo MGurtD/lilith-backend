@@ -40,7 +40,16 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 Property(b => b.Status)
                 .IsRequired()
                 .HasColumnType("varchar")
+                .HasMaxLength(512);            
+            builder
+                .Property(b => b.QrCodeUrl)
+                .IsRequired(false)
+                .HasColumnType("varchar")
                 .HasMaxLength(512);
+            builder
+                .Property(b => b.QrCodeBase64)
+                .IsRequired(false)
+                .HasColumnType("text");
 
             builder
                 .HasKey(b => b.Id)

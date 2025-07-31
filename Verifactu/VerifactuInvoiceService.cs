@@ -1,9 +1,5 @@
-﻿using Domain.Entities.Production;
-using SistemaFacturacion;
-using System.Linq;
-using System.Security.AccessControl;
+﻿using SistemaFacturacion;
 using System.Security.Cryptography.X509Certificates;
-using System.Xml.Serialization;
 using Verifactu.Contracts;
 using Verifactu.Factories;
 using Verifactu.Mappers;
@@ -14,18 +10,19 @@ namespace Verifactu;
 public interface IVerifactuInvoiceService
 {
     Task<FindInvoicesResponse> FindInvoices(FindInvoicesRequest inputRequest);
-    Task<RegisterInvoiceResponse> RegisterInvoice(RegisterInvoiceRequest request);
-    
+    Task<VerifactuResponse> RegisterInvoice(RegisterInvoiceRequest request);
+    Task<VerifactuResponse> CancelInvoice(CancelInvoiceRequest request);
 }
 
 public class VerifactuInvoiceService : IVerifactuInvoiceService
 {
     private readonly sfPortTypeVerifactuClient _client;
+    private readonly string _baseUrl;
 
     public VerifactuInvoiceService(string baseUrl, string certificatePath, string certificatePassword)
     {
         ValidateConstructorParameters(baseUrl, certificatePath, certificatePassword);
-        
+        _baseUrl = baseUrl;
         _client = CreateAndConfigureClient(baseUrl, certificatePath, certificatePassword);
     }
 
@@ -71,7 +68,7 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
         return VerifactuResponseMapper.MapFindInvoicesResponse(response);
     }
 
-    public async Task<RegisterInvoiceResponse> RegisterInvoice(RegisterInvoiceRequest request)
+    public async Task<VerifactuResponse> RegisterInvoice(RegisterInvoiceRequest request)
     {
         var peticion = VerifactuRequestFactory.CreateRegisterInvoiceRequest(request);
         
@@ -80,11 +77,21 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
         if (registroFactura is RegistroFacturacionAltaType alta)
         {
             ConfigureChaining(alta, request);
-            var hash = GeneradorHuella.GenerarHuellaRegistroAlta(alta, request.PreviousHash);
+            var hash = HashGenerator.GenerateHashForInvoiceRegistration(alta, request.PreviousHash);
             alta.Huella = hash;
-            
-            var response = await _client.RegFactuSistemaFacturacionAsync(peticion);
-            return VerifactuResponseMapper.MapRegisterInvoiceResponse(response, peticion, hash);
+
+            var verifactuResponse = await _client.RegFactuSistemaFacturacionAsync(peticion);
+            var response = VerifactuResponseMapper.MapRegisterInvoiceResponse(verifactuResponse, peticion, hash);
+
+            // Generar la URL del QR
+            response.QrCodeUrl = VerifactuFormatUtils.GenerateQrValidationUrl(
+                _baseUrl,
+                request.SalesInvoice.VatNumber,
+                request.SalesInvoice.InvoiceNumber,
+                request.SalesInvoice.InvoiceDate,
+                request.SalesInvoice.BaseAmount + request.SalesInvoice.TaxAmount);
+
+            return response;
         }
         
         throw new InvalidOperationException("Error al procesar el registro de factura");
@@ -108,9 +115,40 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
         }
     }
     
-    public Task CancelInvoice(RegisterInvoiceRequest request)
+    public async Task<VerifactuResponse> CancelInvoice(CancelInvoiceRequest request)
     {
-        // TODO: Implementar cancelación de factura
-        throw new NotImplementedException("La cancelación de facturas no ha sido implementada aún");
+        var peticion = VerifactuRequestFactory.CreateCancelInvoiceRequest(request);
+        
+        // Configurar encadenamiento y generar hash
+        var registroFactura = peticion.RegistroFactura[0].Item;
+        if (registroFactura is RegistroFacturacionAnulacionType anulacion)
+        {
+            ConfigureCancellationChaining(anulacion, request);
+            var hash = HashGenerator.GenerateHashForInvoiceCancelation(anulacion, request.PreviousHash);
+            anulacion.Huella = hash;
+            
+            var response = await _client.RegFactuSistemaFacturacionAsync(peticion);
+            return VerifactuResponseMapper.MapCancelInvoiceResponse(response, peticion, hash);
+        }
+        
+        throw new InvalidOperationException("Error al procesar la anulación de factura");
+    }
+
+    private static void ConfigureCancellationChaining(RegistroFacturacionAnulacionType anulacion, CancelInvoiceRequest request)
+    {
+        if (request.PreviousNotificatedInvoice == null)
+        {
+            anulacion.Encadenamiento.Item = PrimerRegistroCadenaType.S;
+        }
+        else
+        {
+            anulacion.Encadenamiento.Item = new EncadenamientoFacturaAnteriorType
+            {
+                NumSerieFactura = request.PreviousNotificatedInvoice.InvoiceNumber,
+                FechaExpedicionFactura = VerifactuFormatUtils.FormatDate(request.PreviousNotificatedInvoice.InvoiceDate),
+                IDEmisorFactura = request.PreviousNotificatedInvoice.VatNumber,
+                Huella = request.PreviousHash
+            };
+        }
     }
 }

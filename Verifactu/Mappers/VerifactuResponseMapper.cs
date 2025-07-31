@@ -46,7 +46,7 @@ public static class VerifactuResponseMapper
     /// <param name="request">Solicitud original</param>
     /// <param name="hash">Hash generado</param>
     /// <returns>Objeto del dominio con el resultado del registro</returns>
-    public static RegisterInvoiceResponse MapRegisterInvoiceResponse(
+    public static VerifactuResponse MapRegisterInvoiceResponse(
         RegFactuSistemaFacturacionResponse response,
         RegFactuSistemaFacturacion request,
         string hash)
@@ -57,7 +57,43 @@ public static class VerifactuResponseMapper
         var esExitoso = primeraLinea.EstadoRegistro == EstadoRegistroType.Correcto ||
                        primeraLinea.EstadoRegistro == EstadoRegistroType.AceptadoConErrores;
 
-        var resultado = new RegisterInvoiceResponse
+        var resultado = new VerifactuResponse
+        {
+            Hash = hash,
+            Timestamp = DateTime.Now,
+            XmlRequest = VerifactuFormatUtils.SerializeToXml(request),
+            XmlResponse = VerifactuFormatUtils.SerializeToXml(respuesta),
+            Success = esExitoso,
+            StatusRegister = primeraLinea.EstadoRegistro.ToString()
+        };
+
+        if (!esExitoso)
+        {
+            resultado.ErrorMessage = $"{primeraLinea.CodigoErrorRegistro} - {primeraLinea.DescripcionErrorRegistro}";
+        }
+
+        return resultado;
+    }
+
+    /// <summary>
+    /// Mapea la respuesta de anulación de factura a un objeto del dominio
+    /// </summary>
+    /// <param name="response">Respuesta del sistema Verifactu</param>
+    /// <param name="request">Solicitud original</param>
+    /// <param name="hash">Hash generado</param>
+    /// <returns>Objeto del dominio con el resultado de la anulación</returns>
+    public static VerifactuResponse MapCancelInvoiceResponse(
+        RegFactuSistemaFacturacionResponse response,
+        RegFactuSistemaFacturacion request,
+        string hash)
+    {
+        var respuesta = response.RespuestaRegFactuSistemaFacturacion;
+        var primeraLinea = respuesta.RespuestaLinea[0];
+        
+        var esExitoso = primeraLinea.EstadoRegistro == EstadoRegistroType.Correcto ||
+                       primeraLinea.EstadoRegistro == EstadoRegistroType.AceptadoConErrores;
+
+        var resultado = new VerifactuResponse
         {
             Hash = hash,
             Timestamp = DateTime.Now,

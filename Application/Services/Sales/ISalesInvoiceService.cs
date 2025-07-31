@@ -12,7 +12,6 @@ public interface ISalesInvoiceService
 
     Task<SalesInvoice?> GetById(Guid id);
     Task<SalesInvoice?> GetHeaderById(Guid id);
-    Task<InvoiceReportDto?> GetDtoForReportingById(Guid id);
     IEnumerable<SalesInvoice> GetBetweenDates(DateTime startDate, DateTime endDate);
     IEnumerable<SalesInvoice> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid statusId);
     IEnumerable<SalesInvoice> GetBetweenDatesAndExcludeStatus(DateTime startDate, DateTime endDate, Guid excludeStatusId);

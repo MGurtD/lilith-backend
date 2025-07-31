@@ -33,14 +33,15 @@ public static class ApplicationServicesSetup
         services.AddScoped<ISalesOrderService, SalesOrderService>();
         services.AddScoped<IDeliveryNoteService, DeliveryNoteService>();
         services.AddScoped<ISalesInvoiceService, SalesInvoiceService>();
+        services.AddScoped<ISalesInvoiceReportService, SalesInvoiceReportService>();
         services.AddScoped<IWorkOrderService, WorkOrderService>();
         services.AddScoped<IMetricsService, MetricsService>();
         services.AddScoped<IStockService, StockService>();
         services.AddScoped<IStockMovementService, StockMovementService>();
         services.AddScoped<IVerifactuIntegrationService, VerifactuIntegrationService>();
+        services.AddSingleton<IQrCodeService, QrCodeService>();
 
         services.AddHostedService<BudgetBackgroundService>();
-        services.AddHostedService<SalesInvoiceToVerifactuBackgroundService>();
 
         return services;
     }

@@ -21,7 +21,7 @@ namespace Infrastructure.Migrations
                     Hash = table.Column<string>(type: "varchar", maxLength: 512, nullable: false),
                     Request = table.Column<string>(type: "text", nullable: false),
                     Response = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<bool>(type: "boolean", nullable: true),
+                    Status = table.Column<string>(type: "varchar", maxLength: 512, nullable: true),
                     TimestampResponse = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     CreatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false, defaultValueSql: "NOW()"),
                     UpdatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false, defaultValueSql: "NOW()"),

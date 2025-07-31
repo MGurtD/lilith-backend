@@ -10,4 +10,6 @@ public class SalesInvoiceVerifactuRequest : Entity
     public bool Success { get; set; }
     public string? Status { get; set; }
     public DateTime? TimestampResponse { get; set; }
+    public string? QrCodeUrl { get; set; }
+    public string? QrCodeBase64 { get; set; }
 }

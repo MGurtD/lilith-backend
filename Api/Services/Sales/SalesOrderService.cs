@@ -8,28 +8,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.Sales
 {
-    public class SalesOrderService : ISalesOrderService
+    public class SalesOrderService(IUnitOfWork unitOfWork, IExerciseService exerciseService) : ISalesOrderService
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IExerciseService _exerciseService;
-
-        public SalesOrderService(IUnitOfWork unitOfWork, IExerciseService exerciseService)
-        {
-            _unitOfWork = unitOfWork;
-            _exerciseService = exerciseService;
-        }        
-
         public async Task<SalesOrderReportResponse?> GetByIdForReporting(Guid id)
         {
             var salesOrder = await GetById(id);
             if (salesOrder is null) return null;
 
             if (!salesOrder.CustomerId.HasValue) return null;
-            var customer = await _unitOfWork.Customers.Get(salesOrder.CustomerId.Value);
+            var customer = await unitOfWork.Customers.Get(salesOrder.CustomerId.Value);
             if (customer is null) return null;
 
             if (!salesOrder.SiteId.HasValue) return null;
-            var site = await _unitOfWork.Sites.Get(salesOrder.SiteId.Value);
+            var site = await unitOfWork.Sites.Get(salesOrder.SiteId.Value);
             if (site is null) return null;
 
             salesOrder.SalesOrderDetails = salesOrder.SalesOrderDetails.OrderBy(d => d.Reference!.Code).ToList();
@@ -45,36 +36,36 @@ namespace Api.Services.Sales
 
         public async Task<SalesOrderHeader?> GetById(Guid id)
         {
-            var salesOrderHeader = await _unitOfWork.SalesOrderHeaders.Get(id);
+            var salesOrderHeader = await unitOfWork.SalesOrderHeaders.Get(id);
             return salesOrderHeader;
         }
 
         public SalesOrderHeader? GetOrderFromBudget(Guid budgetId)
         {
-            var salesOrder = _unitOfWork.SalesOrderHeaders.Find(p => p.BudgetId == budgetId).FirstOrDefault();
+            var salesOrder = unitOfWork.SalesOrderHeaders.Find(p => p.BudgetId == budgetId).FirstOrDefault();
             return salesOrder;
         }
 
         public IEnumerable<SalesOrderHeader> GetBetweenDates(DateTime startDate, DateTime endDate)
         {
-            var salesOrderHeaders = _unitOfWork.SalesOrderHeaders.Find(p => p.Date >= startDate && p.Date <= endDate);
+            var salesOrderHeaders = unitOfWork.SalesOrderHeaders.Find(p => p.Date >= startDate && p.Date <= endDate);
             return salesOrderHeaders;
         }
         public IEnumerable<SalesOrderHeader> GetBetweenDatesAndCustomer(DateTime startDate, DateTime endDate, Guid customerId)
         {
-            var invoices = _unitOfWork.SalesOrderHeaders.Find(p => p.Date >= startDate && p.Date <= endDate && p.CustomerId == customerId);
+            var invoices = unitOfWork.SalesOrderHeaders.Find(p => p.Date >= startDate && p.Date <= endDate && p.CustomerId == customerId);
             return invoices;
         }
 
         public IEnumerable<SalesOrderHeader> GetByDeliveryNoteId(Guid deliveryNoteId)
         {
-            var orders = _unitOfWork.SalesOrderHeaders.Find(p => p.DeliveryNoteId == deliveryNoteId);
+            var orders = unitOfWork.SalesOrderHeaders.Find(p => p.DeliveryNoteId == deliveryNoteId);
             return orders;
         }
 
         public IEnumerable<SalesOrderHeader> GetOrdersToDeliver(Guid customerId)
         {
-            var orders = _unitOfWork.SalesOrderHeaders.Find(p => p.CustomerId == customerId && p.DeliveryNoteId == null);
+            var orders = unitOfWork.SalesOrderHeaders.Find(p => p.CustomerId == customerId && p.DeliveryNoteId == null);
             return orders;
         }
 
@@ -88,7 +79,7 @@ namespace Api.Services.Sales
             };
 
             // Obtenir l'exercici actual pel nou document
-            var currentExercise = _exerciseService.GetExerciceByDate(createDto.Date);
+            var currentExercise = exerciseService.GetExerciceByDate(createDto.Date);
             if (currentExercise == null)
             {
                 return new GenericResponse(false, "No s'ha trobat cap exercici per a la data actual");
@@ -123,7 +114,7 @@ namespace Api.Services.Sales
 
             var orderEntities = (InvoiceEntities)response.Content!;
 
-            var counterObj = await _exerciseService.GetNextCounter(orderEntities.Exercise.Id, "salesorder");
+            var counterObj = await exerciseService.GetNextCounter(orderEntities.Exercise.Id, "salesorder");
             if (!counterObj.Result || counterObj.Content == null) return new GenericResponse(false, "Error al crear el comptador");
             var order = new SalesOrderHeader
             {
@@ -139,7 +130,7 @@ namespace Api.Services.Sales
             }
             else
             {
-                var lifecycle = _unitOfWork.Lifecycles.Find(l => l.Name == "SalesOrder").FirstOrDefault();
+                var lifecycle = unitOfWork.Lifecycles.Find(l => l.Name == "SalesOrder").FirstOrDefault();
                 if (lifecycle == null)
                     return new GenericResponse(false, "El cicle de vida 'SalesOrder' no existeix");
                 if (!lifecycle.InitialStatusId.HasValue)
@@ -151,7 +142,7 @@ namespace Api.Services.Sales
             order.SetCustomer(orderEntities.Customer);
             order.SetSite(orderEntities.Site);
 
-            await _unitOfWork.SalesOrderHeaders.Add(order);
+            await unitOfWork.SalesOrderHeaders.Add(order);
 
             return new GenericResponse(true, order);
         }
@@ -160,43 +151,43 @@ namespace Api.Services.Sales
         {
             salesOrderHeader.SalesOrderDetails.Clear();
 
-            await _unitOfWork.SalesOrderHeaders.Update(salesOrderHeader);
+            await unitOfWork.SalesOrderHeaders.Update(salesOrderHeader);
             return new GenericResponse(true);
         }
 
         public async Task<GenericResponse> Remove(Guid id)
         {
-            var salesOrder = await _unitOfWork.SalesOrderHeaders.Get(id);
+            var salesOrder = await unitOfWork.SalesOrderHeaders.Get(id);
             if (salesOrder == null)
             {
                 return new GenericResponse(false, $"La comanda amb ID {id} no existeix");
             }
             else
             {                
-                await _unitOfWork.SalesOrderHeaders.Remove(salesOrder);
+                await unitOfWork.SalesOrderHeaders.Remove(salesOrder);
                 return new GenericResponse(true, new List<string> { });
             }
         }
 
         public async Task<GenericResponse> UpdateCosts(Guid id)
         {
-            var details = _unitOfWork.SalesOrderDetails.Find(e => e.SalesOrderHeaderId == id).ToList();
+            var details = unitOfWork.SalesOrderDetails.Find(e => e.SalesOrderHeaderId == id).ToList();
 
             foreach(SalesOrderDetail detail in details)
             {
                 if (detail.WorkOrderId.HasValue)
                 {
-                    var workOrder = await _unitOfWork.WorkOrders.Get(detail.WorkOrderId.Value);
+                    var workOrder = await unitOfWork.WorkOrders.Get(detail.WorkOrderId.Value);
                     if(workOrder != null)
                     {
                         detail.LastCost = (workOrder.MaterialCost + workOrder.OperatorCost + workOrder.MachineCost);
                     }
-                    var workMaster = _unitOfWork.WorkMasters.Find(e => e.ReferenceId == detail.ReferenceId).FirstOrDefault();
+                    var workMaster = unitOfWork.WorkMasters.Find(e => e.ReferenceId == detail.ReferenceId).FirstOrDefault();
                     if (workMaster != null)
                     {
                         detail.WorkMasterCost = (workMaster.materialCost + workMaster.machineCost + workMaster.operatorCost + workMaster.externalCost);
                     }                                        
-                    await _unitOfWork.SalesOrderHeaders.UpdateDetail(detail);
+                    await unitOfWork.SalesOrderHeaders.UpdateDetail(detail);
                 }
                 
             }
@@ -206,12 +197,12 @@ namespace Api.Services.Sales
 
         public async Task<SalesOrderDetail?> GetDetailById(Guid id)
         {
-            var detail = await _unitOfWork.SalesOrderDetails.Get(id);
+            var detail = await unitOfWork.SalesOrderDetails.Get(id);
             return detail;
         }
         public async Task<GenericResponse> AddDetail(SalesOrderDetail salesOrderDetail)
         {
-            await _unitOfWork.SalesOrderHeaders.AddDetail(salesOrderDetail);
+            await unitOfWork.SalesOrderHeaders.AddDetail(salesOrderDetail);
 
             return new GenericResponse(true);
         }
@@ -220,21 +211,21 @@ namespace Api.Services.Sales
             salesOrderDetail.Reference = null;
             salesOrderDetail.SalesOrderHeader = null;
 
-            await _unitOfWork.SalesOrderHeaders.UpdateDetail(salesOrderDetail);
+            await unitOfWork.SalesOrderHeaders.UpdateDetail(salesOrderDetail);
             return new GenericResponse(true);
         }
         public async Task<GenericResponse> RemoveDetail(Guid id)
         {
-            var detail = _unitOfWork.SalesOrderDetails.Find(d => d.Id == id).FirstOrDefault();
+            var detail = unitOfWork.SalesOrderDetails.Find(d => d.Id == id).FirstOrDefault();
             if (detail == null) return new GenericResponse(false, new List<string> { $"El detall de comanda amb ID {id} no existeix" });
-            var deleted = await _unitOfWork.SalesOrderHeaders.RemoveDetail(detail);
+            var deleted = await unitOfWork.SalesOrderHeaders.RemoveDetail(detail);
 
             return new GenericResponse(true, detail);
         }
 
         private async Task<GenericResponse> GetStatusId(string statusName)
         {
-            var lifecycle = await _unitOfWork.Lifecycles.GetByName("SalesOrder");
+            var lifecycle = await unitOfWork.Lifecycles.GetByName("SalesOrder");
             if (lifecycle == null) return new GenericResponse(false, "El cicle de vida 'SalesOrder' no existeix");
 
             var status = lifecycle.Statuses!.FirstOrDefault(s => s.Name == statusName);
@@ -247,17 +238,17 @@ namespace Api.Services.Sales
         {
             if (createInvoiceRequest.Date == DateTime.MinValue) return new GenericResponse(false, "La data de la comanda no pot ser buida");
 
-            var exercise = await _unitOfWork.Exercices.Get(createInvoiceRequest.ExerciseId);
+            var exercise = await unitOfWork.Exercices.Get(createInvoiceRequest.ExerciseId);
             if (exercise == null) return new GenericResponse(false, "L'exercici no existex" );
 
-            var customer = await _unitOfWork.Customers.Get(createInvoiceRequest.CustomerId);
+            var customer = await unitOfWork.Customers.Get(createInvoiceRequest.CustomerId);
             if (customer == null) return new GenericResponse(false, "El client no existeix" );
             if (!customer.IsValidForSales())
                 return new GenericResponse(false, "El client no és válid per a crear una factura. Revisa el nom fiscal, el número de compte i el NIF" );
             if (customer.MainAddress() == null)
                 return new GenericResponse(false,  "El client no té direccions donades d'alta. Si us plau, creí una direcció." );
 
-            var site = _unitOfWork.Sites.Find(s => s.Name == "Local Torelló").FirstOrDefault();
+            var site = unitOfWork.Sites.Find(s => s.Name == "Local Torelló").FirstOrDefault();
             if (site == null)
                 return new GenericResponse(false, "La seu 'Temges' no existeix" );
             if (!site.IsValidForSales())

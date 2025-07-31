@@ -19,7 +19,6 @@ namespace Api.Services.Sales
 
     public class SalesInvoiceService(IUnitOfWork unitOfWork,
         IDueDateService dueDateService,
-        ISalesOrderService salesOrderService,
         IDeliveryNoteService deliveryNoteService,
         IExerciseService exerciseService) : ISalesInvoiceService
     {
@@ -34,91 +33,6 @@ namespace Api.Services.Sales
         {
             var invoices = await unitOfWork.SalesInvoices.GetHeader(id);
             return invoices;
-        }
-
-        public async Task<InvoiceReportDto?> GetDtoForReportingById(Guid id)
-        {
-            // Consultar la factura i recuperar la informació necessària
-            var invoice = await GetById(id);
-            if (invoice is null) return null;
-
-            // Recuperar dades auxiliars
-            if (!invoice.CustomerId.HasValue) return null;
-            var customer = await unitOfWork.Customers.Get(invoice.CustomerId.Value);
-            if (customer is null) return null;
-
-            if (!invoice.SiteId.HasValue) return null;
-            var site = await unitOfWork.Sites.Get(invoice.SiteId.Value);
-            if (site is null) return null;
-
-            var paymentMethod = await unitOfWork.PaymentMethods.Get(invoice.PaymentMethodId);
-            if (paymentMethod is null) return null;
-
-            // Crear DTO per a la factura
-            var reportDto = new InvoiceReportDto()
-            {
-                Date = invoice.InvoiceDate,
-                Number = invoice.InvoiceNumber,
-                DueDate = invoice.SalesInvoiceDueDates.OrderByDescending(d => d.DueDate).FirstOrDefault()!.DueDate,
-                Total = invoice.SalesInvoiceImports.Sum(i => i.NetAmount),
-                Customer = customer,
-                Site = site,
-                PaymentMethod = paymentMethod,
-                Imports = invoice.SalesInvoiceImports.Select(import => new InvoiceReportDtoTaxImport()
-                {
-                    Name = import.Tax!.Name,
-                    BaseAmount = import.BaseAmount,
-                    NetAmount = import.NetAmount,
-                    TaxAmount = import.TaxAmount,
-                    Percentatge = import.Tax!.Percentatge
-                }).ToList()
-            };
-
-            // Obtenir albarans de la factura
-            var deliveryNotes = deliveryNoteService.GetBySalesInvoice(id).OrderBy(d => d.Number);
-
-            // Obtener referencies de les línies de l'albarà
-            var referenceIds = deliveryNotes.SelectMany(deliveryNotes => deliveryNotes.Details).Select(d => d.ReferenceId).ToList();
-            var references = unitOfWork.References.Find(r => referenceIds.Contains(r.Id)).ToList();
-
-            foreach (var deliveryNote in deliveryNotes)
-            {
-                var orders = salesOrderService.GetByDeliveryNoteId(deliveryNote.Id);
-                var customerOrderNumbers = String.Join(",", orders.Select(orders => orders.CustomerNumber).ToArray());
-
-                reportDto.DeliveryNotes.Add(new InvoiceReportDtoDeliveryNote()
-                {
-                    Header = $"Albarà: {deliveryNote.Number} - Entrega: {deliveryNote.DeliveryDate:dd/MM/yyy} - Comanda client: {customerOrderNumbers}",
-                    Number = deliveryNote.Number,
-                    Date = deliveryNote.CreatedOn,
-                    Details = deliveryNote.Details.Select(detail => new SalesInvoiceDetail()
-                    {
-                        Amount = detail?.Amount ?? 0,
-                        Description = $"{references.FirstOrDefault(r => r.Id == detail!.ReferenceId)!.GetShortName()} - {detail?.Description}",
-                        Quantity = detail?.Quantity ?? 0,
-                        TotalCost = detail?.TotalCost ?? 0,
-                        UnitCost = detail?.UnitCost ?? 0,
-                        UnitPrice = detail?.UnitPrice ?? 0
-                    }).ToList(),
-                    Total = deliveryNote.Details.Sum(detail => detail.Amount)
-                });
-            }
-
-            // Linies lliures
-            var hasDetailsWithoutDeliveryNote = invoice.SalesInvoiceDetails.Any(d => d.DeliveryNoteDetailId == null);
-            if (hasDetailsWithoutDeliveryNote)
-            {
-                reportDto.DeliveryNotes.Add(new InvoiceReportDtoDeliveryNote()
-                {
-                    Header = "Sense albarà",
-                    Date = invoice.InvoiceDate,
-                    Number = "--",
-                    Details = invoice.SalesInvoiceDetails.Where(d => d.DeliveryNoteDetailId == null).ToList(),
-                    Total = invoice.SalesInvoiceDetails.Where(d => d.DeliveryNoteDetailId == null).Sum(d => d.Amount)
-                });
-            }
-
-            return reportDto;
         }
 
         public IEnumerable<SalesInvoice> GetBetweenDates(DateTime startDate, DateTime endDate)

@@ -17,7 +17,7 @@ namespace Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.15")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -140,7 +140,9 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.ToView("vw_detailedworkorder");
+                    b.ToTable((string)null);
+
+                    b.ToView("vw_detailedworkorder", (string)null);
                 });
 
             modelBuilder.Entity("Application.Contracts.Production.ProductionCost", b =>
@@ -187,7 +189,9 @@ namespace Infrastructure.Migrations
                     b.Property<double>("Year")
                         .HasColumnType("double precision");
 
-                    b.ToView("vw_productioncosts");
+                    b.ToTable((string)null);
+
+                    b.ToView("vw_productioncosts", (string)null);
                 });
 
             modelBuilder.Entity("Application.Contracts.Purchase.ConsolidatedExpense", b =>
@@ -219,7 +223,9 @@ namespace Infrastructure.Migrations
                     b.Property<double>("YearPaymentDate")
                         .HasColumnType("double precision");
 
-                    b.ToView("vw_consolidatedExpenses");
+                    b.ToTable((string)null);
+
+                    b.ToView("vw_consolidatedExpenses", (string)null);
                 });
 
             modelBuilder.Entity("Application.Contracts.Sales.ConsolidatedIncomes", b =>
@@ -251,7 +257,9 @@ namespace Infrastructure.Migrations
                     b.Property<double>("Year")
                         .HasColumnType("double precision");
 
-                    b.ToView("vw_consolidatedIncomes");
+                    b.ToTable((string)null);
+
+                    b.ToView("vw_consolidatedIncomes", (string)null);
                 });
 
             modelBuilder.Entity("Application.Contracts.Sales.SalesInvoiceDetailReport", b =>
@@ -281,7 +289,9 @@ namespace Infrastructure.Migrations
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("numeric");
 
-                    b.ToView("vw_report_salesInvoiceDetails");
+                    b.ToTable((string)null);
+
+                    b.ToView("vw_report_salesInvoiceDetails", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Audit.HttpTransactionLog", b =>
@@ -648,7 +658,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Size")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<int>("Type")
                         .HasColumnType("integer");
@@ -922,7 +932,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Cost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
@@ -978,13 +988,13 @@ namespace Infrastructure.Migrations
                     b.Property<decimal>("MachineHourCost")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
+                        .HasColumnType("decimal")
                         .HasDefaultValue(0m);
 
                     b.Property<decimal>("OperatorHourCost")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
+                        .HasColumnType("decimal")
                         .HasDefaultValue(0m);
 
                     b.Property<Guid>("OperatorId")
@@ -992,7 +1002,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("OperatorTime")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
@@ -1016,7 +1026,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("WorkcenterTime")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.HasKey("Id")
                         .HasName("PK_ProductionParts");
@@ -1192,66 +1202,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Sites", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.Production.Workcenter", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AreaId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar");
-
-                    b.Property<decimal>("ProfitPercentage")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.Property<Guid>("ShiftId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<Guid>("WorkcenterTypeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("costHour")
-                        .HasColumnType("numeric(38,17)");
-
-                    b.HasKey("Id")
-                        .HasName("PK_Workcenter");
-
-                    b.HasIndex("AreaId");
-
-                    b.HasIndex("ShiftId");
-
-                    b.HasIndex("WorkcenterTypeId");
-
-                    b.HasIndex(new[] { "Name" }, "UK_Workcenter_Name");
-
-                    b.ToTable("Workcenters", (string)null);
-                });
-
             modelBuilder.Entity("Domain.Entities.Production.WorkCenterCost", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1259,7 +1209,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Cost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
@@ -1293,48 +1243,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("WorkCenterCosts", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.Production.WorkcenterType", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar");
-
-                    b.Property<decimal>("ProfitPercentage")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.HasKey("Id")
-                        .HasName("PK_WorkcenterType");
-
-                    b.HasIndex(new[] { "Name" }, "UK_WorkcenterType_Name");
-
-                    b.ToTable("WorkcenterTypes", (string)null);
-                });
-
             modelBuilder.Entity("Domain.Entities.Production.WorkMaster", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1342,7 +1250,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("BaseQuantity")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
@@ -1370,31 +1278,31 @@ namespace Infrastructure.Migrations
                     b.Property<decimal>("externalCost")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
+                        .HasColumnType("decimal")
                         .HasDefaultValue(0m);
 
                     b.Property<decimal>("machineCost")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
+                        .HasColumnType("decimal")
                         .HasDefaultValue(0m);
 
                     b.Property<decimal>("materialCost")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
+                        .HasColumnType("decimal")
                         .HasDefaultValue(0m);
 
                     b.Property<decimal>("operatorCost")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
+                        .HasColumnType("decimal")
                         .HasDefaultValue(0m);
 
                     b.Property<decimal>("totalWeight")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
+                        .HasColumnType("decimal")
                         .HasDefaultValue(0m);
 
                     b.HasKey("Id")
@@ -1436,7 +1344,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("ExternalWorkCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<bool>("IsExternalWork")
                         .HasColumnType("boolean");
@@ -1449,14 +1357,14 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("ProfitPercentage")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid?>("ServiceReferenceId")
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("TransportCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -1497,7 +1405,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Diameter")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<bool>("Disabled")
                         .ValueGeneratedOnAdd()
@@ -1506,22 +1414,22 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Height")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("Length")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("Quantity")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid>("ReferenceId")
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("Thickness")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -1530,7 +1438,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Width")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid>("WorkMasterPhaseId")
                         .HasColumnType("uuid");
@@ -1567,12 +1475,12 @@ namespace Infrastructure.Migrations
                     b.Property<decimal>("EstimatedOperatorTime")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
+                        .HasColumnType("decimal")
                         .HasDefaultValue(0.0m);
 
                     b.Property<decimal>("EstimatedTime")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<bool>("IsCycleTime")
                         .HasColumnType("boolean");
@@ -1637,31 +1545,31 @@ namespace Infrastructure.Migrations
                     b.Property<decimal>("MachineCost")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
+                        .HasColumnType("decimal")
                         .HasDefaultValue(0m);
 
                     b.Property<decimal>("MachineTime")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
+                        .HasColumnType("decimal")
                         .HasDefaultValue(0m);
 
                     b.Property<decimal>("MaterialCost")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
+                        .HasColumnType("decimal")
                         .HasDefaultValue(0m);
 
                     b.Property<decimal>("OperatorCost")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
+                        .HasColumnType("decimal")
                         .HasDefaultValue(0m);
 
                     b.Property<decimal>("OperatorTime")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
+                        .HasColumnType("decimal")
                         .HasDefaultValue(0m);
 
                     b.Property<int>("Order")
@@ -1674,7 +1582,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("PlannedQuantity")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid>("ReferenceId")
                         .HasColumnType("uuid");
@@ -1687,7 +1595,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("TotalQuantity")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -1748,7 +1656,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("ExternalWorkCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<bool>("IsExternalWork")
                         .HasColumnType("boolean");
@@ -1761,7 +1669,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("ProfitPercentage")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid?>("PurchaseOrderId")
                         .HasColumnType("uuid");
@@ -1777,7 +1685,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("TransportCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -1822,7 +1730,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Diameter")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<bool>("Disabled")
                         .ValueGeneratedOnAdd()
@@ -1831,22 +1739,22 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Height")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("Length")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("Quantity")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid>("ReferenceId")
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("Thickness")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -1855,7 +1763,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Width")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid>("WorkOrderPhaseId")
                         .HasColumnType("uuid");
@@ -1892,12 +1800,12 @@ namespace Infrastructure.Migrations
                     b.Property<decimal>("EstimatedOperatorTime")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
+                        .HasColumnType("decimal")
                         .HasDefaultValue(0.0m);
 
                     b.Property<decimal>("EstimatedTime")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<bool>("IsCycleTime")
                         .HasColumnType("boolean");
@@ -1926,6 +1834,147 @@ namespace Infrastructure.Migrations
                     b.ToTable("WorkOrderPhaseDetail", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.Production.Workcenter", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AreaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar");
+
+                    b.Property<bool>("Disabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar");
+
+                    b.Property<decimal>("ProfitPercentage")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal");
+
+                    b.Property<Guid>("ShiftId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<Guid>("WorkcenterTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<double>("costHour")
+                        .HasColumnType("decimal");
+
+                    b.HasKey("Id")
+                        .HasName("PK_Workcenter");
+
+                    b.HasIndex("AreaId");
+
+                    b.HasIndex("ShiftId");
+
+                    b.HasIndex("WorkcenterTypeId");
+
+                    b.HasIndex(new[] { "Name" }, "UK_Workcenter_Name");
+
+                    b.ToTable("Workcenters", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.Production.WorkcenterType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar");
+
+                    b.Property<bool>("Disabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar");
+
+                    b.Property<decimal>("ProfitPercentage")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.HasKey("Id")
+                        .HasName("PK_WorkcenterType");
+
+                    b.HasIndex(new[] { "Name" }, "UK_WorkcenterType_Name");
+
+                    b.ToTable("WorkcenterTypes", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.Purchase.ExpenseType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar");
+
+                    b.Property<bool>("Disabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.HasKey("Id")
+                        .HasName("PK_ExpenseTypes");
+
+                    b.HasIndex(new[] { "Name" }, "UK_ExpenseTypes")
+                        .IsUnique();
+
+                    b.ToTable("ExpenseTypes", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.Purchase.Expenses", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1933,7 +1982,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
@@ -1988,45 +2037,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Expenses", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.Purchase.ExpenseType", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.HasKey("Id")
-                        .HasName("PK_ExpenseTypes");
-
-                    b.HasIndex(new[] { "Name" }, "UK_ExpenseTypes")
-                        .IsUnique();
-
-                    b.ToTable("ExpenseTypes", (string)null);
-                });
-
             modelBuilder.Entity("Domain.Entities.Purchase.PurchaseInvoice", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2034,7 +2044,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("BaseAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
@@ -2048,11 +2058,11 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("DiscountAmount")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("DiscountPercentage")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid?>("ExerciceId")
                         .HasColumnType("uuid");
@@ -2060,7 +2070,7 @@ namespace Infrastructure.Migrations
                     b.Property<decimal>("ExtraTaxAmount")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
+                        .HasColumnType("decimal")
                         .HasDefaultValue(0m);
 
                     b.Property<int>("ExtraTaxPercentatge")
@@ -2070,11 +2080,11 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("GrossAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("NetAmount")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<string>("Number")
                         .IsRequired()
@@ -2100,7 +2110,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Subtotal")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid>("SupplierId")
                         .HasColumnType("uuid");
@@ -2112,7 +2122,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("TransportAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -2132,9 +2142,8 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("SupplierId");
 
-                    b.HasIndex(new[] { "PurchaseInvoiceDate" }, "IX_PurchaseInvoices_PurchaseDate");
-
-                    NpgsqlIndexBuilderExtensions.HasSortOrder(b.HasIndex(new[] { "PurchaseInvoiceDate" }, "IX_PurchaseInvoices_PurchaseDate"), new[] { SortOrder.Descending });
+                    b.HasIndex(new[] { "PurchaseInvoiceDate" }, "IX_PurchaseInvoices_PurchaseDate")
+                        .IsDescending();
 
                     b.HasIndex(new[] { "ExerciceId", "Number" }, "UK_PurchaseInvoices")
                         .IsUnique();
@@ -2149,7 +2158,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
@@ -2187,7 +2196,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("BaseAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
@@ -2201,14 +2210,14 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("NetAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid>("PurchaseInvoiceId")
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("TaxAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid>("TaxId")
                         .HasColumnType("uuid");
@@ -2363,7 +2372,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
@@ -2404,7 +2413,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -2546,7 +2555,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
@@ -2560,7 +2569,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Diameter")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<bool>("Disabled")
                         .ValueGeneratedOnAdd()
@@ -2569,15 +2578,15 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Height")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("KilogramPrice")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("Lenght")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<int>("Quantity")
                         .ValueGeneratedOnAdd()
@@ -2595,19 +2604,19 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Thickness")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("TotalWeight")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("UnitWeight")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -2616,7 +2625,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Width")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.HasKey("Id")
                         .HasName("PK_ReceiptDetails");
@@ -2934,7 +2943,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime?>("AutoRejectedDate")
                         .HasColumnType("timestamp without time zone");
@@ -2987,9 +2996,8 @@ namespace Infrastructure.Migrations
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("Date")
+                        .IsDescending()
                         .HasDatabaseName("IX_Budgets_Date");
-
-                    NpgsqlIndexBuilderExtensions.HasSortOrder(b.HasIndex("Date"), new[] { SortOrder.Descending });
 
                     b.HasIndex("ExerciseId");
 
@@ -3005,7 +3013,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid>("BudgetId")
                         .HasColumnType("uuid");
@@ -3027,31 +3035,31 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Discount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("ExternalProfit")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("MaterialCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("MaterialProfit")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("ProductionCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("ProductionProfit")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("Profit")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
@@ -3061,23 +3069,23 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("ServiceCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("TotalCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("TransportCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("UnitCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -3429,7 +3437,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
@@ -3465,15 +3473,15 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("TotalCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("UnitCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -3504,7 +3512,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("BaseAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<string>("City")
                         .IsRequired()
@@ -3584,7 +3592,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("GrossAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid?>("IntegrationStatusId")
                         .HasColumnType("uuid");
@@ -3609,7 +3617,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("NetAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid?>("ParentSalesInvoiceId")
                         .HasColumnType("uuid");
@@ -3638,7 +3646,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("TransportAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -3679,7 +3687,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
@@ -3709,15 +3717,15 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("TotalCost")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("UnitCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -3743,7 +3751,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
@@ -3781,7 +3789,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("BaseAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
@@ -3795,14 +3803,14 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("NetAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid>("SalesInvoiceId")
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("TaxAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid>("TaxId")
                         .HasColumnType("uuid");
@@ -3839,6 +3847,13 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("Hash")
                         .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("varchar");
+
+                    b.Property<string>("QrCodeBase64")
+                        .HasColumnType("text");
+
+                    b.Property<string>("QrCodeUrl")
                         .HasMaxLength(512)
                         .HasColumnType("varchar");
 
@@ -3887,7 +3902,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
@@ -3906,41 +3921,41 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Discount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("EstimatedDeliveryDate")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<decimal>("ExternalProfit")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<bool>("IsDelivered")
                         .HasColumnType("boolean");
 
                     b.Property<decimal>("LastCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("MaterialCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("MaterialProfit")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("ProductionCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("ProductionProfit")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("Profit")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
@@ -3953,23 +3968,23 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("ServiceCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("TotalCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("TransportCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("UnitCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -3978,7 +3993,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("WorkMasterCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid?>("WorkMasterId")
                         .HasColumnType("uuid");
@@ -4294,7 +4309,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Cost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("CreatedOn")
                         .ValueGeneratedOnAdd()
@@ -4319,11 +4334,11 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("LastCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("Price")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<bool>("Production")
                         .HasColumnType("boolean");
@@ -4345,7 +4360,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("TransportAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -4359,7 +4374,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("WorkMasterCost")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.HasKey("Id")
                         .HasName("PK_Reference");
@@ -4414,7 +4429,7 @@ namespace Infrastructure.Migrations
                     b.Property<decimal>("Density")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
+                        .HasColumnType("decimal")
                         .HasDefaultValue(0m);
 
                     b.Property<string>("Description")
@@ -4564,7 +4579,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Percentatge")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -4635,7 +4650,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Diameter")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<bool>("Disabled")
                         .ValueGeneratedOnAdd()
@@ -4644,11 +4659,11 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Height")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("Length")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid>("LocationId")
                         .HasColumnType("uuid");
@@ -4661,7 +4676,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Thickness")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -4670,7 +4685,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Width")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.HasKey("Id")
                         .HasName("PK_Stocks");
@@ -4699,7 +4714,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Diameter")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<bool>("Disabled")
                         .ValueGeneratedOnAdd()
@@ -4708,11 +4723,11 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Height")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<decimal>("Length")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<Guid?>("LocationId")
                         .HasColumnType("uuid");
@@ -4735,7 +4750,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Thickness")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.Property<DateTime>("UpdatedOn")
                         .ValueGeneratedOnAddOrUpdate()
@@ -4744,7 +4759,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("Width")
                         .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("decimal");
 
                     b.HasKey("Id")
                         .HasName("PK_StockMovements");
@@ -4915,33 +4930,6 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Enterprise");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Production.Workcenter", b =>
-                {
-                    b.HasOne("Domain.Entities.Production.Area", "Area")
-                        .WithMany()
-                        .HasForeignKey("AreaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Production.Shift", "Shift")
-                        .WithMany()
-                        .HasForeignKey("ShiftId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Production.WorkcenterType", "WorkcenterType")
-                        .WithMany()
-                        .HasForeignKey("WorkcenterTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Area");
-
-                    b.Navigation("Shift");
-
-                    b.Navigation("WorkcenterType");
                 });
 
             modelBuilder.Entity("Domain.Entities.Production.WorkCenterCost", b =>
@@ -5165,6 +5153,33 @@ namespace Infrastructure.Migrations
                     b.Navigation("MachineStatus");
 
                     b.Navigation("WorkOrderPhase");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Production.Workcenter", b =>
+                {
+                    b.HasOne("Domain.Entities.Production.Area", "Area")
+                        .WithMany()
+                        .HasForeignKey("AreaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Production.Shift", "Shift")
+                        .WithMany()
+                        .HasForeignKey("ShiftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Production.WorkcenterType", "WorkcenterType")
+                        .WithMany()
+                        .HasForeignKey("WorkcenterTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Area");
+
+                    b.Navigation("Shift");
+
+                    b.Navigation("WorkcenterType");
                 });
 
             modelBuilder.Entity("Domain.Entities.Purchase.Expenses", b =>

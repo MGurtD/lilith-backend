@@ -58,7 +58,7 @@ namespace Infrastructure.Persistance.Repositories.Purchase
         }
         public async Task<SupplierReference?> GetSupplierReferenceBySupplierAndId(Guid referenceId, Guid supplierId)
         {
-            var supplierReference = _supplierReferenceRepository.Find(r => r.SupplierId == supplierId && r.ReferenceId == referenceId).FirstOrDefault();
+            var supplierReference = (await _supplierReferenceRepository.FindAsync(r => r.SupplierId == supplierId && r.ReferenceId == referenceId)).FirstOrDefault();
             return supplierReference;
         }
 

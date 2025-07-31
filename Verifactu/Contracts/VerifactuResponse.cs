@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Verifactu.Contracts;
 
-public class RegisterInvoiceResponse
+public class VerifactuResponse
 {
     public bool Success { get; set; }
     public string StatusRegister { get; set; } = string.Empty;
@@ -15,4 +9,5 @@ public class RegisterInvoiceResponse
     public string XmlRequest { get; set; } = string.Empty;
     public string XmlResponse { get; set; } = string.Empty;
     public DateTime Timestamp { get; set; }
+    public string QrCodeUrl { get; set; } = string.Empty;
 }
