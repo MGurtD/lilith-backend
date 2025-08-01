@@ -17,13 +17,15 @@ public interface IVerifactuInvoiceService
 public class VerifactuInvoiceService : IVerifactuInvoiceService
 {
     private readonly sfPortTypeVerifactuClient _client;
-    private readonly string _baseUrl;
+    private readonly string _wsUrl;
+    private readonly string _qrUrl;
 
-    public VerifactuInvoiceService(string baseUrl, string certificatePath, string certificatePassword)
+    public VerifactuInvoiceService(string wsUrl, string qrUrl, string certificatePath, string certificatePassword)
     {
-        ValidateConstructorParameters(baseUrl, certificatePath, certificatePassword);
-        _baseUrl = baseUrl;
-        _client = CreateAndConfigureClient(baseUrl, certificatePath, certificatePassword);
+        ValidateConstructorParameters(wsUrl, certificatePath, certificatePassword);
+        _wsUrl = wsUrl;
+        _qrUrl = qrUrl;
+        _client = CreateAndConfigureClient(wsUrl, certificatePath, certificatePassword);
     }
 
     private static void ValidateConstructorParameters(string baseUrl, string certificatePath, string certificatePassword)
@@ -85,7 +87,7 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
 
             // Generar la URL del QR
             response.QrCodeUrl = VerifactuFormatUtils.GenerateQrValidationUrl(
-                _baseUrl,
+                _qrUrl,
                 request.SalesInvoice.VatNumber,
                 request.SalesInvoice.InvoiceNumber,
                 request.SalesInvoice.InvoiceDate,

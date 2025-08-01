@@ -95,6 +95,6 @@ public static class VerifactuFormatUtils
         var baseUrl = $"{uri.Scheme}://{uri.Authority}";
 
         // Construir la URL con los parámetros de consulta
-        return $"{baseUrl}/wlpl/TIKE-CONT/ValidarQR?nif={nif}&numserie={numSerie}&fecha={fechaFormatted}&importe={importeFormatted}";
+        return $"{baseUrl}?nif={nif}&numserie={numSerie}&fecha={fechaFormatted}&importe={importeFormatted}";
     }
 }

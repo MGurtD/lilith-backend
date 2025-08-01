@@ -71,12 +71,15 @@ public class FileManagmentSettings
 public class VerifactuSettings
 {
     public string Url { get; set; } = string.Empty;
+    public string UrlQr { get; set; } = string.Empty;
     public CertificateSettings Certificate { get; set; } = new();
 
     public void Validate()
     {
         if (string.IsNullOrWhiteSpace(Url))
             throw new ArgumentException("Verifactu:Url configuration key is required");
+        if (string.IsNullOrWhiteSpace(UrlQr))
+            throw new ArgumentException("Verifactu:UrlQr configuration key is required");
         Certificate.Validate();
     }
 }

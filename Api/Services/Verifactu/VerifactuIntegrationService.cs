@@ -44,8 +44,8 @@ public class VerifactuIntegrationService(IUnitOfWork unitOfWork,
         };
 
         // Enviar la factura a Verifactu
-        var verifactuSettings = settings.Verifactu!;
-        var verifactuService = new VerifactuInvoiceService(verifactuSettings.Url, verifactuSettings.Certificate.Path, verifactuSettings.Certificate.Password);
+        var settings = this.settings.Verifactu!;
+        var verifactuService = new VerifactuInvoiceService(settings.Url, settings.UrlQr, settings.Certificate.Path, settings.Certificate.Password);
         var response = await verifactuService.RegisterInvoice(request);
 
         // Registrar la petición en la base de datos
@@ -131,8 +131,8 @@ public class VerifactuIntegrationService(IUnitOfWork unitOfWork,
         };
 
         // Enviar la factura a Verifactu
-        var verifactuSettings = settings.Verifactu!;
-        var verifactuInvoiceService = new VerifactuInvoiceService(verifactuSettings.Url, verifactuSettings.Certificate.Path, verifactuSettings.Certificate.Password);
+        var settings = this.settings.Verifactu!;
+        var verifactuInvoiceService = new VerifactuInvoiceService(settings.Url, settings.UrlQr, settings.Certificate.Path, settings.Certificate.Password);
         var response = await verifactuInvoiceService.FindInvoices(request);
         
         return new GenericResponse(true, response);
