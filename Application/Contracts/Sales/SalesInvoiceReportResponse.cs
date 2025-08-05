@@ -13,7 +13,7 @@ public class InvoiceReportDto
     public required Customer Customer { get; set; }
     public required Site Site { get; set; }
     public required PaymentMethod PaymentMethod { get; set; }
-    public required string Base64Image { get; set; }
+    public required string QrCode { get; set; }
     public List<InvoiceReportDtoDeliveryNote> DeliveryNotes { get; set; } = [];
     public List<InvoiceReportDtoTaxImport> Imports { get; set; } = [];
 }

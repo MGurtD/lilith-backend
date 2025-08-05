@@ -90,11 +90,7 @@ public static class VerifactuFormatUtils
         // Formatear la fecha en el formato dd-MM-yyyy
         var fechaFormatted = FormatDate(fecha);
 
-        // Extraer solo la base del dominio (scheme + authority)
-        var uri = new Uri(url);
-        var baseUrl = $"{uri.Scheme}://{uri.Authority}";
-
         // Construir la URL con los parámetros de consulta
-        return $"{baseUrl}?nif={nif}&numserie={numSerie}&fecha={fechaFormatted}&importe={importeFormatted}";
+        return $"{url}?nif={nif}&numserie={numSerie}&fecha={fechaFormatted}&importe={importeFormatted}";
     }
 }

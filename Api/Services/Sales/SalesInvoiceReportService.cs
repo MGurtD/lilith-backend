@@ -47,7 +47,7 @@ namespace Api.Services.Sales
                 Customer = customer,
                 Site = site,
                 PaymentMethod = paymentMethod,
-                Base64Image = verifactuRequest?.QrCodeBase64 ?? string.Empty,
+                QrCode = verifactuRequest?.QrCodeUrl ?? string.Empty,
                 Imports = [.. invoice.SalesInvoiceImports.Select(import => new InvoiceReportDtoTaxImport()
                 {
                     Name = import.Tax!.Name,
