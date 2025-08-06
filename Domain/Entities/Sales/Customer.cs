@@ -22,10 +22,12 @@ namespace Domain.Entities.Sales
 
         public CustomerAddress? MainAddress()
         {
-            if (Address.Any())
+            var enabledAddresses = Address.Where(c => !c.Disabled);
+
+            if (enabledAddresses.Any())
             {
-                if (Address.Any(c => c.Main)) return Address.FirstOrDefault(c => c.Main);
-                return Address.FirstOrDefault();
+                if (enabledAddresses.Any(c => c.Main)) return enabledAddresses.FirstOrDefault(c => c.Main);
+                return enabledAddresses.FirstOrDefault();
             }
             return null;
         }
