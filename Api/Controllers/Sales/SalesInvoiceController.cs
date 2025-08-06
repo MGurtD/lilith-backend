@@ -27,11 +27,7 @@ namespace Api.Controllers.Sales
         public async Task<IActionResult> Create(CreateHeaderRequest createInvoiceRequest)
         {
             var response = await _service.Create(createInvoiceRequest);
-
-            if (response.Result)
-                return Ok(response);
-            else
-                return BadRequest(response);
+            return Ok(response);
         }
         [HttpPost("Rectificative")]
         [ProducesResponseType(StatusCodes.Status200OK)]
