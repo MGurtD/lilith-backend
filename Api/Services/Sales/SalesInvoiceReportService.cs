@@ -47,7 +47,8 @@ namespace Api.Services.Sales
                 Customer = customer,
                 Site = site,
                 PaymentMethod = paymentMethod,
-                QrCode = verifactuRequest?.QrCodeUrl ?? string.Empty,
+                QrCodeUrl = verifactuRequest?.QrCodeUrl ?? string.Empty,
+                QrCodeReportTag = !string.IsNullOrWhiteSpace(verifactuRequest?.QrCodeUrl) ? "+++IMAGE qrCodeData+++" : string.Empty,
                 Imports = [.. invoice.SalesInvoiceImports.Select(import => new InvoiceReportDtoTaxImport()
                 {
                     Name = import.Tax!.Name,
