@@ -30,9 +30,9 @@ namespace Api.Controllers.Warehouse
         }
 
         [HttpGet]
-        public IActionResult GetMovement(DateTime startTime, DateTime endTime)
+        public IActionResult GetMovement(DateTime startTime, DateTime endTime, Guid? locationId)
         {
-            var stockMovements =  _service.GetBetweenDates(startTime, endTime);
+            var stockMovements =  _service.GetBetweenDates(startTime, endTime, locationId);
 
             if (stockMovements != null) return Ok(stockMovements);
             else return BadRequest();

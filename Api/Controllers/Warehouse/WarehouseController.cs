@@ -1,9 +1,7 @@
-﻿using Application.Persistance;
+﻿using Application.Contracts;
+using Application.Persistance;
 using Domain.Entities.Warehouse;
-using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Query.Internal;
-using Application.Contracts;
 
 namespace Api.Controllers.Warehouse
 {
@@ -16,6 +14,37 @@ namespace Api.Controllers.Warehouse
         public WarehouseController(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
+        }        
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var entities = await _unitOfWork.Warehouses.GetAll();
+
+            return Ok(entities);
+        }
+
+        [HttpGet("Site/{id:guid}")]
+        public async Task<IActionResult> GetBySiteId(Guid id)
+        {
+            var entities = await _unitOfWork.Warehouses.GetBySiteId(id);
+            return Ok(entities);
+        }
+
+        [HttpGet("WithLocations")]
+        public async Task<IActionResult> GetAllWithLocations()
+        {
+            var entities = await _unitOfWork.Warehouses.GetAllWithLocations();
+            return Ok(entities);
+        }
+
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var entity = await _unitOfWork.Warehouses.Get(id);
+            if (entity is null) return NotFound();
+
+            return Ok(entity);
         }
 
         [HttpPost]
@@ -34,22 +63,6 @@ namespace Api.Controllers.Warehouse
             {
                 return Conflict($"Magatzem {request.Name} existent");
             }
-        }
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var entities = await _unitOfWork.Warehouses.GetAll();
-
-            return Ok(entities);
-        }
-
-        [HttpGet("{id:guid}")]
-        public async Task<IActionResult> GetById(Guid id)
-        {
-            var entity = await _unitOfWork.Warehouses.Get(id);
-            if (entity is null) return NotFound();
-         
-            return Ok(entity);
         }
 
         [HttpPut("{id:guid}")]

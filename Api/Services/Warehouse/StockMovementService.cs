@@ -19,6 +19,16 @@ namespace Api.Services.Warehouse
 
             var warehouse = _unitOfWork.Warehouses.Find(w => w.Disabled == false).FirstOrDefault();
             if (warehouse != null) _defaultLocationId = warehouse.DefaultLocationId;
+        }        
+
+        public IEnumerable<StockMovement> GetBetweenDates(DateTime startDate, DateTime endDate, Guid? locationId)
+        {
+            var stockMovements = _unitOfWork.StockMovements.Find(p => p.MovementDate >= startDate && p.MovementDate <= endDate);
+            if (locationId.HasValue) 
+            {
+                stockMovements = stockMovements.Where(s => s.LocationId == locationId);    
+            }
+            return stockMovements;
         }
 
         public async Task<GenericResponse> Create(StockMovement request)
@@ -73,12 +83,6 @@ namespace Api.Services.Warehouse
 
             await _unitOfWork.StockMovements.Add(request);
             return new GenericResponse(true, request);
-        }
-
-        public IEnumerable<StockMovement> GetBetweenDates(DateTime startDate, DateTime endDate)
-        {
-            var stockMovements = _unitOfWork.StockMovements.Find(p => p.MovementDate >= startDate && p.MovementDate <= endDate);
-            return stockMovements;
         }
 
         public async Task<GenericResponse> Remove(Guid id)
