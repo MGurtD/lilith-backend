@@ -1,0 +1,91 @@
+{
+  "EntityNotFound": "L'entitat amb ID {0} no existeix",
+  "EntityAlreadyExists": "L'entitat ja existeix",
+  "EntityDisabled": "L'entitat amb ID {0} està deshabilitada",
+  "EntityCreatedSuccessfully": "L'entitat s'ha creat correctament",
+  "EntityUpdatedSuccessfully": "L'entitat s'ha actualitzat correctament",
+  "EntityDeletedSuccessfully": "L'entitat s'ha eliminat correctament",
+  
+  "ReferenceNotFound": "Referència inexistent",
+  "ReferenceAlreadyExists": "Referència amb ruta de fabricació del mode seleccionat. Seleccioni un altre mode",
+  
+  "CustomerNotFound": "El client no existeix",
+  "CustomerInvalid": "El client no és vàlid per a crear una factura. Revisa el nom fiscal, el número de compte i el NIF",
+  "CustomerNoAddresses": "El client no té direccions donades d'alta. Si us plau, crei una direcció.",
+  
+  "SupplierNotFound": "El proveïdor no existeix",
+  
+  "ExerciseNotFound": "L'exercici no existeix",
+  "ExerciseCounterError": "Error al crear el comptador",
+  
+  "LifecycleNotFound": "El cicle de vida '{0}' no existeix",
+  "LifecycleNoInitialStatus": "El cicle de vida '{0}' no té un estat inicial",
+  "StatusNotFound": "L'estat amb ID {0} no existeix o està deshabilitat",
+  "StatusTransitionNotFound": "Identificadors de la transició inexistents",
+  
+  "InvoiceNotFound": "La factura amb ID {0} no existeix",
+  "InvoiceDetailNotFound": "El detall de factura amb ID {0} no existeix",
+  
+  "DeliveryNoteNotFound": "L'albarà amb ID {0} no existeix",
+  "DeliveryNoteStatusNotFound": "Estat 'Entregat' inexistent",
+  
+  "BudgetNotFound": "La comanda amb ID {0} no existeix",
+  "BudgetDetailNotFound": "El detall de comanda amb ID {0} no existeix",
+  
+  "WorkOrderNotFound": "L'ordre de fabricació amb ID {0} no existeix",
+  "WorkOrderPhaseNotFound": "Fase de l'ordre de fabricació inexistent",
+  "WorkOrderPhaseAlreadyExists": "Fase de l'ordre de fabricació existent",
+  "WorkOrderPhaseDetailNotFound": "Fase de l'ordre de fabricació inexistent",
+  "WorkOrderPhaseDetailAlreadyExists": "Pas de la fase de l'ordre de fabricació existent",
+  
+  "WorkMasterNotFound": "Ruta de fabricació inexistent",
+  "WorkMasterAlreadyExists": "Ruta de fabricació existent",
+  "WorkMasterPhaseNotFound": "Fase de la ruta de fabricació inexistent",
+  "WorkMasterPhaseAlreadyExists": "Fase de la ruta de fabricació existent",
+  "WorkMasterPhaseDetailNotFound": "Fase de la ruta de fabricació inexistent",
+  "WorkMasterPhaseDetailAlreadyExists": "Pas de la fase de la ruta de fabricació existent",
+  
+  "ReceiptNotFound": "L'albarà amb ID {0} inexistent",
+  "ReceiptStatusNotFound": "Estat recepcionat inexistent",
+  
+  "PurchaseOrderNotFound": "La comanda de compra amb ID {0} no existeix",
+  "PurchaseInvoiceNotFound": "La factura amb ID {0} no existeix",
+  
+  "SiteNotFound": "La seu 'Temges' no existeix",
+  "SiteInvalid": "Seu 'Temges' no és vàlida per crear una factura. Revisi les dades de facturació.",
+  "SiteTorelló": "Local Torelló",
+  
+  "TaxNotFound": "No existeix l'impost IVA 21%",
+  "PaymentMethodNotFound": "El mètode de pagament no existeix",
+  
+  "FileUploadDirectoryError": "Problemes al crear el directori '{0}'",
+  
+  "WorkcenterNotFound": "Centre de treball inexistent",
+  "WorkOrderLifecycle": "WorkOrder",
+  
+  "StatusNames.Created": "Creada",
+  "StatusNames.Launched": "Llançada",
+  "StatusNames.Paused": "Pausa",
+  "StatusNames.Closed": "Tancada",
+  "StatusNames.Delivered": "Entregat",
+  "StatusNames.Received": "Rebuda",
+  "StatusNames.Cancelled": "Cancel·lada",
+  "StatusNames.Production": "Producció",
+  "StatusNames.Served": "Comanda Servida",
+  "StatusNames.Invoiced": "Comanda Facturada",
+  "StatusNames.Pending": "Pendent d'acceptar",
+  "StatusNames.Accepted": "Acceptat",
+  "StatusNames.Paid": "Cobrada",
+  
+  "Validation.Required": "El camp {0} és obligatori",
+  "Validation.InvalidEmail": "El format del correu electrònic no és vàlid",
+  "Validation.InvalidRange": "El valor ha d'estar entre {0} i {1}",
+  "Validation.StringLength": "La longitud ha de ser entre {0} i {1} caràcters",
+  
+  "Auth.InvalidCredentials": "Credencials invàlides",
+  "Auth.InvalidParameters": "Paràmetres invàlids",
+  "Auth.UserNotFound": "Usuari no trobat",
+  "Auth.PasswordChanged": "Contrasenya canviada correctament",
+  
+  "ReferenceFormat.NotImplemented": "ReferenceFormatCalculation per '{0}' no implementat"
+}

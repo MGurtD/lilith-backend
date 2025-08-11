@@ -1,6 +1,7 @@
-﻿using Application.Persistance;
+﻿using Application.Contracts;
+using Application.Persistance;
+using Application.Services;
 using Domain.Entities;
-using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Sales
@@ -10,10 +11,12 @@ namespace Api.Controllers.Sales
     public class LifecycleController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILocalizationService _localizationService;
 
-        public LifecycleController(IUnitOfWork unitOfWork)
+        public LifecycleController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
+            _localizationService = localizationService;
         }
 
         [HttpPost]
@@ -31,7 +34,8 @@ namespace Api.Controllers.Sales
             }
             else
             {
-                return Conflict($"Cicle de vida '{request.Name}' existent");
+                var message = _localizationService.GetLocalizedString("LifecycleNotFound", request.Name);
+                return Conflict(new GenericResponse(false, message));
             }
         }
 
@@ -53,7 +57,8 @@ namespace Api.Controllers.Sales
             }
             else
             {
-                return NotFound();
+                var message = _localizationService.GetLocalizedString("EntityNotFound", id);
+                return NotFound(new GenericResponse(false, message));
             }
         }
 
@@ -64,7 +69,10 @@ namespace Api.Controllers.Sales
             if (entity is not null)
                 return Ok(entity);
             else
-                return NotFound();
+            {
+                var message = _localizationService.GetLocalizedString("LifecycleNotFound", name);
+                return NotFound(new GenericResponse(false, message));
+            }
         }
 
         [HttpPut("{id:guid}")]
@@ -77,7 +85,10 @@ namespace Api.Controllers.Sales
 
             var exists = await _unitOfWork.Lifecycles.Exists(request.Id);
             if (!exists)
-                return NotFound();
+            {
+                var message = _localizationService.GetLocalizedString("EntityNotFound", Id);
+                return NotFound(new GenericResponse(false, message));
+            }
 
             await _unitOfWork.Lifecycles.Update(request);
             return Ok(request);
@@ -91,7 +102,10 @@ namespace Api.Controllers.Sales
 
             var entity = _unitOfWork.Lifecycles.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
-                return NotFound();
+            {
+                var message = _localizationService.GetLocalizedString("EntityNotFound", id);
+                return NotFound(new GenericResponse(false, message));
+            }
 
             await _unitOfWork.Lifecycles.Remove(entity);
             return Ok(entity);
@@ -111,7 +125,8 @@ namespace Api.Controllers.Sales
             }
             else
             {
-                return BadRequest();
+                var message = _localizationService.GetLocalizedString("EntityAlreadyExists");
+                return BadRequest(new GenericResponse(false, message));
             }
         }
 
@@ -129,7 +144,8 @@ namespace Api.Controllers.Sales
             }
             else
             {
-                return NotFound();
+                var message = _localizationService.GetLocalizedString("EntityNotFound", id);
+                return NotFound(new GenericResponse(false, message));
             }
         }
 
@@ -147,7 +163,8 @@ namespace Api.Controllers.Sales
             }
             else
             {
-                return NotFound();
+                var message = _localizationService.GetLocalizedString("EntityNotFound", id);
+                return NotFound(new GenericResponse(false, message));
             }
         }
 
@@ -168,7 +185,8 @@ namespace Api.Controllers.Sales
                 }
                 else
                 {
-                    return NotFound("Identificadors de la transició inexistents");
+                    var message = _localizationService.GetLocalizedString("StatusTransitionNotFound");
+                    return NotFound(new GenericResponse(false, message));
                 }
             }
             else
@@ -191,7 +209,8 @@ namespace Api.Controllers.Sales
             }
             else
             {
-                return NotFound();
+                var message = _localizationService.GetLocalizedString("EntityNotFound", id);
+                return NotFound(new GenericResponse(false, message));
             }
         }
 
@@ -209,7 +228,8 @@ namespace Api.Controllers.Sales
             }
             else
             {
-                return NotFound();
+                var message = _localizationService.GetLocalizedString("EntityNotFound", id);
+                return NotFound(new GenericResponse(false, message));
             }
         }
     }

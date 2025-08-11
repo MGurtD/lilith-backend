@@ -27,7 +27,8 @@ try
             .AddDatabaseServices()
             .AddApplicationServices()
             .AddJwtSetup(builder.Environment.IsDevelopment())
-            .AddSwaggerSetup();
+            .AddSwaggerSetup()
+            .AddLocalizationSetup(); // Add localization services
 
         builder.Services.AddControllers()
                         .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
@@ -39,6 +40,9 @@ try
         app.UseSwaggerUI();
 
         app.UseHttpsRedirection();
+
+        // Add localization middleware before authentication
+        app.UseLocalizationSetup();
 
         app.UseAuthentication();
         app.UseAuthorization();

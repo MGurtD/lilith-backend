@@ -1,0 +1,91 @@
+{
+  "EntityNotFound": "La entidad con ID {0} no existe",
+  "EntityAlreadyExists": "La entidad ya existe",
+  "EntityDisabled": "La entidad con ID {0} está deshabilitada",
+  "EntityCreatedSuccessfully": "La entidad se ha creado correctamente",
+  "EntityUpdatedSuccessfully": "La entidad se ha actualizado correctamente",
+  "EntityDeletedSuccessfully": "La entidad se ha eliminado correctamente",
+  
+  "ReferenceNotFound": "Referencia inexistente",
+  "ReferenceAlreadyExists": "Referencia con ruta de fabricación del modo seleccionado. Seleccione otro modo",
+  
+  "CustomerNotFound": "El cliente no existe",
+  "CustomerInvalid": "El cliente no es válido para crear una factura. Revise el nombre fiscal, el número de cuenta y el NIF",
+  "CustomerNoAddresses": "El cliente no tiene direcciones dadas de alta. Por favor, cree una dirección.",
+  
+  "SupplierNotFound": "El proveedor no existe",
+  
+  "ExerciseNotFound": "El ejercicio no existe",
+  "ExerciseCounterError": "Error al crear el contador",
+  
+  "LifecycleNotFound": "El ciclo de vida '{0}' no existe",
+  "LifecycleNoInitialStatus": "El ciclo de vida '{0}' no tiene un estado inicial",
+  "StatusNotFound": "El estado con ID {0} no existe o está deshabilitado",
+  "StatusTransitionNotFound": "Identificadores de la transición inexistentes",
+  
+  "InvoiceNotFound": "La factura con ID {0} no existe",
+  "InvoiceDetailNotFound": "El detalle de factura con ID {0} no existe",
+  
+  "DeliveryNoteNotFound": "El albarán con ID {0} no existe",
+  "DeliveryNoteStatusNotFound": "Estado 'Entregado' inexistente",
+  
+  "BudgetNotFound": "El pedido con ID {0} no existe",
+  "BudgetDetailNotFound": "El detalle de pedido con ID {0} no existe",
+  
+  "WorkOrderNotFound": "La orden de fabricación con ID {0} no existe",
+  "WorkOrderPhaseNotFound": "Fase de la orden de fabricación inexistente",
+  "WorkOrderPhaseAlreadyExists": "Fase de la orden de fabricación existente",
+  "WorkOrderPhaseDetailNotFound": "Fase de la orden de fabricación inexistente",
+  "WorkOrderPhaseDetailAlreadyExists": "Paso de la fase de la orden de fabricación existente",
+  
+  "WorkMasterNotFound": "Ruta de fabricación inexistente",
+  "WorkMasterAlreadyExists": "Ruta de fabricación existente",
+  "WorkMasterPhaseNotFound": "Fase de la ruta de fabricación inexistente",
+  "WorkMasterPhaseAlreadyExists": "Fase de la ruta de fabricación existente",
+  "WorkMasterPhaseDetailNotFound": "Fase de la ruta de fabricación inexistente",
+  "WorkMasterPhaseDetailAlreadyExists": "Paso de la fase de la ruta de fabricación existente",
+  
+  "ReceiptNotFound": "El albarán con ID {0} inexistente",
+  "ReceiptStatusNotFound": "Estado recepcionado inexistente",
+  
+  "PurchaseOrderNotFound": "El pedido de compra con ID {0} no existe",
+  "PurchaseInvoiceNotFound": "La factura con ID {0} no existe",
+  
+  "SiteNotFound": "La sede 'Temges' no existe",
+  "SiteInvalid": "Sede 'Temges' no es válida para crear una factura. Revise los datos de facturación.",
+  "SiteTorelló": "Local Torelló",
+  
+  "TaxNotFound": "No existe el impuesto IVA 21%",
+  "PaymentMethodNotFound": "El método de pago no existe",
+  
+  "FileUploadDirectoryError": "Problemas al crear el directorio '{0}'",
+  
+  "WorkcenterNotFound": "Centro de trabajo inexistente",
+  "WorkOrderLifecycle": "WorkOrder",
+  
+  "StatusNames.Created": "Creada",
+  "StatusNames.Launched": "Lanzada",
+  "StatusNames.Paused": "Pausa",
+  "StatusNames.Closed": "Cerrada",
+  "StatusNames.Delivered": "Entregado",
+  "StatusNames.Received": "Recibida",
+  "StatusNames.Cancelled": "Cancelada",
+  "StatusNames.Production": "Producción",
+  "StatusNames.Served": "Pedido Servido",
+  "StatusNames.Invoiced": "Pedido Facturado",
+  "StatusNames.Pending": "Pendiente de aceptar",
+  "StatusNames.Accepted": "Aceptado",
+  "StatusNames.Paid": "Cobrada",
+  
+  "Validation.Required": "El campo {0} es obligatorio",
+  "Validation.InvalidEmail": "El formato del correo electrónico no es válido",
+  "Validation.InvalidRange": "El valor debe estar entre {0} y {1}",
+  "Validation.StringLength": "La longitud debe estar entre {0} y {1} caracteres",
+  
+  "Auth.InvalidCredentials": "Credenciales inválidas",
+  "Auth.InvalidParameters": "Parámetros inválidos",
+  "Auth.UserNotFound": "Usuario no encontrado",
+  "Auth.PasswordChanged": "Contraseña cambiada correctamente",
+  
+  "ReferenceFormat.NotImplemented": "ReferenceFormatCalculation para '{0}' no implementado"
+}

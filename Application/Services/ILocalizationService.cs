@@ -1,0 +1,8 @@
+namespace Application.Services
+{
+    public interface ILocalizationService
+    {
+        string GetLocalizedString(string key, params object[] arguments);
+        string GetLocalizedStringForCulture(string key, string culture, params object[] arguments);
+    }
+}

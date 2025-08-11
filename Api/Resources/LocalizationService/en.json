@@ -1,0 +1,91 @@
+{
+  "EntityNotFound": "Entity with ID {0} not found",
+  "EntityAlreadyExists": "Entity already exists",
+  "EntityDisabled": "Entity with ID {0} is disabled",
+  "EntityCreatedSuccessfully": "Entity created successfully",
+  "EntityUpdatedSuccessfully": "Entity updated successfully",
+  "EntityDeletedSuccessfully": "Entity deleted successfully",
+  
+  "ReferenceNotFound": "Reference not found",
+  "ReferenceAlreadyExists": "Reference with manufacturing route for selected mode. Please select another mode",
+  
+  "CustomerNotFound": "Customer not found",
+  "CustomerInvalid": "Customer is not valid for creating an invoice. Check tax name, account number and VAT number",
+  "CustomerNoAddresses": "Customer has no addresses registered. Please create an address.",
+  
+  "SupplierNotFound": "Supplier not found",
+  
+  "ExerciseNotFound": "Exercise not found",
+  "ExerciseCounterError": "Error creating counter",
+  
+  "LifecycleNotFound": "Lifecycle '{0}' not found",
+  "LifecycleNoInitialStatus": "Lifecycle '{0}' has no initial status",
+  "StatusNotFound": "Status with ID {0} not found or is disabled",
+  "StatusTransitionNotFound": "Transition identifiers not found",
+  
+  "InvoiceNotFound": "Invoice with ID {0} not found",
+  "InvoiceDetailNotFound": "Invoice detail with ID {0} not found",
+  
+  "DeliveryNoteNotFound": "Delivery note with ID {0} not found",
+  "DeliveryNoteStatusNotFound": "Status 'Delivered' not found",
+  
+  "BudgetNotFound": "Budget with ID {0} not found",
+  "BudgetDetailNotFound": "Budget detail with ID {0} not found",
+  
+  "WorkOrderNotFound": "Work order with ID {0} not found",
+  "WorkOrderPhaseNotFound": "Work order phase not found",
+  "WorkOrderPhaseAlreadyExists": "Work order phase already exists",
+  "WorkOrderPhaseDetailNotFound": "Work order phase detail not found",
+  "WorkOrderPhaseDetailAlreadyExists": "Work order phase detail step already exists",
+  
+  "WorkMasterNotFound": "Work master not found",
+  "WorkMasterAlreadyExists": "Work master already exists",
+  "WorkMasterPhaseNotFound": "Work master phase not found",
+  "WorkMasterPhaseAlreadyExists": "Work master phase already exists",
+  "WorkMasterPhaseDetailNotFound": "Work master phase detail not found",
+  "WorkMasterPhaseDetailAlreadyExists": "Work master phase detail step already exists",
+  
+  "ReceiptNotFound": "Receipt with ID {0} not found",
+  "ReceiptStatusNotFound": "Status 'Received' not found",
+  
+  "PurchaseOrderNotFound": "Purchase order with ID {0} not found",
+  "PurchaseInvoiceNotFound": "Purchase invoice with ID {0} not found",
+  
+  "SiteNotFound": "Site 'Temges' not found",
+  "SiteInvalid": "Site 'Temges' is not valid for creating an invoice. Check billing information.",
+  "SiteTorelló": "Local Torelló",
+  
+  "TaxNotFound": "VAT 21% tax not found",
+  "PaymentMethodNotFound": "Payment method not found",
+  
+  "FileUploadDirectoryError": "Problems creating directory '{0}'",
+  
+  "WorkcenterNotFound": "Workcenter not found",
+  "WorkOrderLifecycle": "WorkOrder",
+  
+  "StatusNames.Created": "Created",
+  "StatusNames.Launched": "Launched",
+  "StatusNames.Paused": "Paused",
+  "StatusNames.Closed": "Closed",
+  "StatusNames.Delivered": "Delivered",
+  "StatusNames.Received": "Received",
+  "StatusNames.Cancelled": "Cancelled",
+  "StatusNames.Production": "Production",
+  "StatusNames.Served": "Order Served",
+  "StatusNames.Invoiced": "Order Invoiced",
+  "StatusNames.Pending": "Pending acceptance",
+  "StatusNames.Accepted": "Accepted",
+  "StatusNames.Paid": "Paid",
+  
+  "Validation.Required": "The {0} field is required",
+  "Validation.InvalidEmail": "Email format is not valid",
+  "Validation.InvalidRange": "Value must be between {0} and {1}",
+  "Validation.StringLength": "Length must be between {0} and {1} characters",
+  
+  "Auth.InvalidCredentials": "Invalid credentials",
+  "Auth.InvalidParameters": "Invalid parameters",
+  "Auth.UserNotFound": "User not found",
+  "Auth.PasswordChanged": "Password changed successfully",
+  
+  "ReferenceFormat.NotImplemented": "ReferenceFormatCalculation for '{0}' not implemented"
+}
