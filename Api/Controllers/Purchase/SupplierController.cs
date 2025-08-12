@@ -1,50 +1,46 @@
-﻿using Application.Persistance;
+﻿using Application.Contracts;
+using Application.Persistance;
+using Application.Services;
 using Domain.Entities.Purchase;
+using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class SupplierController : ControllerBase
+    public class SupplierController(IUnitOfWork unitOfWork, ILocalizationService localizationService) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public SupplierController(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(Supplier request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.Suppliers.Find(r => request.ComercialName == r.ComercialName).Any();
+            var exists = unitOfWork.Suppliers.Find(r => request.ComercialName == r.ComercialName).Any();
             if (!exists)
             {
-                await _unitOfWork.Suppliers.Add(request);
+                await unitOfWork.Suppliers.Add(request);
 
                 var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
                 return Created(location, request);
             }
             else
             {
-                return Conflict($"Proveïdor {request.ComercialName} existent");
+                return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("SupplierAlreadyExists", request.ComercialName)));
             }
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.Suppliers.GetAll();
+            var entities = await unitOfWork.Suppliers.GetAll();
             return Ok(entities.OrderBy(e => e.ComercialName));
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.Suppliers.Get(id);
+            var entity = await unitOfWork.Suppliers.Get(id);
             if (entity is not null)
             {
                 return Ok(entity);
@@ -63,11 +59,11 @@ namespace Api.Controllers.Purchase
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.Suppliers.Exists(request.Id);
+            var exists = await unitOfWork.Suppliers.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.Suppliers.Update(request);
+            await unitOfWork.Suppliers.Update(request);
             return Ok(request);
         }
 
@@ -77,11 +73,11 @@ namespace Api.Controllers.Purchase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.Suppliers.Find(e => e.Id == id).FirstOrDefault();
+            var entity = unitOfWork.Suppliers.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.Suppliers.Remove(entity);
+            await unitOfWork.Suppliers.Remove(entity);
             return Ok(entity);
         }
 
@@ -92,10 +88,10 @@ namespace Api.Controllers.Purchase
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var supplier = await _unitOfWork.Suppliers.Get(request.SupplierId);
+            var supplier = await unitOfWork.Suppliers.Get(request.SupplierId);
             if (supplier is not null)
             {
-                await _unitOfWork.Suppliers.AddContact(request);
+                await unitOfWork.Suppliers.AddContact(request);
                 return Ok(request);
             }
             else
@@ -110,7 +106,7 @@ namespace Api.Controllers.Purchase
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var contact = _unitOfWork.Suppliers.GetContactById(id);
+            var contact = unitOfWork.Suppliers.GetContactById(id);
             if (contact is not null)
             {
                 contact.FirstName = request.FirstName;
@@ -123,7 +119,7 @@ namespace Api.Controllers.Purchase
                 contact.Default = request.Default;
                 contact.Observations = request.Observations;
 
-                await _unitOfWork.Suppliers.UpdateContact(contact);
+                await unitOfWork.Suppliers.UpdateContact(contact);
                 return Ok(contact);
             }
             else
@@ -138,10 +134,10 @@ namespace Api.Controllers.Purchase
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var contact = _unitOfWork.Suppliers.GetContactById(id);
+            var contact = unitOfWork.Suppliers.GetContactById(id);
             if (contact is not null)
             {
-                await _unitOfWork.Suppliers.RemoveContact(contact);
+                await unitOfWork.Suppliers.RemoveContact(contact);
                 return Ok(contact);
             }
             else
@@ -156,7 +152,7 @@ namespace Api.Controllers.Purchase
         [HttpGet]
         public async Task<IActionResult> GetSupplierReferenceBySupplierIdAndReferenceId(Guid supplierId, Guid referenceId)
         {
-            var reference = await _unitOfWork.Suppliers.GetSupplierReferenceBySupplierIdAndReferenceId(supplierId, referenceId);
+            var reference = await unitOfWork.Suppliers.GetSupplierReferenceBySupplierIdAndReferenceId(supplierId, referenceId);
             return Ok(reference);
         }
 
@@ -164,7 +160,7 @@ namespace Api.Controllers.Purchase
         [HttpGet]
         public IActionResult GetReference(Guid supplierReferenceId)
         {
-            var references = _unitOfWork.Suppliers.GetSupplierReferenceById(supplierReferenceId);
+            var references = unitOfWork.Suppliers.GetSupplierReferenceById(supplierReferenceId);
             return Ok(references);
         }
 
@@ -172,7 +168,7 @@ namespace Api.Controllers.Purchase
         [HttpGet]
         public IActionResult GetReferences(Guid id)
         {
-            var references = _unitOfWork.Suppliers.GetSupplierReferences(id);
+            var references = unitOfWork.Suppliers.GetSupplierReferences(id);
             return Ok(references);
         }
 
@@ -180,7 +176,7 @@ namespace Api.Controllers.Purchase
         [HttpGet]
         public IActionResult GetSuppliersByReference(Guid referenceId)
         {
-            var suppliers = _unitOfWork.Suppliers.GetReferenceSuppliers(referenceId);
+            var suppliers = unitOfWork.Suppliers.GetReferenceSuppliers(referenceId);
             return Ok(suppliers);
         }
 
@@ -190,17 +186,17 @@ namespace Api.Controllers.Purchase
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var supplier = await _unitOfWork.Suppliers.Get(request.SupplierId);
+            var supplier = await unitOfWork.Suppliers.Get(request.SupplierId);
             if (supplier is null) return NotFound("El proveïdor no existeix");
 
-            var reference = await _unitOfWork.References.Get(request.ReferenceId);
+            var reference = await unitOfWork.References.Get(request.ReferenceId);
             if (reference is null) return NotFound("La referencia no existeix");
 
-            var references = _unitOfWork.Suppliers.GetSupplierReferences(request.SupplierId);
+            var references = unitOfWork.Suppliers.GetSupplierReferences(request.SupplierId);
             var exists = references.Where(r => r.ReferenceId == request.ReferenceId).Count() > 0;
             if (!exists)
             {
-                await _unitOfWork.Suppliers.AddSupplierReference(request);
+                await unitOfWork.Suppliers.AddSupplierReference(request);
                 return Ok(request);
             }
             else
@@ -215,7 +211,7 @@ namespace Api.Controllers.Purchase
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var supplierReference = await _unitOfWork.Suppliers.GetSupplierReferenceById(id);
+            var supplierReference = await unitOfWork.Suppliers.GetSupplierReferenceById(id);
             if (supplierReference is not null)
             {
                 supplierReference.UpdatedOn = DateTime.Now;
@@ -224,7 +220,7 @@ namespace Api.Controllers.Purchase
                 supplierReference.SupplierPrice = request.SupplierPrice;
                 supplierReference.SupplyDays = request.SupplyDays;
 
-                await _unitOfWork.Suppliers.UpdateSupplierReference(supplierReference);
+                await unitOfWork.Suppliers.UpdateSupplierReference(supplierReference);
                 return Ok(supplierReference);
             }
             else
@@ -239,10 +235,10 @@ namespace Api.Controllers.Purchase
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var supplierReference = await _unitOfWork.Suppliers.GetSupplierReferenceById(id);
+            var supplierReference = await unitOfWork.Suppliers.GetSupplierReferenceById(id);
             if (supplierReference is not null)
             {
-                await _unitOfWork.Suppliers.RemoveSupplierReference(supplierReference);
+                await unitOfWork.Suppliers.RemoveSupplierReference(supplierReference);
                 return Ok(supplierReference);
             }
             else
@@ -251,7 +247,5 @@ namespace Api.Controllers.Purchase
             }
         }
         #endregion
-
-
     }
 }

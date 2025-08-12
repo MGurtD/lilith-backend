@@ -7,21 +7,14 @@ namespace Api.Controllers.Warehouse
     [ApiController]
     [Route("api/[controller]")]
 
-    public class StockController : ControllerBase
+    public class StockController(IStockService service) : ControllerBase
     {
-        private readonly IStockService _service;
-
-        public StockController(IStockService service)
-        {
-            _service = service;
-        }
-
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create(Stock request)
         {
-            var response = await _service.Create(request);
+            var response = await service.Create(request);
 
             if (response.Result)
                 return Ok(response);
@@ -35,15 +28,15 @@ namespace Api.Controllers.Warehouse
             IEnumerable<Stock> stock;
             if (locationId.HasValue)
             {
-                stock = _service.GetByLocation(locationId.Value);
+                stock = service.GetByLocation(locationId.Value);
             }
             else if (referenceId.HasValue)
             {
-                stock = _service.GetByReference(referenceId.Value);
+                stock = service.GetByReference(referenceId.Value);
             }
             else
             {
-                stock = _service.GetAll();
+                stock = service.GetAll();
             }
 
             if (stock != null) return Ok(stock);
@@ -57,7 +50,7 @@ namespace Api.Controllers.Warehouse
         {
             if (id != request.Id) return BadRequest();
 
-            var response = await _service.Update(request);
+            var response = await service.Update(request);
 
             if (response.Result) return Ok(response);
             else return BadRequest(response);

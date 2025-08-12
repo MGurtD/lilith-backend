@@ -10,10 +10,12 @@ namespace Api.Controllers.Auth
     public class AuthenticationController : ControllerBase
     {
         private readonly IAuthenticationService _authenticationService;
+        private readonly ILocalizationService _localizationService;
 
-        public AuthenticationController(IAuthenticationService authenticationService)
+        public AuthenticationController(IAuthenticationService authenticationService, ILocalizationService localizationService)
         {
             _authenticationService = authenticationService;
+            _localizationService = localizationService;
         }
 
         [HttpPost]
@@ -62,7 +64,7 @@ namespace Api.Controllers.Auth
                 return BadRequest(new AuthResponse()
                 {
                     Result = false,
-                    Errors = new List<string>() { "Invalid parameters" }
+                    Errors = new List<string>() { _localizationService.GetLocalizedString("AuthInvalidParameters") }
                 });
             }
 

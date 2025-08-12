@@ -1,4 +1,6 @@
-﻿using Application.Persistance;
+﻿using Application.Contracts;
+using Application.Persistance;
+using Application.Services;
 using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,10 +11,12 @@ namespace Api.Controllers.Sales
     public class CustomerController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILocalizationService _localizationService;
 
-        public CustomerController(IUnitOfWork unitOfWork)
+        public CustomerController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
+            _localizationService = localizationService;
         }
 
         [HttpPost]
@@ -30,7 +34,7 @@ namespace Api.Controllers.Sales
             }
             else
             {
-                return Conflict($"Client {request.ComercialName} existent");
+                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("CustomerAlreadyExists", request.ComercialName)));
             }
         }
 

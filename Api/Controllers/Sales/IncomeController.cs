@@ -6,19 +6,14 @@ namespace Api.Controllers.Sales
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class IncomeController : ControllerBase
+    public class IncomeController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        public IncomeController(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
         [HttpGet]
         [Route("Consolidated")]
         public IActionResult GetConsolidatedBetweenDates(DateTime startTime, DateTime endTime)
         {
             IEnumerable<ConsolidatedIncomes> entities = Enumerable.Empty<ConsolidatedIncomes>();
-            entities = _unitOfWork.ConsolidatedIncomes.Find(c => c.Date >= startTime && c.Date <= endTime);
+            entities = unitOfWork.ConsolidatedIncomes.Find(c => c.Date >= startTime && c.Date <= endTime);
             return Ok(entities);
         }
     }

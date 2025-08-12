@@ -1,4 +1,6 @@
-﻿using Application.Persistance;
+﻿using Application.Contracts;
+using Application.Persistance;
+using Application.Services;
 using Domain.Entities.Production;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,10 +11,14 @@ namespace Api.Controllers.Production
     public class OperatorController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
-        public OperatorController(IUnitOfWork unitOfWork)
+        private readonly ILocalizationService _localizationService;
+
+        public OperatorController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
+            _localizationService = localizationService;
         }
+
         [HttpPost]
         public async Task<IActionResult> Create(Operator request)
         {
@@ -27,7 +33,7 @@ namespace Api.Controllers.Production
             }
             else
             {
-                return Conflict($"Operari {request.Name} existent");
+                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("OperatorAlreadyExists", request.Name)));
             }
         }
         [HttpGet]

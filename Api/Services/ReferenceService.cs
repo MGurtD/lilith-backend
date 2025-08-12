@@ -1,6 +1,5 @@
 ﻿using Application.Contracts;
 using Application.Persistance;
-using Application.Persistance.Repositories;
 using Application.Services;
 using Domain.Entities.Purchase;
 using Domain.Entities.Shared;
@@ -12,11 +11,12 @@ namespace Api.Services
     public class ReferenceService : IReferenceService
     {
         private readonly IUnitOfWork _unitOfWork;
-        
+        private readonly ILocalizationService _localizationService;
 
-        public ReferenceService(IUnitOfWork unitOfWork)
+        public ReferenceService(IUnitOfWork unitOfWork, ILocalizationService localizationService)
         {
-            _unitOfWork = unitOfWork;        
+            _unitOfWork = unitOfWork;
+            _localizationService = localizationService;
         }
 
         public GenericResponse CanDelete(Guid referenceId)
@@ -65,7 +65,7 @@ namespace Api.Services
         {
             if (receipt == null)
             {
-                return new GenericResponse(false, "Albará mal format o incorrecte");
+                return new GenericResponse(false, _localizationService.GetLocalizedString("InvoiceInvalidFormat"));
             }
             var supplierId = receipt.SupplierId;
             var format = new ReferenceFormat();

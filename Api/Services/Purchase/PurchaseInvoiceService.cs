@@ -12,11 +12,13 @@ namespace Api.Services.Purchase
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IExerciseService _exerciseService;
+        private readonly ILocalizationService _localizationService;
 
-        public PurchaseInvoiceService(IUnitOfWork unitOfWork, IExerciseService exerciseService)
+        public PurchaseInvoiceService(IUnitOfWork unitOfWork, IExerciseService exerciseService, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
             _exerciseService = exerciseService;
+            _localizationService = localizationService;
         }
 
         public async Task<PurchaseInvoice?> GetById(Guid id)
@@ -65,7 +67,7 @@ namespace Api.Services.Purchase
                 var exercise = _exerciseService.GetExerciceByDate(purchaseInvoice.PurchaseInvoiceDate);
                 if (exercise == null || exercise.Disabled)
                 {
-                    return new GenericResponse(false, new List<string> { $"Exercici invàlid" });
+                    return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseInvalid"));
                 }
 
                 var counterObj = await _exerciseService.GetNextCounter(exercise.Id, "purchaseinvoice");
@@ -75,7 +77,7 @@ namespace Api.Services.Purchase
                     await _unitOfWork.PurchaseInvoices.Add(purchaseInvoice);
                 } 
                 else {
-                    return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
+                    return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseCounterError"));
                 }
 
             }
@@ -111,7 +113,7 @@ namespace Api.Services.Purchase
             var status = await _unitOfWork.Lifecycles.StatusRepository.Get(statusToId);
             if (status == null || status.Disabled)
             {
-                return new GenericResponse(false, $"L'estat de factura amb ID {statusToId} no existeix o est� deshabilitat" );
+                return new GenericResponse(false, _localizationService.GetLocalizedString("StatusNotFound", statusToId));
             }
 
             var purchaseInvoices = _unitOfWork.PurchaseInvoices.Find(pi => changeStatusesRequest.Ids.Contains(pi.Id));
@@ -130,13 +132,13 @@ namespace Api.Services.Purchase
             var invoice = await _unitOfWork.PurchaseInvoices.Get(changeStatusOfPurchaseInvoiceRequest.Id);
             if (invoice == null)
             {
-                return new GenericResponse(false, new List<string> { $"La factura amb ID {changeStatusOfPurchaseInvoiceRequest.Id} no existeix" });
+                return new GenericResponse(false, _localizationService.GetLocalizedString("PurchaseInvoiceNotFound", changeStatusOfPurchaseInvoiceRequest.Id));
             }
 
             var status = await _unitOfWork.Lifecycles.StatusRepository.Get(changeStatusOfPurchaseInvoiceRequest.StatusToId);
             if (status == null || status.Disabled)
             {
-                return new GenericResponse(false, new List<string> { $"L'estat de factura amb ID {changeStatusOfPurchaseInvoiceRequest.StatusToId} no existeix o est� deshabilitat" });
+                return new GenericResponse(false, _localizationService.GetLocalizedString("StatusNotFound", changeStatusOfPurchaseInvoiceRequest.StatusToId));
             }
 
             invoice.StatusId = changeStatusOfPurchaseInvoiceRequest.StatusToId;
@@ -150,7 +152,7 @@ namespace Api.Services.Purchase
             var invoice = _unitOfWork.PurchaseInvoices.Find(p => p.Id == id).FirstOrDefault();
             if (invoice == null)
             {
-                return new GenericResponse(false, new List<string> { $"La factura amb ID {id} no existeix" });
+                return new GenericResponse(false, _localizationService.GetLocalizedString("PurchaseInvoiceNotFound", id));
             }
             else
             {

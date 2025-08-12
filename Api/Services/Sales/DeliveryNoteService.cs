@@ -1,14 +1,16 @@
 ﻿using Application.Contracts;
 using Application.Contracts.Sales;
 using Application.Persistance;
+using Application.Services;
 using Application.Services.Sales;
 using Application.Services.Warehouse;
 using Domain.Entities;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
 using Domain.Entities.Warehouse;
+using Api.Constants;
 
-namespace Application.Services
+namespace Api.Services.Sales
 {
     internal struct DeliveryNoteEntities
     {
@@ -24,14 +26,16 @@ namespace Application.Services
         private readonly IStockMovementService _stockMovementService;
         private readonly ISalesOrderService _salesOrderService;
         private readonly IExerciseService _exerciseService;
-        private readonly string lifecycleName = "DeliveryNote";
+        private readonly ILocalizationService _localizationService;
+        private readonly string lifecycleName = StatusConstants.Lifecycles.DeliveryNote;
 
-        public DeliveryNoteService(IUnitOfWork unitOfWork, IStockMovementService stockMovementService, ISalesOrderService salesOrderService, IExerciseService exerciseService)
+        public DeliveryNoteService(IUnitOfWork unitOfWork, IStockMovementService stockMovementService, ISalesOrderService salesOrderService, IExerciseService exerciseService, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
             _stockMovementService = stockMovementService;
             _salesOrderService = salesOrderService;
             _exerciseService = exerciseService;
+            _localizationService = localizationService;
         }
 
         public async Task<DeliveryNoteReportResponse?> GetDtoForReportingById(Guid id)
@@ -123,7 +127,9 @@ namespace Application.Services
             var deliveryNoteEntities = (DeliveryNoteEntities)response.Content!;
 
             var counterObj = await _exerciseService.GetNextCounter(deliveryNoteEntities.Exercise.Id, "deliverynote");
-            if (counterObj.Content == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
+            if (counterObj.Content == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseCounterError"));
+            
             var deliveryNote = new DeliveryNote()
             {
                 Id = createRequest.Id,
@@ -145,7 +151,8 @@ namespace Application.Services
             deliveryNote.Details?.Clear();
 
             var exists = await _unitOfWork.DeliveryNotes.Exists(deliveryNote.Id);
-            if (!exists) return new GenericResponse(false, $"Id {deliveryNote.Id} inexistent" );
+            if (!exists) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("Common.IdNotExist", deliveryNote.Id));
 
             await _unitOfWork.DeliveryNotes.Update(deliveryNote);
             return new GenericResponse(true);
@@ -154,7 +161,8 @@ namespace Application.Services
         public async Task<GenericResponse> Remove(Guid id)
         {
             var deliveryNotes = await _unitOfWork.DeliveryNotes.Get(id);
-            if (deliveryNotes == null) return new GenericResponse(false,  $"Id {id} inexistent" );
+            if (deliveryNotes == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("Common.IdNotExist", id));
 
             await _unitOfWork.DeliveryNotes.Remove(deliveryNotes);
             return new GenericResponse(true);
@@ -232,7 +240,7 @@ namespace Application.Services
                     MovementDate = DateTime.Now,
                     CreatedOn = DateTime.Now,
                     MovementType = StockMovementType.OUTPUT,
-                    Description = $"Albará {deliveryNote.Number}",
+                    Description = _localizationService.GetLocalizedString("Movement.AlbaranDescription", deliveryNote.Number),
                     ReferenceId = detail.ReferenceId,
                     Quantity = detail.Quantity,
                 };
@@ -254,7 +262,7 @@ namespace Application.Services
                     MovementDate = DateTime.Now,
                     CreatedOn = DateTime.Now,
                     MovementType = StockMovementType.INPUT,
-                    Description = $"Retorn albará {deliveryNote.Number}",
+                    Description = _localizationService.GetLocalizedString("Movement.ReturnDescription", deliveryNote.Number),
                     ReferenceId = detail.ReferenceId,
                     Quantity = detail.Quantity,
                 };
@@ -305,24 +313,28 @@ namespace Application.Services
         private async Task<GenericResponse> ValidateCreateInvoiceRequest(CreateHeaderRequest createInvoiceRequest)
         {
             var exercise = await _unitOfWork.Exercices.Get(createInvoiceRequest.ExerciseId);
-            if (exercise == null) return new GenericResponse(false, new List<string>() { "L'exercici no existex" });
+            if (exercise == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseNotFound"));
 
             var customer = await _unitOfWork.Customers.Get(createInvoiceRequest.CustomerId);
-            if (customer == null) return new GenericResponse(false, new List<string>() { "El client no existeix" });
+            if (customer == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("CustomerNotFound"));
             if (!customer.IsValidForSales())
-                return new GenericResponse(false, new List<string>() { "El client no és válid per a crear una factura. Revisa el nom fiscal, el número de compte i el NIF" });
+                return new GenericResponse(false, _localizationService.GetLocalizedString("CustomerInvalid"));
             if (customer.MainAddress() == null)
-                return new GenericResponse(false, new List<string>() { "El client no té direccions donades d'alta. Si us plau, creí una direcció." });
+                return new GenericResponse(false, _localizationService.GetLocalizedString("CustomerNoAddresses"));
 
-            var site = _unitOfWork.Sites.Find(s => s.Name == "Local Torelló").FirstOrDefault();
+            var site = _unitOfWork.Sites.Find(s => s.Name == StatusConstants.Sites.LocalTorello).FirstOrDefault();
             if (site == null)
-                return new GenericResponse(false, new List<string>() { "La seu 'Temges' no existeix" });
+                return new GenericResponse(false, _localizationService.GetLocalizedString("SiteNotFound"));
             if (!site.IsValidForSales())
-                return new GenericResponse(false, new List<string>() { "Seu 'Temges' no és válida per crear una factura. Revisi les dades de facturació." });
+                return new GenericResponse(false, _localizationService.GetLocalizedString("SiteInvalid"));
 
             var lifecycle = _unitOfWork.Lifecycles.Find(l => l.Name == lifecycleName).FirstOrDefault();
-            if (lifecycle == null) return new GenericResponse(false, $"Cicle de vida '{lifecycleName}' inexistent");
-            if (!lifecycle.InitialStatusId.HasValue) return new GenericResponse(false, $"El cicle de vida '{lifecycleName}' no té un estat inicial");
+            if (lifecycle == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("LifecycleNotFound", lifecycleName));
+            if (!lifecycle.InitialStatusId.HasValue) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("LifecycleNoInitialStatus", lifecycleName));
 
             DeliveryNoteEntities entities;
             entities.Exercise = exercise;

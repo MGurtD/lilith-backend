@@ -5,15 +5,17 @@ using Application.Services;
 using Application.Services.Purchase;
 using Domain.Entities.Purchase;
 using Microsoft.EntityFrameworkCore;
+using Api.Constants;
 
 namespace Api.Services.Purchase
 {
-    public class PurchaseOrderService(IUnitOfWork unitOfWork, IExerciseService exerciseService) : IPurchaseOrderService
+    public class PurchaseOrderService(IUnitOfWork unitOfWork, IExerciseService exerciseService, ILocalizationService localizationService) : IPurchaseOrderService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IExerciseService _exerciseService = exerciseService;
-        private readonly string LifecycleName = "PurchaseOrder";
-        private readonly string LifecycleDetailsName = "PurchaseOrderDetail";
+        private readonly ILocalizationService _localizationService = localizationService;
+        private readonly string LifecycleName = StatusConstants.Lifecycles.PurchaseOrder;
+        private readonly string LifecycleDetailsName = StatusConstants.Lifecycles.PurchaseOrderDetail;
 
         public async Task<PurchaseOrderReportResponse?> GetDtoForReportingById(Guid id)
         {
@@ -141,9 +143,9 @@ namespace Api.Services.Purchase
         public async Task<List<PurchaseOrder>> GetOrdersWithDetailsToReceiptBySupplier(Guid supplierId)
         {
             var discartedStatuses = new List<Guid>();
-            var statusReceived = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, "Rebuda");
+            var statusReceived = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, StatusConstants.Statuses.Rebuda);
             if (statusReceived != null) discartedStatuses.Add(statusReceived.Id);
-            var statusCancelled = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, "Cancel·lada");
+            var statusCancelled = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, StatusConstants.Statuses.Cancellada);
             if (statusCancelled != null) discartedStatuses.Add(statusCancelled.Id);
 
             return await _unitOfWork.PurchaseOrders.GetOrdersWithDetailsToReceiptBySupplier(supplierId, discartedStatuses);
@@ -158,19 +160,23 @@ namespace Api.Services.Purchase
         {
             if (request == null)
             {
-                return new GenericResponse(false, "Petició incompleta");
+                return new GenericResponse(false, _localizationService.GetLocalizedString("PurchaseOrderIncompleteRequest"));
             }
             //Recuperar exercici, genèric per totes les comandes
             var exercise = _unitOfWork.Exercices.Find(ex => ex.StartDate <= DateTime.Today && ex.EndDate > DateTime.Today).FirstOrDefault();
-            if (exercise == null) return new GenericResponse(false, "Exercici inexistent");
+            if (exercise == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseNotFound"));
+            
             //Crear un ID per cada bloc de proveïdor
             var oldSupplier = Guid.Empty;
             var purchaseOrderId = Guid.Empty;
             var statusId = Guid.Empty;
 
             var status = _unitOfWork.Lifecycles.Find(l => l.Name == LifecycleDetailsName).FirstOrDefault();
-            if (status == null) return new GenericResponse(false, $"Cicle de vida '{LifecycleDetailsName}' inexistent");
-            if (!status.InitialStatusId.HasValue) return new GenericResponse(false, $"El cicle de vida '{LifecycleDetailsName}' no té un estat inicial");
+            if (status == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("LifecycleNotFound", LifecycleDetailsName));
+            if (!status.InitialStatusId.HasValue) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("LifecycleNoInitialStatus", LifecycleDetailsName));
 
             foreach (PurchaseOrderFromWO purchaseOrder in request.OrderBy(r => r.supplierId))
             {
@@ -189,12 +195,14 @@ namespace Api.Services.Purchase
                     var response = await Create(order);
                     if(!response.Result)
                     {
-                        return new GenericResponse(false, "Error al crear la comanda");
+                        return new GenericResponse(false, _localizationService.GetLocalizedString("WorkOrderCreateError"));
                     }
                 }
                 // Obtenir referència
                 var reference = await _unitOfWork.References.Get(purchaseOrder.serviceReferenceId);
-                if (reference == null) return new GenericResponse(false, "Refèrencia inexistent");
+                if (reference == null) 
+                    return new GenericResponse(false, _localizationService.GetLocalizedString("ReferenceNotExistent"));
+                
                 // Obtenir relació proveïdor-referència
                 var supplierReference = await _unitOfWork.Suppliers.GetSupplierReferenceBySupplierIdAndReferenceId(purchaseOrder.supplierId, purchaseOrder.serviceReferenceId);
 
@@ -217,7 +225,7 @@ namespace Api.Services.Purchase
 
                 var detailResponse = await AddDetail(detail);
                 if (!detailResponse.Result) {                    
-                    return new GenericResponse(false, "Error al crear la linea de la comanda");
+                    return new GenericResponse(false, _localizationService.GetLocalizedString("WorkOrderLineCreateError"));
                 }
 
                 // Actualitzar fase de l'ordre de treball
@@ -234,14 +242,18 @@ namespace Api.Services.Purchase
         public async Task<GenericResponse> Create(CreatePurchaseDocumentRequest createRequest)
         {
             var exercise = await _unitOfWork.Exercices.Get(createRequest.ExerciseId);
-            if (exercise == null) return new GenericResponse(false, "Exercici inexistent" );
+            if (exercise == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseNotFound"));
 
             var status = _unitOfWork.Lifecycles.Find(l => l.Name == LifecycleName).FirstOrDefault();
-            if (status == null) return new GenericResponse(false, $"Cicle de vida '{LifecycleName}' inexistent" );
-            if (!status.InitialStatusId.HasValue) return new GenericResponse(false, $"El cicle de vida '{LifecycleName}' no té un estat inicial" );
+            if (status == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("LifecycleNotFound", LifecycleName));
+            if (!status.InitialStatusId.HasValue) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("LifecycleNoInitialStatus", LifecycleName));
 
             var counterObj = await _exerciseService.GetNextCounter(exercise.Id, "purchaseorder");
-            if (counterObj == null || counterObj.Content == null) return new GenericResponse(false, "Error al crear el comptador");
+            if (counterObj == null || counterObj.Content == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseCounterError"));
 
             var orderNumber = counterObj.Content.ToString()!;
             var order = new PurchaseOrder()
@@ -263,7 +275,8 @@ namespace Api.Services.Purchase
             order.Details?.Clear();
 
             var exists = await _unitOfWork.PurchaseOrders.Exists(order.Id);
-            if (!exists) return new GenericResponse(false, $"Id {order.Id} inexistent" );
+            if (!exists) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("Common.IdNotExist", order.Id));
 
             await _unitOfWork.PurchaseOrders.Update(order);
             return new GenericResponse(true);
@@ -271,7 +284,9 @@ namespace Api.Services.Purchase
         public async Task<GenericResponse> Remove(Guid id)
         {
             var receipt = await _unitOfWork.PurchaseOrders.GetHeaders(id);
-            if (receipt == null) return new GenericResponse(false, $"Id {id} inexistent" );            
+            if (receipt == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("Common.IdNotExist", id));
+            
             var workorderphases = await _unitOfWork.WorkOrders.Phases.Find(w => w.PurchaseOrderId == id).AsQueryable().AsNoTracking().ToListAsync();
 
             foreach (var phase in workorderphases)
@@ -287,26 +302,29 @@ namespace Api.Services.Purchase
         public async Task<GenericResponse> DeterminateStatus(Guid id)
         {
             var order = await _unitOfWork.PurchaseOrders.Get(id);
-            if (order == null) return new GenericResponse(false, $"Id {id} inexistent");
+            if (order == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("Common.IdNotExist", id));
 
             var initialStatusId = order.StatusId;
 
-            var cancelledStatus = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, "Cancel·lada");
-            if (cancelledStatus == null) return new GenericResponse(false, "Estat 'Cancel·lada' inexistent");
+            var cancelledStatus = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, StatusConstants.Statuses.Cancellada);
+            if (cancelledStatus == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("StatusNotFound", StatusConstants.Statuses.Cancellada));
             var cancelledDetails = order.Details.Where(d => d.StatusId == cancelledStatus.Id);
             
-            var receivedStatus = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, "Rebuda");
-            if (receivedStatus == null) return new GenericResponse(false, "Estat 'Rebuda' inexistent");
+            var receivedStatus = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, StatusConstants.Statuses.Rebuda);
+            if (receivedStatus == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("StatusNotFound", StatusConstants.Statuses.Rebuda));
             var receivedDetails = order.Details.Where(d => d.StatusId == receivedStatus.Id);
 
             if (cancelledDetails.Count() == order.Details.Count)
             {
-                var status = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleName, "Cancel·lada");
+                var status = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleName, StatusConstants.Statuses.Cancellada);
                 if (status != null) order.StatusId = status.Id;
             }
             else if (receivedDetails.Count() == order.Details.Count)
             {
-                var status = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleName, "Rebuda");
+                var status = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleName, StatusConstants.Statuses.Rebuda);
                 if (status != null) order.StatusId = status.Id;
             }
 
@@ -328,7 +346,8 @@ namespace Api.Services.Purchase
         public async Task<GenericResponse> UpdateDetail(PurchaseOrderDetail detail)
         {
             var exists = await _unitOfWork.PurchaseOrders.Details.Exists(detail.Id);
-            if (!exists) return new GenericResponse(false, $"Id {detail.Id} inexistent");
+            if (!exists) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("Common.IdNotExist", detail.Id));
 
             detail.Reference = null;
             detail.UnitPrice = detail.Quantity > 0 ? detail.Amount / detail.Quantity : 0;
@@ -338,7 +357,8 @@ namespace Api.Services.Purchase
         public async Task<GenericResponse> RemoveDetail(Guid id)
         {
             var detail = await _unitOfWork.PurchaseOrders.Details.Get(id);
-            if (detail == null) return new GenericResponse(false, $"Id {id} inexistent");
+            if (detail == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("Common.IdNotExist", id));
 
             await _unitOfWork.PurchaseOrders.Details.Remove(detail);
             return new GenericResponse(true);
@@ -348,7 +368,7 @@ namespace Api.Services.Purchase
         {
             detail.ReceivedQuantity += quantity;
 
-            var status = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, detail.ReceivedQuantity >= detail.Quantity ? "Rebuda" : "Rebuda parcialment");
+            var status = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, detail.ReceivedQuantity >= detail.Quantity ? StatusConstants.Statuses.Rebuda : StatusConstants.Statuses.RebuidaParcialment);
             if (status != null) detail.StatusId = status.Id;
 
             return await UpdateDetail(detail);
@@ -358,12 +378,11 @@ namespace Api.Services.Purchase
         {
             detail.ReceivedQuantity -= quantity;
 
-            var status = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, detail.ReceivedQuantity == 0 ? "Pendent de rebre" : "Rebuda parcialment");
+            var status = await _unitOfWork.Lifecycles.GetStatusByName(LifecycleDetailsName, detail.ReceivedQuantity == 0 ? StatusConstants.Statuses.PendentRebre : StatusConstants.Statuses.RebuidaParcialment);
             if (status != null) detail.StatusId = status.Id;
 
             return await UpdateDetail(detail);
         }
-
 
         #region Receptions
 
@@ -381,7 +400,8 @@ namespace Api.Services.Purchase
         public async Task<GenericResponse> RemoveReception(PurchaseOrderReceiptDetail reception)
         {
             var orderDetail = (await _unitOfWork.PurchaseOrders.Details.FindAsync(d => d.Id == reception.PurchaseOrderDetailId)).FirstOrDefault();
-            if (orderDetail == null) return new GenericResponse(false, $"Detall de la comanda {reception.PurchaseOrderDetailId} inexistent");
+            if (orderDetail == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("PurchaseOrderDetailNotFound", reception.PurchaseOrderDetailId));
 
             // Eliminar recepció
             await _unitOfWork.PurchaseOrders.Receptions.Remove(reception);

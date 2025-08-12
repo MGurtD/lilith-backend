@@ -4,6 +4,7 @@ using Application.Persistance;
 using Application.Services;
 using Application.Services.Sales;
 using Domain.Entities.Sales;
+using Api.Constants;
 
 namespace Api.Services.Sales
 {
@@ -12,12 +13,14 @@ namespace Api.Services.Sales
         private readonly IUnitOfWork _unitOfWork;
         private readonly IExerciseService _exerciseService;
         private readonly ILogger<BudgetService> _logger;
+        private readonly ILocalizationService _localizationService;
 
-        public BudgetService(IUnitOfWork unitOfWork, IExerciseService exerciseService, ILogger<BudgetService> logger)
+        public BudgetService(IUnitOfWork unitOfWork, IExerciseService exerciseService, ILogger<BudgetService> logger, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
             _exerciseService = exerciseService;
             _logger = logger;
+            _localizationService = localizationService;
         }        
         
         public async Task<Budget?> GetById(Guid id)
@@ -40,7 +43,9 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> Create(CreateHeaderRequest createRequest)
         {
             var counterObj = await _exerciseService.GetNextCounter(createRequest.ExerciseId, "budget");
-            if (!counterObj.Result || counterObj.Content == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
+            if (!counterObj.Result || counterObj.Content == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseCounterError"));
+
             var budget = new Budget
             {
                 Id = createRequest.Id,
@@ -57,11 +62,11 @@ namespace Api.Services.Sales
             }
             else
             {
-                var lifecycle = _unitOfWork.Lifecycles.Find(l => l.Name == "Budget").FirstOrDefault();
+                var lifecycle = _unitOfWork.Lifecycles.Find(l => l.Name == StatusConstants.Lifecycles.Budget).FirstOrDefault();
                 if (lifecycle == null)
-                    return new GenericResponse(false, new List<string>() { "El cicle de vida 'Budget' no existeix" });
+                    return new GenericResponse(false, _localizationService.GetLocalizedString("LifecycleNotFound", StatusConstants.Lifecycles.Budget));
                 if (!lifecycle.InitialStatusId.HasValue)
-                    return new GenericResponse(false, new List<string>() { "El cicle de vida 'Budget' no té estat inicial" });
+                    return new GenericResponse(false, _localizationService.GetLocalizedString("LifecycleNoInitialStatus", StatusConstants.Lifecycles.Budget));
                 budget.StatusId = lifecycle.InitialStatusId;
             }
 
@@ -76,15 +81,15 @@ namespace Api.Services.Sales
             var existingBudget = await _unitOfWork.Budgets.Get(budget.Id);
             if (existingBudget == null)
             {
-                return new GenericResponse(false, $"La comanda amb ID {budget.Id} no existeix");
+                return new GenericResponse(false, _localizationService.GetLocalizedString("BudgetNotFound", budget.Id));
             }
 
-            var statusPending = await _unitOfWork.Lifecycles.GetStatusByName("Budget", "Pendent d'acceptar");
-            var statusAccept = await _unitOfWork.Lifecycles.GetStatusByName("Budget", "Acceptat");
+            var statusPending = await _unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.Budget, StatusConstants.Statuses.PendentAcceptar);
+            var statusAccept = await _unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.Budget, StatusConstants.Statuses.Acceptat);
 
             if (statusPending == null || statusAccept == null)
             {
-                return new GenericResponse(false, "No s'han trobat els estats 'Pendent d'acceptar' i 'Acceptat' al cicle de vida 'Budget'");
+                return new GenericResponse(false, _localizationService.GetLocalizedString("StatusNotFound", "Pendent d'acceptar/Acceptat"));
             }
 
             if (existingBudget.StatusId == statusPending.Id && budget.StatusId == statusAccept.Id)
@@ -101,7 +106,7 @@ namespace Api.Services.Sales
             var budget = _unitOfWork.Budgets.Find(p => p.Id == id).FirstOrDefault();
             if (budget == null)
             {
-                return new GenericResponse(false, $"La comanda amb ID {id} no existeix");
+                return new GenericResponse(false, _localizationService.GetLocalizedString("BudgetNotFound", id));
             }
             else
             {
@@ -123,7 +128,8 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> RemoveDetail(Guid id)
         {
             var detail = _unitOfWork.Budgets.Details.Find(d => d.Id == id).FirstOrDefault();
-            if (detail == null) return new GenericResponse(false, $"El detall de comanda amb ID {id} no existeix");
+            if (detail == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("BudgetDetailNotFound", id));
             await _unitOfWork.Budgets.Details.Remove(detail);
 
             return new GenericResponse(true, detail);
@@ -153,11 +159,11 @@ namespace Api.Services.Sales
 
         public async Task<GenericResponse> RejectOutdatedBudgets()
         {
-            var status = await _unitOfWork.Lifecycles.GetStatusByName("Budget", "Pendent d'acceptar");
-            var rejectedstatus = await _unitOfWork.Lifecycles.GetStatusByName("Budget", "Rebutjat");
+            var status = await _unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.Budget, StatusConstants.Statuses.PendentAcceptar);
+            var rejectedstatus = await _unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.Budget, StatusConstants.Statuses.Rebutjat);
             if (status == null || rejectedstatus == null)
             {
-                return new GenericResponse(false, "No s'han trobat els estats 'Pendent d'acceptar' i 'Rebutjat' al cicle de vida 'Budget'");
+                return new GenericResponse(false, _localizationService.GetLocalizedString("StatusNotFound", "Pendent d'acceptar/Rebutjat"));
             }
 
             var budgets =  await _unitOfWork.Budgets.FindAsync(b => b.StatusId == status.Id && b.Date.AddDays(30) <= DateTime.UtcNow);           
@@ -165,7 +171,7 @@ namespace Api.Services.Sales
             {
                 budget.StatusId = rejectedstatus.Id;
                 budget.AutoRejectedDate = DateTime.UtcNow;
-                budget.Notes = "Pressupost rebutjat automaticament en data: " + DateTime.UtcNow.ToString();
+                budget.Notes = _localizationService.GetLocalizedString("BudgetAutomaticRejection", DateTime.UtcNow.ToString());
                 await _unitOfWork.Budgets.Update(budget);
                 
             }

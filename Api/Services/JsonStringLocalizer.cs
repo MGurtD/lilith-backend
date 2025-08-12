@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Options;
 using System.Globalization;
 using System.Text.Json;
 
@@ -25,7 +24,7 @@ namespace Api.Services
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
         {
             var culture = CultureInfo.CurrentUICulture.Name;
-            
+
             if (_localizations.TryGetValue(culture, out var strings))
             {
                 return strings.Select(s => new LocalizedString(s.Key, s.Value, false));
@@ -37,7 +36,7 @@ namespace Api.Services
         private LocalizedString GetLocalizedString(string name, params object[] arguments)
         {
             var culture = CultureInfo.CurrentUICulture.Name;
-            
+
             // Try exact culture match first (e.g., "ca-ES")
             if (_localizations.TryGetValue(culture, out var cultureStrings))
             {
@@ -90,7 +89,7 @@ namespace Api.Services
         {
             // The baseName is "LocalizationService", so we look for files in Resources/LocalizationService/
             var resourcePath = Path.Combine(_resourcesPath, _baseName);
-            
+
             if (!Directory.Exists(resourcePath))
             {
                 // Log that the directory doesn't exist for debugging
@@ -100,7 +99,7 @@ namespace Api.Services
 
             var jsonFiles = Directory.GetFiles(resourcePath, "*.json");
             Console.WriteLine($"Found {jsonFiles.Length} localization files in {resourcePath}");
-            
+
             foreach (var file in jsonFiles)
             {
                 var fileName = Path.GetFileNameWithoutExtension(file);
@@ -110,7 +109,7 @@ namespace Api.Services
                 {
                     var json = File.ReadAllText(file);
                     var localizations = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
-                    
+
                     if (localizations != null)
                     {
                         _localizations[culture] = localizations;

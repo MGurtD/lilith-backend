@@ -10,10 +10,12 @@ namespace Api.Services
     {
 
         public readonly IUnitOfWork unitOfWork;
+        private readonly ILocalizationService _localizationService;
 
-        public FileService(IUnitOfWork unitOfWork)
+        public FileService(IUnitOfWork unitOfWork, ILocalizationService localizationService)
         {
             this.unitOfWork = unitOfWork;
+            _localizationService = localizationService;
         }
 
         public IEnumerable<object> GetFiles()
@@ -51,7 +53,7 @@ namespace Api.Services
                 }
                 else
                 {
-                    return new GenericResponse(false, new List<string>() { $"Problemes al crear el directori '${entity}'" });
+                    return new GenericResponse(false, _localizationService.GetLocalizedString("FileUploadDirectoryError", entity));
                 }
             }
             catch (Exception ex)

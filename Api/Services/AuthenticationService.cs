@@ -16,11 +16,13 @@ namespace Api.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly TokenValidationParameters _tokenValidationParameters;
+        private readonly ILocalizationService _localizationService;
 
-        public AuthenticationService(IUnitOfWork unitOfWork, TokenValidationParameters tokenValidationParameters)
+        public AuthenticationService(IUnitOfWork unitOfWork, TokenValidationParameters tokenValidationParameters, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
             _tokenValidationParameters = tokenValidationParameters;
+            _localizationService = localizationService;
         }
 
         public async Task<AuthResponse> Register(UserRegisterRequest request)
@@ -32,7 +34,7 @@ namespace Api.Services
                 return new AuthResponse() 
                 {
                     Result = false,
-                    Errors = new List<string>() { $"El nom d'usuari {request.Username} no está disponible." }
+                    Errors = new List<string>() { _localizationService.GetLocalizedString("UserNotAvailable", request.Username) }
                 };
             }
 
@@ -43,7 +45,7 @@ namespace Api.Services
                 return new AuthResponse()
                 {
                     Result = false,
-                    Errors = new List<string>() { $"El rol assignat per defecte 'user' no existeix." }
+                    Errors = new List<string>() { _localizationService.GetLocalizedString("UserRoleNotFound") }
                 };
             }
 
@@ -84,7 +86,7 @@ namespace Api.Services
                 return new AuthResponse()
                 {
                     Result = false,
-                    Errors = new List<string>() { $"L'usuari {request.Username} no existeix." }
+                    Errors = new List<string>() { _localizationService.GetLocalizedString("UserNotExist", request.Username) }
                 };
             }
 
@@ -96,7 +98,7 @@ namespace Api.Services
                     Result = false,
                     Errors = new List<string>()
                     {
-                        "La contrasenya no es vàlida."
+                        _localizationService.GetLocalizedString("UserPasswordInvalid")
                     }
                 };
             }
@@ -108,7 +110,7 @@ namespace Api.Services
                     Result = false,
                     Errors = new List<string>()
                     {
-                        $"L'usuari ${request.Username} está deshabilitat."
+                        _localizationService.GetLocalizedString("UserDisabled", request.Username)
                     }
                 };
             }
@@ -194,7 +196,7 @@ namespace Api.Services
                         return new AuthResponse()
                         {
                             Result = false,
-                            Errors = new List<string>() { "Invalid algorithm" }
+                            Errors = new List<string>() { _localizationService.GetLocalizedString("AuthInvalidAlgorithm") }
                         };
                     }
                 }
@@ -208,7 +210,7 @@ namespace Api.Services
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { $"Token is valid until {expiryDate}" }
+                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthTokenValid", expiryDate) }
                     };
                 }
 
@@ -219,7 +221,7 @@ namespace Api.Services
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { $"Refresh token '{tokenRequest.RefreshToken}' does not exist" }
+                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthRefreshTokenNotExist", tokenRequest.RefreshToken) }
                     };
                 }
 
@@ -228,7 +230,7 @@ namespace Api.Services
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { $"Refresh token used" }
+                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthRefreshTokenUsed") }
                     };
                 }
 
@@ -238,7 +240,7 @@ namespace Api.Services
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { $"Refresh token revoked" }
+                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthRefreshTokenRevoked") }
                     };
                 }
 
@@ -249,7 +251,7 @@ namespace Api.Services
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { $"The unique key of the refresh token does not match. Stored: {storedToken.JwtId} != Requested: {jti}" }
+                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthRefreshTokenMismatch", storedToken.JwtId, jti) }
                     };
                 }
 
@@ -259,7 +261,7 @@ namespace Api.Services
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { $"Expired token" }
+                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthTokenExpired") }
                     };
                 }
 
@@ -272,7 +274,7 @@ namespace Api.Services
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { $"User not found" }
+                        Errors = new List<string>() { _localizationService.GetLocalizedString("UserNotFound") }
                     };
                 }
 

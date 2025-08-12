@@ -143,7 +143,7 @@ All major business entities use lifecycle/status management:
 
 ## Language & Localization
 
-The system implements **multilanguage support** with the following features:
+The system implements **comprehensive multilanguage support** with full internationalization across all business logic.
 
 ### Supported Languages
 - **Catalan (ca)** - Default language
@@ -155,11 +155,61 @@ The system implements **multilanguage support** with the following features:
 - **ILocalizationService** for dependency injection and string retrieval
 - **CultureMiddleware** for automatic language detection
 - **Microsoft.Extensions.Localization** framework integration
+- **StatusConstants** in `Api/Constants/StatusConstants.cs` for database-stored values
 
 ### Culture Detection Priority
 1. Query parameter: `?culture=ca`
 2. Accept-Language header
 3. Default to Catalan (ca)
+
+### Database vs User-Facing Strings
+- **Database Values**: Lifecycle and status names remain in Catalan in the database
+- **Constants**: Use `StatusConstants` to reference database values (prevents typos)
+- **User Messages**: All error messages and UI text support full localization
+
+### Constants Usage
+Use constants instead of magic strings for database-stored values:
+```csharp
+// Using Constants (Recommended)
+var lifecycle = _unitOfWork.Lifecycles.Find(l => l.Name == StatusConstants.Lifecycles.Budget).FirstOrDefault();
+var status = await _unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.WorkOrder, StatusConstants.Statuses.Creada);
+
+// Available Constants:
+StatusConstants.Lifecycles.Budget
+StatusConstants.Lifecycles.SalesOrder
+StatusConstants.Lifecycles.WorkOrder
+StatusConstants.Statuses.Creada
+StatusConstants.Statuses.PendentAcceptar
+StatusConstants.Sites.LocalTorello
+```
+
+### Using Localization in Services
+All API services must inject and use `ILocalizationService`:
+```csharp
+public class ExampleService : IExampleService
+{
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly ILocalizationService _localizationService;
+    
+    public ExampleService(IUnitOfWork unitOfWork, ILocalizationService localizationService)
+    {
+        _unitOfWork = unitOfWork;
+        _localizationService = localizationService;
+    }
+    
+    public async Task<GenericResponse> SomeMethod(Guid id)
+    {
+        var entity = await _unitOfWork.Entities.Get(id);
+        if (entity == null)
+        {
+            return new GenericResponse(false, _localizationService.GetLocalizedString("EntityNotFound", id));
+        }
+        
+        // Business logic here
+        return new GenericResponse(true, entity);
+    }
+}
+```
 
 ### Using Localization in Controllers
 ```csharp
@@ -189,12 +239,57 @@ public class ExampleController : ControllerBase
 - **GetLocalizedString(key, params args)** - Uses current request culture
 - **GetLocalizedStringForCulture(key, culture, params args)** - Forces specific culture
 
-### Localization Keys
-All error messages and status names are centralized in JSON files:
-- Entity operations: `EntityNotFound`, `EntityAlreadyExists`, `EntityDisabled`
-- Business entities: `CustomerNotFound`, `WorkOrderNotFound`, `InvoiceNotFound`
-- Status names: `StatusNames.Created`, `StatusNames.Closed`, etc.
-- Validation: `Validation.Required`, `Validation.InvalidEmail`
+### Standard Localization Keys
+All services use standardized localization keys organized by category:
+
+#### Entity Operations
+- `EntityNotFound`: "Entity with ID {0} not found"
+- `EntityAlreadyExists`: "Entity already exists"
+- `EntityDisabled`: "Entity with ID {0} is disabled"
+- `Common.IdNotExist`: "Id {0} does not exist"
+
+#### Business Entities
+- `CustomerNotFound`: "Customer not found"
+- `CustomerInvalid`: "Customer is not valid for creating an invoice..."
+- `WorkOrderNotFound`: "Work order with ID {0} not found"
+- `BudgetNotFound`: "Budget with ID {0} not found"
+- `InvoiceNotFound`: "Invoice with ID {0} not found"
+
+#### Exercise & Document Management
+- `ExerciseNotFound`: "Exercise not found"
+- `ExerciseCounterError`: "Error creating counter"
+- `ExerciseCounterNotFound`: "The provided counter '{0}' is not valid"
+
+#### Lifecycle & Status Management
+- `LifecycleNotFound`: "Lifecycle '{0}' not found"
+- `LifecycleNoInitialStatus`: "Lifecycle '{0}' has no initial status"
+- `StatusNotFound`: "Status with ID {0} not found or is disabled"
+
+#### Validation Messages
+- `Validation.Required`: "The {0} field is required"
+- `Validation.InvalidEmail`: "Email format is not valid"
+
+#### Authentication
+- `UserNotFound`: "User not found"
+- `UserPasswordInvalid`: "Password is not valid"
+- `AuthTokenExpired`: "Token expired"
+
+### Language File Structure
+Each language file (ca.json, es.json, en.json) contains categorized keys:
+
+```json
+{
+  "EntityNotFound": "Entity with ID {0} not found",
+  "CustomerNotFound": "Customer not found",
+  "CustomerInvalid": "Customer is not valid for creating an invoice...",
+  "ExerciseCounterError": "Error creating counter",
+  "LifecycleNotFound": "Lifecycle '{0}' not found",
+  "StatusNames.Created": "Created",
+  "Validation.Required": "The {0} field is required",
+  "Movement.AlbaranDescription": "Delivery note {0}",
+  "Common.IdNotExist": "Id {0} does not exist"
+}
+```
 
 ## API Conventions
 
@@ -206,7 +301,7 @@ public class EntityController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEntityService _entityService; // if complex business logic
-    private readonly ILocalizationService _localizationService; // for multilanguage support
+    private readonly ILocalizationService _localizationService; // REQUIRED for multilanguage support
     
     // Standard CRUD + specialized endpoints
     // Sub-resource management (e.g., /Entity/{id}/SubEntity)
@@ -242,7 +337,49 @@ Many entities have sub-resources (e.g., WorkMaster has Phases, Phases have Detai
 - Return appropriate HTTP status codes
 - Validate `ModelState` in controllers
 - Handle entity not found scenarios consistently
-- **Always use localized error messages** via `ILocalizationService`
+- **ALWAYS use localized error messages** via `ILocalizationService`
+- **NEVER use hardcoded strings** in business logic
+
+### Localization Implementation Requirements
+
+#### For All New Services:
+1. **Inject ILocalizationService** in constructor
+2. **Use StatusConstants** for database-stored values
+3. **Add localization keys** to all 3 language files (ca.json, es.json, en.json)
+4. **Use parameterized messages** for dynamic content
+5. **Follow established key naming patterns**
+
+#### Adding New Localization Keys:
+```csharp
+// 1. Add to ca.json
+"MyNewErrorKey": "El meu nou missatge d'error amb {0}"
+
+// 2. Add to es.json  
+"MyNewErrorKey": "Mi nuevo mensaje de error con {0}"
+
+// 3. Add to en.json
+"MyNewErrorKey": "My new error message with {0}"
+
+// 4. Use in service
+return new GenericResponse(false, _localizationService.GetLocalizedString("MyNewErrorKey", someValue));
+```
+
+#### Constants Pattern:
+```csharp
+// Add to Api/Constants/StatusConstants.cs
+public static class StatusConstants
+{
+    public static class Lifecycles
+    {
+        public const string MyNewLifecycle = "MyNewLifecycle";
+    }
+    
+    public static class Statuses  
+    {
+        public const string MyNewStatus = "MyNewStatus"; // In Catalan as stored in DB
+    }
+}
+```
 
 ### Localization Best Practices
 - **Add new strings to all language files** (ca.json, es.json, en.json)
@@ -251,6 +388,8 @@ Many entities have sub-resources (e.g., WorkMaster has Phases, Phases have Detai
 - **Test with different cultures** using query parameter: `?culture=en`
 - **Maintain consistent key naming** following established patterns
 - **Prefer specific keys** over generic ones for better translations
+- **Use constants for database values** to prevent typos and ensure consistency
+- **Group related keys** with dot notation (e.g., `Validation.Required`, `StatusNames.Created`)
 
 ### Performance Considerations
 - Use async/await for all database operations
@@ -265,4 +404,23 @@ Many entities have sub-resources (e.g., WorkMaster has Phases, Phases have Detai
 - Comment business logic in English for international team
 - Use meaningful variable names reflecting business concepts
 
-This solution represents a comprehensive manufacturing ERP with sophisticated business workflows, multi-entity relationships, financial tracking capabilities, and full multilanguage support. When working with this codebase, prioritize understanding the business domain, maintaining consistency with established patterns, and ensuring all user-facing messages are properly localized.
+## Localization Implementation Status
+
+All 15 API services have been fully updated with comprehensive localization support:
+
+### ? Fully Localized Services:
+- **Sales**: BudgetService, SalesOrderService, SalesInvoiceService, DeliveryNoteService
+- **Purchase**: PurchaseOrderService, PurchaseInvoiceService, ReceiptService
+- **Production**: WorkOrderService, MetricsService
+- **Warehouse**: StockMovementService
+- **Shared**: ExerciseService, ReferenceService, FileService, AuthenticationService
+
+### Key Achievements:
+- **40+ localization keys** covering all business scenarios
+- **Constants for database values** preventing runtime errors
+- **Consistent error handling** patterns across all services
+- **Full multilingual support** for Catalan, Spanish, and English
+- **Parameterized messages** for dynamic content
+- **Type-safe constants** for lifecycle and status references
+
+This solution represents a comprehensive manufacturing ERP with sophisticated business workflows, multi-entity relationships, financial tracking capabilities, and **complete multilanguage support**. When working with this codebase, prioritize understanding the business domain, maintaining consistency with established patterns, and ensuring all user-facing messages are properly localized using the established localization infrastructure.

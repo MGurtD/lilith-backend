@@ -8,6 +8,7 @@ using Application.Services.Sales;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
 using System.Collections;
+using Api.Constants;
 
 namespace Api.Services.Production
 {
@@ -16,12 +17,14 @@ namespace Api.Services.Production
         private readonly IUnitOfWork _unitOfWork;
         private readonly IExerciseService _exerciseService;
         private readonly ISalesOrderService _salesOrderService;
+        private readonly ILocalizationService _localizationService;
 
-        public WorkOrderService(IUnitOfWork unitOfWork, IExerciseService exerciseService, ISalesOrderService salesOrderService)
+        public WorkOrderService(IUnitOfWork unitOfWork, IExerciseService exerciseService, ISalesOrderService salesOrderService, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
             _exerciseService = exerciseService;
             _salesOrderService = salesOrderService;
+            _localizationService = localizationService;
         }        
 
         public IEnumerable<DetailedWorkOrder> GetWorkOrderDetails(Guid id) {
@@ -104,18 +107,24 @@ namespace Api.Services.Production
         {
             // Ruta de fabricació
             var workMaster = await _unitOfWork.WorkMasters.GetFullById(dto.WorkMasterId);
-            if (workMaster is null) return new GenericResponse(false, $"La ruta de fabricació no existeix");
+            if (workMaster is null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterNotFound"));
 
             // Exercici
             var exercise = _exerciseService.GetExerciceByDate(dto.PlannedDate);
-            if (exercise is null) return new GenericResponse(false, $"No hi ha exercici creat per la data planificada");
+            if (exercise is null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseNotFoundForDate"));
+            
             var exerciseServiceResponse = await _exerciseService.GetNextCounter(exercise.Id, "workorder");
-            if (!exerciseServiceResponse.Result || exerciseServiceResponse.Content is null) return new GenericResponse(false, $"No s'ha pugut generar correctament el codi de la ordre");
+            if (!exerciseServiceResponse.Result || exerciseServiceResponse.Content is null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseCounterError"));
+            
             var code = Convert.ToString(exerciseServiceResponse.Content);
 
             // Estat
             var initialStatusId = await GetInitialStatus();
-            if (initialStatusId is null) return new GenericResponse(false, $"No hi ha un estat inicial definit al cicle de vida WorkOrder");
+            if (initialStatusId is null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterNoInitialStatus"));
 
             // Crear ordre de fabricació
             var workOrder = new WorkOrder()
@@ -194,7 +203,7 @@ namespace Api.Services.Production
 
         private async Task<Guid?> GetInitialStatus()
         {
-            var status = await _unitOfWork.Lifecycles.GetStatusByName("WorkOrder", "Creada");
+            var status = await _unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.WorkOrder, StatusConstants.Statuses.Creada);
             if (status != null) return status.Id;
             return null;
         }
@@ -202,7 +211,8 @@ namespace Api.Services.Production
         public async Task<GenericResponse> Start(Guid id)
         {
             var workOrder = await _unitOfWork.WorkOrders.Get(id);
-            if (workOrder is null) return new GenericResponse(false, $"La ordre de fabricació no existeix");
+            if (workOrder is null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("WorkOrderNotFound", id));
 
             if (!workOrder.StartTime.HasValue) workOrder.StartTime = DateTime.Now;
             return new GenericResponse(true);
@@ -211,7 +221,8 @@ namespace Api.Services.Production
         public async Task<GenericResponse> End(Guid id)
         {
             var workOrder = await _unitOfWork.WorkOrders.Get(id);
-            if (workOrder is null) return new GenericResponse(false, $"La ordre de fabricació no existeix");
+            if (workOrder is null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("WorkOrderNotFound", id));
 
             if (!workOrder.EndTime.HasValue) workOrder.EndTime = DateTime.Now;
             return new GenericResponse(true);
@@ -253,7 +264,7 @@ namespace Api.Services.Production
 
             var entity = _unitOfWork.WorkOrders.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
-                return new GenericResponse(false, "La ordre de fabricació no existeix");
+                return new GenericResponse(false, _localizationService.GetLocalizedString("WorkOrderNotFound", id));
 
             await _unitOfWork.WorkOrders.Remove(entity);
             return new GenericResponse(true, entity);
@@ -268,7 +279,8 @@ namespace Api.Services.Production
         private async Task<GenericResponse> UpdateWorkOrderTotalsFromProductionPart(Guid id, ProductionPart productionPart, OperationType operationType)
         {
             var workOrder = await _unitOfWork.WorkOrders.Get(id);            
-            if (workOrder is null) return new GenericResponse(false, $"La ordre de fabricació no existeix");
+            if (workOrder is null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("WorkOrderNotFound", id));
 
             if (operationType == OperationType.Add) {
                 workOrder.OperatorTime += productionPart.OperatorTime;

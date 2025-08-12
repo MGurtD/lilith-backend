@@ -7,7 +7,7 @@ using Application.Services.Sales;
 using Domain.Entities;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
-using Infrastructure.Migrations;
+using Api.Constants;
 
 namespace Api.Services.Sales
 {
@@ -23,17 +23,19 @@ namespace Api.Services.Sales
         private readonly IUnitOfWork _unitOfWork;
         private readonly IDueDateService _dueDateService;
         private readonly IDeliveryNoteService _deliveryNoteService;
-        private readonly string LifecycleName = "SalesInvoice";
+        private readonly string LifecycleName = StatusConstants.Lifecycles.SalesInvoice;
         private readonly IExerciseService _exerciseService;
         private readonly ISalesOrderService _salesOrderService;
+        private readonly ILocalizationService _localizationService;
 
-        public SalesInvoiceService(IUnitOfWork unitOfWork, IDueDateService dueDateService, ISalesOrderService salesOrderService, IDeliveryNoteService deliveryNoteService, IExerciseService exerciseService)
+        public SalesInvoiceService(IUnitOfWork unitOfWork, IDueDateService dueDateService, ISalesOrderService salesOrderService, IDeliveryNoteService deliveryNoteService, IExerciseService exerciseService, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
             _dueDateService = dueDateService;
             _deliveryNoteService = deliveryNoteService;
             _exerciseService = exerciseService;
             _salesOrderService = salesOrderService;
+            _localizationService = localizationService;
         }
 
         public async Task<SalesInvoice?> GetById(Guid id)
@@ -99,7 +101,7 @@ namespace Api.Services.Sales
 
                 reportDto.DeliveryNotes.Add(new InvoiceReportDtoDeliveryNote()
                 {
-                    Header = $"Albarà: {deliveryNote.Number} - Entrega: {deliveryNote.DeliveryDate:dd/MM/yyy} - Comanda client: {customerOrderNumbers}",
+                    Header = _localizationService.GetLocalizedString("DeliveryNoteAlbaranHeader", deliveryNote.Number, deliveryNote.DeliveryDate?.ToString("dd/MM/yyyy"), customerOrderNumbers),
                     Number = deliveryNote.Number,
                     Date = deliveryNote.CreatedOn,
                     Details = deliveryNote.Details.Select(detail => new SalesInvoiceDetail()
@@ -121,7 +123,7 @@ namespace Api.Services.Sales
             {
                 reportDto.DeliveryNotes.Add(new InvoiceReportDtoDeliveryNote()
                 {
-                    Header = "Sense albarà",
+                    Header = _localizationService.GetLocalizedString("DeliveryNoteWithoutAlbaran"),
                     Date = invoice.InvoiceDate,
                     Number = "--",
                     Details = invoice.SalesInvoiceDetails.Where(d => d.DeliveryNoteDetailId == null).ToList(),
@@ -175,7 +177,9 @@ namespace Api.Services.Sales
 
             var invoiceEntities = (InvoiceEntities)response.Content!;
             var counterObj = await _exerciseService.GetNextCounter(invoiceEntities.Exercise.Id, "salesinvoice");
-            if (counterObj == null || counterObj.Content == null) return new GenericResponse(false, "Error al crear el comptador");
+            if (counterObj == null || counterObj.Content == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseCounterError"));
+            
             var counter = counterObj.Content.ToString();
             var invoice = new SalesInvoice
             {
@@ -184,11 +188,11 @@ namespace Api.Services.Sales
                 InvoiceDate = createInvoiceRequest.Date
             };
 
-            var lifecycle = _unitOfWork.Lifecycles.Find(l => l.Name == "SalesInvoice").FirstOrDefault();
+            var lifecycle = _unitOfWork.Lifecycles.Find(l => l.Name == StatusConstants.Lifecycles.SalesInvoice).FirstOrDefault();
             if (lifecycle == null)
-                return new GenericResponse(false, new List<string>() { "El cicle de vida 'SalesInvoice' no existeix" });
+                return new GenericResponse(false, _localizationService.GetLocalizedString("LifecycleNotFound", StatusConstants.Lifecycles.SalesInvoice));
             if (!lifecycle.InitialStatusId.HasValue)
-                return new GenericResponse(false, new List<string>() { "El cicle de vida 'SalesInvoice' no té estat inicial" });
+                return new GenericResponse(false, _localizationService.GetLocalizedString("LifecycleNoInitialStatus", StatusConstants.Lifecycles.SalesInvoice));
 
             invoice.ExerciseId = invoiceEntities.Exercise.Id;
             invoice.StatusId = lifecycle.InitialStatusId;
@@ -211,8 +215,11 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> CreateRectificative(CreateRectificativeInvoiceRequest dto)
         {
             var originalInvoice = await _unitOfWork.SalesInvoices.Get(dto.Id);
-            if (originalInvoice == null) return new GenericResponse(false, "La factura a rectificar no existeix");
-            if (originalInvoice.SalesInvoiceDetails.Count == 0) return new GenericResponse(false, "La factura a rectificar no té detalls");
+            if (originalInvoice == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("InvoiceRectifyNotFound"));
+            if (originalInvoice.SalesInvoiceDetails.Count == 0) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("InvoiceRectifyNoDetails"));
+            
             var negativeNumber = await GetNextInvoiceCounter(Guid.Parse(originalInvoice.ExerciseId!.Value.ToString()));
 
             var orderId = Guid.NewGuid();
@@ -285,7 +292,8 @@ namespace Api.Services.Sales
             // Crear la factura rectificativa
             var import = originalInvoice.SalesInvoiceImports.FirstOrDefault();
             var tax = await _unitOfWork.Taxes.Get(import!.TaxId);
-            if (tax == null) return new GenericResponse(false, "L'impost de la factura original no existeix");
+            if (tax == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("InvoiceOriginalTaxNotFound"));
 
             var rectificativeNumber = await GetNextInvoiceCounter(Guid.Parse(originalInvoice.ExerciseId!.Value.ToString()));
             var rectificativeInvoice = new SalesInvoice()
@@ -325,7 +333,7 @@ namespace Api.Services.Sales
                 Id = Guid.NewGuid(),
                 SalesInvoiceId = rectificativeInvoice.Id,
                 Quantity = 1,
-                Description = $"Rectificativa de la factura {originalInvoice.InvoiceNumber}",
+                Description = _localizationService.GetLocalizedString("InvoiceRectifyDescription", originalInvoice.InvoiceNumber),
                 UnitPrice = dto.Quantity,
                 Amount = dto.Quantity,
                 UnitCost = dto.Quantity,
@@ -341,20 +349,22 @@ namespace Api.Services.Sales
         private async Task<GenericResponse> ValidateCreateInvoiceRequest(CreateHeaderRequest createInvoiceRequest)
         {
             var exercise = await _unitOfWork.Exercices.Get(createInvoiceRequest.ExerciseId);
-            if (exercise == null) return new GenericResponse(false, "L'exercici no existex" );
+            if (exercise == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseNotFound"));
 
             var customer = await _unitOfWork.Customers.Get(createInvoiceRequest.CustomerId);
-            if (customer == null) return new GenericResponse(false, "El client no existeix" );
+            if (customer == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("CustomerNotFound"));
             if (!customer.IsValidForSales())
-                return new GenericResponse(false,  "El client no és válid per a crear una factura. Revisa el nom fiscal, el número de compte i el NIF" );
+                return new GenericResponse(false, _localizationService.GetLocalizedString("CustomerInvalid"));
             if (customer.MainAddress() == null)
-                return new GenericResponse(false, "El client no té direccions donades d'alta. Si us plau, creí una direcció." );
+                return new GenericResponse(false, _localizationService.GetLocalizedString("CustomerNoAddresses"));
 
-            var site = _unitOfWork.Sites.Find(s => s.Name == "Local Torelló").FirstOrDefault();
+            var site = _unitOfWork.Sites.Find(s => s.Name == StatusConstants.Sites.LocalTorello).FirstOrDefault();
             if (site == null)
-                return new GenericResponse(false, "La seu 'Temges' no existeix" );
+                return new GenericResponse(false, _localizationService.GetLocalizedString("SiteNotFound"));
             if (!site.IsValidForSales())
-                return new GenericResponse(false, "Seu 'Temges' no és válida per crear una factura. Revisi les dades de facturació." );
+                return new GenericResponse(false, _localizationService.GetLocalizedString("SiteInvalid"));
 
             InvoiceEntities invoiceEntities;
             invoiceEntities.Exercise = exercise;
@@ -366,7 +376,8 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> Update(SalesInvoice invoice)
         {
             var currentInvoice = await _unitOfWork.SalesInvoices.Get(invoice.Id);
-            if (currentInvoice == null) return new GenericResponse(false, $"La factura amb ID {invoice.Id} no existeix");
+            if (currentInvoice == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("SalesInvoiceNotFound", invoice.Id));
 
             // Recuperar estat actual y nou
             var lifecycle = await _unitOfWork.Lifecycles.GetByName(LifecycleName);
@@ -392,11 +403,11 @@ namespace Api.Services.Sales
             // Accions relacionades amb l'albarà d'entrega
             if (currentStatus != null && updatedStatus != null && currentStatus.Id != updatedStatus.Id)
             {
-                if (updatedStatus.Name == "Cobrada")
+                if (updatedStatus.Name == StatusConstants.Statuses.Cobrada)
                 {
                     await _deliveryNoteService.Invoice(invoiceId);
                 }
-                else if (currentStatus.Name == "Cobrada")
+                else if (currentStatus.Name == StatusConstants.Statuses.Cobrada)
                 {
                     await _deliveryNoteService.UnInvoice(invoiceId);
                 }
@@ -406,7 +417,8 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> Remove(Guid id)
         {
             var invoice = _unitOfWork.SalesInvoices.Find(p => p.Id == id).FirstOrDefault();
-            if (invoice == null) return new GenericResponse(false, new List<string> { $"La factura amb ID {id} no existeix" });
+            if (invoice == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("SalesInvoiceNotFound", id));
 
             var invoiceDeliveryNotes = _unitOfWork.DeliveryNotes.Find(d => d.SalesInvoiceId == id);
             if (invoiceDeliveryNotes != null && invoiceDeliveryNotes.Any())
@@ -427,10 +439,11 @@ namespace Api.Services.Sales
         {
             var paymentMethod = await _unitOfWork.PaymentMethods.Get(invoice.PaymentMethodId);
             if (paymentMethod == null)
-                return new GenericResponse(false, new List<string>() { "El métode de pagament no existeix" });
+                return new GenericResponse(false, _localizationService.GetLocalizedString("PaymentMethodNotFound"));
+            
             var dbInvoice = await _unitOfWork.SalesInvoices.Get(invoice.Id);
             if (dbInvoice == null)
-                return new GenericResponse(false, new List<string>() { "La factura no existeix" });
+                return new GenericResponse(false, _localizationService.GetLocalizedString("SalesInvoiceNoPodeuModificar"));
 
             // Esborrar venciments actuals
             var currentDueDates = _unitOfWork.SalesInvoices.InvoiceDueDates.Find(d => d.SalesInvoiceId == invoice.Id);
@@ -461,7 +474,7 @@ namespace Api.Services.Sales
             var status = await _unitOfWork.Lifecycles.StatusRepository.Get(statusToId);
             if (status == null || status.Disabled)
             {
-                return new GenericResponse(false, $"L'estat de factura amb ID {statusToId} no existeix o está deshabilitat");
+                return new GenericResponse(false, _localizationService.GetLocalizedString("StatusNotFound", statusToId));
             }
 
             var invoices = _unitOfWork.SalesInvoices.Find(pi => changeStatusesRequest.Ids.Contains(pi.Id));
@@ -479,9 +492,12 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> AddDeliveryNote(Guid id, DeliveryNote deliveryNote)
         {
             var invoice = _unitOfWork.SalesInvoices.Find(i => i.Id == id).FirstOrDefault();
-            if (invoice == null) return new GenericResponse(false, $"La factura amb ID {id} no existeix");
+            if (invoice == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("SalesInvoiceNotFound", id));
+            
             var tax = _unitOfWork.Taxes.Find(t => t.Percentatge == 21).FirstOrDefault();
-            if (tax == null) return new GenericResponse(false, $"No existeix l'import IVA 21%");
+            if (tax == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("TaxNotFound"));
 
             // Crear les lines de la factura segons les línes de l'albarà
             var deliveryNoteDetails = _unitOfWork.DeliveryNotes.Details.Find(d => d.DeliveryNoteId == deliveryNote.Id);
@@ -522,15 +538,13 @@ namespace Api.Services.Sales
             //Recuperar la comanda 
             var salesOrder  = _unitOfWork.SalesOrderHeaders.Find(q => q.DeliveryNoteId == deliveryNote.Id).FirstOrDefault();
             
-            var status = await _unitOfWork.Lifecycles.GetStatusByName("SalesOrder", "Comanda Facturada");
+            var status = await _unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.SalesOrder, StatusConstants.Statuses.ComandaFacturada);
             if (status == null || status.Disabled)
             {
-                return new GenericResponse(false, $"L'estat de factura amb ID {status.Name} no existeix o está deshabilitat");
+                return new GenericResponse(false, _localizationService.GetLocalizedString("StatusNotFound", StatusConstants.Statuses.ComandaFacturada));
             }
             salesOrder.StatusId = status.Id;
             await _unitOfWork.SalesOrderHeaders.Update(salesOrder);
-
-            
 
             return new GenericResponse(true, invoiceDetails);
         }
@@ -538,7 +552,9 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> RemoveDeliveryNote(Guid id, DeliveryNote deliveryNote)
         {
             var invoice = _unitOfWork.SalesInvoices.Find(i => i.Id == id).FirstOrDefault();
-            if (invoice == null) return new GenericResponse(false, $"La factura amb ID {id} no existeix");
+            if (invoice == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("SalesInvoiceNotFound", id));
+            
             var detailIds = _unitOfWork.DeliveryNotes.Details.Find(d => d.DeliveryNoteId == deliveryNote.Id).Select(d => d.Id).ToList();
 
             var deliveryNoteDetails = _unitOfWork.SalesInvoices.InvoiceDetails.Find(d => d.DeliveryNoteDetailId != null && detailIds.Contains(d.DeliveryNoteDetailId.Value));
@@ -554,14 +570,13 @@ namespace Api.Services.Sales
 
             var salesOrder = _unitOfWork.SalesOrderHeaders.Find(q => q.DeliveryNoteId == deliveryNote.Id).FirstOrDefault();
 
-            var status = await _unitOfWork.Lifecycles.GetStatusByName("SalesOrder", "Comanda Servida");
+            var status = await _unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.SalesOrder, StatusConstants.Statuses.ComandaServida);
             if (status == null || status.Disabled)
             {
-                return new GenericResponse(false, $"L'estat de factura amb ID {status.Name} no existeix o está deshabilitat");
+                return new GenericResponse(false, _localizationService.GetLocalizedString("StatusNotFound", StatusConstants.Statuses.ComandaServida));
             }
             salesOrder.StatusId = status.Id;
             await _unitOfWork.SalesOrderHeaders.Update(salesOrder);
-
 
             return new GenericResponse(true, deliveryNoteDetails);
         }
@@ -569,7 +584,8 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> AddDetail(SalesInvoiceDetail invoiceDetail)
         {
             var invoice = await _unitOfWork.SalesInvoices.Get(invoiceDetail.SalesInvoiceId);
-            if (invoice == null) return new GenericResponse(false, new List<string>() { $"La factura amb ID {invoiceDetail.SalesInvoiceId} no existeix" });
+            if (invoice == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("SalesInvoiceNotFound", invoiceDetail.SalesInvoiceId));
 
             await _unitOfWork.SalesInvoices.InvoiceDetails.Add(invoiceDetail);
 
@@ -580,9 +596,12 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> UpdateDetail(SalesInvoiceDetail invoiceDetail)
         {
             var invoice = await _unitOfWork.SalesInvoices.Get(invoiceDetail.SalesInvoiceId);
-            if (invoice == null) return new GenericResponse(false, new List<string>() { $"La factura amb ID {invoiceDetail.SalesInvoiceId} no existeix" });
+            if (invoice == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("SalesInvoiceNotFound", invoiceDetail.SalesInvoiceId));
+            
             var detail = _unitOfWork.SalesInvoices.InvoiceDetails.Find(p => p.Id == invoiceDetail.Id).FirstOrDefault();
-            if (detail == null) return new GenericResponse(false, new List<string> { $"La detall de factura amb ID {invoiceDetail.Id} no existeix" });
+            if (detail == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("SalesInvoiceDetailNotFound", invoiceDetail.Id));
 
             await _unitOfWork.SalesInvoices.InvoiceDetails.Update(invoiceDetail);
 
@@ -592,9 +611,12 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> RemoveDetail(Guid id)
         {
             var detail = _unitOfWork.SalesInvoices.InvoiceDetails.Find(p => p.Id == id).FirstOrDefault();
-            if (detail == null) return new GenericResponse(false, new List<string> { $"La detall de factura amb ID {id} no existeix" });
+            if (detail == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("SalesInvoiceDetailNotFound", id));
+            
             var invoice = await _unitOfWork.SalesInvoices.Get(detail.SalesInvoiceId);
-            if (invoice == null) return new GenericResponse(false, new List<string>() { $"La factura amb ID {detail.SalesInvoiceId} no existeix" });
+            if (invoice == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("SalesInvoiceNotFound", detail.SalesInvoiceId));
 
             await _unitOfWork.SalesInvoices.InvoiceDetails.Remove(detail);
             var memoryDetail = invoice.SalesInvoiceDetails.First(d => d.Id == detail.Id);
