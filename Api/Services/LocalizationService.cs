@@ -1,15 +1,16 @@
+using Application.Services;
 using Microsoft.Extensions.Localization;
 using System.Globalization;
 
 namespace Api.Services
 {
-    public class LocalizationService : Application.Services.ILocalizationService
+    public class LocalizationService : ILocalizationService
     {
         private readonly IStringLocalizerFactory _localizerFactory;
         private readonly IStringLocalizer _localizer;
+        private readonly string[] _supportedCultures = { "ca", "es", "en" };
 
         public LocalizationService(IStringLocalizerFactory localizerFactory)
-        public LocalizationService(IStringLocalizerFactory localizerFactory, ICultureService cultureService)
         {
             _localizerFactory = localizerFactory;
             _localizer = _localizerFactory.Create("LocalizationService", string.Empty);
@@ -39,6 +40,37 @@ namespace Api.Services
                 CultureInfo.CurrentCulture = currentCulture;
                 CultureInfo.CurrentUICulture = currentUICulture;
             }
+        }
+
+        public Dictionary<string, string> GetAllTranslations()
+        {
+            var allStrings = _localizer.GetAllStrings(false);
+            return allStrings.ToDictionary(s => s.Name, s => s.Value);
+        }
+
+        public Dictionary<string, string> GetAllTranslationsForCulture(string culture)
+        {
+            var currentCulture = CultureInfo.CurrentCulture;
+            var currentUICulture = CultureInfo.CurrentUICulture;
+
+            try
+            {
+                var cultureInfo = new CultureInfo(culture);
+                CultureInfo.CurrentCulture = cultureInfo;
+                CultureInfo.CurrentUICulture = cultureInfo;
+
+                return GetAllTranslations();
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = currentCulture;
+                CultureInfo.CurrentUICulture = currentUICulture;
+            }
+        }
+
+        public string[] GetSupportedCultures()
+        {
+            return _supportedCultures;
         }
     }
 }

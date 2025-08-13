@@ -1,5 +1,4 @@
-﻿
-using Application.Contracts.Production;
+﻿using Application.Contracts.Production;
 using Application.Contracts.Purchase;
 using Application.Contracts.Sales;
 using Application.Persistance.Repositories;
@@ -14,6 +13,7 @@ using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
 using Domain.Entities.Shared;
 using Domain.Entities.Warehouse;
+using Domain.Repositories.Shared;
 
 namespace Application.Persistance
 {
@@ -32,6 +32,7 @@ namespace Application.Persistance
         IRepository<Tax, Guid> Taxes { get; }
         IRepository<PaymentMethod, Guid> PaymentMethods { get; }
         ILifecycleRepository Lifecycles { get; }
+        ILanguageRepository Languages { get; }
 
         // Purchase
         IRepository<SupplierType, Guid> SupplierTypes { get; }
