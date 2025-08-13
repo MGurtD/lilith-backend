@@ -1,5 +1,6 @@
 using Application.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 
 namespace Api.Controllers.Shared
 {
@@ -7,32 +8,135 @@ namespace Api.Controllers.Shared
     [Route("api/[controller]")]
     public class LocalizationController(ILocalizationService localizationService) : ControllerBase
     {
-        [HttpGet("test")]
-        public IActionResult TestLocalization()
+        /// <summary>
+        /// Get all translations for the current request culture (auto-detected or default)
+        /// </summary>
+        [HttpGet("all")]
+        public IActionResult GetAllTranslations()
         {
-            return Ok(new
+            try
             {
-                EntityNotFound = localizationService.GetLocalizedString("EntityNotFound", "12345"),
-                CustomerNotFound = localizationService.GetLocalizedString("CustomerNotFound"),
-                ReferenceNotFound = localizationService.GetLocalizedString("ReferenceNotFound"),
-                WorkOrderNotFound = localizationService.GetLocalizedString("WorkOrderNotFound", "WO001"),
-                StatusName_Created = localizationService.GetLocalizedString("StatusNames.Created"),
-                StatusName_Closed = localizationService.GetLocalizedString("StatusNames.Closed")
-            });
+                var currentCulture = CultureInfo.CurrentUICulture.Name;
+                var translations = localizationService.GetAllTranslations();
+                var supportedCultures = localizationService.GetSupportedCultures();
+
+                return Ok(new
+                {
+                    Culture = currentCulture,
+                    SupportedCultures = supportedCultures,
+                    TranslationCount = translations.Count,
+                    Translations = translations
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    Error = "Failed to retrieve translations",
+                    Message = ex.Message
+                });
+            }
         }
 
-        [HttpGet("test/{culture}")]
-        public IActionResult TestLocalizationWithCulture(string culture)
+        /// <summary>
+        /// Get all translations for a specific culture
+        /// </summary>
+        [HttpGet("all/{culture}")]
+        public IActionResult GetAllTranslationsForCulture(string culture)
         {
+            try
+            {
+                var supportedCultures = localizationService.GetSupportedCultures();
+                
+                if (!supportedCultures.Contains(culture.ToLowerInvariant()))
+                {
+                    return BadRequest(new
+                    {
+                        Error = $"Unsupported culture: {culture}",
+                        SupportedCultures = supportedCultures
+                    });
+                }
+
+                var translations = localizationService.GetAllTranslationsForCulture(culture);
+
+                return Ok(new
+                {
+                    Culture = culture,
+                    SupportedCultures = supportedCultures,
+                    TranslationCount = translations.Count,
+                    Translations = translations
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    Error = $"Failed to retrieve translations for culture: {culture}",
+                    Message = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// Compare translations across all supported cultures
+        /// </summary>
+        [HttpGet("compare")]
+        public IActionResult CompareAllCultures()
+        {
+            try
+            {
+                var supportedCultures = localizationService.GetSupportedCultures();
+                var comparison = new Dictionary<string, Dictionary<string, string>>();
+
+                foreach (var culture in supportedCultures)
+                {
+                    comparison[culture] = localizationService.GetAllTranslationsForCulture(culture);
+                }
+
+                // Get all unique keys across all cultures
+                var allKeys = comparison.Values
+                    .SelectMany(dict => dict.Keys)
+                    .Distinct()
+                    .OrderBy(key => key)
+                    .ToArray();
+
+                // Create a comparison matrix
+                var comparisonMatrix = allKeys.ToDictionary(key => key, key =>
+                    supportedCultures.ToDictionary(culture => culture, culture =>
+                        comparison[culture].TryGetValue(key, out var value) ? value : "[MISSING]"
+                    )
+                );
+
+                return Ok(new
+                {
+                    SupportedCultures = supportedCultures,
+                    TotalKeys = allKeys.Length,
+                    Comparison = comparisonMatrix
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    Error = "Failed to compare translations",
+                    Message = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// Get list of supported cultures
+        /// </summary>
+        [HttpGet("cultures")]
+        public IActionResult GetSupportedCultures()
+        {
+            var supportedCultures = localizationService.GetSupportedCultures();
+            
             return Ok(new
             {
-                Culture = culture,
-                EntityNotFound = localizationService.GetLocalizedStringForCulture("EntityNotFound", culture, "12345"),
-                CustomerNotFound = localizationService.GetLocalizedStringForCulture("CustomerNotFound", culture),
-                ReferenceNotFound = localizationService.GetLocalizedStringForCulture("ReferenceNotFound", culture),
-                WorkOrderNotFound = localizationService.GetLocalizedStringForCulture("WorkOrderNotFound", culture, "WO001"),
-                StatusName_Created = localizationService.GetLocalizedStringForCulture("StatusNames.Created", culture),
-                StatusName_Closed = localizationService.GetLocalizedStringForCulture("StatusNames.Closed", culture)
+                SupportedCultures = supportedCultures,
+                DefaultCulture = "ca",
+                CurrentCulture = CultureInfo.CurrentUICulture.Name
             });
         }
     }
