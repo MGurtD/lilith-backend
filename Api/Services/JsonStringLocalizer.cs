@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Localization;
 using System.Globalization;
 using System.Text.Json;
+using Api.Models;
 
 namespace Api.Services
 {
@@ -102,18 +103,19 @@ namespace Api.Services
 
             foreach (var file in jsonFiles)
             {
-                var fileName = Path.GetFileNameWithoutExtension(file);
-                var culture = fileName; // e.g., "ca.json" -> "ca"
-
                 try
                 {
                     var json = File.ReadAllText(file);
-                    var localizations = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
-
-                    if (localizations != null)
+                    var localizationFile = JsonSerializer.Deserialize<LocalizationFile>(json);
+                    
+                    if (localizationFile != null && !string.IsNullOrEmpty(localizationFile.Culture) && localizationFile.Texts != null)
                     {
-                        _localizations[culture] = localizations;
-                        Console.WriteLine($"Loaded {localizations.Count} translations for culture '{culture}'");
+                        _localizations[localizationFile.Culture] = localizationFile.Texts;
+                        Console.WriteLine($"Loaded {localizationFile.Texts.Count} translations for culture '{localizationFile.Culture}'");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Invalid localization file format: {file}. Expected format with 'culture' and 'texts' properties.");
                     }
                 }
                 catch (Exception ex)

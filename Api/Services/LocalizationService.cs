@@ -9,6 +9,7 @@ namespace Api.Services
         private readonly IStringLocalizer _localizer;
 
         public LocalizationService(IStringLocalizerFactory localizerFactory)
+        public LocalizationService(IStringLocalizerFactory localizerFactory, ICultureService cultureService)
         {
             _localizerFactory = localizerFactory;
             _localizer = _localizerFactory.Create("LocalizationService", string.Empty);
