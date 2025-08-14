@@ -1,78 +1,77 @@
 using System.Globalization;
+using Application.Services;
 
 namespace Api.Middlewares
 {
-    public class CultureMiddleware
+    public class CultureMiddleware(RequestDelegate next, ILanguageCatalog languageCatalog)
     {
-        private readonly RequestDelegate _next;
-        private readonly string[] _supportedCultures = { "ca", "es", "en" };
-
-        public CultureMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
-
         public async Task InvokeAsync(HttpContext context)
         {
-            var culture = DetermineCultureFromRequest(context);
+            var culture = await DetermineCultureFromRequestAsync(context, languageCatalog);
             SetCulture(culture);
             
-            await _next(context);
+            await next(context);
         }
 
-        private string DetermineCultureFromRequest(HttpContext context)
+        private static async Task<string> DetermineCultureFromRequestAsync(HttpContext context, ILanguageCatalog languageCatalog)
         {
-            // Priority order:
-            // 1. Query parameter (?culture=ca)
-            // 2. Header (Accept-Language)
-            // 3. Default to Catalan
-
-            // Check query parameter
-            if (context.Request.Query.TryGetValue("culture", out var cultureQuery))
+            var supported = (await languageCatalog.GetAllAsync())
+                            .Select(l => l.Code.ToLowerInvariant())
+                            .Distinct()
+                            .ToHashSet();
+            if (supported.Count == 0)
             {
-                var requestedCulture = cultureQuery.ToString().ToLowerInvariant();
-                if (_supportedCultures.Contains(requestedCulture))
-                {
-                    return requestedCulture;
-                }
+                supported = new[] { "ca", "es", "en" }.ToHashSet();
             }
 
-            // Check Accept-Language header
+            // 1) Query parameter override
+            if (context.Request.Query.TryGetValue("culture", out var cultureQuery))
+            {
+                var requested = Normalize(cultureQuery.ToString());
+                if (supported.Contains(requested))
+                    return requested;
+            }
+
+            // 2) User claim (requires middleware to run AFTER UseAuthentication)
+            var claimCulture = Normalize(context.User?.FindFirst("locale")?.Value);
+            if (!string.IsNullOrWhiteSpace(claimCulture) && supported.Contains(claimCulture))
+                return claimCulture;
+
+            // 3) Accept-Language header
             var acceptLanguageHeader = context.Request.Headers["Accept-Language"].ToString();
             if (!string.IsNullOrEmpty(acceptLanguageHeader))
             {
-                var languages = acceptLanguageHeader.Split(',')
-                    .Select(lang => lang.Split(';')[0].Trim().ToLowerInvariant())
-                    .ToArray();
-
-                foreach (var language in languages)
+                foreach (var raw in acceptLanguageHeader.Split(','))
                 {
-                    // Check exact match first
-                    if (_supportedCultures.Contains(language))
-                    {
-                        return language;
-                    }
+                    var lang = raw.Split(';')[0].Trim().ToLowerInvariant();
 
-                    // Check language part (e.g., "ca" from "ca-ES")
-                    var languageCode = language.Split('-')[0];
-                    if (_supportedCultures.Contains(languageCode))
-                    {
-                        return languageCode;
-                    }
+                    // exact match (e.g., "es-ES")
+                    var exact = Normalize(lang);
+                    if (supported.Contains(exact))
+                        return exact;
+
+                    // short language part (e.g., "es")
+                    var shortLang = Normalize(lang.Split('-')[0]);
+                    if (supported.Contains(shortLang))
+                        return shortLang;
                 }
             }
 
-            // Default to Catalan
-            return "ca";
+            // 4) Default from catalog (or fallback)
+            var defaultLang = (await languageCatalog.GetDefaultAsync())?.Code?.ToLowerInvariant();
+            return !string.IsNullOrWhiteSpace(defaultLang) && supported.Contains(defaultLang)
+                ? defaultLang!
+                : "ca";
         }
+
+        private static string Normalize(string? value) =>
+            string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().ToLowerInvariant();
 
         private static void SetCulture(string culture)
         {
             var cultureInfo = new CultureInfo(culture);
             CultureInfo.CurrentCulture = cultureInfo;
             CultureInfo.CurrentUICulture = cultureInfo;
-            Thread.CurrentThread.CurrentCulture = cultureInfo;
-            Thread.CurrentThread.CurrentUICulture = cultureInfo;
         }
     }
 }

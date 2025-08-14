@@ -24,7 +24,6 @@ public static class ApplicationServicesSetup
         services.AddScoped<IExerciseService, ExerciseService>();
         services.AddScoped<IDueDateService, DueDateService>();
         services.AddScoped<IReferenceService, ReferenceService>();
-        services.AddScoped<ILanguageService, LanguageService>();
         services.AddScoped<IPurchaseInvoiceService, PurchaseInvoiceService>();
         services.AddScoped<IReceiptService, ReceiptService>();
         services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();

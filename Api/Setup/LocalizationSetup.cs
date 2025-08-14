@@ -40,11 +40,11 @@ namespace Api.Setup
 
         public static IApplicationBuilder UseLocalizationSetup(this IApplicationBuilder app)
         {
-            // Use custom culture middleware before request localization
-            app.UseMiddleware<Api.Middlewares.CultureMiddleware>();
-            
-            // Use built-in request localization
+            // Use built-in request localization first
             app.UseRequestLocalization();
+            
+            // Then enforce our custom culture resolution (query > claim > header > default)
+            app.UseMiddleware<Api.Middlewares.CultureMiddleware>();
 
             return app;
         }

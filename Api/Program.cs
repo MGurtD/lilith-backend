@@ -3,6 +3,8 @@ using Api.Setup;
 using NLog;
 using NLog.Web;
 using System.Text.Json.Serialization;
+using Application.Services; // ILanguageCatalog
+using Api.Services; // LanguageCatalog
 
 // Early init of NLog to allow startup and exception logging, before host is built
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
@@ -30,6 +32,9 @@ try
             .AddSwaggerSetup()
             .AddLocalizationSetup(); // Add localization services
 
+        // Language catalog singleton
+        builder.Services.AddSingleton<ILanguageCatalog, LanguageCatalog>();
+
         builder.Services.AddControllers()
                         .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
     }
@@ -41,10 +46,9 @@ try
 
         app.UseHttpsRedirection();
 
-        // Add localization middleware before authentication
-        app.UseLocalizationSetup();
-
+        // Ensure authentication happens before culture resolution so we can read the user's locale claim
         app.UseAuthentication();
+        app.UseLocalizationSetup();
         app.UseAuthorization();
 
         // middlewares

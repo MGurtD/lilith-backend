@@ -14,12 +14,10 @@ using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
 using Domain.Entities.Shared;
 using Domain.Entities.Warehouse;
-using Domain.Repositories.Shared;
 using Infrastructure.Persistance.Repositories;
 using Infrastructure.Persistance.Repositories.Production;
-using Infrastructure.Persistance.Repositories.Purchase;
+using Infrastructure.Persistance.Repositories.Purchase; // contains LifecycleRepository as per current project structure
 using Infrastructure.Persistance.Repositories.Sales;
-using Infrastructure.Persistance.Repositories.Shared;
 using Infrastructure.Persistance.Repositories.Warehouse;
 
 namespace Infrastructure.Persistance
@@ -41,7 +39,7 @@ namespace Infrastructure.Persistance
         public IRepository<Tax, Guid> Taxes { get; private set; } = new Repository<Tax, Guid>(context);
         public IRepository<PaymentMethod, Guid> PaymentMethods { get; private set; } = new Repository<PaymentMethod, Guid>(context);
         public ILifecycleRepository Lifecycles { get; private set; } = new LifecycleRepository(context);
-        public ILanguageRepository Languages { get; private set; } = new LanguageRepository(context);
+        // Removed Languages repository (now JSON based catalog)
 
         // Purchase
         public IRepository<SupplierType, Guid> SupplierTypes { get; private set; } = new Repository<SupplierType, Guid>(context);

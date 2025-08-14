@@ -8,11 +8,12 @@ namespace Api.Services
     {
         private readonly IStringLocalizerFactory _localizerFactory;
         private readonly IStringLocalizer _localizer;
-        private readonly string[] _supportedCultures = { "ca", "es", "en" };
+        private readonly ILanguageCatalog _languageCatalog;
 
-        public LocalizationService(IStringLocalizerFactory localizerFactory)
+        public LocalizationService(IStringLocalizerFactory localizerFactory, ILanguageCatalog languageCatalog)
         {
             _localizerFactory = localizerFactory;
+            _languageCatalog = languageCatalog;
             _localizer = _localizerFactory.Create("LocalizationService", string.Empty);
         }
 
@@ -70,7 +71,14 @@ namespace Api.Services
 
         public string[] GetSupportedCultures()
         {
-            return _supportedCultures;
+            var codes = _languageCatalog
+                        .GetAllAsync()
+                        .GetAwaiter()
+                        .GetResult()
+                        .Select(l => l.Code.ToLowerInvariant())
+                        .Distinct()
+                        .ToArray();
+            return codes.Length > 0 ? codes : new[] { "ca", "es", "en" };
         }
     }
 }

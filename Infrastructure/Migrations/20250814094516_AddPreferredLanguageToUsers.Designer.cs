@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250813063659_AddLanguageEntity")]
-    partial class AddLanguageEntity
+    [Migration("20250814094516_AddPreferredLanguageToUsers")]
+    partial class AddPreferredLanguageToUsers
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -394,6 +394,13 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("varchar");
+
+                    b.Property<string>("PreferredLanguage")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar")
+                        .HasDefaultValue("ca");
 
                     b.Property<Guid>("RoleId")
                         .HasColumnType("uuid");
@@ -4160,60 +4167,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "ExerciseId" }, "IDX_SalesOrderHeader_Exercise");
 
                     b.ToTable("SalesOrderHeader");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Shared.Language", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("varchar");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Icon")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar");
-
-                    b.Property<bool>("IsDefault")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar");
-
-                    b.Property<int>("SortOrder")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.HasKey("Id")
-                        .HasName("PK_Languages");
-
-                    b.HasIndex(new[] { "Code" }, "UK_Languages_Code")
-                        .IsUnique();
-
-                    b.ToTable("Languages", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Shared.Parameter", b =>

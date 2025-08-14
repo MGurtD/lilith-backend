@@ -13,7 +13,6 @@ using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
 using Domain.Entities.Shared;
 using Domain.Entities.Warehouse;
-using Domain.Repositories.Shared;
 
 namespace Application.Persistance
 {
@@ -32,7 +31,7 @@ namespace Application.Persistance
         IRepository<Tax, Guid> Taxes { get; }
         IRepository<PaymentMethod, Guid> PaymentMethods { get; }
         ILifecycleRepository Lifecycles { get; }
-        ILanguageRepository Languages { get; }
+        // Removed Languages repository (now JSON based catalog)
 
         // Purchase
         IRepository<SupplierType, Guid> SupplierTypes { get; }

@@ -31,6 +31,15 @@
     <None Include="Resources\**\*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Resources\Languages\languages.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Resources\Languages\**" />
+    <Content Remove="Resources\Languages\**" />
+    <EmbeddedResource Remove="Resources\Languages\**" />
   </ItemGroup>
 
 </Project>

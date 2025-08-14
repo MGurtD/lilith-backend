@@ -74,6 +74,7 @@ namespace Api.Services
             }
 
             var encrPassword = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password);
+            user.Password = encrPassword; // assign new password before update
             await _unitOfWork.Users.Update(user);
             return true;
         }
@@ -151,6 +152,7 @@ namespace Api.Services
                     new Claim("id", user.Id.ToString()),
                     new Claim(JwtRegisteredClaimNames.Sub, user.Username),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                    new Claim("locale", string.IsNullOrWhiteSpace(user.PreferredLanguage) ? "ca" : user.PreferredLanguage)
                 }),
                 Expires = DateTime.UtcNow.Add(Settings.JwtExpirationTime),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(signKey), SecurityAlgorithms.HmacSha256)

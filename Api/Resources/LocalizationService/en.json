@@ -8,35 +8,35 @@
     "EntityUpdatedSuccessfully": "Entity updated successfully",
     "EntityDeletedSuccessfully": "Entity deleted successfully",
     "EntityDeleted": "Entity deleted successfully",
-    
+
     "ReferenceNotFound": "Reference not found",
     "ReferenceAlreadyExists": "Reference with manufacturing route for selected mode. Please select another mode",
     "ReferenceTypeAlreadyExists": "Reference type {0} already exists",
-    
+
     "CustomerNotFound": "Customer not found",
     "CustomerInvalid": "Customer is not valid for creating an invoice. Check tax name, account number and VAT number",
     "CustomerNoAddresses": "Customer has no addresses registered. Please create an address.",
     "CustomerAlreadyExists": "Customer {0} already exists",
-    
+
     "SupplierNotFound": "Supplier not found",
     "SupplierAlreadyExists": "Supplier {0} already exists",
-    
+
     "ExerciseNotFound": "Exercise not found",
     "ExerciseInvalid": "Invalid exercise",
     "ExerciseCounterError": "Error creating counter",
     "ExerciseCounterNotFound": "The provided counter '{0}' is not valid",
     "ExerciseNotFoundForDate": "No exercise found for the current date",
-    
+
     "LifecycleNotFound": "Lifecycle '{0}' not found",
     "LifecycleNoInitialStatus": "Lifecycle '{0}' has no initial status",
     "StatusNotFound": "Status with ID {0} not found or is disabled",
     "StatusTransitionNotFound": "Transition identifiers not found",
-    
+
     "LanguageNotFound": "Language '{0}' not found",
     "LanguageCodeAlreadyExists": "Language code '{0}' already exists",
     "DefaultLanguageNotFound": "Default language not found",
     "CannotDeleteDefaultLanguage": "Cannot delete the default language",
-    
+
     "InvoiceNotFound": "Invoice with ID {0} not found",
     "InvoiceDetailNotFound": "Invoice detail with ID {0} not found",
     "InvoiceInvalidFormat": "Delivery note badly formatted or incorrect",
@@ -44,16 +44,16 @@
     "InvoiceRectifyNoDetails": "Invoice to rectify has no details",
     "InvoiceOriginalTaxNotFound": "Original invoice tax not found",
     "InvoiceRectifyDescription": "Rectificative of invoice {0}",
-    
+
     "DeliveryNoteNotFound": "Delivery note with ID {0} not found",
     "DeliveryNoteStatusNotFound": "Status 'Delivered' not found",
     "DeliveryNoteWithoutAlbaran": "Without delivery note",
     "DeliveryNoteAlbaranHeader": "Delivery note: {0} - Delivery: {1} - Customer order: {2}",
-    
+
     "BudgetNotFound": "Budget with ID {0} not found",
     "BudgetDetailNotFound": "Budget detail with ID {0} not found",
     "BudgetAutomaticRejection": "Budget automatically rejected on date: {0}",
-    
+
     "WorkOrderNotFound": "Work order with ID {0} not found",
     "WorkOrderPhaseNotFound": "Work order phase not found",
     "WorkOrderPhaseAlreadyExists": "Work order phase already exists",
@@ -65,7 +65,7 @@
     "WorkOrderStatusNotFound": "Adequate status for work order not found",
     "WorkOrderPhaseWithId": "Work order phase with ID {0}",
     "WorkOrderWithId": "Work order with ID {0}",
-    
+
     "WorkMasterNotFound": "Work master not found",
     "WorkMasterAlreadyExists": "Work master already exists",
     "WorkMasterPhaseNotFound": "Work master phase not found",
@@ -73,31 +73,31 @@
     "WorkMasterPhaseDetailNotFound": "Work master phase detail not found",
     "WorkMasterPhaseDetailAlreadyExists": "Work master phase detail step already exists",
     "WorkMasterNoInitialStatus": "No initial status defined in the WorkOrder lifecycle",
-    
+
     "ReceiptNotFound": "Receipt with ID {0} not found",
     "ReceiptStatusNotFound": "Status 'Received' not found",
     "ReceiptDetailNotFound": "Detail {0} not found",
-    
+
     "PurchaseOrderNotFound": "Purchase order with ID {0} not found",
     "PurchaseOrderIncompleteRequest": "Incomplete request",
     "PurchaseOrderDetailNotFound": "Purchase order detail {0} not found",
     "PurchaseInvoiceNotFound": "Purchase invoice with ID {0} not found",
-    
+
     "SalesInvoiceNotFound": "Sales invoice with ID {0} not found",
     "SalesInvoiceDetailNotFound": "Sales invoice detail with ID {0} not found",
     "SalesInvoiceNoExisteix": "The invoice does not exist",
-    
+
     "SiteNotFound": "Site 'Temges' not found",
     "SiteInvalid": "Site 'Temges' is not valid for creating an invoice. Check billing information.",
     "SiteTorelló": "Local Torelló",
     "SiteAlreadyExists": "Site {0} already exists",
-    
+
     "TaxNotFound": "VAT 21% tax not found",
     "PaymentMethodNotFound": "Payment method not found",
     "PaymentMethodNotFoundOrDisabled": "Payment method with ID {0} not found or is disabled",
-    
+
     "FileUploadDirectoryError": "Problems creating directory '{0}'",
-    
+
     "WorkcenterNotFound": "Workcenter not found",
     "WorkcenterCostNotFound": "Workcenter cost not found",
     "WorkcenterCombinationNotFound": "Workcenter and machine status combination not found",
@@ -105,35 +105,35 @@
     "WorkcenterTypeAlreadyExists": "Workcenter type {0} already exists",
     "WorkcenterCostAlreadyExists": "Cost already exists",
     "WorkOrderLifecycle": "WorkOrder",
-    
+
     "MachineStatusAlreadyExists": "Machine status {0} already exists",
-    
+
     "OperatorNotFound": "Operator not found",
     "OperatorTypeNotFound": "Operator type not found",
     "OperatorAlreadyExists": "Operator {0} already exists",
     "OperatorTypeAlreadyExists": "Operator type {0} already exists",
-    
+
     "ShiftAlreadyExists": "Shift: {0} already exists",
-    
+
     "StockNotFound": "No stock found with the provided dimensions",
     "StockDefaultLocationNotDefined": "No default location defined in the project",
     "StockDefaultLocationNotFound": "No default location found",
-    
+
     "ReferenceNotExistent": "Reference does not exist",
     "ReferenceNoFormat": "Reference without format",
     "ReferenceNoType": "Reference without type",
     "ReferenceTypeNotFound": "Material type not found",
     "ReferenceFormatNotFound": "Material format not found",
-    
+
     "MaterialNotFound": "Material not found",
-    
+
     "UserNotAvailable": "Username {0} is not available.",
     "UserRoleNotFound": "Default role 'user' does not exist.",
     "UserNotExist": "User {0} does not exist.",
     "UserPasswordInvalid": "Password is not valid.",
     "UserDisabled": "User {0} is disabled.",
     "UserNotFound": "User not found",
-    
+
     "AuthInvalidAlgorithm": "Invalid algorithm",
     "AuthTokenValid": "Token is valid until {0}",
     "AuthRefreshTokenNotExist": "Refresh token '{0}' does not exist",
@@ -142,14 +142,14 @@
     "AuthRefreshTokenMismatch": "The unique key of the refresh token does not match. Stored: {0} != Requested: {1}",
     "AuthTokenExpired": "Expired token",
     "AuthInvalidParameters": "Invalid parameters",
-    
+
     "WarehouseAlreadyExists": "Warehouse {0} already exists",
     "LocationAlreadyExists": "Location {0} already exists",
     "LocationNotFound": "Location with ID {0} not found",
-    
+
     "EnterpriseAlreadyExists": "Enterprise {0} already exists",
     "AreaAlreadyExists": "Area {0} already exists",
-    
+
     "StatusNames.Created": "Created",
     "StatusNames.Launched": "Launched",
     "StatusNames.Paused": "Paused",
@@ -163,26 +163,38 @@
     "StatusNames.Pending": "Pending acceptance",
     "StatusNames.Accepted": "Accepted",
     "StatusNames.Paid": "Paid",
-    
+
     "Validation.Required": "The {0} field is required",
     "Validation.InvalidEmail": "Email format is not valid",
     "Validation.InvalidRange": "Value must be between {0} and {1}",
     "Validation.StringLength": "Length must be between {0} and {1} characters",
-    
+
     "Auth.InvalidCredentials": "Invalid credentials",
     "Auth.InvalidParameters": "Invalid parameters",
     "Auth.UserNotFound": "User not found",
     "Auth.PasswordChanged": "Password changed successfully",
-    
+
     "ReferenceFormat.NotImplemented": "ReferenceFormatCalculation for '{0}' not implemented",
-    
+
     "Movement.AlbaranDescription": "Delivery note {0}",
     "Movement.ReturnDescription": "Return delivery note {0}",
-    
+
     "Common.IdNotExist": "Id {0} does not exist",
     "Common.ErrorRetrievingData": "Error retrieving data",
     "Common.ErrorCreatingEntity": "Error creating entity",
     "Common.ErrorUpdatingEntity": "Error updating entity",
-    "Common.ErrorDeletingEntity": "Error deleting entity"
+    "Common.ErrorDeletingEntity": "Error deleting entity",
+
+    "Report.Quantity": "Quantity",
+    "Report.Description": "Description",
+    "Report.UnitPrice": "Unit price",
+    "Report.Amount": "Amount",
+    "Report.SalesInvoice.DeliveryNoteTotal": "Delivery note total",
+    "Report.DeliveryNote.CustomerOrder": "Customer order",
+    "Report.DeliveryNote.OrderTotal": "Order total",
+    "Report.DeliveryNote.DeliveryNoteTotalVatExcluded": "Delivery note total (VAT not included)",
+    "Report.Budget.Item": "Item",
+    "Report.Budget.TotalVatExcluded": "Total (VAT not included)",
+    "Report.SalesOrder.TotalVatExcluded": "Total (VAT not included)"
   }
 }
