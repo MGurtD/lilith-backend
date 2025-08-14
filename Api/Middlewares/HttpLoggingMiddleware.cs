@@ -1,8 +1,6 @@
-﻿using System.Diagnostics;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Domain.Entities.Audit;
 using Infrastructure.Persistance;
-using Domain.Entities.Audit;
+using System.Diagnostics;
 
 public class HttpLoggingMiddleware
 {
