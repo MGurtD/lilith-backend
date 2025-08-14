@@ -144,16 +144,24 @@ namespace Api.Services
 
             // Token specifications
             var jwtTokenHandler = new JwtSecurityTokenHandler();
+
+            // Build claims with optional email claim
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Token identifier
+                new Claim("id", user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Username),
+                new Claim("locale", string.IsNullOrWhiteSpace(user.PreferredLanguage) ? "ca" : user.PreferredLanguage)
+            };
+
+            if (!string.IsNullOrWhiteSpace(user.Email))
+            {
+                claims.Add(new Claim(JwtRegisteredClaimNames.Email, user.Email));
+            }
+
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Token identifier
-                    new Claim("id", user.Id.ToString()),
-                    new Claim(JwtRegisteredClaimNames.Sub, user.Username),
-                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                    new Claim("locale", string.IsNullOrWhiteSpace(user.PreferredLanguage) ? "ca" : user.PreferredLanguage)
-                }),
+                Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.Add(Settings.JwtExpirationTime),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(signKey), SecurityAlgorithms.HmacSha256)
             };
@@ -188,25 +196,35 @@ namespace Api.Services
 
             try
             {
-                var tokenInVerification = jwtTokenHandler.ValidateToken(tokenRequest.Token, _tokenValidationParameters, out var validatedToken);
-                if (validatedToken is JwtSecurityToken jwtSecurityToken)
-                {
+                // Clone validation parameters and disable lifetime validation for refresh flow
+                var validationParams = _tokenValidationParameters.Clone();
+                validationParams.ValidateLifetime = false;
 
-                    // Is the same algorithm?
-                    if (!jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+                var principal = jwtTokenHandler.ValidateToken(tokenRequest.Token, validationParams, out var validatedToken);
+
+                // Ensure token algorithm is HmacSha256 and token type is JwtSecurityToken
+                if (validatedToken is not JwtSecurityToken jwtSecurityToken ||
+                    !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return new AuthResponse()
                     {
-                        return new AuthResponse()
-                        {
-                            Result = false,
-                            Errors = new List<string>() { _localizationService.GetLocalizedString("AuthInvalidAlgorithm") }
-                        };
-                    }
+                        Result = false,
+                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthInvalidAlgorithm") }
+                    };
                 }
 
                 // Token is still valid?
-                var utcExpiryDate = long.Parse(tokenInVerification.Claims.First(t => t.Type.Equals(JwtRegisteredClaimNames.Exp)).Value);
-                var expiryDate = UnixTimeStampToDateTime(utcExpiryDate);
+                var expValue = principal.Claims.FirstOrDefault(t => t.Type == JwtRegisteredClaimNames.Exp)?.Value;
+                if (string.IsNullOrWhiteSpace(expValue) || !long.TryParse(expValue, out var utcExpiryDate))
+                {
+                    return new AuthResponse()
+                    {
+                        Result = false,
+                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthInvalidParameters") }
+                    };
+                }
 
+                var expiryDate = UnixTimeStampToDateTime(utcExpiryDate);
                 if (expiryDate > DateTime.UtcNow)
                 {
                     return new AuthResponse()
@@ -216,7 +234,7 @@ namespace Api.Services
                     };
                 }
 
-                // Exist on the persistance layer?
+                // Exist on the persistence layer?
                 var storedToken = _unitOfWork.UserRefreshTokens.Find(urt => urt.Token == tokenRequest.RefreshToken).FirstOrDefault();
                 if (storedToken is null)
                 {
@@ -247,13 +265,24 @@ namespace Api.Services
                 }
 
                 // Has the same identifier?
-                var jti = tokenInVerification.Claims.First(t => t.Type == JwtRegisteredClaimNames.Jti).Value;
-                if (storedToken.JwtId != Guid.Parse(jti))
+                var jti = principal.Claims.FirstOrDefault(t => t.Type == JwtRegisteredClaimNames.Jti)?.Value;
+                if (string.IsNullOrWhiteSpace(jti) || storedToken.JwtId != Guid.Parse(jti))
                 {
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthRefreshTokenMismatch", storedToken.JwtId, jti) }
+                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthRefreshTokenMismatch", storedToken.JwtId, jti ?? "null") }
+                    };
+                }
+
+                // Optional: user consistency check (defense-in-depth)
+                var userIdClaim = principal.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
+                if (string.IsNullOrWhiteSpace(userIdClaim) || !Guid.TryParse(userIdClaim, out var userIdFromToken) || userIdFromToken != storedToken.UserId)
+                {
+                    return new AuthResponse()
+                    {
+                        Result = false,
+                        Errors = new List<string>() { _localizationService.GetLocalizedString("UserNotFound") }
                     };
                 }
 
@@ -282,9 +311,22 @@ namespace Api.Services
 
                 return await GenerateJwtToken(user);
             }
+            catch (SecurityTokenException)
+            {
+                return new AuthResponse()
+                {
+                    Result = false,
+                    Errors = new List<string>() { _localizationService.GetLocalizedString("AuthTokenInvalid") }
+                };
+            }
             catch (Exception ex)
             {
-                throw new ApiException(ex.Message);
+                // Unexpected error
+                return new AuthResponse()
+                {
+                    Result = false,
+                    Errors = new List<string>() { ex.Message }
+                };
             }
         }
 
