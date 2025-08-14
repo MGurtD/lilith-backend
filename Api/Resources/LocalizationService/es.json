@@ -183,6 +183,13 @@
     "Common.ErrorRetrievingData": "Error al recuperar los datos",
     "Common.ErrorCreatingEntity": "Error al crear la entidad",
     "Common.ErrorUpdatingEntity": "Error al actualizar la entidad",
-    "Common.ErrorDeletingEntity": "Error al eliminar la entidad"
+    "Common.ErrorDeletingEntity": "Error al eliminar la entidad",
+
+    "Reference.Delete.Header": "Referencia con dependencias:",
+    "Reference.Delete.PurchaseOrders": "- Tiene pedidos de compra",
+    "Reference.Delete.Receipts": "- Tiene albaranes de recepción",
+    "Reference.Delete.StockMovements": "- Tiene movimientos de almacén",
+    "Reference.Delete.ProductionRoute": "- Tiene una ruta de producción definida",
+    "Reference.Delete.BillOfMaterials": "- Forma parte de una lista de materiales"
   }
 }

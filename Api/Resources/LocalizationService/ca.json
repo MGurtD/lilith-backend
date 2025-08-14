@@ -183,6 +183,13 @@
     "Common.ErrorRetrievingData": "Error al recuperar les dades",
     "Common.ErrorCreatingEntity": "Error al crear l'entitat",
     "Common.ErrorUpdatingEntity": "Error al actualitzar l'entitat",
-    "Common.ErrorDeletingEntity": "Error al eliminar l'entitat"
+    "Common.ErrorDeletingEntity": "Error al eliminar l'entitat",
+
+    "Reference.Delete.Header": "Referència amb dependències:",
+    "Reference.Delete.PurchaseOrders": "- Té comandes de compra",
+    "Reference.Delete.Receipts": "- Té albarans de recepció",
+    "Reference.Delete.StockMovements": "- Té moviments de magatzem",
+    "Reference.Delete.ProductionRoute": "- Té una ruta de producció definida",
+    "Reference.Delete.BillOfMaterials": "- Forma part d'una llista de materials"
   }
 }

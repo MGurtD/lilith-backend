@@ -96,7 +96,7 @@
     "PaymentMethodNotFound": "Payment method not found",
     "PaymentMethodNotFoundOrDisabled": "Payment method with ID {0} not found or is disabled",
 
-    "FileUploadDirectoryError": "Problems creating directory '{0}'",
+    "FileUploadDirectoryError": "Problems creating directory '{0}",
 
     "WorkcenterNotFound": "Workcenter not found",
     "WorkcenterCostNotFound": "Workcenter cost not found",
@@ -128,7 +128,7 @@
     "MaterialNotFound": "Material not found",
 
     "UserNotAvailable": "Username {0} is not available.",
-    "UserRoleNotFound": "Default role 'user' does not exist.",
+    "UserRoleNotFound": "Default role 'user' does not not exist.",
     "UserNotExist": "User {0} does not exist.",
     "UserPasswordInvalid": "Password is not valid.",
     "UserDisabled": "User {0} is disabled.",
@@ -183,6 +183,13 @@
     "Common.ErrorRetrievingData": "Error retrieving data",
     "Common.ErrorCreatingEntity": "Error creating entity",
     "Common.ErrorUpdatingEntity": "Error updating entity",
-    "Common.ErrorDeletingEntity": "Error deleting entity"
+    "Common.ErrorDeletingEntity": "Error deleting entity",
+
+    "Reference.Delete.Header": "Reference with dependencies:",
+    "Reference.Delete.PurchaseOrders": "- Has purchase orders",
+    "Reference.Delete.Receipts": "- Has receipt delivery notes",
+    "Reference.Delete.StockMovements": "- Has warehouse movements",
+    "Reference.Delete.ProductionRoute": "- Has a defined production route",
+    "Reference.Delete.BillOfMaterials": "- Is part of a bill of materials"
   }
 }

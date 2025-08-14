@@ -8,48 +8,39 @@ using System.Text;
 
 namespace Api.Services
 {
-    public class ReferenceService : IReferenceService
+    public class ReferenceService(IUnitOfWork unitOfWork, ILocalizationService localizationService) : IReferenceService
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ILocalizationService _localizationService;
-
-        public ReferenceService(IUnitOfWork unitOfWork, ILocalizationService localizationService)
-        {
-            _unitOfWork = unitOfWork;
-            _localizationService = localizationService;
-        }
-
         public GenericResponse CanDelete(Guid referenceId)
         {
             var sb = new StringBuilder();
 
             var resp = true;
-            sb.AppendLine("Referència amb dependencies: ");
+            sb.AppendLine(localizationService.GetLocalizedString("Reference.Delete.Header"));
 
-            if (_unitOfWork.SalesOrderDetails.Find(p => p.ReferenceId == referenceId).Any())
+            if (unitOfWork.SalesOrderDetails.Find(p => p.ReferenceId == referenceId).Any())
             {
                 resp = false;
-                sb.AppendLine("- Té comandes de compra");
+                sb.AppendLine(localizationService.GetLocalizedString("Reference.Delete.PurchaseOrders"));
             }
-            if (_unitOfWork.Receipts.Details.Find(p => p.ReferenceId.Equals(referenceId)).Any())
+            if (unitOfWork.Receipts.Details.Find(p => p.ReferenceId.Equals(referenceId)).Any())
             {
                 resp = false;
-                sb.AppendLine("- Té albarans de recepció");
+                sb.AppendLine(localizationService.GetLocalizedString("Reference.Delete.Receipts"));
             }
-            if (_unitOfWork.StockMovements.Find(p => p.ReferenceId == referenceId).Any())
+            if (unitOfWork.StockMovements.Find(p => p.ReferenceId == referenceId).Any())
             {
                 resp = false;
-                sb.AppendLine("- Té moviments de magatzem");
+                sb.AppendLine(localizationService.GetLocalizedString("Reference.Delete.StockMovements"));
             }
-            if (_unitOfWork.WorkMasters.Find(p => p.ReferenceId == referenceId).Any())
+            if (unitOfWork.WorkMasters.Find(p => p.ReferenceId == referenceId).Any())
             {
                 resp = false;
-                sb.AppendLine("- Té una ruta de producció definida");
+                sb.AppendLine(localizationService.GetLocalizedString("Reference.Delete.ProductionRoute"));
             }
-            if (_unitOfWork.WorkMasters.Phases.BillOfMaterials.Find(p => p.ReferenceId == referenceId).Any())
+            if (unitOfWork.WorkMasters.Phases.BillOfMaterials.Find(p => p.ReferenceId == referenceId).Any())
             {
                 resp = false;
-                sb.AppendLine("- Forma part d'una llista de materials");
+                sb.AppendLine(localizationService.GetLocalizedString("Reference.Delete.BillOfMaterials"));
             }
 
             return new GenericResponse(resp, sb.ToString());
@@ -57,7 +48,7 @@ namespace Api.Services
 
         public async Task<List<Reference>> GetReferenceByCategory(string categoryName)
         {
-            var categoryReferences = await _unitOfWork.References.FindAsync(r => r.CategoryName == categoryName);
+            var categoryReferences = await unitOfWork.References.FindAsync(r => r.CategoryName == categoryName);
             return categoryReferences;
         }
 
@@ -65,16 +56,16 @@ namespace Api.Services
         {
             if (receipt == null)
             {
-                return new GenericResponse(false, _localizationService.GetLocalizedString("InvoiceInvalidFormat"));
+                return new GenericResponse(false, localizationService.GetLocalizedString("InvoiceInvalidFormat"));
             }
             var supplierId = receipt.SupplierId;
             var format = new ReferenceFormat();
             foreach (ReceiptDetail detail in receipt.Details)
             {
-                detail.Reference = await _unitOfWork.References.Get(detail.ReferenceId);
+                detail.Reference = await unitOfWork.References.Get(detail.ReferenceId);
                 if (detail.Reference != null && detail.Reference.ReferenceFormatId.HasValue)
                 {
-                    format = await _unitOfWork.ReferenceFormats.Get(detail.Reference.ReferenceFormatId.Value);
+                    format = await unitOfWork.ReferenceFormats.Get(detail.Reference.ReferenceFormatId.Value);
                 }
                 decimal price;
                 if (detail.Reference!.CategoryName == "Material")
@@ -95,7 +86,7 @@ namespace Api.Services
                 }
                 detail.Reference.LastCost = price;
 
-                var supplierreference = await _unitOfWork.Suppliers.GetSupplierReferenceBySupplierAndId(detail.ReferenceId, supplierId);
+                var supplierreference = await unitOfWork.Suppliers.GetSupplierReferenceBySupplierAndId(detail.ReferenceId, supplierId);
                 if (supplierreference == null)
                 {
                                         
@@ -109,14 +100,14 @@ namespace Api.Services
                         SupplierPrice = price,
                         SupplyDays = 0
                     };
-                    await _unitOfWork.Suppliers.AddSupplierReference(newsupplierReference);
+                    await unitOfWork.Suppliers.AddSupplierReference(newsupplierReference);
                 }
                 else
                 {
                     supplierreference.SupplierPrice = price;
-                    await _unitOfWork.Suppliers.UpdateSupplierReference(supplierreference);
+                    await unitOfWork.Suppliers.UpdateSupplierReference(supplierreference);
                 }
-                await _unitOfWork.References.Update(detail.Reference);
+                await unitOfWork.References.Update(detail.Reference);
             }
             return new GenericResponse(true);
 
@@ -125,9 +116,9 @@ namespace Api.Services
         {
             var supplierReference = new SupplierReference();
             if (supplierId != null)
-                supplierReference = await _unitOfWork.Suppliers.GetSupplierReferenceBySupplierAndId(referenceId, supplierId.Value);
+                supplierReference = await unitOfWork.Suppliers.GetSupplierReferenceBySupplierAndId(referenceId, supplierId.Value);
 
-            var reference = await _unitOfWork.References.Get(referenceId);
+            var reference = await unitOfWork.References.Get(referenceId);
             if (supplierReference != null)
                 return supplierReference.SupplierPrice;
             if (reference != null)
