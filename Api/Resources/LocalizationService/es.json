@@ -183,14 +183,6 @@
     "Common.ErrorRetrievingData": "Error al recuperar los datos",
     "Common.ErrorCreatingEntity": "Error al crear la entidad",
     "Common.ErrorUpdatingEntity": "Error al actualizar la entidad",
-    "Common.ErrorDeletingEntity": "Error al eliminar la entidad",
-
-    "Report.SalesInvoice.DeliveryNoteTotal": "Total albarán",
-    "Report.DeliveryNote.CustomerOrder": "Pedido cliente",
-    "Report.DeliveryNote.OrderTotal": "Total pedido",
-    "Report.DeliveryNote.DeliveryNoteTotalVatExcluded": "Total albarán (IVA no incluido)",
-    "Report.Budget.Item": "Concepto",
-    "Report.Budget.TotalVatExcluded": "Total (IVA no incluido)",
-    "Report.SalesOrder.TotalVatExcluded": "Total (IVA no incluido)"
+    "Common.ErrorDeletingEntity": "Error al eliminar la entidad"
   }
 }

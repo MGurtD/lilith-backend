@@ -183,18 +183,6 @@
     "Common.ErrorRetrievingData": "Error al recuperar les dades",
     "Common.ErrorCreatingEntity": "Error al crear l'entitat",
     "Common.ErrorUpdatingEntity": "Error al actualitzar l'entitat",
-    "Common.ErrorDeletingEntity": "Error al eliminar l'entitat",
-
-    "Report.Quantity": "Quantitat",
-    "Report.Description": "Descripció",
-    "Report.UnitPrice": "Preu unitari",
-    "Report.Amount": "Import",
-    "Report.DeliveryNote.CustomerOrder": "Comanda client",
-    "Report.DeliveryNote.OrderTotal": "Total comanda",
-    "Report.DeliveryNote.DeliveryNoteTotalVatExcluded": "Total albarà (IVA no inclòs)",
-    "Report.SalesInvoice.DeliveryNoteTotal": "Total albarà",
-    "Report.Budget.TotalVatExcluded": "TOTAL (IVA no inclòs)",
-    "Report.Budget.Item": "Concepte",
-    "Report.SalesOrder.TotalVatExcluded": "Total (IVA no inclòs)"
+    "Common.ErrorDeletingEntity": "Error al eliminar l'entitat"
   }
 }

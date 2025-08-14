@@ -183,18 +183,6 @@
     "Common.ErrorRetrievingData": "Error retrieving data",
     "Common.ErrorCreatingEntity": "Error creating entity",
     "Common.ErrorUpdatingEntity": "Error updating entity",
-    "Common.ErrorDeletingEntity": "Error deleting entity",
-
-    "Report.Quantity": "Quantity",
-    "Report.Description": "Description",
-    "Report.UnitPrice": "Unit price",
-    "Report.Amount": "Amount",
-    "Report.SalesInvoice.DeliveryNoteTotal": "Delivery note total",
-    "Report.DeliveryNote.CustomerOrder": "Customer order",
-    "Report.DeliveryNote.OrderTotal": "Order total",
-    "Report.DeliveryNote.DeliveryNoteTotalVatExcluded": "Delivery note total (VAT not included)",
-    "Report.Budget.Item": "Item",
-    "Report.Budget.TotalVatExcluded": "Total (VAT not included)",
-    "Report.SalesOrder.TotalVatExcluded": "Total (VAT not included)"
+    "Common.ErrorDeletingEntity": "Error deleting entity"
   }
 }
