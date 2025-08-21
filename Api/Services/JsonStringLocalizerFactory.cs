@@ -3,14 +3,9 @@ using Microsoft.Extensions.Options;
 
 namespace Api.Services
 {
-    public class JsonStringLocalizerFactory : IStringLocalizerFactory
+    public class JsonStringLocalizerFactory(IOptions<LocalizationOptions> options) : IStringLocalizerFactory
     {
-        private readonly string _resourcesPath;
-
-        public JsonStringLocalizerFactory(IOptions<LocalizationOptions> options)
-        {
-            _resourcesPath = options.Value.ResourcesPath ?? "Resources";
-        }
+        private readonly string _resourcesPath = options.Value.ResourcesPath ?? "Resources";
 
         public IStringLocalizer Create(Type resourceSource)
         {
@@ -24,7 +19,7 @@ namespace Api.Services
 
         private IStringLocalizer Create(string baseName)
         {
-            return new JsonStringLocalizer(_resourcesPath, baseName);
+            return Create(baseName, _resourcesPath);
         }
     }
 }

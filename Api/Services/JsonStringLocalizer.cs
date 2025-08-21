@@ -1,7 +1,7 @@
+using Api.Models;
 using Microsoft.Extensions.Localization;
 using System.Globalization;
 using System.Text.Json;
-using Api.Models;
 
 namespace Api.Services
 {
@@ -31,7 +31,7 @@ namespace Api.Services
                 return strings.Select(s => new LocalizedString(s.Key, s.Value, false));
             }
 
-            return Enumerable.Empty<LocalizedString>();
+            return [];
         }
 
         private LocalizedString GetLocalizedString(string name, params object[] arguments)
@@ -107,7 +107,7 @@ namespace Api.Services
                 {
                     var json = File.ReadAllText(file);
                     var localizationFile = JsonSerializer.Deserialize<LocalizationFile>(json);
-                    
+
                     if (localizationFile != null && !string.IsNullOrEmpty(localizationFile.Culture) && localizationFile.Texts != null)
                     {
                         _localizations[localizationFile.Culture] = localizationFile.Texts;
