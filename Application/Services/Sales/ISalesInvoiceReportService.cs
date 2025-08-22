@@ -4,5 +4,5 @@ namespace Application.Services.Sales;
 
 public interface ISalesInvoiceReportService
 {
-    Task<InvoiceReportDto?> GetDtoForReportingById(Guid id);
+    Task<InvoiceReportDto?> GetReportById(Guid id);
 }

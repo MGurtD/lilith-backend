@@ -21,102 +21,60 @@ namespace Api.Services.Sales
         internal Lifecycle Lifecycle;
     }
 
-    public class DeliveryNoteService : IDeliveryNoteService
+    public class DeliveryNoteService(
+        IUnitOfWork unitOfWork,
+        IStockMovementService stockMovementService,
+        ISalesOrderService salesOrderService,
+        IExerciseService exerciseService,
+        ILocalizationService localizationService) : IDeliveryNoteService
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IStockMovementService _stockMovementService;
-        private readonly ISalesOrderService _salesOrderService;
-        private readonly IExerciseService _exerciseService;
-        private readonly ILocalizationService _localizationService;
         private readonly string lifecycleName = StatusConstants.Lifecycles.DeliveryNote;
-
-        public DeliveryNoteService(IUnitOfWork unitOfWork, IStockMovementService stockMovementService, ISalesOrderService salesOrderService, IExerciseService exerciseService, ILocalizationService localizationService)
-        {
-            _unitOfWork = unitOfWork;
-            _stockMovementService = stockMovementService;
-            _salesOrderService = salesOrderService;
-            _exerciseService = exerciseService;
-            _localizationService = localizationService;
-        }
-
-        public async Task<DeliveryNoteReportResponse?> GetDtoForReportingById(Guid id)
-        {
-            var deliveryNote = await _unitOfWork.DeliveryNotes.Get(id);
-            if (deliveryNote is null) return null;
-
-            var orders = _salesOrderService.GetByDeliveryNoteId(id);
-
-            var customer = await _unitOfWork.Customers.Get(deliveryNote.CustomerId);
-            if (customer is null) return null;
-
-            var site = await _unitOfWork.Sites.Get(deliveryNote.SiteId);
-            if (site is null) return null;
-
-            var deliveryNoteOrders = orders.Select(order => new DeliveryNoteOrderReportDto
-            {
-                Number = order.Number,
-                Date = order.Date,
-                CustomerNumber = order.CustomerNumber,
-                Details = order.SalesOrderDetails.ToList(),
-                Total = order.SalesOrderDetails.Sum(d => d.Amount)
-            }).ToList();
-
-            var deliveryNoteReport = new DeliveryNoteReportResponse
-            {
-                DeliveryNote = deliveryNote,
-                Orders = deliveryNoteOrders,
-                Customer = customer,
-                Site = site,
-                Total = deliveryNote.Details.Sum(d => d.Amount),
-            };
-            return deliveryNoteReport;
-        }
-
+        
         public IEnumerable<DeliveryNote> GetBetweenDates(DateTime startDate, DateTime endDate)
         {
-            var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.CreatedOn >= startDate && p.CreatedOn <= endDate);
+            var deliveryNotes = unitOfWork.DeliveryNotes.Find(p => p.CreatedOn >= startDate && p.CreatedOn <= endDate);
             return deliveryNotes;
         }
 
         public IEnumerable<DeliveryNote> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid statusId)
         {
-            var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.CreatedOn >= startDate && p.CreatedOn <= endDate && p.StatusId == statusId);
+            var deliveryNotes = unitOfWork.DeliveryNotes.Find(p => p.CreatedOn >= startDate && p.CreatedOn <= endDate && p.StatusId == statusId);
             return deliveryNotes;
         }
 
         public IEnumerable<DeliveryNote> GetBetweenDatesAndCustomer(DateTime startDate, DateTime endDate, Guid customerId)
         {
-            var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.CreatedOn >= startDate && p.CreatedOn <= endDate && p.CustomerId == customerId);
+            var deliveryNotes = unitOfWork.DeliveryNotes.Find(p => p.CreatedOn >= startDate && p.CreatedOn <= endDate && p.CustomerId == customerId);
             return deliveryNotes;
         }
 
         public IEnumerable<DeliveryNote> GetByStatus(Guid statusId)
         {
-            var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.StatusId == statusId);
+            var deliveryNotes = unitOfWork.DeliveryNotes.Find(p => p.StatusId == statusId);
             return deliveryNotes;
         }
 
         public IEnumerable<DeliveryNote> GetByCustomer(Guid customerId)
         {
-            var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.CustomerId == customerId);
+            var deliveryNotes = unitOfWork.DeliveryNotes.Find(p => p.CustomerId == customerId);
             return deliveryNotes;
         }
 
         public IEnumerable<DeliveryNote> GetByStatusAndCustomer(Guid statusId, Guid customerId)
         {
-            var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.StatusId == statusId && p.CustomerId == customerId);
+            var deliveryNotes = unitOfWork.DeliveryNotes.Find(p => p.StatusId == statusId && p.CustomerId == customerId);
             return deliveryNotes;
         }
 
         public IEnumerable<DeliveryNote> GetBySalesInvoice(Guid salesInvoiceId)
         {
-            var deliveryNotes = _unitOfWork.DeliveryNotes.GetByInvoiceId(salesInvoiceId);
+            var deliveryNotes = unitOfWork.DeliveryNotes.GetByInvoiceId(salesInvoiceId);
             return deliveryNotes;
         }
 
         public IEnumerable<DeliveryNote> GetDeliveryNotesToInvoice(Guid customerId)
         {
-            var deliveryNotes = _unitOfWork.DeliveryNotes.Find(p => p.SalesInvoiceId == null && p.CustomerId == customerId);
+            var deliveryNotes = unitOfWork.DeliveryNotes.Find(p => p.SalesInvoiceId == null && p.CustomerId == customerId);
             return deliveryNotes;
         }
 
@@ -127,9 +85,9 @@ namespace Api.Services.Sales
 
             var deliveryNoteEntities = (DeliveryNoteEntities)response.Content!;
 
-            var counterObj = await _exerciseService.GetNextCounter(deliveryNoteEntities.Exercise.Id, "deliverynote");
+            var counterObj = await exerciseService.GetNextCounter(deliveryNoteEntities.Exercise.Id, "deliverynote");
             if (counterObj.Content == null) 
-                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseCounterError"));
+                return new GenericResponse(false, localizationService.GetLocalizedString("ExerciseCounterError"));
             
             var deliveryNote = new DeliveryNote()
             {
@@ -141,7 +99,7 @@ namespace Api.Services.Sales
                 Number = counterObj.Content.ToString()!,
                 StatusId = deliveryNoteEntities.Lifecycle.InitialStatusId!.Value
             };
-            await _unitOfWork.DeliveryNotes.Add(deliveryNote);
+            await unitOfWork.DeliveryNotes.Add(deliveryNote);
 
             return new GenericResponse(true, deliveryNote);
         }
@@ -151,21 +109,21 @@ namespace Api.Services.Sales
             // Netejar dependencies per evitar col·lisions de EF
             deliveryNote.Details?.Clear();
 
-            var exists = await _unitOfWork.DeliveryNotes.Exists(deliveryNote.Id);
+            var exists = await unitOfWork.DeliveryNotes.Exists(deliveryNote.Id);
             if (!exists) 
-                return new GenericResponse(false, _localizationService.GetLocalizedString("Common.IdNotExist", deliveryNote.Id));
+                return new GenericResponse(false, localizationService.GetLocalizedString("Common.IdNotExist", deliveryNote.Id));
 
-            await _unitOfWork.DeliveryNotes.Update(deliveryNote);
+            await unitOfWork.DeliveryNotes.Update(deliveryNote);
             return new GenericResponse(true);
         }
 
         public async Task<GenericResponse> Remove(Guid id)
         {
-            var deliveryNotes = await _unitOfWork.DeliveryNotes.Get(id);
+            var deliveryNotes = await unitOfWork.DeliveryNotes.Get(id);
             if (deliveryNotes == null) 
-                return new GenericResponse(false, _localizationService.GetLocalizedString("Common.IdNotExist", id));
+                return new GenericResponse(false, localizationService.GetLocalizedString("Common.IdNotExist", id));
 
-            await _unitOfWork.DeliveryNotes.Remove(deliveryNotes);
+            await unitOfWork.DeliveryNotes.Remove(deliveryNotes);
             return new GenericResponse(true);
         }
 
@@ -174,7 +132,7 @@ namespace Api.Services.Sales
             var warehouseResponse = await RetriveFromWarehose(deliveryNote);
             if (!warehouseResponse.Result) return warehouseResponse;
 
-            var orderServiceResponse = await _salesOrderService.Deliver(deliveryNote.Id);
+            var orderServiceResponse = await salesOrderService.Deliver(deliveryNote.Id);
             if (!orderServiceResponse.Result) return orderServiceResponse;
             if (deliveryNote.DeliveryDate is null)
             {
@@ -191,7 +149,7 @@ namespace Api.Services.Sales
             var warehouseResponse = await ReturnToWarehose(deliveryNote);
             if (!warehouseResponse.Result) return warehouseResponse;
 
-            var orderServiceResponse = await _salesOrderService.UnDeliver(deliveryNote.Id);
+            var orderServiceResponse = await salesOrderService.UnDeliver(deliveryNote.Id);
             if (!orderServiceResponse.Result) return orderServiceResponse;
 
             deliveryNote.DeliveryDate = null;
@@ -220,10 +178,10 @@ namespace Api.Services.Sales
                     foreach (var detail in deliveryNote.Details)
                     {
                         detail.IsInvoiced = isInvoiced;
-                        _unitOfWork.DeliveryNotes.Details.UpdateWithoutSave(detail);
+                        unitOfWork.DeliveryNotes.Details.UpdateWithoutSave(detail);
                     }                    
 
-                    await _unitOfWork.CompleteAsync();
+                    await unitOfWork.CompleteAsync();
                 }
             }
 
@@ -241,11 +199,11 @@ namespace Api.Services.Sales
                     MovementDate = DateTime.Now,
                     CreatedOn = DateTime.Now,
                     MovementType = StockMovementType.OUTPUT,
-                    Description = _localizationService.GetLocalizedString("Movement.AlbaranDescription", deliveryNote.Number),
+                    Description = localizationService.GetLocalizedString("Movement.AlbaranDescription", deliveryNote.Number),
                     ReferenceId = detail.ReferenceId,
                     Quantity = detail.Quantity,
                 };
-                var response = await _stockMovementService.Create(stockMovement);
+                var response = await stockMovementService.Create(stockMovement);
                 if (!response.Result) return response;
             }
 
@@ -263,11 +221,11 @@ namespace Api.Services.Sales
                     MovementDate = DateTime.Now,
                     CreatedOn = DateTime.Now,
                     MovementType = StockMovementType.INPUT,
-                    Description = _localizationService.GetLocalizedString("Movement.ReturnDescription", deliveryNote.Number),
+                    Description = localizationService.GetLocalizedString("Movement.ReturnDescription", deliveryNote.Number),
                     ReferenceId = detail.ReferenceId,
                     Quantity = detail.Quantity,
                 };
-                var response = await _stockMovementService.Create(stockMovement);
+                var response = await stockMovementService.Create(stockMovement);
                 if (!response.Result) return response;
             }
 
@@ -287,11 +245,11 @@ namespace Api.Services.Sales
                 deliveryNoteDetail.SetFromOrderDetail(salesDetail);
                 deliveryNoteDetails.Add(deliveryNoteDetail);
             }
-            await _unitOfWork.DeliveryNotes.Details.AddRange(deliveryNoteDetails);
+            await unitOfWork.DeliveryNotes.Details.AddRange(deliveryNoteDetails);
 
             // Associar albarà a comanda per evitar la selecció d'altres comandes
             order.DeliveryNoteId = deliveryNoteId;
-            await _salesOrderService.Update(order);
+            await salesOrderService.Update(order);
 
             return new GenericResponse(true, deliveryNoteDetails);
         }
@@ -300,42 +258,42 @@ namespace Api.Services.Sales
         {
             var detailIds = order.SalesOrderDetails.Select(d => d.Id).ToList();
 
-            var deliveryNoteDetails = _unitOfWork.DeliveryNotes.Details.Find(d => d.SalesOrderDetailId != null && detailIds.Contains(d.SalesOrderDetailId.Value));
+            var deliveryNoteDetails = unitOfWork.DeliveryNotes.Details.Find(d => d.SalesOrderDetailId != null && detailIds.Contains(d.SalesOrderDetailId.Value));
             // Eliminar en bloc
-            await _unitOfWork.DeliveryNotes.Details.RemoveRange(deliveryNoteDetails);
+            await unitOfWork.DeliveryNotes.Details.RemoveRange(deliveryNoteDetails);
 
             // Alliberar la comanda perquè sigui assignable de nou a un albarà
             order.DeliveryNoteId = null;
-            await _salesOrderService.Update(order);
+            await salesOrderService.Update(order);
 
             return new GenericResponse(true, deliveryNoteDetails);
         }
         
         private async Task<GenericResponse> ValidateCreateInvoiceRequest(CreateHeaderRequest createInvoiceRequest)
         {
-            var exercise = await _unitOfWork.Exercices.Get(createInvoiceRequest.ExerciseId);
+            var exercise = await unitOfWork.Exercices.Get(createInvoiceRequest.ExerciseId);
             if (exercise == null) 
-                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseNotFound"));
+                return new GenericResponse(false, localizationService.GetLocalizedString("ExerciseNotFound"));
 
-            var customer = await _unitOfWork.Customers.Get(createInvoiceRequest.CustomerId);
+            var customer = await unitOfWork.Customers.Get(createInvoiceRequest.CustomerId);
             if (customer == null) 
-                return new GenericResponse(false, _localizationService.GetLocalizedString("CustomerNotFound"));
+                return new GenericResponse(false, localizationService.GetLocalizedString("CustomerNotFound"));
             if (!customer.IsValidForSales())
-                return new GenericResponse(false, _localizationService.GetLocalizedString("CustomerInvalid"));
+                return new GenericResponse(false, localizationService.GetLocalizedString("CustomerInvalid"));
             if (customer.MainAddress() == null)
-                return new GenericResponse(false, _localizationService.GetLocalizedString("CustomerNoAddresses"));
+                return new GenericResponse(false, localizationService.GetLocalizedString("CustomerNoAddresses"));
 
-            var site = _unitOfWork.Sites.Find(s => s.Name == StatusConstants.Sites.LocalTorello).FirstOrDefault();
+            var site = unitOfWork.Sites.Find(s => s.Name == StatusConstants.Sites.LocalTorello).FirstOrDefault();
             if (site == null)
-                return new GenericResponse(false, _localizationService.GetLocalizedString("SiteNotFound"));
+                return new GenericResponse(false, localizationService.GetLocalizedString("SiteNotFound"));
             if (!site.IsValidForSales())
-                return new GenericResponse(false, _localizationService.GetLocalizedString("SiteInvalid"));
+                return new GenericResponse(false, localizationService.GetLocalizedString("SiteInvalid"));
 
-            var lifecycle = _unitOfWork.Lifecycles.Find(l => l.Name == lifecycleName).FirstOrDefault();
+            var lifecycle = unitOfWork.Lifecycles.Find(l => l.Name == lifecycleName).FirstOrDefault();
             if (lifecycle == null) 
-                return new GenericResponse(false, _localizationService.GetLocalizedString("LifecycleNotFound", lifecycleName));
+                return new GenericResponse(false, localizationService.GetLocalizedString("LifecycleNotFound", lifecycleName));
             if (!lifecycle.InitialStatusId.HasValue) 
-                return new GenericResponse(false, _localizationService.GetLocalizedString("LifecycleNoInitialStatus", lifecycleName));
+                return new GenericResponse(false, localizationService.GetLocalizedString("LifecycleNoInitialStatus", lifecycleName));
 
             DeliveryNoteEntities entities;
             entities.Exercise = exercise;

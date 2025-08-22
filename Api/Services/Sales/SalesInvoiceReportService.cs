@@ -1,19 +1,18 @@
-using Api.Services.Verifactu;
 using Application.Contracts.Sales;
 using Application.Persistance;
 using Application.Services;
 using Application.Services.Sales;
 using Domain.Entities.Sales;
-using Microsoft.Extensions.Options;
 
 namespace Api.Services.Sales
 {
     public class SalesInvoiceReportService(IUnitOfWork unitOfWork,
         ISalesOrderService salesOrderService,
         IDeliveryNoteService deliveryNoteService,
-        IVerifactuIntegrationService verifactuIntegrationService) : ISalesInvoiceReportService
+        IVerifactuIntegrationService verifactuIntegrationService,
+        ILocalizationService localizationService) : ISalesInvoiceReportService
     {
-        public async Task<InvoiceReportDto?> GetDtoForReportingById(Guid id)
+        public async Task<InvoiceReportDto?> GetReportById(Guid id)
         {
             // Consultar la factura i recuperar la informació necessària
             var invoice = await unitOfWork.SalesInvoices.Get(id);
@@ -38,7 +37,7 @@ namespace Api.Services.Sales
                 .FirstOrDefault();
 
             // Crear DTO per a la factura
-            var reportDto = new InvoiceReportDto()
+            var reportDto = new InvoiceReportDto(customer.PreferredLanguage, localizationService)
             {
                 Date = invoice.InvoiceDate,
                 Number = invoice.InvoiceNumber,

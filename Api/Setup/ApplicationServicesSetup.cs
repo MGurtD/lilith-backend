@@ -34,6 +34,11 @@ public static class ApplicationServicesSetup
         services.AddScoped<IDeliveryNoteService, DeliveryNoteService>();
         services.AddScoped<ISalesInvoiceService, SalesInvoiceService>();
         services.AddScoped<ISalesInvoiceReportService, SalesInvoiceReportService>();
+        services.AddScoped<ISalesOrderReportService, SalesOrderReportService>();
+        services.AddScoped<IBudgetReportService, BudgetReportService>();
+        services.AddScoped<IDeliveryNoteReportService, DeliveryNoteReportService>();
+        services.AddScoped<IPurchaseOrderReportService, PurchaseOrderReportService>();
+        services.AddScoped<ISalesOrderReportService, SalesOrderReportService>();
         services.AddScoped<IWorkOrderService, WorkOrderService>();
         services.AddScoped<IMetricsService, MetricsService>();
         services.AddScoped<IStockService, StockService>();

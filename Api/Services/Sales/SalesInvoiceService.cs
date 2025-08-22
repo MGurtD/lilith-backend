@@ -1,4 +1,5 @@
-﻿using Application.Contract;
+﻿using Api.Constants;
+using Application.Contract;
 using Application.Contracts;
 using Application.Contracts.Sales;
 using Application.Persistance;
@@ -7,7 +8,6 @@ using Application.Services.Sales;
 using Domain.Entities;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
-using Api.Constants;
 
 namespace Api.Services.Sales
 {
@@ -19,10 +19,10 @@ namespace Api.Services.Sales
     }
 
     public class SalesInvoiceService(
-        IUnitOfWork unitOfWork, 
+        IUnitOfWork unitOfWork,
         IDueDateService dueDateService,
-        IDeliveryNoteService deliveryNoteService, 
-        IExerciseService exerciseService, 
+        IDeliveryNoteService deliveryNoteService,
+        IExerciseService exerciseService,
         ILocalizationService localizationService) : ISalesInvoiceService
     {
         private readonly string LifecycleName = StatusConstants.Lifecycles.SalesInvoice;
@@ -81,9 +81,9 @@ namespace Api.Services.Sales
 
             var invoiceEntities = (InvoiceEntities)response.Content!;
             var counterObj = await exerciseService.GetNextCounter(invoiceEntities.Exercise.Id, "salesinvoice");
-            if (counterObj == null || counterObj.Content == null) 
+            if (counterObj == null || counterObj.Content == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("ExerciseCounterError"));
-            
+
             var counter = counterObj.Content.ToString();
             var invoice = new SalesInvoice
             {
@@ -97,7 +97,7 @@ namespace Api.Services.Sales
                 return new GenericResponse(false, localizationService.GetLocalizedString("LifecycleNotFound", StatusConstants.Lifecycles.SalesInvoice));
             if (!lifecycle.InitialStatusId.HasValue)
                 return new GenericResponse(false, localizationService.GetLocalizedString("LifecycleNoInitialStatus", StatusConstants.Lifecycles.SalesInvoice));
-                
+
             var verifactuInitialStatusId = await unitOfWork.Lifecycles.GetInitialStatusByName(StatusConstants.Lifecycles.Verifactu);
 
             invoice.ExerciseId = invoiceEntities.Exercise.Id;
@@ -122,11 +122,11 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> CreateRectificative(CreateRectificativeInvoiceRequest dto)
         {
             var originalInvoice = await unitOfWork.SalesInvoices.Get(dto.Id);
-            if (originalInvoice == null) 
+            if (originalInvoice == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("InvoiceRectifyNotFound"));
-            if (originalInvoice.SalesInvoiceDetails.Count == 0) 
+            if (originalInvoice.SalesInvoiceDetails.Count == 0)
                 return new GenericResponse(false, localizationService.GetLocalizedString("InvoiceRectifyNoDetails"));
-            
+
             var negativeNumber = await GetNextInvoiceCounter(Guid.Parse(originalInvoice.ExerciseId!.Value.ToString()));
 
             var orderId = Guid.NewGuid();
@@ -199,7 +199,7 @@ namespace Api.Services.Sales
             // Crear la factura rectificativa
             var import = originalInvoice.SalesInvoiceImports.FirstOrDefault();
             var tax = await unitOfWork.Taxes.Get(import!.TaxId);
-            if (tax == null) 
+            if (tax == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("InvoiceOriginalTaxNotFound"));
 
             var rectificativeNumber = await GetNextInvoiceCounter(Guid.Parse(originalInvoice.ExerciseId!.Value.ToString()));
@@ -256,11 +256,11 @@ namespace Api.Services.Sales
         private async Task<GenericResponse> ValidateCreateInvoiceRequest(CreateHeaderRequest createInvoiceRequest)
         {
             var exercise = await unitOfWork.Exercices.Get(createInvoiceRequest.ExerciseId);
-            if (exercise == null) 
+            if (exercise == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("ExerciseNotFound"));
 
             var customer = await unitOfWork.Customers.Get(createInvoiceRequest.CustomerId);
-            if (customer == null) 
+            if (customer == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("CustomerNotFound"));
             if (!customer.IsValidForSales())
                 return new GenericResponse(false, localizationService.GetLocalizedString("CustomerInvalid"));
@@ -283,7 +283,7 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> Update(SalesInvoice invoice)
         {
             var currentInvoice = await unitOfWork.SalesInvoices.Get(invoice.Id);
-            if (currentInvoice == null) 
+            if (currentInvoice == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("SalesInvoiceNotFound", invoice.Id));
 
             // Recuperar estat actual y nou
@@ -324,7 +324,7 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> Remove(Guid id)
         {
             var invoice = unitOfWork.SalesInvoices.Find(p => p.Id == id).FirstOrDefault();
-            if (invoice == null) 
+            if (invoice == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("SalesInvoiceNotFound", id));
 
             var invoiceDeliveryNotes = unitOfWork.DeliveryNotes.Find(d => d.SalesInvoiceId == id);
@@ -347,7 +347,7 @@ namespace Api.Services.Sales
             var paymentMethod = await unitOfWork.PaymentMethods.Get(invoice.PaymentMethodId);
             if (paymentMethod == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("PaymentMethodNotFound"));
-            
+
             var dbInvoice = await unitOfWork.SalesInvoices.Get(invoice.Id);
             if (dbInvoice == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("SalesInvoiceNoPodeuModificar"));
@@ -359,7 +359,7 @@ namespace Api.Services.Sales
 
             // Generar nous venciments
             var newDueDates = new List<SalesInvoiceDueDate>();
-            
+
             var dueDates = dueDateService.GenerateDueDates(paymentMethod, invoice.InvoiceDate, invoice.NetAmount);
             foreach (var dueDate in dueDates)
             {
@@ -400,7 +400,7 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> AddDetail(SalesInvoiceDetail invoiceDetail)
         {
             var invoice = await unitOfWork.SalesInvoices.Get(invoiceDetail.SalesInvoiceId);
-            if (invoice == null) 
+            if (invoice == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("SalesInvoiceNotFound", invoiceDetail.SalesInvoiceId));
 
             await unitOfWork.SalesInvoices.InvoiceDetails.Add(invoiceDetail);
@@ -412,11 +412,11 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> UpdateDetail(SalesInvoiceDetail invoiceDetail)
         {
             var invoice = await unitOfWork.SalesInvoices.Get(invoiceDetail.SalesInvoiceId);
-            if (invoice == null) 
+            if (invoice == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("SalesInvoiceNotFound", invoiceDetail.SalesInvoiceId));
-            
+
             var detail = unitOfWork.SalesInvoices.InvoiceDetails.Find(p => p.Id == invoiceDetail.Id).FirstOrDefault();
-            if (detail == null) 
+            if (detail == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("SalesInvoiceDetailNotFound", invoiceDetail.Id));
 
             await unitOfWork.SalesInvoices.InvoiceDetails.Update(invoiceDetail);
@@ -427,11 +427,11 @@ namespace Api.Services.Sales
         public async Task<GenericResponse> RemoveDetail(Guid id)
         {
             var detail = unitOfWork.SalesInvoices.InvoiceDetails.Find(p => p.Id == id).FirstOrDefault();
-            if (detail == null) 
+            if (detail == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("SalesInvoiceDetailNotFound", id));
-            
+
             var invoice = await unitOfWork.SalesInvoices.Get(detail.SalesInvoiceId);
-            if (invoice == null) 
+            if (invoice == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("SalesInvoiceNotFound", detail.SalesInvoiceId));
 
             await unitOfWork.SalesInvoices.InvoiceDetails.Remove(detail);

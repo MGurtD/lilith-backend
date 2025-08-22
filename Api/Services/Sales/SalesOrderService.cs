@@ -5,36 +5,14 @@ using Application.Persistance;
 using Application.Services;
 using Application.Services.Sales;
 using Domain.Entities.Sales;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.Sales
 {
-    public class SalesOrderService(IUnitOfWork unitOfWork, IExerciseService exerciseService, ILocalizationService localizationService) : ISalesOrderService
+    public class SalesOrderService(
+        IUnitOfWork unitOfWork,
+        IExerciseService exerciseService,
+        ILocalizationService localizationService) : ISalesOrderService
     {
-        public async Task<SalesOrderReportResponse?> GetByIdForReporting(Guid id)
-        {
-            var salesOrder = await GetById(id);
-            if (salesOrder is null) return null;
-
-            if (!salesOrder.CustomerId.HasValue) return null;
-            var customer = await unitOfWork.Customers.Get(salesOrder.CustomerId.Value);
-            if (customer is null) return null;
-
-            if (!salesOrder.SiteId.HasValue) return null;
-            var site = await unitOfWork.Sites.Get(salesOrder.SiteId.Value);
-            if (site is null) return null;
-
-            salesOrder.SalesOrderDetails = salesOrder.SalesOrderDetails.OrderBy(d => d.Reference!.Code).ToList();
-            var salesOrderReport = new SalesOrderReportResponse
-            {
-                Order = salesOrder,
-                Customer = customer,
-                Site = site,
-                Total = salesOrder.SalesOrderDetails.Sum(d => d.Amount),
-            };
-            return salesOrderReport;
-        }
-
         public async Task<SalesOrderHeader?> GetById(Guid id)
         {
             var salesOrderHeader = await unitOfWork.SalesOrderHeaders.Get(id);
