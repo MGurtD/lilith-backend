@@ -18,6 +18,7 @@ namespace Api.Constants
             public const string PurchaseInvoice = "PurchaseInvoice";
             public const string Receipts = "Receipts";
             public const string WorkOrder = "WorkOrder";
+            public const string Verifactu = "Verifactu";
         }
 
         // Status Names (Catalan - as stored in database)

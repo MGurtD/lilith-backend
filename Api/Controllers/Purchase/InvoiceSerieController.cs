@@ -1,29 +1,22 @@
 ﻿using Application.Persistance;
-using Domain.Entities.Purchase;
+using Domain.Entities.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class PurchaseInvoiceSerieController : ControllerBase
+    public class InvoiceSerieController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public PurchaseInvoiceSerieController(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
-
         [HttpPost]
-        public async Task<IActionResult> Create(PurchaseInvoiceSerie request)
+        public async Task<IActionResult> Create(InvoiceSerie request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.PurchaseInvoiceSeries.Find(r => request.Name == r.Name).Any();
+            var exists = unitOfWork.InvoiceSeries.Find(r => request.Name == r.Name).Any();
             if (!exists)
             {
-                await _unitOfWork.PurchaseInvoiceSeries.Add(request);
+                await unitOfWork.InvoiceSeries.Add(request);
                 return Ok(request);
             }
             else
@@ -35,14 +28,14 @@ namespace Api.Controllers.Purchase
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.PurchaseInvoiceSeries.GetAll();
+            var entities = await unitOfWork.InvoiceSeries.GetAll();
             return Ok(entities);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.PurchaseInvoiceSeries.Get(id);
+            var entity = await unitOfWork.InvoiceSeries.Get(id);
             if (entity is not null)
             {
                 return Ok(entity);
@@ -54,18 +47,18 @@ namespace Api.Controllers.Purchase
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid Id, PurchaseInvoiceSerie request)
+        public async Task<IActionResult> Update(Guid Id, InvoiceSerie request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.PurchaseInvoiceSeries.Exists(request.Id);
+            var exists = await unitOfWork.InvoiceSeries.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.PurchaseInvoiceSeries.Update(request);
+            await unitOfWork.InvoiceSeries.Update(request);
             return Ok(request);
         }
 
@@ -75,11 +68,11 @@ namespace Api.Controllers.Purchase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.PurchaseInvoiceSeries.Find(e => e.Id == id).FirstOrDefault();
+            var entity = unitOfWork.InvoiceSeries.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.PurchaseInvoiceSeries.Remove(entity);
+            await unitOfWork.InvoiceSeries.Remove(entity);
             return Ok(entity);
         }
     }

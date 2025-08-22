@@ -20,8 +20,7 @@ namespace Api.Services.Sales
 
     public class SalesInvoiceService(
         IUnitOfWork unitOfWork, 
-        IDueDateService dueDateService, 
-        ISalesOrderService salesOrderService, 
+        IDueDateService dueDateService,
         IDeliveryNoteService deliveryNoteService, 
         IExerciseService exerciseService, 
         ILocalizationService localizationService) : ISalesInvoiceService
@@ -38,91 +37,6 @@ namespace Api.Services.Sales
             var invoices = await unitOfWork.SalesInvoices.GetHeader(id);
             return invoices;
         }
-
-        public async  Task<InvoiceReportDto?> GetDtoForReportingById(Guid id)
-        {
-            // Consultar la factura i recuperar la informació necessària
-            var invoice = await GetById(id);
-            if (invoice is null) return null;
-
-            // Recuperar dades auxiliars
-            if (!invoice.CustomerId.HasValue) return null;
-            var customer = await unitOfWork.Customers.Get(invoice.CustomerId.Value);
-            if (customer is null) return null;
-
-            if (!invoice.SiteId.HasValue) return null;
-            var site = await unitOfWork.Sites.Get(invoice.SiteId.Value);
-            if (site is null) return null;
-
-            var paymentMethod = await unitOfWork.PaymentMethods.Get(invoice.PaymentMethodId);
-            if (paymentMethod is null) return null;
-
-            // Crear DTO per a la factura
-            var reportDto = new InvoiceReportDto()
-            {
-                Date = invoice.InvoiceDate,
-                Number = invoice.InvoiceNumber,
-                DueDate = invoice.SalesInvoiceDueDates.OrderByDescending(d => d.DueDate).FirstOrDefault()!.DueDate,
-                Total = invoice.SalesInvoiceImports.Sum(i => i.NetAmount),
-                Customer = customer,
-                Site = site,
-                PaymentMethod = paymentMethod,
-                Imports = invoice.SalesInvoiceImports.Select(import => new InvoiceReportDtoTaxImport()
-                {
-                    Name = import.Tax!.Name,
-                    BaseAmount = import.BaseAmount,
-                    NetAmount = import.NetAmount,
-                    TaxAmount = import.TaxAmount,
-                    Percentatge = import.Tax!.Percentatge
-                }).ToList()
-            };            
-
-            // Obtenir albarans de la factura
-            var deliveryNotes = deliveryNoteService.GetBySalesInvoice(id).OrderBy(d => d.Number);
-            
-            // Obtener referencies de les línies de l'albarà
-            var referenceIds = deliveryNotes.SelectMany(deliveryNotes => deliveryNotes.Details).Select(d => d.ReferenceId).ToList();
-            var references = unitOfWork.References.Find(r => referenceIds.Contains(r.Id)).ToList();
-
-            foreach ( var deliveryNote in deliveryNotes )
-            {
-                var orders = salesOrderService.GetByDeliveryNoteId(deliveryNote.Id);
-                var customerOrderNumbers = String.Join(",", orders.Select(orders => orders.CustomerNumber).ToArray());
-
-                reportDto.DeliveryNotes.Add(new InvoiceReportDtoDeliveryNote()
-                {
-                    Header = localizationService.GetLocalizedString("DeliveryNoteAlbaranHeader", deliveryNote.Number, deliveryNote.DeliveryDate?.ToString("dd/MM/yyyy"), customerOrderNumbers),
-                    Number = deliveryNote.Number,
-                    Date = deliveryNote.CreatedOn,
-                    Details = deliveryNote.Details.Select(detail => new SalesInvoiceDetail()
-                    {
-                        Amount = detail?.Amount ?? 0,
-                        Description = $"{references.FirstOrDefault(r => r.Id == detail!.ReferenceId)!.GetShortName()} - {detail?.Description}",
-                        Quantity = detail?.Quantity ?? 0,
-                        TotalCost = detail?.TotalCost ?? 0,
-                        UnitCost = detail?.UnitCost ?? 0,
-                        UnitPrice = detail?.UnitPrice ?? 0
-                    }).ToList(),
-                    Total = deliveryNote.Details.Sum(detail => detail.Amount)
-                });
-            }
-
-            // Linies lliures
-            var hasDetailsWithoutDeliveryNote = invoice.SalesInvoiceDetails.Any(d => d.DeliveryNoteDetailId == null);
-            if (hasDetailsWithoutDeliveryNote)
-            {
-                reportDto.DeliveryNotes.Add(new InvoiceReportDtoDeliveryNote()
-                {
-                    Header = localizationService.GetLocalizedString("DeliveryNoteWithoutAlbaran"),
-                    Date = invoice.InvoiceDate,
-                    Number = "--",
-                    Details = invoice.SalesInvoiceDetails.Where(d => d.DeliveryNoteDetailId == null).ToList(),
-                    Total = invoice.SalesInvoiceDetails.Where(d => d.DeliveryNoteDetailId == null).Sum(d => d.Amount)
-                });
-            }
-
-            return reportDto;
-        }        
 
         public IEnumerable<SalesInvoice> GetBetweenDates(DateTime startDate, DateTime endDate)
         {
@@ -183,9 +97,12 @@ namespace Api.Services.Sales
                 return new GenericResponse(false, localizationService.GetLocalizedString("LifecycleNotFound", StatusConstants.Lifecycles.SalesInvoice));
             if (!lifecycle.InitialStatusId.HasValue)
                 return new GenericResponse(false, localizationService.GetLocalizedString("LifecycleNoInitialStatus", StatusConstants.Lifecycles.SalesInvoice));
+                
+            var verifactuInitialStatusId = await unitOfWork.Lifecycles.GetInitialStatusByName(StatusConstants.Lifecycles.Verifactu);
 
             invoice.ExerciseId = invoiceEntities.Exercise.Id;
-            invoice.StatusId = lifecycle.InitialStatusId;
+            invoice.StatusId = lifecycle.InitialStatusId.Value;
+            invoice.IntegrationStatusId = verifactuInitialStatusId;
             invoice.SetCustomer(invoiceEntities.Customer);
             invoice.SetSite(invoiceEntities.Site);
 
@@ -237,12 +154,12 @@ namespace Api.Services.Sales
                 CustomerAddress = originalInvoice.CustomerAddress,
                 CustomerCity = originalInvoice.CustomerCity,
                 CustomerCode = originalInvoice.CustomerCode,
-                CustomerComercialName   = originalInvoice.CustomerComercialName,
+                CustomerComercialName = originalInvoice.CustomerComercialName,
                 CustomerCountry = originalInvoice.CustomerCountry,
                 CustomerPostalCode = originalInvoice.CustomerPostalCode,
                 CustomerRegion = originalInvoice.CustomerRegion,
                 CustomerTaxName = originalInvoice.CustomerTaxName,
-                CustomerVatNumber   = originalInvoice.CustomerVatNumber,
+                CustomerVatNumber = originalInvoice.CustomerVatNumber,
                 GrossAmount = originalInvoice.GrossAmount * -1,
                 TaxAmount = originalInvoice.TaxAmount * -1,
                 NetAmount = originalInvoice.NetAmount * -1,
@@ -478,98 +395,7 @@ namespace Api.Services.Sales
             return new GenericResponse(true);
         }
 
-        #region Details
-        public async Task<GenericResponse> AddDeliveryNote(Guid id, DeliveryNote deliveryNote)
-        {
-            var invoice = unitOfWork.SalesInvoices.Find(i => i.Id == id).FirstOrDefault();
-            if (invoice == null) 
-                return new GenericResponse(false, localizationService.GetLocalizedString("SalesInvoiceNotFound", id));
-            
-            var tax = unitOfWork.Taxes.Find(t => t.Percentatge == 21).FirstOrDefault();
-            if (tax == null) 
-                return new GenericResponse(false, localizationService.GetLocalizedString("TaxNotFound"));
-
-            // Crear les lines de la factura segons les línes de l'albarà
-            var deliveryNoteDetails = unitOfWork.DeliveryNotes.Details.Find(d => d.DeliveryNoteId == deliveryNote.Id);
-            var invoiceDetails = new List<SalesInvoiceDetail>();
-            foreach (var deliveryNoteDetail in deliveryNoteDetails.ToList())
-            {
-                var salesInvoiceDetail = new SalesInvoiceDetail
-                {
-                    SalesInvoiceId = id
-                };
-                
-                salesInvoiceDetail.SetDeliveryNoteDetail(deliveryNoteDetail);
-                if (salesInvoiceDetail.TaxId == Guid.Empty)
-                {
-                    var reference =  await unitOfWork.References.Get(deliveryNoteDetail.ReferenceId);
-                    if(reference != null)
-                    {
-                        salesInvoiceDetail.TaxId = reference.TaxId ?? tax.Id;
-                    }
-                    else
-                    {
-                        salesInvoiceDetail.TaxId = tax.Id;
-                    }
-                }
-
-                invoiceDetails.Add(salesInvoiceDetail);
-            }
-            await unitOfWork.SalesInvoices.InvoiceDetails.AddRange(invoiceDetails);
-            
-            // Actualizar taules relacionades
-            await UpdateImportsAndHeaderAmounts(invoice);
-
-            // Associar la factura per evitar la selecció de l'albarà d'entrega a altre factures
-            deliveryNote.SalesInvoiceId = id;
-            await deliveryNoteService.Update(deliveryNote);
-
-            //Marcar la comanda com a comanda facturada
-            //Recuperar la comanda 
-            var salesOrder  = unitOfWork.SalesOrderHeaders.Find(q => q.DeliveryNoteId == deliveryNote.Id).FirstOrDefault();
-            
-            var status = await unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.SalesOrder, StatusConstants.Statuses.ComandaFacturada);
-            if (status == null || status.Disabled)
-            {
-                return new GenericResponse(false, localizationService.GetLocalizedString("StatusNotFound", StatusConstants.Statuses.ComandaFacturada));
-            }
-            salesOrder.StatusId = status.Id;
-            await unitOfWork.SalesOrderHeaders.Update(salesOrder);
-
-            return new GenericResponse(true, invoiceDetails);
-        }
-
-        public async Task<GenericResponse> RemoveDeliveryNote(Guid id, DeliveryNote deliveryNote)
-        {
-            var invoice = unitOfWork.SalesInvoices.Find(i => i.Id == id).FirstOrDefault();
-            if (invoice == null) 
-                return new GenericResponse(false, localizationService.GetLocalizedString("SalesInvoiceNotFound", id));
-            
-            var detailIds = unitOfWork.DeliveryNotes.Details.Find(d => d.DeliveryNoteId == deliveryNote.Id).Select(d => d.Id).ToList();
-
-            var deliveryNoteDetails = unitOfWork.SalesInvoices.InvoiceDetails.Find(d => d.DeliveryNoteDetailId != null && detailIds.Contains(d.DeliveryNoteDetailId.Value));
-            // Eliminar els detalls associats a l'albarà
-            await unitOfWork.SalesInvoices.InvoiceDetails.RemoveRange(deliveryNoteDetails);
-
-            // Actualizar taules relacionades
-            await UpdateImportsAndHeaderAmounts(invoice);
-
-            // Alliberar l'albarà perquè sigui assignable de nou a una factura
-            deliveryNote.SalesInvoiceId = null;
-            await deliveryNoteService.Update(deliveryNote);
-
-            var salesOrder = unitOfWork.SalesOrderHeaders.Find(q => q.DeliveryNoteId == deliveryNote.Id).FirstOrDefault();
-
-            var status = await unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.SalesOrder, StatusConstants.Statuses.ComandaServida);
-            if (status == null || status.Disabled)
-            {
-                return new GenericResponse(false, localizationService.GetLocalizedString("StatusNotFound", StatusConstants.Statuses.ComandaServida));
-            }
-            salesOrder.StatusId = status.Id;
-            await unitOfWork.SalesOrderHeaders.Update(salesOrder);
-
-            return new GenericResponse(true, deliveryNoteDetails);
-        }
+        #region Details    
 
         public async Task<GenericResponse> AddDetail(SalesInvoiceDetail invoiceDetail)
         {
@@ -662,5 +488,101 @@ namespace Api.Services.Sales
 
         #endregion
 
+        #region DeliveryNotes
+        public async Task<GenericResponse> AddDeliveryNote(Guid id, DeliveryNote deliveryNote)
+        {
+            var invoice = unitOfWork.SalesInvoices.Find(i => i.Id == id).FirstOrDefault();
+            if (invoice == null)
+                return new GenericResponse(false, localizationService.GetLocalizedString("SalesInvoiceNotFound", id));
+
+            var tax = unitOfWork.Taxes.Find(t => t.Percentatge == 21).FirstOrDefault();
+            if (tax == null)
+                return new GenericResponse(false, localizationService.GetLocalizedString("TaxNotFound"));
+
+            // Crear les lines de la factura segons les línes de l'albarà
+            var deliveryNoteDetails = unitOfWork.DeliveryNotes.Details.Find(d => d.DeliveryNoteId == deliveryNote.Id);
+            var invoiceDetails = new List<SalesInvoiceDetail>();
+            foreach (var deliveryNoteDetail in deliveryNoteDetails.ToList())
+            {
+                var salesInvoiceDetail = new SalesInvoiceDetail
+                {
+                    SalesInvoiceId = id
+                };
+
+                salesInvoiceDetail.SetDeliveryNoteDetail(deliveryNoteDetail);
+                if (salesInvoiceDetail.TaxId == Guid.Empty)
+                {
+                    var reference = await unitOfWork.References.Get(deliveryNoteDetail.ReferenceId);
+                    if (reference != null)
+                    {
+                        salesInvoiceDetail.TaxId = reference.TaxId ?? tax.Id;
+                    }
+                    else
+                    {
+                        salesInvoiceDetail.TaxId = tax.Id;
+                    }
+                }
+
+                invoiceDetails.Add(salesInvoiceDetail);
+            }
+            await unitOfWork.SalesInvoices.InvoiceDetails.AddRange(invoiceDetails);
+
+            // Actualizar taules relacionades
+            await UpdateImportsAndHeaderAmounts(invoice);
+
+            // Associar la factura per evitar la selecció de l'albarà d'entrega a altre factures
+            deliveryNote.SalesInvoiceId = id;
+            await deliveryNoteService.Update(deliveryNote);
+
+            //Marcar la comanda com a comanda facturada
+            //Recuperar la comanda 
+            var salesOrder = unitOfWork.SalesOrderHeaders.Find(q => q.DeliveryNoteId == deliveryNote.Id).FirstOrDefault();
+
+            var status = await unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.SalesOrder, StatusConstants.Statuses.ComandaFacturada);
+            if (status == null || status.Disabled)
+            {
+                return new GenericResponse(false, localizationService.GetLocalizedString("StatusNotFound", StatusConstants.Statuses.ComandaFacturada));
+            }
+            salesOrder!.StatusId = status.Id;
+            await unitOfWork.SalesOrderHeaders.Update(salesOrder);
+
+            return new GenericResponse(true, invoiceDetails);
+        }
+
+        public async Task<GenericResponse> RemoveDeliveryNote(Guid id, DeliveryNote deliveryNote)
+        {
+            var invoice = unitOfWork.SalesInvoices.Find(i => i.Id == id).FirstOrDefault();
+            if (invoice == null)
+                return new GenericResponse(false, localizationService.GetLocalizedString("SalesInvoiceNotFound", id));
+
+            var detailIds = unitOfWork.DeliveryNotes.Details.Find(d => d.DeliveryNoteId == deliveryNote.Id).Select(d => d.Id).ToList();
+
+            var deliveryNoteDetails = unitOfWork.SalesInvoices.InvoiceDetails.Find(d => d.DeliveryNoteDetailId != null && detailIds.Contains(d.DeliveryNoteDetailId.Value));
+            // Eliminar els detalls associats a l'albarà
+            await unitOfWork.SalesInvoices.InvoiceDetails.RemoveRange(deliveryNoteDetails);
+
+            // Actualizar taules relacionades
+            await UpdateImportsAndHeaderAmounts(invoice);
+
+            // Alliberar l'albarà perquè sigui assignable de nou a una factura
+            deliveryNote.SalesInvoiceId = null;
+            await deliveryNoteService.Update(deliveryNote);
+
+            var status = await unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.SalesOrder, StatusConstants.Statuses.ComandaServida);
+            if (status == null || status.Disabled)
+            {
+                return new GenericResponse(false, localizationService.GetLocalizedString("StatusNotFound", StatusConstants.Statuses.ComandaServida));
+            }
+
+            var salesOrder = unitOfWork.SalesOrderHeaders.Find(q => q.DeliveryNoteId == deliveryNote.Id).FirstOrDefault();
+            if (salesOrder != null)
+            {
+                salesOrder.StatusId = status.Id;
+                await unitOfWork.SalesOrderHeaders.Update(salesOrder);
+            }
+
+            return new GenericResponse(true, deliveryNoteDetails);
+        }
+        #endregion
     }
 }

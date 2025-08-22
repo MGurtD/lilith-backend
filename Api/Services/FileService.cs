@@ -3,26 +3,14 @@ using Application.Persistance;
 using Application.Services;
 using Domain.Entities;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Options;
 
 namespace Api.Services
 {
-    public class FileService : IFileService
+    public class FileService(IOptions<AppSettings> settings, IUnitOfWork unitOfWork, ILocalizationService localizationService) : IFileService
     {
 
-        public readonly IUnitOfWork unitOfWork;
-        private readonly ILocalizationService _localizationService;
-
-        public FileService(IUnitOfWork unitOfWork, ILocalizationService localizationService)
-        {
-            this.unitOfWork = unitOfWork;
-            _localizationService = localizationService;
-        }
-
-        public IEnumerable<object> GetFiles()
-        {
-
-            return Directory.GetFiles(Settings.FileUploadPath);
-        }     
+        public IEnumerable<object> GetFiles() => Directory.GetFiles(settings.Value.FileManagment.UploadPath);
 
         public async Task<GenericResponse> UploadFile(IFormFile file, string entity, Guid id)
         {
@@ -33,7 +21,7 @@ namespace Api.Services
                     // Crear arxiu al filesystem
                     var timestamp = DateTime.Now.ToString("yyMMddHHmmss");
                     var fileName = $"{id}_{timestamp}{Path.GetExtension(file.FileName)}";
-                    var path = Path.Combine(Settings.FileUploadPath, entity, fileName);
+                    var path = Path.Combine(settings.Value.FileManagment.UploadPath, entity, fileName);
                     using var fileStream = new FileStream(path, FileMode.Create);
                     await file.CopyToAsync(fileStream);
 
@@ -49,16 +37,16 @@ namespace Api.Services
                     };
                     await unitOfWork.Files.Add(dbFile);
 
-                    return new GenericResponse(true, new List<string>(), dbFile);
+                    return new GenericResponse(true, dbFile);
                 }
                 else
                 {
-                    return new GenericResponse(false, _localizationService.GetLocalizedString("FileUploadDirectoryError", entity));
+                    return new GenericResponse(false, localizationService.GetLocalizedString("FileUploadDirectoryError", entity));
                 }
             }
             catch (Exception ex)
             {
-                return new GenericResponse(false, new List<string>() { ex.Message });
+                return new GenericResponse(false, ex.Message);
             }
         }
 
@@ -92,11 +80,11 @@ namespace Api.Services
                 }
                 await unitOfWork.Files.RemoveRange(files);
 
-                return new GenericResponse(false, new List<string>(), files);
+                return new GenericResponse(false, files);
             }
             catch (Exception ex)
             {
-                return new GenericResponse(false, new List<string>() { ex.Message });
+                return new GenericResponse(false, ex.Message);
             }
         }
 
@@ -134,7 +122,7 @@ namespace Api.Services
         {
             try
             {
-                string rootPath = Path.Combine(Settings.FileUploadPath, entity);
+                string rootPath = Path.Combine(settings.Value.FileManagment.UploadPath, entity);
                 if (!Directory.Exists(rootPath))
                     Directory.CreateDirectory(rootPath);
                 return true;

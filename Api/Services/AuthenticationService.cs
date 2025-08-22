@@ -5,6 +5,7 @@ using Application.Persistance;
 using Application.Services;
 using Domain.Entities;
 using Domain.Entities.Auth;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -12,40 +13,29 @@ using System.Text;
 
 namespace Api.Services
 {
-    public class AuthenticationService : IAuthenticationService
+    public class AuthenticationService(IOptions<AppSettings> settings, IUnitOfWork unitOfWork, TokenValidationParameters tokenValidationParameters, ILocalizationService localizationService) : IAuthenticationService
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly TokenValidationParameters _tokenValidationParameters;
-        private readonly ILocalizationService _localizationService;
-
-        public AuthenticationService(IUnitOfWork unitOfWork, TokenValidationParameters tokenValidationParameters, ILocalizationService localizationService)
-        {
-            _unitOfWork = unitOfWork;
-            _tokenValidationParameters = tokenValidationParameters;
-            _localizationService = localizationService;
-        }
-
         public async Task<AuthResponse> Register(UserRegisterRequest request)
         {
             // Validate existence of the unique user key
-            var exists = _unitOfWork.Users.Find(u => u.Username == request.Username).FirstOrDefault();
+            var exists = unitOfWork.Users.Find(u => u.Username == request.Username).FirstOrDefault();
             if (exists is not null)
             {
                 return new AuthResponse() 
                 {
                     Result = false,
-                    Errors = new List<string>() { _localizationService.GetLocalizedString("UserNotAvailable", request.Username) }
+                    Errors = new List<string>() { localizationService.GetLocalizedString("UserNotAvailable", request.Username) }
                 };
             }
 
             // Retrive the default role
-            var defaultRole = _unitOfWork.Roles.Find(r => r.Name == "user").FirstOrDefault();
+            var defaultRole = unitOfWork.Roles.Find(r => r.Name == "user").FirstOrDefault();
             if (defaultRole is null)
             {
                 return new AuthResponse()
                 {
                     Result = false,
-                    Errors = new List<string>() { _localizationService.GetLocalizedString("UserRoleNotFound") }
+                    Errors = new List<string>() { localizationService.GetLocalizedString("UserRoleNotFound") }
                 };
             }
 
@@ -59,7 +49,7 @@ namespace Api.Services
                 Disabled = true,
                 RoleId = defaultRole.Id
             };
-            await _unitOfWork.Users.Add(user);
+            await unitOfWork.Users.Add(user);
 
             var authResponse = await GenerateJwtToken(user);
             return authResponse;
@@ -67,7 +57,7 @@ namespace Api.Services
 
         public async Task<bool> ChangePassword(UserLoginRequest request)
         {
-            var user = _unitOfWork.Users.Find((u) => u.Username == request.Username).FirstOrDefault();
+            var user = unitOfWork.Users.Find((u) => u.Username == request.Username).FirstOrDefault();
             if (user is null) 
             {
                 return false;
@@ -75,19 +65,19 @@ namespace Api.Services
 
             var encrPassword = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password);
             user.Password = encrPassword; // assign new password before update
-            await _unitOfWork.Users.Update(user);
+            await unitOfWork.Users.Update(user);
             return true;
         }
 
         public async Task<AuthResponse> Login(UserLoginRequest request)
         {
-            var user = _unitOfWork.Users.Find(u => u.Username == request.Username).FirstOrDefault();
+            var user = unitOfWork.Users.Find(u => u.Username == request.Username).FirstOrDefault();
             if (user is null)
             {
                 return new AuthResponse()
                 {
                     Result = false,
-                    Errors = new List<string>() { _localizationService.GetLocalizedString("UserNotExist", request.Username) }
+                    Errors = new List<string>() { localizationService.GetLocalizedString("UserNotExist", request.Username) }
                 };
             }
 
@@ -99,7 +89,7 @@ namespace Api.Services
                     Result = false,
                     Errors = new List<string>()
                     {
-                        _localizationService.GetLocalizedString("UserPasswordInvalid")
+                        localizationService.GetLocalizedString("UserPasswordInvalid")
                     }
                 };
             }
@@ -111,7 +101,7 @@ namespace Api.Services
                     Result = false,
                     Errors = new List<string>()
                     {
-                        _localizationService.GetLocalizedString("UserDisabled", request.Username)
+                        localizationService.GetLocalizedString("UserDisabled", request.Username)
                     }
                 };
             }
@@ -124,11 +114,11 @@ namespace Api.Services
         }
         public async Task<bool> Enable(Guid id)
         {
-            var user = await _unitOfWork.Users.Get(id);
+            var user = await unitOfWork.Users.Get(id);
             if (user is null) return false;
 
             user.Disabled = false;
-            await _unitOfWork.Users.Update(user);
+            await unitOfWork.Users.Update(user);
 
             return true;
         }
@@ -140,7 +130,7 @@ namespace Api.Services
 
         private async Task<AuthResponse> GenerateJwtToken(User user)
         {
-            var signKey = Encoding.ASCII.GetBytes(Settings.JwtSecret);
+            var signKey = Encoding.ASCII.GetBytes(settings.Value.JwtConfig.Secret);
 
             // Token specifications
             var jwtTokenHandler = new JwtSecurityTokenHandler();
@@ -162,7 +152,7 @@ namespace Api.Services
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.Add(Settings.JwtExpirationTime),
+                Expires = DateTime.UtcNow.Add(settings.Value.JwtConfig.ExpirationTime),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(signKey), SecurityAlgorithms.HmacSha256)
             };
 
@@ -180,7 +170,7 @@ namespace Api.Services
                 UserId = user.Id
             };
 
-            await _unitOfWork.UserRefreshTokens.Add(userRefreshToken);
+            await unitOfWork.UserRefreshTokens.Add(userRefreshToken);
 
             return new AuthResponse()
             {
@@ -197,7 +187,7 @@ namespace Api.Services
             try
             {
                 // Clone validation parameters and disable lifetime validation for refresh flow
-                var validationParams = _tokenValidationParameters.Clone();
+                var validationParams = tokenValidationParameters.Clone();
                 validationParams.ValidateLifetime = false;
 
                 var principal = jwtTokenHandler.ValidateToken(tokenRequest.Token, validationParams, out var validatedToken);
@@ -209,7 +199,7 @@ namespace Api.Services
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthInvalidAlgorithm") }
+                        Errors = new List<string>() { localizationService.GetLocalizedString("AuthInvalidAlgorithm") }
                     };
                 }
 
@@ -220,7 +210,7 @@ namespace Api.Services
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthInvalidParameters") }
+                        Errors = new List<string>() { localizationService.GetLocalizedString("AuthInvalidParameters") }
                     };
                 }
 
@@ -230,18 +220,18 @@ namespace Api.Services
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthTokenValid", expiryDate) }
+                        Errors = new List<string>() { localizationService.GetLocalizedString("AuthTokenValid", expiryDate) }
                     };
                 }
 
                 // Exist on the persistence layer?
-                var storedToken = _unitOfWork.UserRefreshTokens.Find(urt => urt.Token == tokenRequest.RefreshToken).FirstOrDefault();
+                var storedToken = unitOfWork.UserRefreshTokens.Find(urt => urt.Token == tokenRequest.RefreshToken).FirstOrDefault();
                 if (storedToken is null)
                 {
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthRefreshTokenNotExist", tokenRequest.RefreshToken) }
+                        Errors = new List<string>() { localizationService.GetLocalizedString("AuthRefreshTokenNotExist", tokenRequest.RefreshToken) }
                     };
                 }
 
@@ -250,7 +240,7 @@ namespace Api.Services
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthRefreshTokenUsed") }
+                        Errors = new List<string>() { localizationService.GetLocalizedString("AuthRefreshTokenUsed") }
                     };
                 }
 
@@ -260,7 +250,7 @@ namespace Api.Services
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthRefreshTokenRevoked") }
+                        Errors = new List<string>() { localizationService.GetLocalizedString("AuthRefreshTokenRevoked") }
                     };
                 }
 
@@ -271,7 +261,7 @@ namespace Api.Services
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthRefreshTokenMismatch", storedToken.JwtId, jti ?? "null") }
+                        Errors = new List<string>() { localizationService.GetLocalizedString("AuthRefreshTokenMismatch", storedToken.JwtId, jti ?? "null") }
                     };
                 }
 
@@ -282,7 +272,7 @@ namespace Api.Services
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { _localizationService.GetLocalizedString("UserNotFound") }
+                        Errors = new List<string>() { localizationService.GetLocalizedString("UserNotFound") }
                     };
                 }
 
@@ -292,20 +282,20 @@ namespace Api.Services
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { _localizationService.GetLocalizedString("AuthTokenExpired") }
+                        Errors = new List<string>() { localizationService.GetLocalizedString("AuthTokenExpired") }
                     };
                 }
 
                 storedToken.Used = true;
-                await _unitOfWork.UserRefreshTokens.Update(storedToken);
+                await unitOfWork.UserRefreshTokens.Update(storedToken);
 
-                var user = await _unitOfWork.Users.Get(storedToken.UserId);
+                var user = await unitOfWork.Users.Get(storedToken.UserId);
                 if (user is null)
                 {
                     return new AuthResponse()
                     {
                         Result = false,
-                        Errors = new List<string>() { _localizationService.GetLocalizedString("UserNotFound") }
+                        Errors = new List<string>() { localizationService.GetLocalizedString("UserNotFound") }
                     };
                 }
 
@@ -316,7 +306,7 @@ namespace Api.Services
                 return new AuthResponse()
                 {
                     Result = false,
-                    Errors = new List<string>() { _localizationService.GetLocalizedString("AuthTokenInvalid") }
+                    Errors = new List<string>() { localizationService.GetLocalizedString("AuthTokenInvalid") }
                 };
             }
             catch (Exception ex)

@@ -13,6 +13,7 @@ using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
 using Domain.Entities.Shared;
 using Domain.Entities.Warehouse;
+using Domain.Repositories.Sales;
 
 namespace Application.Persistance
 {
@@ -40,7 +41,7 @@ namespace Application.Persistance
         IPurchaseOrderRepository PurchaseOrders { get; }
         IPurchaseInvoiceRepository PurchaseInvoices { get; }
         IRepository<PurchaseInvoiceDueDate, Guid> PurchaseInvoiceDueDates { get; }
-        IRepository<PurchaseInvoiceSerie, Guid> PurchaseInvoiceSeries { get; }
+        IRepository<InvoiceSerie, Guid> InvoiceSeries { get; }
         IRepository<ExpenseType, Guid> ExpenseTypes { get; }
         IExpenseRepository Expenses { get; }
         IReceiptRepository Receipts { get; }
@@ -55,6 +56,7 @@ namespace Application.Persistance
         ISalesOrderHeaderRepository SalesOrderHeaders { get; }
         ISalesOrderDetailRepository SalesOrderDetails { get; }
         ISalesInvoiceRepository SalesInvoices { get; }
+        IRepository<SalesInvoiceVerifactuRequest, Guid> VerifactuRequests { get; }
         IDeliveryNoteRepository DeliveryNotes { get; }
         IBudgetRepository Budgets { get; }
         IContractReader<ConsolidatedIncomes> ConsolidatedIncomes { get; }

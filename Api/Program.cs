@@ -1,3 +1,4 @@
+using Api;
 using Api.Middlewares;
 using Api.Setup;
 using NLog;
@@ -13,22 +14,25 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
     {
-        Settings.Load(builder.Configuration);
-
         // Logging with NLog
         builder.Logging.ClearProviders();
         builder.Host.UseNLog();
 
+        // Configuration and settings
+        builder.Services.Configure<AppSettings>(builder.Configuration);
+        var appSettings = builder.Configuration.Get<AppSettings>()!;
+        appSettings.Validate();
+
         // Set server request body size limit
         builder.WebHost.ConfigureKestrel(options =>
         {
-            options.Limits.MaxRequestBodySize = Settings.FileUploadLimitSize;
+            options.Limits.MaxRequestBodySize = appSettings.FileManagment.LimitSize * 1024L * 1024L;
         });
 
         builder.Services
-            .AddDatabaseServices()
+            .AddDatabaseServices(appSettings.ConnectionStrings.Default)
             .AddApplicationServices()
-            .AddJwtSetup(builder.Environment.IsDevelopment())
+            .AddJwtSetup(builder.Environment.IsDevelopment(), appSettings.JwtConfig.Secret)
             .AddSwaggerSetup()
             .AddLocalizationSetup(); // Add localization services
 

@@ -14,6 +14,7 @@ using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
 using Domain.Entities.Shared;
 using Domain.Entities.Warehouse;
+using Domain.Repositories.Sales;
 using Infrastructure.Persistance.Repositories;
 using Infrastructure.Persistance.Repositories.Production;
 using Infrastructure.Persistance.Repositories.Purchase; // contains LifecycleRepository as per current project structure
@@ -48,7 +49,7 @@ namespace Infrastructure.Persistance
         public IPurchaseOrderRepository PurchaseOrders { get; private set; } = new PurchaseOrderRepository(context);
         public IPurchaseInvoiceRepository PurchaseInvoices { get; private set; } = new PurchaseInvoiceRepository(context);
         public IRepository<PurchaseInvoiceDueDate, Guid> PurchaseInvoiceDueDates { get; private set; } = new Repository<PurchaseInvoiceDueDate, Guid>(context);
-        public IRepository<PurchaseInvoiceSerie, Guid> PurchaseInvoiceSeries { get; private set; } = new Repository<PurchaseInvoiceSerie, Guid>(context);
+        public IRepository<InvoiceSerie, Guid> InvoiceSeries { get; private set; } = new Repository<InvoiceSerie, Guid>(context);
         public IRepository<ExpenseType, Guid> ExpenseTypes { get; private set; } = new Repository<ExpenseType, Guid>(context);
         public IExpenseRepository Expenses { get; private set; } = new ExpenseRepository(context);
         public IRepository<ReferenceFormat, Guid> ReferenceFormats { get; private set; } = new Repository<ReferenceFormat, Guid>(context);
@@ -61,6 +62,7 @@ namespace Infrastructure.Persistance
         public ISalesOrderHeaderRepository SalesOrderHeaders { get; private set; } = new SalesOrderHeaderRepository(context, new SalesOrderDetailRepository(context));
         public ISalesOrderDetailRepository SalesOrderDetails { get; private set; } = new SalesOrderDetailRepository(context);
         public ISalesInvoiceRepository SalesInvoices { get; private set; } = new SalesInvoiceRepository(context);
+        public IRepository<SalesInvoiceVerifactuRequest, Guid> VerifactuRequests { get; private set; } = new Repository<SalesInvoiceVerifactuRequest, Guid>(context);
         public IReceiptRepository Receipts { get; private set; } = new ReceiptRepository(context);
         public IDeliveryNoteRepository DeliveryNotes { get; private set; } = new DeliveryNoteRepository(context);
         public IBudgetRepository Budgets { get; private set; } = new BudgetRepository(context);
