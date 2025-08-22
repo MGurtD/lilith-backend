@@ -178,18 +178,18 @@ namespace Api.Services.Purchase
             if (!status.InitialStatusId.HasValue) 
                 return new GenericResponse(false, _localizationService.GetLocalizedString("LifecycleNoInitialStatus", LifecycleDetailsName));
 
-            foreach (PurchaseOrderFromWO purchaseOrder in request.OrderBy(r => r.supplierId))
+            foreach (PurchaseOrderFromWO purchaseOrder in request.OrderBy(r => r.SupplierId))
             {
                 if (purchaseOrder == null) continue;
-                if(oldSupplier != purchaseOrder.supplierId)
+                if(oldSupplier != purchaseOrder.SupplierId)
                 {
-                    oldSupplier = purchaseOrder.supplierId;
+                    oldSupplier = purchaseOrder.SupplierId;
                     purchaseOrderId = Guid.NewGuid();
                     var order = new CreatePurchaseDocumentRequest()
                     {
                         Id = purchaseOrderId,
                         ExerciseId = exercise.Id,
-                        SupplierId = purchaseOrder.supplierId,
+                        SupplierId = purchaseOrder.SupplierId,
                         Date = DateTime.Today
                     };
                     var response = await Create(order);
@@ -199,12 +199,12 @@ namespace Api.Services.Purchase
                     }
                 }
                 // Obtenir referència
-                var reference = await _unitOfWork.References.Get(purchaseOrder.serviceReferenceId);
+                var reference = await _unitOfWork.References.Get(purchaseOrder.ServiceReferenceId);
                 if (reference == null) 
                     return new GenericResponse(false, _localizationService.GetLocalizedString("ReferenceNotExistent"));
                 
                 // Obtenir relació proveïdor-referència
-                var supplierReference = await _unitOfWork.Suppliers.GetSupplierReferenceBySupplierIdAndReferenceId(purchaseOrder.supplierId, purchaseOrder.serviceReferenceId);
+                var supplierReference = await _unitOfWork.Suppliers.GetSupplierReferenceBySupplierIdAndReferenceId(purchaseOrder.SupplierId, purchaseOrder.ServiceReferenceId);
 
                 // Crear detall de comanda
                 var unitPrice = supplierReference != null ? supplierReference.SupplierPrice : reference.LastCost;
@@ -213,13 +213,13 @@ namespace Api.Services.Purchase
                 var detail = new PurchaseOrderDetail()
                 {
                     PurchaseOrderId = purchaseOrderId,
-                    ReferenceId = purchaseOrder.serviceReferenceId,
-                    WorkOrderPhaseId = purchaseOrder.phaseId,
+                    ReferenceId = purchaseOrder.ServiceReferenceId,
+                    WorkOrderPhaseId = purchaseOrder.PhaseId,
                     StatusId = status.InitialStatusId.Value,
-                    Quantity = purchaseOrder.quantity,
+                    Quantity = purchaseOrder.Quantity,
                     ReceivedQuantity = 0,
                     UnitPrice = unitPrice,
-                    Amount = purchaseOrder.quantity * unitPrice,
+                    Amount = purchaseOrder.Quantity * unitPrice,
                     ExpectedReceiptDate = expectedReceiptDate
                 };
 
@@ -229,7 +229,7 @@ namespace Api.Services.Purchase
                 }
 
                 // Actualitzar fase de l'ordre de treball
-                var phase = await _unitOfWork.WorkOrders.Phases.Get(purchaseOrder.phaseId);
+                var phase = await _unitOfWork.WorkOrders.Phases.Get(purchaseOrder.PhaseId);
                 if (phase != null) {
                     phase.PurchaseOrderId = purchaseOrderId;
                     await _unitOfWork.WorkOrders.Phases.Update(phase);
