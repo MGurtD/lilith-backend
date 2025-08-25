@@ -1,54 +1,120 @@
 using Application.Contracts;
 using Application.Persistance;
 using Application.Services.Sales;
+using Application.Services;
 using Domain.Entities.Sales;
 using Microsoft.Extensions.Options;
 using Verifactu.Contracts;
 using Verifactu;
-using Application.Services;
-using Verifactu.Utils;
+using static Api.Constants.StatusConstants;
 
 namespace Api.Services.Verifactu;
 public class VerifactuIntegrationService(IUnitOfWork unitOfWork,
     ISalesInvoiceService salesInvoiceService,
     IQrCodeService qrCodeService,
+    ILocalizationService localizationService,
     IOptions<AppSettings> settings) : IVerifactuIntegrationService
 {
     private readonly AppSettings settings = settings.Value;
-    private const string VerifactuLifecycleName = "Verifactu";
 
     public async Task<GenericResponse> SendInvoiceToVerifactu(Guid id)
     {
+        var validationResult = await ValidateInvoiceForVerifactu(id);
+        if (!validationResult.Result) return validationResult;
+
         var invoice = await unitOfWork.SalesInvoices.Get(id);
-        if (invoice == null) return new GenericResponse(false, $"La factura amb ID {id} no existeix");
-        if (invoice.SalesInvoiceDetails.Count == 0)
-            return new GenericResponse(false, "La factura no té detalls. No es pot enviar a Verifactu");
-
         var enterprise = (await unitOfWork.Enterprises.FindAsync(e => !e.Disabled)).FirstOrDefault();
-        if (enterprise == null)
-            return new GenericResponse(false, "No s'ha trobat l'empresa per enviar la factura a Verifactu");
+        var (lastSuccessfulRequest, lastSuccessfulInvoice) = await GetLastSuccessfulRequestAndInvoice();
 
-        // Recuperar l'última factura enviada per l'encadenament
-        var lastSuccessfullRequest = GetLastSuccessfullRequest();
-        var lastSuccessfullInvoice = lastSuccessfullRequest != null
-            ? await salesInvoiceService.GetHeaderById(lastSuccessfullRequest.SalesInvoiceId)
-            : null;
-
-        // Construir la petició
         var request = new RegisterInvoiceRequest
         {
-            Enterprise = enterprise,
-            SalesInvoice = invoice,
-            PreviousNotificatedInvoice = lastSuccessfullInvoice,
-            PreviousHash = lastSuccessfullRequest?.Hash
+            Enterprise = enterprise!,
+            SalesInvoice = invoice!,
+            PreviousNotificatedInvoice = lastSuccessfulInvoice,
+            PreviousHash = lastSuccessfulRequest?.Hash
         };
 
-        // Enviar la factura a Verifactu
-        var settings = this.settings.Verifactu!;
-        var verifactuService = new VerifactuInvoiceService(settings.Url, settings.UrlQr, settings.Certificate.Path, settings.Certificate.Password);
+        var verifactuService = CreateVerifactuService();
         var response = await verifactuService.RegisterInvoice(request);
 
-        // Registrar la petición en la base de datos
+        return await ProcessVerifactuResponse(invoice!, response, true);
+    }
+
+    public async Task<GenericResponse> RemoveInvoiceFromVerifactu(Guid id)
+    {
+        var validationResult = await ValidateInvoiceExistsForVerifactu(id);
+        if (!validationResult.Result) return validationResult;
+
+        var invoice = await unitOfWork.SalesInvoices.Get(id);
+        var enterprise = (await unitOfWork.Enterprises.FindAsync(e => !e.Disabled)).FirstOrDefault();
+        var (lastSuccessfulRequest, lastSuccessfulInvoice) = await GetLastSuccessfulRequestAndInvoice();
+
+        var request = new CancelInvoiceRequest
+        {
+            Enterprise = enterprise!,
+            InvoiceToCancel = invoice!,
+            PreviousNotificatedInvoice = lastSuccessfulInvoice,
+            PreviousHash = lastSuccessfulRequest?.Hash
+        };
+
+        var verifactuService = CreateVerifactuService();
+        var response = await verifactuService.CancelInvoice(request);
+
+        return await ProcessVerifactuResponse(invoice!, response, false);
+    }
+
+    private async Task<GenericResponse> ValidateInvoiceForVerifactu(Guid id)
+    {
+        var invoice = await unitOfWork.SalesInvoices.Get(id);
+        if (invoice == null) 
+            return new GenericResponse(false, localizationService.GetLocalizedString("VerifactuInvoiceNotFound", id));
+        
+        if (invoice.SalesInvoiceDetails.Count == 0)
+            return new GenericResponse(false, localizationService.GetLocalizedString("VerifactuInvoiceNoDetails"));
+
+        return await ValidateEnterpriseExists();
+    }
+
+    private async Task<GenericResponse> ValidateInvoiceExistsForVerifactu(Guid id)
+    {
+        var invoice = await unitOfWork.SalesInvoices.Get(id);
+        if (invoice == null) 
+            return new GenericResponse(false, localizationService.GetLocalizedString("VerifactuInvoiceNotFound", id));
+
+        return await ValidateEnterpriseExists();
+    }
+
+    private async Task<GenericResponse> ValidateEnterpriseExists()
+    {
+        var enterprise = (await unitOfWork.Enterprises.FindAsync(e => !e.Disabled)).FirstOrDefault();
+        if (enterprise == null)
+            return new GenericResponse(false, localizationService.GetLocalizedString("VerifactuEnterpriseNotFound"));
+
+        return new GenericResponse(true);
+    }
+
+    private async Task<(SalesInvoiceVerifactuRequest?, SalesInvoice?)> GetLastSuccessfulRequestAndInvoice()
+    {
+        var lastSuccessfulRequest = GetLastSuccessfullRequest();
+        var lastSuccessfulInvoice = lastSuccessfulRequest != null
+            ? await salesInvoiceService.GetHeaderById(lastSuccessfulRequest.SalesInvoiceId)
+            : null;
+
+        return (lastSuccessfulRequest, lastSuccessfulInvoice);
+    }
+
+    private VerifactuInvoiceService CreateVerifactuService()
+    {
+        var verifactuSettings = settings.Verifactu!;
+        return new VerifactuInvoiceService(
+            verifactuSettings.Url, 
+            verifactuSettings.UrlQr, 
+            verifactuSettings.Certificate.Path, 
+            verifactuSettings.Certificate.Password);
+    }
+
+    private async Task<GenericResponse> ProcessVerifactuResponse(SalesInvoice invoice, dynamic response, bool updateInvoiceStatus)
+    {
         var verifactuRequest = new SalesInvoiceVerifactuRequest
         {
             Hash = response.Hash,
@@ -61,27 +127,26 @@ public class VerifactuIntegrationService(IUnitOfWork unitOfWork,
             QrCodeUrl = response.QrCodeUrl,
             QrCodeBase64 = qrCodeService.GeneratePngBase64(response.QrCodeUrl)
         };
+        
         await CreateInvoiceRequest(verifactuRequest);
 
-        // Actualitzar l'estat de la integració de la factura
-        invoice.IntegrationStatusId = response.Success
-            ? (await unitOfWork.Lifecycles.GetStatusByName(VerifactuLifecycleName, "OK"))?.Id
-            : (await unitOfWork.Lifecycles.GetStatusByName(VerifactuLifecycleName, "Error"))?.Id;
-        await unitOfWork.SalesInvoices.Update(invoice);
+        // Update invoice integration status only for SendInvoiceToVerifactu
+        if (updateInvoiceStatus)
+        {
+            invoice.IntegrationStatusId = response.Success
+                ? (await unitOfWork.Lifecycles.GetStatusByName(Lifecycles.Verifactu, "OK"))?.Id
+                : (await unitOfWork.Lifecycles.GetStatusByName(Lifecycles.Verifactu, "Error"))?.Id;
+            await unitOfWork.SalesInvoices.Update(invoice);
+        }
 
         return new GenericResponse(true, verifactuRequest);
     }
 
-    public Task<GenericResponse> RemoveInvoiceFromVerifactu(Guid id)
-    {
-        throw new NotImplementedException("RemoveFromVerifactu is not implemented yet.");
-    }
-
     public async Task<IEnumerable<SalesInvoice>> GetInvoicesToIntegrateWithVerifactu()
     {
-        var salesInvoiceLifeCycle = await unitOfWork.Lifecycles.GetByName(VerifactuLifecycleName) ?? throw new Exception("El cicle de vida 'Verifactu' no existeix");
+        var salesInvoiceLifeCycle = await unitOfWork.Lifecycles.GetByName(Lifecycles.Verifactu) ?? throw new Exception(localizationService.GetLocalizedString("LifecycleNotFound", Lifecycles.Verifactu));
         if (salesInvoiceLifeCycle.InitialStatusId == null)
-            throw new Exception("El cicle de vida no té un estat inicial");
+            throw new Exception(localizationService.GetLocalizedString("LifecycleNoInitialStatus", Lifecycles.Verifactu));
 
         return unitOfWork.SalesInvoices.GetPendingToIntegrate(salesInvoiceLifeCycle.InitialStatusId.Value);
     }
@@ -115,11 +180,11 @@ public class VerifactuIntegrationService(IUnitOfWork unitOfWork,
     {
         var enterprise = (await unitOfWork.Enterprises.FindAsync(e => !e.Disabled)).FirstOrDefault();
         if (enterprise == null)
-            return new GenericResponse(false, "No s'ha trobat l'empresa per enviar la factura");
+            return new GenericResponse(false, localizationService.GetLocalizedString("VerifactuEnterpriseNotFound"));
 
         var site = (await unitOfWork.Sites.FindAsync(s => !s.Disabled)).FirstOrDefault();
         if (site == null)
-            return new GenericResponse(false, "No s'ha trobat el lloc per enviar la factura");
+            return new GenericResponse(false, localizationService.GetLocalizedString("VerifactuSiteNotFound"));
 
         // Construir la petició
         var request = new FindInvoicesRequest

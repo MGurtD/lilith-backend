@@ -189,6 +189,16 @@
     "Report.Budget.HeaderDeliveryConfirmation": "días desde la confirmación",
     "Report.Budget.FooterValidation": "Validez de la oferta 30 días, los precios dados son para la totalidad de la oferta y los gastos de envío están incluidos en la factura.",
     "Report.SalesOrder.Title": "PEDIDO",
-    "Report.PurchaseOrder.Title": "PEDIDO DE COMPRA"
+    "Report.PurchaseOrder.Title": "PEDIDO DE COMPRA",
+    "VerifactuInvoiceNotFound": "La factura con ID {0} no existe",
+    "VerifactuInvoiceNoDetails": "La factura no tiene detalles. No se puede enviar a Verifactu",
+    "VerifactuEnterpriseNotFound": "No se ha encontrado la empresa para enviar la factura a Verifactu",
+    "VerifactuRemoveNotImplemented": "RemoveFromVerifactu no está implementado aún.",
+    "VerifactuSiteNotFound": "No se ha encontrado el sitio para enviar la factura",
+    "VerifactuInvoiceAlreadyIntegrated": "La factura ya ha sido integrada con Verifactu",
+    "VerifactuInvoiceNotIntegrated": "La factura no ha sido integrada con Verifactu",
+    "VerifactuNoRequestsFound": "No se encontraron solicitudes para el ID de factura especificado.",
+    "VerifactuInvalidMonth": "El mes debe estar entre 1 y 12.",
+    "VerifactuInvalidYear": "El año debe estar entre 2024 y {0}."
   }
 }

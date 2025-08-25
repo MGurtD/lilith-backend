@@ -189,6 +189,16 @@
     "Report.Budget.HeaderDeliveryConfirmation": "days from confirmation",
     "Report.Budget.FooterValidation": "Offer validity 30 days, prices given are for the entire offer, and shipping costs are included in the invoice.",
     "Report.SalesOrder.Title": "ORDER",
-    "Report.PurchaseOrder.Title": "PURCHASE ORDER"
+    "Report.PurchaseOrder.Title": "PURCHASE ORDER",
+    "VerifactuInvoiceNotFound": "Invoice with ID {0} not found",
+    "VerifactuInvoiceNoDetails": "Invoice has no details. Cannot send to Verifactu",
+    "VerifactuEnterpriseNotFound": "Enterprise not found to send invoice to Verifactu",
+    "VerifactuRemoveNotImplemented": "RemoveFromVerifactu is not implemented yet.",
+    "VerifactuSiteNotFound": "Site not found to send invoice",
+    "VerifactuInvoiceAlreadyIntegrated": "Invoice has already been integrated with Verifactu",
+    "VerifactuInvoiceNotIntegrated": "Invoice has not been integrated with Verifactu",
+    "VerifactuNoRequestsFound": "No requests found for the specified invoice ID.",
+    "VerifactuInvalidMonth": "Month must be between 1 and 12.",
+    "VerifactuInvalidYear": "Year must be between 2024 and {0}."
   }
 }
