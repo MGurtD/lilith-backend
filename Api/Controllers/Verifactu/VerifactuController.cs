@@ -8,18 +8,35 @@ namespace Api.Controllers.Verifactu;
 
 [ApiController]
 [Route("api/[controller]")]
-public class VerifactuController(IVerifactuIntegrationService service, ILocalizationService localizationService) : ControllerBase
+public class VerifactuController(IVerifactuIntegrationService service, ILocalizationService localizationService, Application.Persistance.IUnitOfWork unitOfWork) : ControllerBase
 {
 
-    [HttpGet("PendingIntegration")]
+    [HttpGet("PendingIntegrations")]
     [SwaggerOperation("GetInvoicesToIntegrateWithVerifactu")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> GetPendingIntegration()
+    public async Task<IActionResult> GetPendingIntegration(DateTime? toDate)
     {
-        var invoices = await service.GetInvoicesToIntegrateWithVerifactu();
+        // Get initial status of Verifactu lifecycle and use it to filter pending integrations
+        var initialStatusId = await unitOfWork.Lifecycles.GetInitialStatusByName(Api.Constants.StatusConstants.Lifecycles.Verifactu);
+        var invoices = await service.GetInvoicesToIntegrateWithVerifactu(toDate, initialStatusId);
         return Ok(invoices);
     }
+
+    [HttpGet("IntegrationsBetweenDates")]
+    [SwaggerOperation("GetInvoicesAndRequestsBetweenDates")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetIntegrationsBetweenDates(DateTime fromDate, DateTime toDate)
+    {
+        if (toDate < fromDate)
+            return BadRequest(localizationService.GetLocalizedString("InvalidDateRange"));
+
+        var invoices = await service.GetIntegrationsBetweenDates(fromDate, toDate);
+        return Ok(invoices);
+    }
+
+    
 
     [HttpGet("{id:guid}/Requests")]
     [SwaggerOperation("GetInvoiceRequests")]
@@ -38,16 +55,13 @@ public class VerifactuController(IVerifactuIntegrationService service, ILocaliza
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> FindInvoices(int Month, int Year)
     {
-        // Validate Month
         if (Month < 1 || Month > 12)
             return BadRequest(localizationService.GetLocalizedString("VerifactuInvalidMonth"));
 
-        // Validate Year
         int currentYear = DateTime.UtcNow.Year;
         if (Year < 2024 || Year > currentYear)
             return BadRequest(localizationService.GetLocalizedString("VerifactuInvalidYear", currentYear));
 
-        // Llamar al servicio para buscar las facturas
         var response = await service.FindInvoicesInVerifactu(Month, Year);
         if (response.Result) return Ok(response.Content);
         else return BadRequest(response.Errors);

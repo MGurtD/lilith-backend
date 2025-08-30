@@ -9,7 +9,9 @@ namespace Domain.Repositories.Sales
         IRepository<SalesInvoiceImport, Guid> InvoiceImports { get; }
         IRepository<SalesInvoiceDueDate, Guid> InvoiceDueDates { get; }
         Task<SalesInvoice?> GetHeader(Guid id);
-        IEnumerable<SalesInvoice> GetPendingToIntegrate(Guid statusId);
+
+    Task<IEnumerable<SalesInvoice>> GetIntegrationsBetweenDates(DateTime fromDate, DateTime toDate);
+    Task<IEnumerable<SalesInvoice>> GetPendingToIntegrate(DateTime? toDate, Guid? initialStatusId);
 
     }
 }

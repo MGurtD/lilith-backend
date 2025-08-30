@@ -142,18 +142,19 @@ public class VerifactuIntegrationService(IUnitOfWork unitOfWork,
         return new GenericResponse(true, verifactuRequest);
     }
 
-    public async Task<IEnumerable<SalesInvoice>> GetInvoicesToIntegrateWithVerifactu()
+    public async Task<IEnumerable<SalesInvoice>> GetInvoicesToIntegrateWithVerifactu(DateTime? toDate, Guid? initialStatusId)
     {
-        var salesInvoiceLifeCycle = await unitOfWork.Lifecycles.GetByName(Lifecycles.Verifactu) ?? throw new Exception(localizationService.GetLocalizedString("LifecycleNotFound", Lifecycles.Verifactu));
-        if (salesInvoiceLifeCycle.InitialStatusId == null)
-            throw new Exception(localizationService.GetLocalizedString("LifecycleNoInitialStatus", Lifecycles.Verifactu));
-
-        return unitOfWork.SalesInvoices.GetPendingToIntegrate(salesInvoiceLifeCycle.InitialStatusId.Value);
+        return await unitOfWork.SalesInvoices.GetPendingToIntegrate(toDate, initialStatusId);
     }
 
     public async Task<IEnumerable<SalesInvoiceVerifactuRequest>> GetInvoiceRequests(Guid invoiceId)
     {
         return await unitOfWork.VerifactuRequests.FindAsync(i => i.SalesInvoiceId == invoiceId);
+    }
+
+    public async Task<IEnumerable<SalesInvoice>> GetIntegrationsBetweenDates(DateTime fromDate, DateTime toDate)
+    {
+        return await unitOfWork.SalesInvoices.GetIntegrationsBetweenDates(fromDate, toDate);
     }
 
     public async Task<bool> HasInvoiceBeenIntegrated(Guid id)
