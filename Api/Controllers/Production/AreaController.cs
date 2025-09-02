@@ -1,6 +1,7 @@
-﻿using Application.Persistance;
+﻿using Application.Contracts;
+using Application.Persistance;
+using Application.Services;
 using Domain.Entities.Production;
-using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Production
@@ -10,10 +11,12 @@ namespace Api.Controllers.Production
     public class AreaController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILocalizationService _localizationService;
 
-        public AreaController(IUnitOfWork unitOfWork)
+        public AreaController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
+            _localizationService = localizationService;
         }
 
         [HttpPost]
@@ -30,7 +33,7 @@ namespace Api.Controllers.Production
             }
             else
             {
-                return Conflict($"Area {request.Name} existent");
+                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("AreaAlreadyExists", request.Name)));
             }
         }
         [HttpGet]

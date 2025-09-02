@@ -8,10 +8,12 @@ namespace Api.Services
     public class ExerciseService : IExerciseService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILocalizationService _localizationService;
 
-        public ExerciseService(IUnitOfWork unitOfWork)
+        public ExerciseService(IUnitOfWork unitOfWork, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
+            _localizationService = localizationService;
         }
 
         public Exercise? GetExerciceByDate(DateTime dateTime)
@@ -26,7 +28,7 @@ namespace Api.Services
             var counter = "";
             if (exercise == null)
             {
-                return new GenericResponse(false, counter);
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseNotFound"));
             }
 
             var prefix = exercise.Name[^2..];
@@ -74,7 +76,7 @@ namespace Api.Services
                     exercise.WorkOrderCounter = newcounter.ToString().Substring(newcounter.ToString().Length - 3);
                     break;
                 default:
-                    return new GenericResponse(false, $"El comptador proporcionat '{counterName}' no és vàlid");
+                    return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseCounterNotFound", counterName));
             }
 
             await _unitOfWork.Exercices.Update(exercise);

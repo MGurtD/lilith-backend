@@ -8,6 +8,7 @@ using Domain.Entities.Purchase;
 using Domain.Entities.Shared;
 using Domain.Entities.Warehouse;
 using Domain.Implementations.ReferenceFormat;
+using Api.Constants;
 
 namespace Api.Services.Purchase
 {
@@ -17,13 +18,15 @@ namespace Api.Services.Purchase
         private readonly IStockMovementService _stockMovementService;
         private readonly IExerciseService _exerciseService;
         private readonly IPurchaseOrderService _orderService;
+        private readonly ILocalizationService _localizationService;
 
-        public ReceiptService(IUnitOfWork unitOfWork, IStockMovementService stockMovementService, IExerciseService exerciseService, IPurchaseOrderService orderService)
+        public ReceiptService(IUnitOfWork unitOfWork, IStockMovementService stockMovementService, IExerciseService exerciseService, IPurchaseOrderService orderService, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
             _stockMovementService = stockMovementService;
             _exerciseService = exerciseService;
             _orderService = orderService;
+            _localizationService = localizationService;
         }
 
         public IEnumerable<Receipt> GetBetweenDates(DateTime startDate, DateTime endDate)
@@ -64,15 +67,18 @@ namespace Api.Services.Purchase
         public async Task<GenericResponse> Create(CreatePurchaseDocumentRequest createRequest)
         {
             var exercise = await _unitOfWork.Exercices.Get(createRequest.ExerciseId);
-            if (exercise == null) return new GenericResponse(false, new List<string>() { "Exercici inexistent" });
+            if (exercise == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseNotFound"));
 
-            var status = _unitOfWork.Lifecycles.Find(l => l.Name == "Receipts").FirstOrDefault();
-            if (status == null) return new GenericResponse(false, new List<string>() { "Cicle de vida 'Receipts' inexistent" });
-            if (!status.InitialStatusId.HasValue) return new GenericResponse(false, new List<string>() { "El cicle de vida 'Receipts' no té un estat inicial" });
+            var status = _unitOfWork.Lifecycles.Find(l => l.Name == StatusConstants.Lifecycles.Receipts).FirstOrDefault();
+            if (status == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("LifecycleNotFound", StatusConstants.Lifecycles.Receipts));
+            if (!status.InitialStatusId.HasValue) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("LifecycleNoInitialStatus", StatusConstants.Lifecycles.Receipts));
 
-            //var receiptCounter = exercise.ReceiptCounter == 0 ? 1 : exercise.ReceiptCounter;
             var counterObj = await _exerciseService.GetNextCounter(exercise.Id, "receipt");
-            if (counterObj == null || counterObj.Content == null) return new GenericResponse(false, "Error al crear el comptador");
+            if (counterObj == null || counterObj.Content == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseCounterError"));
 
             var receiptCounter = counterObj.Content.ToString();
             var receipt = new Receipt()
@@ -94,7 +100,8 @@ namespace Api.Services.Purchase
             receipt.Details?.Clear();
 
             var exists = await _unitOfWork.Receipts.Exists(receipt.Id);
-            if (!exists) return new GenericResponse(false, new List<string>() { $"Id {receipt.Id} inexistent" });
+            if (!exists) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("Common.IdNotExist", receipt.Id));
 
             await _unitOfWork.Receipts.Update(receipt);
             return new GenericResponse(true);
@@ -103,7 +110,8 @@ namespace Api.Services.Purchase
         public async Task<GenericResponse> Remove(Guid id)
         {
             var receipt = await _unitOfWork.Receipts.Get(id);
-            if (receipt == null) return new GenericResponse(false, new List<string>() { $"Id {id} inexistent" });
+            if (receipt == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("Common.IdNotExist", id));
 
             await _unitOfWork.Receipts.Remove(receipt);
             return new GenericResponse(true);
@@ -112,9 +120,13 @@ namespace Api.Services.Purchase
         public async Task<GenericResponse> CalculateDetailWeightAndPrice(ReceiptDetail detail)
         {
             detail.Reference ??= await _unitOfWork.References.Get(detail.ReferenceId);
-            if (detail.Reference is null) return new GenericResponse(false, "Referencia no existent");
-            if (!detail.Reference.ReferenceFormatId.HasValue) return new GenericResponse(false, "Referencia sense format");
-            if (!detail.Reference.ReferenceTypeId.HasValue) return new GenericResponse(false, "Referencia sense tipus");
+            if (detail.Reference is null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ReferenceNotExistent"));
+            if (!detail.Reference.ReferenceFormatId.HasValue) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ReferenceNoFormat"));
+            if (!detail.Reference.ReferenceTypeId.HasValue) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ReferenceNoType"));
+            
             var referenceType = await _unitOfWork.ReferenceTypes.Get(detail.Reference.ReferenceTypeId.Value);
 
             try {
@@ -150,7 +162,8 @@ namespace Api.Services.Purchase
         public async Task<GenericResponse> UpdateDetail(ReceiptDetail detail)
         {
             var exists = await _unitOfWork.Receipts.Details.Exists(detail.Id);
-            if (!exists) return new GenericResponse(false, $"Id {detail.Id} inexistent");
+            if (!exists) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("Common.IdNotExist", detail.Id));
 
             detail.Reference = null;
             await _unitOfWork.Receipts.Details.Update(detail);
@@ -161,7 +174,8 @@ namespace Api.Services.Purchase
         {
             // Obtenir detall
             var detail = await _unitOfWork.Receipts.Details.Get(id);
-            if (detail == null) return new GenericResponse(false, $"Id {id} inexistent");
+            if (detail == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("Common.IdNotExist", id));
 
             // Comprobar si el detall té recepcions associades
             var reception = (await _unitOfWork.PurchaseOrders.Receptions.FindAsync(r => r.ReceiptDetailId == id)).FirstOrDefault();
@@ -178,11 +192,14 @@ namespace Api.Services.Purchase
         public async Task<GenericResponse> MoveToWarehose(Receipt receipt)
         {
             var defaultLocation = await _unitOfWork.Warehouses.GetDefaultLocation();
-            if (defaultLocation == null) return new GenericResponse(false, "No hi ha una ubicació per defecte");
+            if (defaultLocation == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("StockDefaultLocationNotFound"));
 
             var detailsToMove = receipt.Details!.Where(d => d.StockMovementId == null);
             foreach (var detail in detailsToMove)
             {
+                detail.Reference = null;
+
                 var stockMovement = new StockMovement
                 {
                     Id = Guid.NewGuid(),
@@ -190,7 +207,7 @@ namespace Api.Services.Purchase
                     MovementDate = DateTime.Now,
                     CreatedOn = DateTime.Now,
                     MovementType = StockMovementType.INPUT,
-                    Description = $"Albará {receipt.Number}"
+                    Description = _localizationService.GetLocalizedString("Movement.AlbaranDescription", receipt.Number)
                 };
                 stockMovement.SetFromReceiptDetail(detail);
 
@@ -236,7 +253,8 @@ namespace Api.Services.Purchase
             foreach (var reception in request.Receptions)
             {
                 var detail = orderDetails.FirstOrDefault(orderDetails => orderDetails.Id == reception.PurchaseOrderDetailId);
-                if (detail == null) return new GenericResponse(false, $"Detall {reception.PurchaseOrderDetailId} inexistent");
+                if (detail == null) 
+                    return new GenericResponse(false, _localizationService.GetLocalizedString("ReceiptDetailNotFound", reception.PurchaseOrderDetailId));
 
                 // Actualizar detall de la comanda
                 var orderDetailResponse = await _orderService.AddReceivedQuantityAndCalculateStatus(detail, (int)reception.Quantity);
@@ -268,7 +286,8 @@ namespace Api.Services.Purchase
 
             // Crear moviments de magatzem
             var receipt = await _unitOfWork.Receipts.Get(request.ReceiptId);
-            if (receipt == null) return new GenericResponse(false, $"Albará {request.ReceiptId} inexistent");
+            if (receipt == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ReceiptNotFound", request.ReceiptId));
 
             // Recalcular l'estat de la comanda
             return await _orderService.DeterminateStatus(orderDetails.First().PurchaseOrderId);

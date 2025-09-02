@@ -7,15 +7,8 @@ namespace Api.Controllers.Auth
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthenticationController : ControllerBase
+    public class AuthenticationController(IAuthenticationService authenticationService, ILocalizationService localizationService) : ControllerBase
     {
-        private readonly IAuthenticationService _authenticationService;
-
-        public AuthenticationController(IAuthenticationService authenticationService)
-        {
-            _authenticationService = authenticationService;
-        }
-
         [HttpPost]
         [Route("Register")]
         public async Task<IActionResult> Register(UserRegisterRequest request)
@@ -24,7 +17,7 @@ namespace Api.Controllers.Auth
             if (!ModelState.IsValid) return BadRequest();
 
             // Use the authentication service register
-            var authResponse = await _authenticationService.Register(request);
+            var authResponse = await authenticationService.Register(request);
             return authResponse.Result ? Ok(authResponse) : BadRequest(authResponse);
         }
 
@@ -36,7 +29,7 @@ namespace Api.Controllers.Auth
             if (!ModelState.IsValid) return BadRequest();
 
             // Use the authentication service register
-            var authResponse = await _authenticationService.Login(requestUser);
+            var authResponse = await authenticationService.Login(requestUser);
             return authResponse.Result ? Ok(authResponse) : BadRequest(authResponse);
         }
 
@@ -48,7 +41,7 @@ namespace Api.Controllers.Auth
             if (!ModelState.IsValid) return BadRequest();
 
             // Use the authentication service register
-            var changed = await _authenticationService.ChangePassword(requestUser);
+            var changed = await authenticationService.ChangePassword(requestUser);
             return changed ? Ok() : StatusCode(StatusCodes.Status500InternalServerError);
         }
 
@@ -62,11 +55,11 @@ namespace Api.Controllers.Auth
                 return BadRequest(new AuthResponse()
                 {
                     Result = false,
-                    Errors = new List<string>() { "Invalid parameters" }
+                    Errors = new List<string>() { localizationService.GetLocalizedString("AuthInvalidParameters") }
                 });
             }
 
-            var authResponse = await _authenticationService.RefreshToken(tokenRequest);
+            var authResponse = await authenticationService.RefreshToken(tokenRequest);
             return authResponse.Result ? Ok(authResponse) : BadRequest(authResponse);
         }
 

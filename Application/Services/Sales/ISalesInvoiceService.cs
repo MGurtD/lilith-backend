@@ -1,6 +1,5 @@
 using Application.Contract;
 using Application.Contracts;
-using Application.Contracts.Purchase;
 using Application.Contracts.Sales;
 using Domain.Entities.Sales;
 
@@ -13,7 +12,6 @@ public interface ISalesInvoiceService
 
     Task<SalesInvoice?> GetById(Guid id);
     Task<SalesInvoice?> GetHeaderById(Guid id);
-    Task<InvoiceReportDto?> GetDtoForReportingById(Guid id);
     IEnumerable<SalesInvoice> GetBetweenDates(DateTime startDate, DateTime endDate);
     IEnumerable<SalesInvoice> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid statusId);
     IEnumerable<SalesInvoice> GetBetweenDatesAndExcludeStatus(DateTime startDate, DateTime endDate, Guid excludeStatusId);
@@ -32,4 +30,5 @@ public interface ISalesInvoiceService
     Task<GenericResponse> AddDetail(SalesInvoiceDetail detail);
     Task<GenericResponse> UpdateDetail(SalesInvoiceDetail detail);
     Task<GenericResponse> RemoveDetail(Guid id);
+
 }

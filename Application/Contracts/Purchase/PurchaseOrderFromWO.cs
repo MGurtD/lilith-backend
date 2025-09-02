@@ -1,29 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.Contracts.Purchase
+namespace Application.Contracts.Purchase;
+
+public class PurchaseOrderFromWO
 {
-    public class PurchaseOrderFromWO
-    {
-        [Required]
-        public Guid workorderId { get; set; }
-        [Required]
-        public string workorderDescription {  get; set; }
-        [Required]
-        public Guid phaseId { get; set; }
-        [Required]
-        public string phaseDescription { get; set; }
-        [Required]
-        public Guid serviceReferenceId { get; set; }
-        [Required]
-        public string serviceReferenceName { get; set; }
-        [Required]
-        public Guid supplierId { get; set; }
-        [Required]
-        public int quantity {  get; set; }
-    }
+    [Required]
+    public Guid WorkorderId { get; set; }
+    [Required]
+    public required string WorkorderDescription {  get; set; }
+    [Required]
+    public Guid PhaseId { get; set; }
+    [Required]
+    public required string PhaseDescription { get; set; }
+    [Required]
+    public Guid ServiceReferenceId { get; set; }
+    [Required]
+    public required string ServiceReferenceName { get; set; }
+    [Required]
+    public Guid SupplierId { get; set; }
+    [Required]
+    public int Quantity { get; set; }
 }

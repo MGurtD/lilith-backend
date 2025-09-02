@@ -7,6 +7,7 @@
         public string Password { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
+        public string PreferredLanguage { get; set; } = "ca";
 
         public Guid RoleId { get; set; }
         public Role? Role { get; set; }

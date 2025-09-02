@@ -1,5 +1,6 @@
 ﻿using Application.Contracts;
 using Application.Persistance;
+using Application.Services;
 using Domain.Entities.Warehouse;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,11 +11,13 @@ namespace Api.Controllers.Warehouse
     public class WarehouseController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILocalizationService _localizationService;
 
-        public WarehouseController(IUnitOfWork unitOfWork)
+        public WarehouseController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
-        }        
+            _localizationService = localizationService;
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -61,7 +64,7 @@ namespace Api.Controllers.Warehouse
             }
             else
             {
-                return Conflict($"Magatzem {request.Name} existent");
+                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("WarehouseAlreadyExists", request.Name)));
             }
         }
 
@@ -108,7 +111,7 @@ namespace Api.Controllers.Warehouse
             }
             else
             {
-                return Conflict(new GenericResponse(false, $"Ubicació {request.Name} existent"));
+                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("LocationAlreadyExists", request.Name)));
             }
         }
 
@@ -126,7 +129,7 @@ namespace Api.Controllers.Warehouse
             }
             else
             {
-                return NotFound(new GenericResponse(false, $"Ubicació amb ID {request.Id} no existeix"));
+                return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("LocationNotFound", request.Id)));
             }
         }
 
@@ -143,7 +146,7 @@ namespace Api.Controllers.Warehouse
             }
             else
             {
-                return NotFound(new GenericResponse(false, $"Ubicació amb ID {id} no existeix"));
+                return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("LocationNotFound", id)));
             }
         }
     }

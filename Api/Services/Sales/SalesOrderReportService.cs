@@ -1,0 +1,42 @@
+using Application.Persistance;
+using Application.Services;
+using Application.Services.Sales;
+using Domain.Entities.Sales;
+
+namespace Api.Services.Sales
+{
+    public class SalesOrderReportService(
+        IUnitOfWork unitOfWork,
+        ISalesOrderService salesOrderService,
+        ILocalizationService localizationService) : ISalesOrderReportService
+    {
+        public async Task<SalesOrderReportResponse?> GetReportById(Guid id)
+        {
+            // Get order header and validate
+            var order = await salesOrderService.GetById(id);
+            if (order is null) return null;
+
+            if (!order.CustomerId.HasValue) return null;
+            var customer = await unitOfWork.Customers.Get(order.CustomerId.Value);
+            if (customer is null) return null;
+
+            if (!order.SiteId.HasValue) return null;
+            var site = await unitOfWork.Sites.Get(order.SiteId.Value);
+            if (site is null) return null;
+
+            // Order details ordered by reference
+            order.SalesOrderDetails = [.. order.SalesOrderDetails.OrderBy(d => d.Reference!.Code)];
+
+            // Build report response using customer's preferred language
+            var report = new SalesOrderReportResponse(customer.PreferredLanguage, localizationService)
+            {
+                Order = order,
+                Customer = customer,
+                Site = site,
+                Total = order.SalesOrderDetails.Sum(d => d.Amount)
+            };
+
+            return report;
+        }
+    }
+}

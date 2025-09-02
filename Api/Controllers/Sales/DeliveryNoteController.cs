@@ -2,6 +2,7 @@
 using Application.Contracts.Sales;
 using Application.Persistance;
 using Application.Services;
+using Application.Services.Sales;
 using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -10,21 +11,12 @@ namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class DeliveryNoteController : ControllerBase
+    public class DeliveryNoteController(IDeliveryNoteService service, IDeliveryNoteReportService reportService, IUnitOfWork unitOfWork) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IDeliveryNoteService _service;
-
-        public DeliveryNoteController(IDeliveryNoteService service, IUnitOfWork unitOfWork)
-        {
-            _service = service;
-            _unitOfWork = unitOfWork;
-        }
-
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var receipt = await _unitOfWork.DeliveryNotes.Get(id);
+            var receipt = await unitOfWork.DeliveryNotes.Get(id);
 
             if (receipt == null) return BadRequest();
             else return Ok(receipt);
@@ -33,7 +25,7 @@ namespace Api.Controllers.Purchase
         [HttpGet("Report/{id:guid}")]
         public async Task<IActionResult> GetDeliveryNoteForReport(Guid id)
         {
-            var deliveryNote = await _service.GetDtoForReportingById(id);
+            var deliveryNote = await reportService.GetReportById(id);
             return Ok(deliveryNote);
         }
 
@@ -42,11 +34,11 @@ namespace Api.Controllers.Purchase
         {
             IEnumerable<DeliveryNote> receipts = new List<DeliveryNote>();
             if (customerId.HasValue)
-                receipts = _service.GetBetweenDatesAndCustomer(startTime, endTime, customerId.Value);
+                receipts = service.GetBetweenDatesAndCustomer(startTime, endTime, customerId.Value);
             else if (statusId.HasValue)
-                receipts = _service.GetBetweenDatesAndStatus(startTime, endTime, statusId.Value);
+                receipts = service.GetBetweenDatesAndStatus(startTime, endTime, statusId.Value);
             else
-                receipts = _service.GetBetweenDates(startTime, endTime);
+                receipts = service.GetBetweenDates(startTime, endTime);
 
             if (receipts != null) return Ok(receipts.OrderByDescending(e => e.Number));
             else return BadRequest();
@@ -55,14 +47,14 @@ namespace Api.Controllers.Purchase
         [HttpGet("Invoice/{id:guid}")]
         public IActionResult GetDeliveryNotesByInvoiceId(Guid id)
         {
-            var salesOrders = _service.GetBySalesInvoice(id);
+            var salesOrders = service.GetBySalesInvoice(id);
             return Ok(salesOrders);
         }
 
         [HttpGet("ToInvoice")]
         public IActionResult GetDeliveryNotesToInvoice(Guid customerId)
         {
-            var salesOrderHeaders = _service.GetDeliveryNotesToInvoice(customerId);
+            var salesOrderHeaders = service.GetDeliveryNotesToInvoice(customerId);
             return Ok(salesOrderHeaders.OrderBy(e => e.Number));
         }
 
@@ -71,7 +63,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create(CreateHeaderRequest createRequest)
         {
-            var response = await _service.Create(createRequest);
+            var response = await service.Create(createRequest);
 
             if (response.Result)
                 return Ok(response);
@@ -85,21 +77,21 @@ namespace Api.Controllers.Purchase
         public async Task<IActionResult> Update(Guid id, [FromBody] DeliveryNote request)
         {
             if (id != request.Id) return BadRequest();
-            var deliveryNote = _unitOfWork.DeliveryNotes.Find(r => r.Id == request.Id).FirstOrDefault();
+            var deliveryNote = unitOfWork.DeliveryNotes.Find(r => r.Id == request.Id).FirstOrDefault();
             if (deliveryNote == null) return NotFound(new GenericResponse(false, new List<string>() { $"Albará amb ID {request.Id} inexistent" }));
 
-            var deliveredStatus = _unitOfWork.Lifecycles.StatusRepository.Find(s => s.Name == "Entregat").FirstOrDefault();
+            var deliveredStatus = unitOfWork.Lifecycles.StatusRepository.Find(s => s.Name == "Entregat").FirstOrDefault();
             if (deliveredStatus == null) return NotFound(new GenericResponse(false, $"Estat 'Entregat' inexistent" ));
 
             var warehouseResponse = new GenericResponse(true);
             if (deliveryNote.StatusId != deliveredStatus.Id && request.StatusId == deliveredStatus.Id)
-                warehouseResponse = await _service.Deliver(request);
+                warehouseResponse = await service.Deliver(request);
             if (deliveryNote.StatusId == deliveredStatus.Id && request.StatusId != deliveredStatus.Id)
-                warehouseResponse = await _service.UnDeliver(request);
+                warehouseResponse = await service.UnDeliver(request);
 
             var globalResponse = new GenericResponse(true);
             if (warehouseResponse.Result)
-                globalResponse = await _service.Update(request);
+                globalResponse = await service.Update(request);
 
             if (globalResponse.Result && warehouseResponse.Result) return Ok(globalResponse);
             else return BadRequest(globalResponse);
@@ -110,7 +102,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Remove(Guid id)
         {
-            var response = await _service.Remove(id);
+            var response = await service.Remove(id);
 
             if (response.Result) return Ok();
             else return BadRequest(response);
@@ -123,7 +115,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddOrder(Guid id, [FromBody] SalesOrderHeader order)
         {
-            var response = await _service.AddOrder(id, order);
+            var response = await service.AddOrder(id, order);
 
             if (response.Result) return Ok(response);
             else return BadRequest(response);
@@ -135,7 +127,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RemoveOrder(Guid id, [FromBody] SalesOrderHeader order)
         {
-            var response = await _service.RemoveOrder(id, order);
+            var response = await service.RemoveOrder(id, order);
             if (response.Result) return Ok(response);
             else return BadRequest(response);
         }

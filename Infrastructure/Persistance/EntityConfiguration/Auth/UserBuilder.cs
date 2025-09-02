@@ -35,6 +35,12 @@ namespace Infrastructure.Persistance.EntityConfiguration.Auth
                 .IsRequired()
                 .HasColumnType("bool")
                 .HasDefaultValue(false);
+            builder
+                .Property(b => b.PreferredLanguage)
+                .IsRequired()
+                .HasColumnType("varchar")
+                .HasMaxLength(10)
+                .HasDefaultValue("ca");
 
             builder
                 .HasKey(b => b.Id)

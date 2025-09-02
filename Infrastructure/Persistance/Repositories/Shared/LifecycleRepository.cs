@@ -1,5 +1,6 @@
 ﻿using Application.Persistance.Repositories;
 using Domain.Entities;
+using Domain.Entities.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistance.Repositories.Purchase
@@ -43,6 +44,13 @@ namespace Infrastructure.Persistance.Repositories.Purchase
             if (lifecycle == null || lifecycle.Statuses == null) return null;
 
             return lifecycle.Statuses.FirstOrDefault(s => s.Name == name);
+        }
+
+        public async Task<Guid?> GetInitialStatusByName(string name)
+        {
+            var lifecycle = await GetByName(name);
+            if (lifecycle == null || lifecycle.Statuses == null) return null;
+            return lifecycle.InitialStatusId;
         }
     }
 }

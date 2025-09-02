@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Domain.Entities.Shared;
 
 namespace Application.Persistance.Repositories
 {
@@ -8,5 +9,6 @@ namespace Application.Persistance.Repositories
 
         Task<Lifecycle?> GetByName(string code);
         Task<Status?> GetStatusByName(string lifecycleCode, string statusCode);
+        Task<Guid?> GetInitialStatusByName(string name);
     }
 }

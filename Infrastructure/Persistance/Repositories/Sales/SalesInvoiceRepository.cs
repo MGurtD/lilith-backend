@@ -1,27 +1,22 @@
 ﻿using Application.Persistance.Repositories;
-using Application.Persistance.Repositories.Sales;
 using Domain.Entities.Sales;
+using Domain.Repositories.Sales;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace Infrastructure.Persistance.Repositories.Sales
 {
-    public class SalesInvoiceRepository : Repository<SalesInvoice, Guid>, ISalesInvoiceRepository
+    public class SalesInvoiceRepository(ApplicationDbContext context) : Repository<SalesInvoice, Guid>(context), ISalesInvoiceRepository
     {
-        public IRepository<SalesInvoiceDetail, Guid> InvoiceDetails { get; }
-        public IRepository<SalesInvoiceImport, Guid> InvoiceImports { get; }
-        public IRepository<SalesInvoiceDueDate, Guid> InvoiceDueDates { get; }
-
-        public SalesInvoiceRepository(ApplicationDbContext context) : base(context)
-        {
-            InvoiceDetails = new Repository<SalesInvoiceDetail, Guid>(context);
-            InvoiceImports = new Repository<SalesInvoiceImport, Guid>(context);
-            InvoiceDueDates = new Repository<SalesInvoiceDueDate, Guid>(context);
-        }
+        public IRepository<SalesInvoiceDetail, Guid> InvoiceDetails { get; } = new Repository<SalesInvoiceDetail, Guid>(context);
+        public IRepository<SalesInvoiceImport, Guid> InvoiceImports { get; } = new Repository<SalesInvoiceImport, Guid>(context);
+        public IRepository<SalesInvoiceDueDate, Guid> InvoiceDueDates { get; } = new Repository<SalesInvoiceDueDate, Guid>(context);
 
         public override async Task<SalesInvoice?> Get(Guid id)
         {
             return await dbSet
+                        .Include(s => s.Customer)
+                        .Include(s => s.Site)
                         .Include(s => s.SalesInvoiceDetails)
                             .ThenInclude(d => d.DeliveryNoteDetail)
                         .Include(s => s.SalesInvoiceImports)
@@ -35,7 +30,7 @@ namespace Infrastructure.Persistance.Repositories.Sales
         {
             return await dbSet
                         .AsNoTracking()
-                        .FirstOrDefaultAsync(e => e.Id == id);
+                        .SingleOrDefaultAsync(e => e.Id == id);
         }
 
         public async Task<IEnumerable<SalesInvoiceImport>> GetImportsByInvoiceId(Guid id)
@@ -50,6 +45,30 @@ namespace Infrastructure.Persistance.Repositories.Sales
             return imports;
         }
 
+        public async Task<IEnumerable<SalesInvoice>> GetPendingToIntegrate(DateTime? toDate, Guid? initialStatusId)
+        {
+            var query = dbSet
+                        .AsNoTracking()
+                        .Include(e => e.SalesInvoiceDueDates)
+                        .Where(e => e.IntegrationStatusId != null);
+
+            if (initialStatusId.HasValue)
+            {
+                query = query.Where(e => e.IntegrationStatusId == initialStatusId);
+            }
+
+            if (toDate.HasValue)
+            {
+                // Compare dates ignoring time by using an exclusive upper bound at the next day start
+                var cutoff = toDate.Value.Date.AddDays(1);
+                query = query.Where(e => e.InvoiceDate < cutoff);
+            }
+
+            return await query
+                        .OrderBy(e => e.InvoiceNumber)
+                        .ToListAsync();
+        }
+
         public override IEnumerable<SalesInvoice> Find(Expression<Func<SalesInvoice, bool>> predicate)
         {
             return dbSet
@@ -57,6 +76,17 @@ namespace Infrastructure.Persistance.Repositories.Sales
                 .Include(d => d.SalesInvoiceDueDates)
                 .Where(predicate)
                 .OrderBy(pi => pi.InvoiceNumber);
+        }
+
+        public async Task<IEnumerable<SalesInvoice>> GetIntegrationsBetweenDates(DateTime fromDate, DateTime toDate)
+        {
+            // Return invoices that have at least one Verifactu request whose CreatedOn falls within the date range
+            return await dbSet
+                .AsNoTracking()
+                .Include(i => i.VerifactuRequests)
+                .Where(i => i.VerifactuRequests.Any(r => r.CreatedOn >= fromDate && r.CreatedOn <= toDate))
+                .OrderBy(i => i.InvoiceNumber)
+                .ToListAsync();
         }
 
     }

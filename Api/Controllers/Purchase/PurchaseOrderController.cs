@@ -1,6 +1,7 @@
 ﻿using Application.Contracts;
 using Application.Contracts.Purchase;
 using Application.Persistance;
+using Application.Services;
 using Application.Services.Purchase;
 using Domain.Entities.Purchase;
 using Microsoft.AspNetCore.Mvc;
@@ -14,11 +15,13 @@ namespace Api.Controllers.Purchase
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPurchaseOrderService _service;
+        private readonly ILocalizationService _localizationService;
 
-        public PurchaseOrderController(IPurchaseOrderService service, IUnitOfWork unitOfWork)
+        public PurchaseOrderController(IPurchaseOrderService service, IUnitOfWork unitOfWork, ILocalizationService localizationService)
         {
             _service = service;
             _unitOfWork = unitOfWork;
+            _localizationService = localizationService;
         }
 
         [HttpGet]
@@ -79,7 +82,7 @@ namespace Api.Controllers.Purchase
         {
             if (id != request.Id) return BadRequest();
             var order = _unitOfWork.PurchaseOrders.Find(r => r.Id == request.Id).FirstOrDefault();
-            if (order == null) return NotFound(new GenericResponse(false, $"Comanda de compra amb ID {request.Id} inexistent" ));
+            if (order == null) return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("PurchaseOrderNotFound", request.Id)));
             var response = await _service.Update(request);
 
             if (response.Result) return Ok(response);
