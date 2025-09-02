@@ -31,7 +31,7 @@ namespace Api.Constants
 
             // Work Order statuses
             public const string Creada = "Creada";
-            public const string Production = "Producció";
+            public const string Production = "ProducciÃ³";
 
             // Sales Order statuses
             public const string Comanda = "Comanda";
@@ -42,7 +42,7 @@ namespace Api.Constants
             public const string Cobrada = "Cobrada";
 
             // Purchase Order statuses
-            public const string Cancellada = "Cancel·lada";
+            public const string Cancellada = "CancelÂ·lada";
             public const string Rebuda = "Rebuda";
             public const string RebuidaParcialment = "Rebuda parcialment";
             public const string PendentRebre = "Pendent de rebre";
@@ -57,7 +57,7 @@ namespace Api.Constants
         // Site Names (Catalan - as stored in database)
         public static class Sites
         {
-            public const string LocalTorello = "Local Torelló";
+            public const string LocalTorello = "Local TorellÃ³";
             public const string Temges = "Temges";
         }
     }

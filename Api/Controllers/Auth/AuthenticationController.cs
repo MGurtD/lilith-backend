@@ -45,7 +45,7 @@ namespace Api.Controllers.Auth
             return changed ? Ok() : StatusCode(StatusCodes.Status500InternalServerError);
         }
 
-        // TODO > Implementar refresh tokens quan hagi separat les responsabilitats de autenticaci� i autoritzaci�
+        // TODO > Implementar refresh tokens quan hagi separat les responsabilitats de autenticació i autorització
         [HttpPost]
         [Route("RefreshToken")]
         public async Task<IActionResult> RefreshToken([FromBody] TokenRequest tokenRequest)
