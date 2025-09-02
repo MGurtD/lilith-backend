@@ -59,9 +59,9 @@ namespace Infrastructure.Persistance.Repositories.Sales
 
             if (toDate.HasValue)
             {
-                var cutoff = toDate.Value;
-                query = query.Where(e => e.SalesInvoiceDueDates.Any() &&
-                                         e.SalesInvoiceDueDates.Max(d => d.DueDate) <= cutoff);
+                // Compare dates ignoring time by using an exclusive upper bound at the next day start
+                var cutoff = toDate.Value.Date.AddDays(1);
+                query = query.Where(e => e.InvoiceDate < cutoff);
             }
 
             return await query

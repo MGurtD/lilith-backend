@@ -1,4 +1,5 @@
-﻿using Application.Contracts;
+﻿using Api.Constants;
+using Application.Contracts;
 using Application.Services.Sales;
 using Application.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,10 @@ namespace Api.Controllers.Verifactu;
 
 [ApiController]
 [Route("api/[controller]")]
-public class VerifactuController(IVerifactuIntegrationService service, ILocalizationService localizationService, Application.Persistance.IUnitOfWork unitOfWork) : ControllerBase
+public class VerifactuController(
+    IVerifactuIntegrationService service,
+    ILocalizationService localizationService,
+    Application.Persistance.IUnitOfWork unitOfWork) : ControllerBase
 {
 
     [HttpGet("PendingIntegrations")]
@@ -18,7 +22,7 @@ public class VerifactuController(IVerifactuIntegrationService service, ILocaliza
     public async Task<IActionResult> GetPendingIntegration(DateTime? toDate)
     {
         // Get initial status of Verifactu lifecycle and use it to filter pending integrations
-        var initialStatusId = await unitOfWork.Lifecycles.GetInitialStatusByName(Api.Constants.StatusConstants.Lifecycles.Verifactu);
+        var initialStatusId = await unitOfWork.Lifecycles.GetInitialStatusByName(StatusConstants.Lifecycles.Verifactu);
         var invoices = await service.GetInvoicesToIntegrateWithVerifactu(toDate, initialStatusId);
         return Ok(invoices);
     }
