@@ -18,7 +18,7 @@ namespace Api.Setup
             services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
             
             // Register localization service
-            services.AddScoped<Application.Services.ILocalizationService, LocalizationService>();
+            services.AddSingleton<Application.Services.ILocalizationService, LocalizationService>();
 
             // Configure supported cultures
             services.Configure<RequestLocalizationOptions>(options =>
@@ -44,7 +44,7 @@ namespace Api.Setup
             app.UseRequestLocalization();
             
             // Then enforce our custom culture resolution (query > claim > header > default)
-            app.UseMiddleware<Api.Middlewares.CultureMiddleware>();
+            app.UseMiddleware<Middlewares.CultureMiddleware>();
 
             return app;
         }
