@@ -184,5 +184,29 @@ namespace Api.Services.Purchase
 
         #endregion
 
+        #region DueDates CRUD
+        public async Task<GenericResponse> AddDueDates(IEnumerable<PurchaseInvoiceDueDate> dueDates)
+        {
+            if (dueDates == null || !dueDates.Any())
+                return new GenericResponse(true, new List<string>()); // nothing to add
+
+            await _unitOfWork.PurchaseInvoiceDueDates.AddRange(dueDates);
+            return new GenericResponse(true, new List<string>());
+        }
+
+        public async Task<GenericResponse> RemoveDueDates(IEnumerable<Guid> ids)
+        {
+            if (ids == null || !ids.Any())
+                return new GenericResponse(true, new List<string>()); // nothing to remove
+
+            var existing = _unitOfWork.PurchaseInvoiceDueDates.Find(dd => ids.Contains(dd.Id));
+            if (existing.Any())
+            {
+                await _unitOfWork.PurchaseInvoiceDueDates.RemoveRange(existing);
+            }
+            return new GenericResponse(true, new List<string>());
+        }
+        #endregion
+
     }
 }

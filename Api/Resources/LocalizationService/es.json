@@ -74,7 +74,6 @@
     "SalesInvoiceNoExisteix": "La factura no existe",
     "SiteNotFound": "La sede 'Temges' no existe",
     "SiteInvalid": "Sede 'Temges' no es válida para crear una factura. Revise los datos de facturación.",
-    "SiteTorelló": "Local Torelló",
     "SiteAlreadyExists": "Sede {0} existente",
     "TaxNotFound": "No existe el impuesto IVA 21%",
     "PaymentMethodNotFound": "El método de pago no existe",

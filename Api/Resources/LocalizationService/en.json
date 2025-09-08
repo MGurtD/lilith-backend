@@ -74,7 +74,6 @@
     "SalesInvoiceNoExisteix": "The invoice does not exist",
     "SiteNotFound": "Site 'Temges' not found",
     "SiteInvalid": "Site 'Temges' is not valid for creating an invoice. Check billing information.",
-    "SiteTorelló": "Local Torelló",
     "SiteAlreadyExists": "Site {0} already exists",
     "TaxNotFound": "VAT 21% tax not found",
     "PaymentMethodNotFound": "Payment method not found",

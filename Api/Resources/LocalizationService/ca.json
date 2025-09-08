@@ -74,7 +74,6 @@
     "SalesInvoiceNoExisteix": "La factura no existeix",
     "SiteNotFound": "La seu 'Temges' no existeix",
     "SiteInvalid": "Seu 'Temges' no és vàlida per crear una factura. Revisi les dades de facturació.",
-    "SiteTorelló": "Local Torelló",
     "SiteAlreadyExists": "Seu {0} existent",
     "TaxNotFound": "No existeix l'impost IVA 21%",
     "PaymentMethodNotFound": "El mètode de pagament no existeix",

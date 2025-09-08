@@ -187,5 +187,27 @@ namespace Api.Controllers.Purchase
         }
         #endregion
 
+        #region DueDates
+        [HttpPost("DueDate")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddDueDates([FromBody] IEnumerable<PurchaseInvoiceDueDate> dueDates)
+        {
+            var response = await _service.AddDueDates(dueDates);
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
+        }
+
+        [HttpDelete("DueDate")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> RemoveDueDates([FromQuery] IEnumerable<Guid> ids)
+        {
+            var response = await _service.RemoveDueDates(ids);
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
+        }
+        #endregion
+
     }
 }
