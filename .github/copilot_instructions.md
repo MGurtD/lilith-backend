@@ -7,27 +7,31 @@ Lilith Backend is a comprehensive manufacturing ERP system built with .NET 8 usi
 ## Architecture & Structure
 
 ### Project Organization
+
 The solution follows Clean Architecture with 4 main projects:
 
 1. **Domain** - Core business entities, interfaces, and domain logic
-2. **Application** - Use cases, DTOs, and service interfaces 
+2. **Application** - Use cases, DTOs, and service interfaces
 3. **Infrastructure** - Data access, external services, and infrastructure concerns
 4. **Api** - Web API controllers and application services
 
 ### Key Architectural Patterns
 
 #### Clean Architecture Layers
+
 - **Domain Layer**: Contains entities, value objects, domain services, and repository interfaces
 - **Application Layer**: Contains application services, DTOs, and use case interfaces
 - **Infrastructure Layer**: Implements repositories, data access, and external integrations
 - **API Layer**: Contains controllers and application-specific services
 
 #### Repository Pattern
+
 - Generic `IRepository<TEntity, TId>` interface for common CRUD operations
 - Specialized repositories for complex queries (e.g., `IWorkOrderRepository`, `ISalesOrderHeaderRepository`)
 - Unit of Work pattern via `IUnitOfWork` to manage transactions and repository instances
 
 #### Entity Framework & Data Access
+
 - PostgreSQL database with Entity Framework Core
 - Database views for reporting (prefixed with `vw_`)
 - Soft delete pattern using `Disabled` property on base `Entity` class
@@ -36,7 +40,9 @@ The solution follows Clean Architecture with 4 main projects:
 ## Domain Model
 
 ### Base Entity
+
 All entities inherit from abstract `Entity` class:
+
 ```csharp
 public abstract class Entity
 {
@@ -50,6 +56,7 @@ public abstract class Entity
 ### Core Business Areas
 
 #### Production Management
+
 - **WorkMaster**: Manufacturing routes/processes for references
 - **WorkOrder**: Actual production orders with phases and details
 - **WorkOrderPhase**: Individual manufacturing phases within work orders
@@ -58,6 +65,7 @@ public abstract class Entity
 - **Workcenter**: Manufacturing resources and machine centers
 
 #### Sales Management
+
 - **Customer**: Client management with addresses and contacts
 - **SalesOrderHeader/Detail**: Sales orders with line items
 - **DeliveryNote**: Shipping documents
@@ -65,12 +73,14 @@ public abstract class Entity
 - **Budget**: Customer quotations
 
 #### Purchase Management
+
 - **Supplier**: Vendor management with references and pricing
 - **PurchaseOrder/Detail**: Purchase orders with reception tracking
 - **Receipt**: Goods receipt with weight/dimension calculations
 - **PurchaseInvoice**: Vendor invoicing and payment tracking
 
 #### Shared Components
+
 - **Reference**: Product/service catalog with pricing and specifications
 - **Lifecycle/Status**: Workflow state management across all business processes
 - **Exercise**: Fiscal periods with document numbering sequences
@@ -78,7 +88,9 @@ public abstract class Entity
 ## Common Patterns & Conventions
 
 ### Response Pattern
+
 Use `GenericResponse` for service layer returns:
+
 ```csharp
 public class GenericResponse
 {
@@ -89,6 +101,7 @@ public class GenericResponse
 ```
 
 ### Controller Conventions
+
 - Use `[ApiController]` and `[Route("api/[controller]")]` attributes
 - Implement standard CRUD operations: Create, GetById, GetAll, Update, Delete
 - Use DTOs for complex requests (e.g., `CreateHeaderRequest`, `ChangeStatusRequest`)
@@ -96,6 +109,7 @@ public class GenericResponse
 - Return appropriate HTTP status codes (200, 201, 400, 404, 409)
 
 ### Service Layer Patterns
+
 - Services inject `IUnitOfWork` for data access
 - Use lifecycle/status management for workflow control
 - Implement business validation before persistence
@@ -103,12 +117,14 @@ public class GenericResponse
 - Handle related entity updates (e.g., updating stock, changing order statuses)
 
 ### Repository Implementations
+
 - Generic `Repository<TEntity, TId>` for basic CRUD
 - Specialized repositories inherit and extend functionality
 - Use `Find()` for synchronous queries, `FindAsync()` for async
 - Implement `UpdateWithoutSave()` for batch operations with manual `CompleteAsync()`
 
 ### Database Configuration
+
 - Entity configurations in `Infrastructure/Persistance/EntityConfiguration/`
 - Use `EntityBaseConfiguration.ConfigureBase<T>()` for common entity properties
 - UUID primary keys with `ValueGeneratedNever()`
@@ -118,24 +134,29 @@ public class GenericResponse
 ## Business Logic Patterns
 
 ### Lifecycle Management
+
 All major business entities use lifecycle/status management:
+
 - Each entity type has a named lifecycle (e.g., "WorkOrder", "SalesOrder", "PurchaseInvoice")
 - Status transitions control business workflow
 - Use `ILifecycleRepository.GetStatusByName(lifecycleName, statusName)` to get specific statuses
 - Initial status set from `Lifecycle.InitialStatusId`
 
 ### Document Numbering
+
 - Documents use sequential numbering per exercise/fiscal period
 - Generate via `IExerciseService.GetNextCounter(exerciseId, documentType)`
 - Document types: "workorder", "salesorder", "purchaseorder", "salesinvoice", etc.
 
 ### Cost Calculation
+
 - Work orders track operator, machine, material, and external costs
 - Use `IMetricsService.GetWorkmasterMetrics()` for cost calculations
 - Costs flow from work orders to references and sales order details
 - Production parts capture actual time and costs vs. estimates
 
 ### Stock Management
+
 - Stock movements track inventory changes
 - Delivery notes consume stock when delivered
 - Receipts add to stock when received
@@ -146,11 +167,13 @@ All major business entities use lifecycle/status management:
 The system implements **comprehensive multilanguage support** with full internationalization across all business logic.
 
 ### Supported Languages
+
 - **Catalan (ca)** - Default language
 - **Spanish (es)** - Secondary language
 - **English (en)** - International support
 
 ### Localization Architecture
+
 - **JSON-based resource files** in `Api/Resources/LocalizationService/`
 - **ILocalizationService** for dependency injection and string retrieval
 - **CultureMiddleware** for automatic language detection
@@ -158,17 +181,21 @@ The system implements **comprehensive multilanguage support** with full internat
 - **StatusConstants** in `Api/Constants/StatusConstants.cs` for database-stored values
 
 ### Culture Detection Priority
+
 1. Query parameter: `?culture=ca`
 2. Accept-Language header
 3. Default to Catalan (ca)
 
 ### Database vs User-Facing Strings
+
 - **Database Values**: Lifecycle and status names remain in Catalan in the database
 - **Constants**: Use `StatusConstants` to reference database values (prevents typos)
 - **User Messages**: All error messages and UI text support full localization
 
 ### Constants Usage
+
 Use constants instead of magic strings for database-stored values:
+
 ```csharp
 // Using Constants (Recommended)
 var lifecycle = _unitOfWork.Lifecycles.Find(l => l.Name == StatusConstants.Lifecycles.Budget).FirstOrDefault();
@@ -180,23 +207,24 @@ StatusConstants.Lifecycles.SalesOrder
 StatusConstants.Lifecycles.WorkOrder
 StatusConstants.Statuses.Creada
 StatusConstants.Statuses.PendentAcceptar
-StatusConstants.Sites.LocalTorello
 ```
 
 ### Using Localization in Services
+
 All API services must inject and use `ILocalizationService`:
+
 ```csharp
 public class ExampleService : IExampleService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILocalizationService _localizationService;
-    
+
     public ExampleService(IUnitOfWork unitOfWork, ILocalizationService localizationService)
     {
         _unitOfWork = unitOfWork;
         _localizationService = localizationService;
     }
-    
+
     public async Task<GenericResponse> SomeMethod(Guid id)
     {
         var entity = await _unitOfWork.Entities.Get(id);
@@ -204,7 +232,7 @@ public class ExampleService : IExampleService
         {
             return new GenericResponse(false, _localizationService.GetLocalizedString("EntityNotFound", id));
         }
-        
+
         // Business logic here
         return new GenericResponse(true, entity);
     }
@@ -212,43 +240,48 @@ public class ExampleService : IExampleService
 ```
 
 ### Using Localization in Controllers
+
 ```csharp
 public class ExampleController : ControllerBase
 {
     private readonly ILocalizationService _localizationService;
-    
+
     public ExampleController(ILocalizationService localizationService)
     {
         _localizationService = localizationService;
     }
-    
+
     public IActionResult SomeAction(Guid id)
     {
         // For current request culture
         var message = _localizationService.GetLocalizedString("EntityNotFound", id);
-        
+
         // For specific culture
         var spanishMessage = _localizationService.GetLocalizedStringForCulture("EntityNotFound", "es", id);
-        
+
         return NotFound(new GenericResponse(false, message));
     }
 }
 ```
 
 ### Localization Methods
+
 - **GetLocalizedString(key, params args)** - Uses current request culture
 - **GetLocalizedStringForCulture(key, culture, params args)** - Forces specific culture
 
 ### Standard Localization Keys
+
 All services use standardized localization keys organized by category:
 
 #### Entity Operations
+
 - `EntityNotFound`: "Entity with ID {0} not found"
 - `EntityAlreadyExists`: "Entity already exists"
 - `EntityDisabled`: "Entity with ID {0} is disabled"
 - `Common.IdNotExist`: "Id {0} does not exist"
 
 #### Business Entities
+
 - `CustomerNotFound`: "Customer not found"
 - `CustomerInvalid`: "Customer is not valid for creating an invoice..."
 - `WorkOrderNotFound`: "Work order with ID {0} not found"
@@ -256,25 +289,30 @@ All services use standardized localization keys organized by category:
 - `InvoiceNotFound`: "Invoice with ID {0} not found"
 
 #### Exercise & Document Management
+
 - `ExerciseNotFound`: "Exercise not found"
 - `ExerciseCounterError`: "Error creating counter"
 - `ExerciseCounterNotFound`: "The provided counter '{0}' is not valid"
 
 #### Lifecycle & Status Management
+
 - `LifecycleNotFound`: "Lifecycle '{0}' not found"
 - `LifecycleNoInitialStatus`: "Lifecycle '{0}' has no initial status"
 - `StatusNotFound`: "Status with ID {0} not found or is disabled"
 
 #### Validation Messages
+
 - `Validation.Required`: "The {0} field is required"
 - `Validation.InvalidEmail`: "Email format is not valid"
 
 #### Authentication
+
 - `UserNotFound`: "User not found"
 - `UserPasswordInvalid`: "Password is not valid"
 - `AuthTokenExpired`: "Token expired"
 
 ### Language File Structure
+
 Each language file (ca.json, es.json, en.json) contains categorized keys:
 
 ```json
@@ -294,6 +332,7 @@ Each language file (ca.json, es.json, en.json) contains categorized keys:
 ## API Conventions
 
 ### Controller Structure
+
 ```csharp
 [ApiController]
 [Route("api/[controller]")]
@@ -302,13 +341,14 @@ public class EntityController : ControllerBase
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEntityService _entityService; // if complex business logic
     private readonly ILocalizationService _localizationService; // REQUIRED for multilanguage support
-    
+
     // Standard CRUD + specialized endpoints
     // Sub-resource management (e.g., /Entity/{id}/SubEntity)
 }
 ```
 
 ### Standard Responses
+
 - `200 OK`: Successful operations, return entity or collection
 - `201 Created`: Entity creation, return entity and Location header
 - `400 BadRequest`: Validation errors, return `ModelState.ValidationState`
@@ -316,7 +356,9 @@ public class EntityController : ControllerBase
 - `409 Conflict`: Business rule violations, return localized `GenericResponse` with error message
 
 ### Sub-Resource Management
+
 Many entities have sub-resources (e.g., WorkMaster has Phases, Phases have Details):
+
 - Separate endpoints for sub-resource CRUD
 - Use Swagger annotations for API documentation
 - Validate parent entity existence before sub-resource operations
@@ -324,6 +366,7 @@ Many entities have sub-resources (e.g., WorkMaster has Phases, Phases have Detai
 ## Development Guidelines
 
 ### When Adding New Features
+
 1. **Domain First**: Define entities in Domain layer with proper relationships
 2. **Repository Pattern**: Create specialized repositories if complex queries needed
 3. **Service Layer**: Implement business logic in Application services
@@ -333,6 +376,7 @@ Many entities have sub-resources (e.g., WorkMaster has Phases, Phases have Detai
 7. **Testing**: Consider integration tests for complex workflows
 
 ### Error Handling
+
 - Use `GenericResponse` for business logic errors
 - Return appropriate HTTP status codes
 - Validate `ModelState` in controllers
@@ -343,6 +387,7 @@ Many entities have sub-resources (e.g., WorkMaster has Phases, Phases have Detai
 ### Localization Implementation Requirements
 
 #### For All New Services:
+
 1. **Inject ILocalizationService** in constructor
 2. **Use StatusConstants** for database-stored values
 3. **Add localization keys** to all 3 language files (ca.json, es.json, en.json)
@@ -350,11 +395,12 @@ Many entities have sub-resources (e.g., WorkMaster has Phases, Phases have Detai
 5. **Follow established key naming patterns**
 
 #### Adding New Localization Keys:
+
 ```csharp
 // 1. Add to ca.json
 "MyNewErrorKey": "El meu nou missatge d'error amb {0}"
 
-// 2. Add to es.json  
+// 2. Add to es.json
 "MyNewErrorKey": "Mi nuevo mensaje de error con {0}"
 
 // 3. Add to en.json
@@ -365,6 +411,7 @@ return new GenericResponse(false, _localizationService.GetLocalizedString("MyNew
 ```
 
 #### Constants Pattern:
+
 ```csharp
 // Add to Api/Constants/StatusConstants.cs
 public static class StatusConstants
@@ -373,8 +420,8 @@ public static class StatusConstants
     {
         public const string MyNewLifecycle = "MyNewLifecycle";
     }
-    
-    public static class Statuses  
+
+    public static class Statuses
     {
         public const string MyNewStatus = "MyNewStatus"; // In Catalan as stored in DB
     }
@@ -382,6 +429,7 @@ public static class StatusConstants
 ```
 
 ### Localization Best Practices
+
 - **Add new strings to all language files** (ca.json, es.json, en.json)
 - **Use parameterized messages** for dynamic content: `_localizationService.GetLocalizedString("EntityNotFound", id)`
 - **Use GetLocalizedStringForCulture** when you need to force a specific culture
@@ -392,14 +440,16 @@ public static class StatusConstants
 - **Group related keys** with dot notation (e.g., `Validation.Required`, `StatusNames.Created`)
 
 ### Performance Considerations
+
 - Use async/await for all database operations
 - Prefer `Find()` over `GetAll().Where()` for filtering
 - Use specialized repositories for complex queries
 - Clear navigation properties to avoid EF tracking issues
 
 ### Code Style
+
 - Follow C# naming conventions
-- Use nullable reference types appropriately  
+- Use nullable reference types appropriately
 - Prefer explicit types over `var` for clarity
 - Comment business logic in English for international team
 - Use meaningful variable names reflecting business concepts
@@ -409,6 +459,7 @@ public static class StatusConstants
 All 15 API services have been fully updated with comprehensive localization support:
 
 ### ? Fully Localized Services:
+
 - **Sales**: BudgetService, SalesOrderService, SalesInvoiceService, DeliveryNoteService
 - **Purchase**: PurchaseOrderService, PurchaseInvoiceService, ReceiptService
 - **Production**: WorkOrderService, MetricsService
@@ -416,6 +467,7 @@ All 15 API services have been fully updated with comprehensive localization supp
 - **Shared**: ExerciseService, ReferenceService, FileService, AuthenticationService
 
 ### Key Achievements:
+
 - **40+ localization keys** covering all business scenarios
 - **Constants for database values** preventing runtime errors
 - **Consistent error handling** patterns across all services

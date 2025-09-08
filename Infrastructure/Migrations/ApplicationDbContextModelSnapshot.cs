@@ -789,6 +789,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasDefaultValueSql("NOW()");
 
+                    b.Property<Guid?>("DefaultSiteId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(250)
@@ -811,6 +814,8 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("PK_Enterprise");
+
+                    b.HasIndex("DefaultSiteId");
 
                     b.HasIndex(new[] { "Name" }, "UK_Enterprise_Name");
 
@@ -4884,6 +4889,16 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Site");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Production.Enterprise", b =>
+                {
+                    b.HasOne("Domain.Entities.Production.Site", "DefaultSite")
+                        .WithMany()
+                        .HasForeignKey("DefaultSiteId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("DefaultSite");
                 });
 
             modelBuilder.Entity("Domain.Entities.Production.Operator", b =>
