@@ -10,6 +10,7 @@ using Domain.Entities.Sales;
 using Domain.Entities.Shared;
 using Domain.Entities.Warehouse;
 using Api.Constants;
+using Application.Services.Production;
 
 namespace Api.Services.Sales
 {
@@ -23,6 +24,7 @@ namespace Api.Services.Sales
 
     public class DeliveryNoteService(
         IUnitOfWork unitOfWork,
+        IEnterpriseService enterpriseService,
         IStockMovementService stockMovementService,
         ISalesOrderService salesOrderService,
         IExerciseService exerciseService,
@@ -283,7 +285,7 @@ namespace Api.Services.Sales
             if (customer.MainAddress() == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("CustomerNoAddresses"));
 
-            var site = unitOfWork.Sites.Find(s => s.Name == StatusConstants.Sites.LocalTorello).FirstOrDefault();
+            var site = await enterpriseService.GetDefaultSite();
             if (site == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("SiteNotFound"));
             if (!site.IsValidForSales())

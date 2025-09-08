@@ -9,46 +9,37 @@ namespace Api.Controllers.Production
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class SiteController : ControllerBase
+    public class SiteController(IUnitOfWork unitOfWork, ILocalizationService localizationService) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ILocalizationService _localizationService;
-
-        public SiteController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
-        {
-            _unitOfWork = unitOfWork;
-            _localizationService = localizationService;
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(Site request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.Sites.Find(r => request.Name == r.Name).Any();
+            var exists = unitOfWork.Sites.Find(r => request.Name == r.Name).Any();
             if (!exists)
             {
-                await _unitOfWork.Sites.Add(request);
+                await unitOfWork.Sites.Add(request);
                 var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
                 return Created(location, request);
             }
             else
             {
-                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("SiteAlreadyExists", request.Name)));
+                return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("SiteAlreadyExists", request.Name)));
             }
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.Sites.GetAll();
-
+            var entities = await unitOfWork.Sites.GetAll();
             return Ok(entities.OrderBy(w => w.Name));
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.Sites.Get(id);
+            var entity = await unitOfWork.Sites.Get(id);
             if (entity is not null)
             {
                 return Ok(entity);
@@ -58,6 +49,7 @@ namespace Api.Controllers.Production
                 return NotFound();
             }
         }
+
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid Id, Site request)
         {
@@ -66,11 +58,11 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.Sites.Exists(request.Id);
+            var exists = await unitOfWork.Sites.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.Sites.Update(request);
+            await unitOfWork.Sites.Update(request);
             return Ok(request);
         }
 
@@ -80,11 +72,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.Sites.Find(e => e.Id == id).FirstOrDefault();
+            var entity = unitOfWork.Sites.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.Sites.Remove(entity);
+            await unitOfWork.Sites.Remove(entity);
             return Ok(entity);
         }
     }

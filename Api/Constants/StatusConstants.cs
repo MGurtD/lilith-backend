@@ -57,7 +57,6 @@ namespace Api.Constants
         // Site Names (Catalan - as stored in database)
         public static class Sites
         {
-            public const string LocalTorello = "Local Torelló";
             public const string Temges = "Temges";
         }
     }

@@ -3,6 +3,7 @@ using Application.Contracts;
 using Application.Contracts.Sales;
 using Application.Persistance;
 using Application.Services;
+using Application.Services.Production;
 using Application.Services.Sales;
 using Domain.Entities.Sales;
 
@@ -10,6 +11,7 @@ namespace Api.Services.Sales
 {
     public class SalesOrderService(
         IUnitOfWork unitOfWork,
+        IEnterpriseService enterpriseService,
         IExerciseService exerciseService,
         ILocalizationService localizationService) : ISalesOrderService
     {
@@ -235,7 +237,7 @@ namespace Api.Services.Sales
             if (customer.MainAddress() == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("CustomerNoAddresses"));
 
-            var site = unitOfWork.Sites.Find(s => s.Name == StatusConstants.Sites.LocalTorello).FirstOrDefault();
+            var site = await enterpriseService.GetDefaultSite();
             if (site == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("SiteNotFound"));
             if (!site.IsValidForSales())

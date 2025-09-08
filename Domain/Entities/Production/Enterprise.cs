@@ -4,7 +4,9 @@
     {
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public ICollection<Site> Sites { get; } = new List<Site>();
+        public Guid? DefaultSiteId { get; set; }
+        public Site? DefaultSite { get; set; }
+        public ICollection<Site> Sites { get; } = [];
 
     }
 }

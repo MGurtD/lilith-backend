@@ -4,6 +4,7 @@ using Application.Contracts;
 using Application.Contracts.Sales;
 using Application.Persistance;
 using Application.Services;
+using Application.Services.Production;
 using Application.Services.Sales;
 using Domain.Entities;
 using Domain.Entities.Production;
@@ -20,6 +21,7 @@ namespace Api.Services.Sales
 
     public class SalesInvoiceService(
         IUnitOfWork unitOfWork,
+        IEnterpriseService enterpriseService,
         IDueDateService dueDateService,
         IDeliveryNoteService deliveryNoteService,
         IExerciseService exerciseService,
@@ -267,7 +269,7 @@ namespace Api.Services.Sales
             if (customer.MainAddress() == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("CustomerNoAddresses"));
 
-            var site = unitOfWork.Sites.Find(s => s.Name == StatusConstants.Sites.LocalTorello).FirstOrDefault();
+            var site = await enterpriseService.GetDefaultSite();
             if (site == null)
                 return new GenericResponse(false, localizationService.GetLocalizedString("SiteNotFound"));
             if (!site.IsValidForSales())
@@ -455,7 +457,7 @@ namespace Api.Services.Sales
             await RemoveImports(invoice);
 
             // Obtenir sumatori d'imports agrupat per impost
-            var invoiceImports = unitOfWork.SalesInvoices.InvoiceDetails.Find(d => d.SalesInvoiceId == invoice.Id)
+            var invoiceImports = invoice.SalesInvoiceDetails
                 .GroupBy(d => d.TaxId)
                 .Select(d => new SalesInvoiceImport()
                 {
@@ -475,7 +477,7 @@ namespace Api.Services.Sales
             }
             await unitOfWork.SalesInvoices.InvoiceImports.AddRange(invoiceImports);
 
-            invoice.SalesInvoiceImports = new List<SalesInvoiceImport>(invoiceImports);
+            invoice.SalesInvoiceImports = [.. invoiceImports];
             invoice.CalculateAmountsFromImports();
             return await Update(invoice);
         }
