@@ -94,7 +94,7 @@ namespace Api.Services.Sales
             {
                 reportDto.DeliveryNotes.Add(new InvoiceReportDtoDeliveryNote()
                 {
-                    Header = "Sense albarà",
+                    Header = localizationService.GetLocalizedStringForCulture("DeliveryNoteWithoutAlbaran", customer.PreferredLanguage),
                     Date = invoice.InvoiceDate,
                     Number = "--",
                     Details = [.. invoice.SalesInvoiceDetails.Where(d => d.DeliveryNoteDetailId == null)],
