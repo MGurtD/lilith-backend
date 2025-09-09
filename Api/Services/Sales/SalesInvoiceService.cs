@@ -457,7 +457,7 @@ namespace Api.Services.Sales
             await RemoveImports(invoice);
 
             // Obtenir sumatori d'imports agrupat per impost
-            var invoiceImports = invoice.SalesInvoiceDetails
+            var invoiceImports = unitOfWork.SalesInvoices.InvoiceDetails.Find(d => d.SalesInvoiceId == invoice.Id)
                 .GroupBy(d => d.TaxId)
                 .Select(d => new SalesInvoiceImport()
                 {
