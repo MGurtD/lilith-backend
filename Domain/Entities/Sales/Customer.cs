@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Reflection.Metadata.Ecma335;
-
-namespace Domain.Entities.Sales
+﻿namespace Domain.Entities.Sales
 {
     public class Customer : Entity
     {
@@ -13,6 +10,7 @@ namespace Domain.Entities.Sales
         public string AccountNumber { get; set; } = string.Empty;
         public string Observations { get; set; } = string.Empty;
         public string InvoiceNotes { get; set; } = string.Empty;
+        public string PreferredLanguage { get; set; } = "ca";
 
         public bool IsValidForSales()
         {

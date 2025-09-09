@@ -45,7 +45,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
 
             builder
                 .HasIndex(b => b.Date)
-                .HasSortOrder(SortOrder.Descending)
+                .IsDescending()
                 .HasDatabaseName($"IX_{TABLE_NAME}_{nameof(Budget.Date)}");
 
             builder.ToTable(TABLE_NAME);

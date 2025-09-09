@@ -1,13 +1,16 @@
-﻿using Domain.Entities.Sales;
+﻿using Application.Persistance.Repositories;
+using Domain.Entities.Sales;
 
-namespace Application.Persistance.Repositories.Sales
+namespace Domain.Repositories.Sales
 {
     public interface ISalesInvoiceRepository : IRepository<SalesInvoice, Guid>
     {
-        Task<SalesInvoice?> GetHeader(Guid id);
         IRepository<SalesInvoiceDetail, Guid> InvoiceDetails { get; }
         IRepository<SalesInvoiceImport, Guid> InvoiceImports { get; }
-        IRepository<SalesInvoiceDueDate, Guid> InvoiceDueDates { get; }        
+        IRepository<SalesInvoiceDueDate, Guid> InvoiceDueDates { get; }
+        Task<SalesInvoice?> GetHeader(Guid id);
+        Task<IEnumerable<SalesInvoice>> GetIntegrationsBetweenDates(DateTime fromDate, DateTime toDate);
+        Task<IEnumerable<SalesInvoice>> GetPendingToIntegrate(DateTime? toDate, Guid? initialStatusId);
 
     }
 }

@@ -1,9 +1,7 @@
 ﻿using Application.Persistance.Repositories;
-using Microsoft.EntityFrameworkCore;
 using Application.Persistance.Repositories.Warehouse;
 using Domain.Entities.Warehouse;
-using Application.Contracts;
-using Application.Persistance;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistance.Repositories.Warehouse
 {
@@ -17,6 +15,22 @@ namespace Infrastructure.Persistance.Repositories.Warehouse
                         .Include(w => w.Locations)
                         .AsNoTracking()
                         .FirstOrDefaultAsync(e => e.Id == id);
+        }
+
+        public async Task<IEnumerable<Domain.Entities.Warehouse.Warehouse>> GetBySiteId(Guid siteId)
+        {
+            return await dbSet
+                        .Where(w => w.SiteId == siteId)
+                        .AsNoTracking()
+                        .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Domain.Entities.Warehouse.Warehouse>> GetAllWithLocations()
+        {
+            return await dbSet
+                        .Include(w => w.Locations)
+                        .AsNoTracking()
+                        .ToListAsync();
         }
 
         public async Task<Location?> GetDefaultLocation()

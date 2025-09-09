@@ -25,5 +25,8 @@ namespace Application.Services.Purchase
         Task<GenericResponse> AddImport(PurchaseInvoiceImport import);
         Task<GenericResponse> UpdateImport(PurchaseInvoiceImport import);
         Task<GenericResponse> RemoveImport(Guid id);
+
+        Task<GenericResponse> AddDueDates(IEnumerable<PurchaseInvoiceDueDate> dueDates);
+        Task<GenericResponse> RemoveDueDates(IEnumerable<Guid> ids);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Domain.Entities.Production;
+using Domain.Entities.Shared;
 
 namespace Domain.Entities.Sales
 {
@@ -14,8 +15,12 @@ namespace Domain.Entities.Sales
 
         public Exercise? Exercise { get; set; }
         public Guid? ExerciseId { get; set; }
+        public InvoiceSerie? InvoiceSerie { get; set; }
+        public Guid? InvoiceSerieId { get; set; }
         public Guid? StatusId { get; set; }
         public Status? Status { get; set; }
+        public Guid? IntegrationStatusId { get; set; }
+        public Status? IntegrationStatus { get; set; }
         public PaymentMethod? PaymentMethod { get; set; }
         public Guid PaymentMethodId { get; set; }
         public SalesInvoice? ParentSalesInvoice { get; set; }
@@ -32,27 +37,7 @@ namespace Domain.Entities.Sales
         public string CustomerCity { get; set; } = string.Empty;
         public string CustomerPostalCode { get; set; } = string.Empty;
         public string CustomerRegion { get; set; } = string.Empty;
-        public string CustomerCountry { get; set; } = string.Empty;
-
-        public void SetCustomer(Customer customer)
-        {
-            CustomerId = customer.Id;
-            PaymentMethodId = customer.PaymentMethodId!.Value;
-            CustomerAccountNumber = customer.AccountNumber;
-            CustomerComercialName = customer.ComercialName;
-            CustomerTaxName = customer.TaxName;
-            CustomerVatNumber = customer.VatNumber;
-            
-            if (customer.MainAddress() != null)
-            {
-                var mainAddress = customer.MainAddress()!;
-                CustomerRegion = mainAddress.Region;
-                CustomerCountry = mainAddress.Country;
-                CustomerCity = mainAddress.City;
-                CustomerPostalCode = mainAddress.PostalCode;
-                CustomerAddress = mainAddress.Address;
-            }
-        }        
+        public string CustomerCountry { get; set; } = string.Empty;              
 
         public Site? Site { get; set; }
         public Guid? SiteId { get; set;}
@@ -63,6 +48,31 @@ namespace Domain.Entities.Sales
         public string Region { get; set; } = string.Empty;
         public string Country { get; set; } = string.Empty;
         public string VatNumber { get; set; } = string.Empty;
+
+        public ICollection<SalesInvoiceDetail> SalesInvoiceDetails { get; set; } = [];
+        public ICollection<SalesInvoiceDueDate> SalesInvoiceDueDates { get; set; } = [];
+        public ICollection<SalesInvoiceImport> SalesInvoiceImports { get; set; } = [];
+        public ICollection<SalesInvoiceVerifactuRequest> VerifactuRequests { get; set; } = [];
+
+        public void SetCustomer(Customer customer)
+        {
+            CustomerId = customer.Id;
+            PaymentMethodId = customer.PaymentMethodId!.Value;
+            CustomerAccountNumber = customer.AccountNumber;
+            CustomerComercialName = customer.ComercialName;
+            CustomerTaxName = customer.TaxName;
+            CustomerVatNumber = customer.VatNumber;
+
+            if (customer.MainAddress() != null)
+            {
+                var mainAddress = customer.MainAddress()!;
+                CustomerRegion = mainAddress.Region;
+                CustomerCountry = mainAddress.Country;
+                CustomerCity = mainAddress.City;
+                CustomerPostalCode = mainAddress.PostalCode;
+                CustomerAddress = mainAddress.Address;
+            }
+        }
 
         public void SetSite(Site site)
         {
@@ -75,10 +85,6 @@ namespace Domain.Entities.Sales
             Country = site.Country;
             VatNumber = site.VatNumber;
         }
-
-        public ICollection<SalesInvoiceDetail> SalesInvoiceDetails { get; set; } = [];
-        public ICollection<SalesInvoiceDueDate> SalesInvoiceDueDates { get; set; } = [];
-        public ICollection<SalesInvoiceImport> SalesInvoiceImports { get; set; } = [];
 
         public void CalculateAmountsFromImports()
         {

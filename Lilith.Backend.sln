@@ -13,8 +13,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api", "Api\Api.csproj", "{2
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C2ED4A97-91AC-41A9-8034-9883CA755DD3}"
 	ProjectSection(SolutionItems) = preProject
+		.github\copilot_instructions.md = .github\copilot_instructions.md
 		Dockerfile = Dockerfile
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Verifactu", "Verifactu\Verifactu.csproj", "{CC379B9D-8C12-40CC-9ECB-040D0BBEAD69}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +41,10 @@ Global
 		{20ACED71-6F81-4384-869F-322FB764CDFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20ACED71-6F81-4384-869F-322FB764CDFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{20ACED71-6F81-4384-869F-322FB764CDFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC379B9D-8C12-40CC-9ECB-040D0BBEAD69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC379B9D-8C12-40CC-9ECB-040D0BBEAD69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC379B9D-8C12-40CC-9ECB-040D0BBEAD69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC379B9D-8C12-40CC-9ECB-040D0BBEAD69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,6 +1,7 @@
 using Application.Contracts;
 using Application.Persistance;
 using Application.Services.Warehouse;
+using Application.Services;
 using Domain.Entities.Shared;
 using Domain.Entities.Warehouse;
 
@@ -10,24 +11,39 @@ namespace Api.Services.Warehouse
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IStockService _stockService;
+        private readonly ILocalizationService _localizationService;
         private readonly Guid? _defaultLocationId;
 
-        public StockMovementService(IUnitOfWork unitOfWork, IStockService stockService)
+        public StockMovementService(IUnitOfWork unitOfWork, IStockService stockService, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
             _stockService = stockService;
+            _localizationService = localizationService;
 
             var warehouse = _unitOfWork.Warehouses.Find(w => w.Disabled == false).FirstOrDefault();
             if (warehouse != null) _defaultLocationId = warehouse.DefaultLocationId;
+        }        
+
+        public IEnumerable<StockMovement> GetBetweenDates(DateTime startDate, DateTime endDate, Guid? locationId)
+        {
+            var stockMovements = _unitOfWork.StockMovements.Find(p => p.MovementDate >= startDate && p.MovementDate <= endDate);
+            if (locationId.HasValue) 
+            {
+                stockMovements = stockMovements.Where(s => s.LocationId == locationId);    
+            }
+            return stockMovements;
         }
 
         public async Task<GenericResponse> Create(StockMovement request)
         {
-            if (_defaultLocationId == null) return new GenericResponse(false, "No hi ha una ubicació per defecte definida al projecte");
+            if (_defaultLocationId == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("StockDefaultLocationNotDefined"));
+            
             request.LocationId = _defaultLocationId;
-            // Comprovar si la refer?ncia es un servei. Si es un servei no es genera moviment ni error.
+            // Comprovar si la referència es un servei. Si es un servei no es genera moviment ni error.
             var reference = _unitOfWork.References.Find(p => p.Id == request.ReferenceId).FirstOrDefault();
-            if (reference == null) return new GenericResponse(false, $"Referència {request.ReferenceId} inexistent");
+            if (reference == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("ReferenceNotExistent", request.ReferenceId));
 
             if (reference.CategoryName == ReferenceCategories.Service) return new GenericResponse(true, request);
 
@@ -75,23 +91,21 @@ namespace Api.Services.Warehouse
             return new GenericResponse(true, request);
         }
 
-        public IEnumerable<StockMovement> GetBetweenDates(DateTime startDate, DateTime endDate)
-        {
-            var stockMovements = _unitOfWork.StockMovements.Find(p => p.MovementDate >= startDate && p.MovementDate <= endDate);
-            return stockMovements;
-        }
-
         public async Task<GenericResponse> Remove(Guid id)
         {
-            if (_defaultLocationId == null) return new GenericResponse(false, "No hi ha una ubicació per defecte definida al projecte");
+            if (_defaultLocationId == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("StockDefaultLocationNotDefined"));
 
             var stockMovement = await _unitOfWork.StockMovements.Get(id);
-            if (stockMovement == null) return new GenericResponse(false, new List<string>() { $"Id {id} inexistent" });
+            if (stockMovement == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("Common.IdNotExist", id));
+            
             var stock = _stockService.GetByDimensions(_defaultLocationId.Value, stockMovement.ReferenceId,
                                                       stockMovement.Width, stockMovement.Length, stockMovement.Height,
                                                       stockMovement.Diameter, stockMovement.Thickness);
 
-            if (stock == null) return new GenericResponse(false, $"No s'ha trobat stock amb les dimensions proporcionades");
+            if (stock == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("StockNotFound"));
 
             stock.Quantity += -1 * stockMovement.Quantity;
             await _stockService.Update(stock);

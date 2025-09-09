@@ -7,21 +7,14 @@ namespace Api.Controllers.Warehouse
     [ApiController]
     [Route("api/[controller]")]
 
-    public class StockMovementController : ControllerBase
+    public class StockMovementController(IStockMovementService service) : ControllerBase
     {
-        private readonly IStockMovementService _service;
-
-        public StockMovementController(IStockMovementService service)
-        {
-            _service = service;
-        }
-
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create(StockMovement request)
         {
-            var response = await _service.Create(request);
+            var response = await service.Create(request);
 
             if (response.Result)
                 return Ok(response);
@@ -30,9 +23,9 @@ namespace Api.Controllers.Warehouse
         }
 
         [HttpGet]
-        public IActionResult GetMovement(DateTime startTime, DateTime endTime)
+        public IActionResult GetMovement(DateTime startTime, DateTime endTime, Guid? locationId)
         {
-            var stockMovements =  _service.GetBetweenDates(startTime, endTime);
+            var stockMovements =  service.GetBetweenDates(startTime, endTime, locationId);
 
             if (stockMovements != null) return Ok(stockMovements);
             else return BadRequest();

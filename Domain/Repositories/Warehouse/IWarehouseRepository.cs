@@ -6,6 +6,10 @@ namespace Application.Persistance.Repositories.Warehouse
     {
         IRepository<Location, Guid> Locations { get; }
 
+        Task<IEnumerable<Domain.Entities.Warehouse.Warehouse>> GetBySiteId(Guid siteId);
+
+        Task<IEnumerable<Domain.Entities.Warehouse.Warehouse>> GetAllWithLocations();
+
         Task<Location?> GetDefaultLocation();
     }
 }

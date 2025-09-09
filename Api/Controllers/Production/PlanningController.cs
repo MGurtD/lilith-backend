@@ -17,12 +17,14 @@ public class PlanningController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IFileService _fileService;
+    private readonly ILocalizationService _localizationService;
     private const string WorkOrderLifecycle = "WorkOrder";
 
-    public PlanningController(IUnitOfWork unitOfWork, IFileService fileService)
+    public PlanningController(IUnitOfWork unitOfWork, IFileService fileService, ILocalizationService localizationService)
     {
         _unitOfWork = unitOfWork;
         _fileService = fileService;
+        _localizationService = localizationService;
     }
 
     [HttpGet("Workcenter/{id:guid}")]
@@ -63,13 +65,13 @@ public class PlanningController : ControllerBase
         // Obtenir fase de treball
         var workOrderPhase = await _unitOfWork.WorkOrders.Phases.Get(id);
         if (workOrderPhase == null)
-            return NotFound(new GenericResponse(false, $"Fase de ordre de fabricació amb ID {id}"));
+            return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("WorkOrderPhaseWithId", id)));
 
         // Obtenir ordre de treball
         var workOrder = await _unitOfWork.WorkOrders.Get(workOrderPhase.WorkOrderId);
         workOrderPhase.WorkOrder = workOrder;
         if (workOrder == null)
-            return NotFound(new GenericResponse(false, $"Ordre de fabricación amb ID {workOrderPhase.WorkOrderId}"));
+            return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("WorkOrderWithId", workOrderPhase.WorkOrderId)));
 
         var referencePdfs = _fileService.GetEntityFiles("referenceMaps", workOrder.ReferenceId).Where(f => f.Path.EndsWith("pdf"));
 

@@ -1,4 +1,6 @@
-﻿using Application.Persistance;
+﻿using Application.Contracts;
+using Application.Persistance;
+using Application.Services;
 using Domain.Entities.Shared;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,10 +11,12 @@ namespace Api.Controllers.Shared
     public class ReferenceTypeController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILocalizationService _localizationService;
 
-        public ReferenceTypeController(IUnitOfWork unitOfWork)
+        public ReferenceTypeController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
+            _localizationService = localizationService;
         }
 
         [HttpPost]
@@ -29,7 +33,7 @@ namespace Api.Controllers.Shared
             }
             else
             {
-                return Conflict($"ReferenceType {request.Name} existent");
+                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("ReferenceTypeAlreadyExists", request.Name)));
             }
         }
         [HttpGet]

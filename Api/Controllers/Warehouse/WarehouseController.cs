@@ -1,9 +1,8 @@
-﻿using Application.Persistance;
+﻿using Application.Contracts;
+using Application.Persistance;
+using Application.Services;
 using Domain.Entities.Warehouse;
-using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Query.Internal;
-using Application.Contracts;
 
 namespace Api.Controllers.Warehouse
 {
@@ -12,10 +11,43 @@ namespace Api.Controllers.Warehouse
     public class WarehouseController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILocalizationService _localizationService;
 
-        public WarehouseController(IUnitOfWork unitOfWork)
+        public WarehouseController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
+            _localizationService = localizationService;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var entities = await _unitOfWork.Warehouses.GetAll();
+
+            return Ok(entities);
+        }
+
+        [HttpGet("Site/{id:guid}")]
+        public async Task<IActionResult> GetBySiteId(Guid id)
+        {
+            var entities = await _unitOfWork.Warehouses.GetBySiteId(id);
+            return Ok(entities);
+        }
+
+        [HttpGet("WithLocations")]
+        public async Task<IActionResult> GetAllWithLocations()
+        {
+            var entities = await _unitOfWork.Warehouses.GetAllWithLocations();
+            return Ok(entities);
+        }
+
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var entity = await _unitOfWork.Warehouses.Get(id);
+            if (entity is null) return NotFound();
+
+            return Ok(entity);
         }
 
         [HttpPost]
@@ -32,24 +64,8 @@ namespace Api.Controllers.Warehouse
             }
             else
             {
-                return Conflict($"Magatzem {request.Name} existent");
+                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("WarehouseAlreadyExists", request.Name)));
             }
-        }
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var entities = await _unitOfWork.Warehouses.GetAll();
-
-            return Ok(entities);
-        }
-
-        [HttpGet("{id:guid}")]
-        public async Task<IActionResult> GetById(Guid id)
-        {
-            var entity = await _unitOfWork.Warehouses.Get(id);
-            if (entity is null) return NotFound();
-         
-            return Ok(entity);
         }
 
         [HttpPut("{id:guid}")]
@@ -95,7 +111,7 @@ namespace Api.Controllers.Warehouse
             }
             else
             {
-                return Conflict(new GenericResponse(false, $"Ubicació {request.Name} existent"));
+                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("LocationAlreadyExists", request.Name)));
             }
         }
 
@@ -113,7 +129,7 @@ namespace Api.Controllers.Warehouse
             }
             else
             {
-                return NotFound(new GenericResponse(false, $"Ubicació amb ID {request.Id} no existeix"));
+                return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("LocationNotFound", request.Id)));
             }
         }
 
@@ -130,7 +146,7 @@ namespace Api.Controllers.Warehouse
             }
             else
             {
-                return NotFound(new GenericResponse(false, $"Ubicació amb ID {id} no existeix"));
+                return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("LocationNotFound", id)));
             }
         }
     }

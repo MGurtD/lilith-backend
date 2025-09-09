@@ -1,4 +1,6 @@
-﻿using Application.Persistance;
+﻿using Application.Contracts;
+using Application.Persistance;
+using Application.Services;
 using Domain.Entities.Production;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,10 +11,12 @@ namespace Api.Controllers.Production
     public class MachineStatusController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILocalizationService _localizationService;
 
-        public MachineStatusController(IUnitOfWork unitOfWork)
+        public MachineStatusController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
+            _localizationService = localizationService;
         }
 
         [HttpPost]
@@ -29,7 +33,7 @@ namespace Api.Controllers.Production
             }
             else
             {
-                return Conflict($"Enterprise {request.Name} existent");
+                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("MachineStatusAlreadyExists", request.Name)));
             }
         }
         [HttpGet]

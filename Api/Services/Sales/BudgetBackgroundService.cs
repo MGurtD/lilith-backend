@@ -1,19 +1,12 @@
 ﻿using Application.Services.Sales;
 
-public class BudgetBackgroundService : BackgroundService
+public class BudgetBackgroundService(IServiceScopeFactory scopeFactory) : BackgroundService
 {
-    private readonly IServiceScopeFactory _scopeFactory;
-
-    public BudgetBackgroundService(IServiceScopeFactory scopeFactory)
-    {
-        _scopeFactory = scopeFactory;
-    }
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            using (var scope = _scopeFactory.CreateScope())
+            using (var scope = scopeFactory.CreateScope())
             {
                 var budgetService = scope.ServiceProvider.GetRequiredService<IBudgetService>();
 

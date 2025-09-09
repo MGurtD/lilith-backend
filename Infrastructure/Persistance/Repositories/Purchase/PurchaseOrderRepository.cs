@@ -27,7 +27,7 @@ namespace Infrastructure.Persistance.Repositories.Purchase
             
         }
 
-        public async Task<PurchaseOrder> GetHeaders(Guid purchaseOrderId)
+        public async Task<PurchaseOrder?> GetHeaders(Guid purchaseOrderId)
         {
             return await dbSet.Include(d => d.Details).AsNoTracking().FirstOrDefaultAsync(e => e.Id == purchaseOrderId);
         }
@@ -59,8 +59,7 @@ namespace Infrastructure.Persistance.Repositories.Purchase
                     .Include(d => d.Details.Where(d => d.Quantity > d.ReceivedQuantity))
                         .ThenInclude(d => d.Reference)
                     .Include(d => d.Details)
-                        .ThenInclude(d => d.WorkOrderPhase)
-                        .ThenInclude(d => d.WorkOrder)
+                        .ThenInclude(d => d.WorkOrderPhase!.WorkOrder)
                 .Where(e => 
                     e.SupplierId == supplierId && 
                     e.Details.Any(d => !discartedStatuses.Contains(d.StatusId)))
