@@ -68,11 +68,17 @@ namespace Api.Services.Sales
             foreach (var deliveryNote in deliveryNotes)
             {
                 var orders = salesOrderService.GetByDeliveryNoteId(deliveryNote.Id);
-                var customerOrderNumbers = String.Join(",", orders.Select(orders => orders.CustomerNumber).ToArray());
+                var customerOrderNumbers = String.Join(",", [.. orders.Select(orders => orders.CustomerNumber)]);
+                var deliveryDate = (deliveryNote.DeliveryDate ?? DateTime.Now).ToString("dd/MM/yyyy");
 
                 reportDto.DeliveryNotes.Add(new InvoiceReportDtoDeliveryNote()
                 {
-                    Header = $"Albarà: {deliveryNote.Number} - Entrega: {deliveryNote.DeliveryDate:dd/MM/yyy} - Comanda client: {customerOrderNumbers}",
+                    Header = localizationService.GetLocalizedStringForCulture(
+                        "Report.SalesInvoice.DeliveryNoteHeader",
+                        customer.PreferredLanguage,
+                        deliveryNote.Number,
+                        deliveryDate,
+                        customerOrderNumbers),
                     Number = deliveryNote.Number,
                     Date = deliveryNote.CreatedOn,
                     Details = [.. deliveryNote.Details.Select(detail => new SalesInvoiceDetail()
