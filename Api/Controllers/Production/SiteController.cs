@@ -2,7 +2,6 @@
 using Application.Persistance;
 using Application.Services;
 using Domain.Entities.Production;
-using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Production

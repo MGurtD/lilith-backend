@@ -42,6 +42,9 @@ namespace Infrastructure.Persistance.EntityConfiguration.Production
                 .Property(b => b.Preferred)
                 .HasColumnType("boolean");
             builder
+                .Property(b => b.Default)
+                .HasColumnType("boolean");  
+            builder
                 .Property(b => b.Icon)
                 .HasColumnType("varchar")
                 .HasMaxLength(50);

@@ -1,11 +1,9 @@
 ﻿using Application.Contracts;
 using Application.Contracts.Production;
-using Application.Contracts.Purchase;
 using Application.Persistance;
 using Application.Production.Warehouse;
 using Application.Services;
 using Domain.Entities.Production;
-using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Api.Constants;
@@ -66,7 +64,7 @@ namespace Api.Controllers.Production
 
             if (customerId.HasValue)
                 workOrders = workOrders.Where(e => e.Reference!.CustomerId == customerId.Value);
-           
+
             return Ok(workOrders.OrderBy(e => e.Code));
         }
 
@@ -133,7 +131,7 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var response = await _workOrderService.Delete(id);            
+            var response = await _workOrderService.Delete(id);
             if (response.Result)
                 return Ok();
             else
@@ -386,7 +384,7 @@ namespace Api.Controllers.Production
         #endregion
 
         #region DetailedWorkOrder
-        [HttpGet("Detailed/ByWorkcenter/{id:guid}")]        
+        [HttpGet("Detailed/ByWorkcenter/{id:guid}")]
         public IActionResult GetDetailedWorkOrderByWorkcenterId(Guid id)
         {
             IEnumerable<DetailedWorkOrder> entities = Enumerable.Empty<DetailedWorkOrder>();

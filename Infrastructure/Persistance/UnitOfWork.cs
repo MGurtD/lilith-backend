@@ -74,7 +74,7 @@ namespace Infrastructure.Persistance
         public IRepository<Area, Guid> Areas { get; private set; } = new Repository<Area, Guid>(context);
         public IRepository<WorkcenterType, Guid> WorkcenterTypes { get; private set; } = new Repository<WorkcenterType, Guid>(context);
         public IWorkcenterRepository Workcenters { get; private set; } = new WorkcenterRepository(context);
-        public IRepository<WorkCenterCost, Guid> WorkcenterCosts { get; private set; } = new Repository<WorkCenterCost, Guid>(context);
+        public IRepository<WorkcenterCost, Guid> WorkcenterCosts { get; private set; } = new Repository<WorkcenterCost, Guid>(context);
         public IRepository<Operator, Guid> Operators { get; private set; } = new Repository<Operator, Guid>(context);
         public IRepository<OperatorType, Guid> OperatorTypes { get; private set; } = new Repository<OperatorType, Guid>(context);
         public IRepository<MachineStatus, Guid> MachineStatuses { get; private set; } = new Repository<MachineStatus, Guid>(context);
@@ -83,6 +83,7 @@ namespace Infrastructure.Persistance
         public IWorkMasterRepository WorkMasters { get; private set; } = new WorkMasterRepository(context);
         public IWorkOrderRepository WorkOrders { get; private set; } = new WorkOrderRepository(context);
         public IProductionPartRepository ProductionParts { get; private set; } = new ProductionPartRepository(context);
+        public IWorkcenterShiftRepository WorkcenterShifts { get; private set; } = new WorkcenterShiftRepository(context);
         public IContractReader<DetailedWorkOrder> DetailedWorkOrders { get; private set; } = new ContractReader<DetailedWorkOrder>(context);
         public IContractReader<ProductionCost> ProductionCosts { get; private set; } = new ContractReader<ProductionCost>(context);
 

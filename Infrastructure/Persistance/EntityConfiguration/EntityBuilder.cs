@@ -14,6 +14,11 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .ValueGeneratedNever()
                 .HasColumnType("uuid");
             builder
+                .Property(b => b.Disabled)
+                .IsRequired()
+                .HasColumnType("bool")
+                .HasDefaultValue(false);
+            builder
                 .Property(e => e.CreatedOn)
                 .HasColumnType("timestamp without time zone")
                 .ValueGeneratedOnAdd()
@@ -23,11 +28,6 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasColumnType("timestamp without time zone")
                 .ValueGeneratedOnAddOrUpdate()
                 .HasDefaultValueSql("NOW()");
-            builder
-                .Property(b => b.Disabled)
-                .IsRequired()
-                .HasColumnType("bool")
-                .HasDefaultValue(false);
         }
     }
 }

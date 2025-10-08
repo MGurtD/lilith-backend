@@ -42,6 +42,7 @@ public static class ApplicationServicesSetup
         services.AddScoped<IEnterpriseService, EnterpriseService>();
         services.AddScoped<IWorkOrderService, WorkOrderService>();
         services.AddScoped<IMetricsService, MetricsService>();
+        services.AddScoped<IWorkcenterShiftService, WorkcenterShiftService>();
         services.AddScoped<IStockService, StockService>();
         services.AddScoped<IStockMovementService, StockMovementService>();
         services.AddScoped<IVerifactuIntegrationService, VerifactuIntegrationService>();

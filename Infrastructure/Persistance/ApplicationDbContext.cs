@@ -11,18 +11,17 @@ namespace Infrastructure.Persistance
         public const int DECIMAL_PRECISION = 18;
         public const int DECIMAL_SCALE = 4;
         public const int PRICE_DECIMAL_SCALE = 2;
+        public const string TIMESTAMP_WITHOUT_TIMEZONE = "timestamp without time zone";
     }
     public static class ApplicationDbContextSchemas
     {
-        public const string CONFIG = "Config";
-        public const string ACCOUNTABILITY = "Accounting";
+        public const string PUBLIC = "public";
+        public const string DATA = "data";
     }
 
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
-        public DbSet<HttpTransactionLog> HttpTransactionLogs { get; set; }
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) 
-        {}
+        public DbSet<HttpTransactionLog>? HttpTransactionLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
