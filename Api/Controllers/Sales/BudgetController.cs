@@ -29,7 +29,7 @@ namespace Api.Controllers.Sales
         }
 
         [HttpGet]
-        public IActionResult GetByPeriodAndCustomer(DateTime startTime, DateTime endTime, Guid? customerId)
+        public IActionResult GetByPeriodAndCustomer([FromQuery] DateTime startTime, [FromQuery] DateTime endTime, [FromQuery] Guid? customerId)
         {
             IEnumerable<Budget> salesOrderHeaders = new List<Budget>();
             if (customerId.HasValue)

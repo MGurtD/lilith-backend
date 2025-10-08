@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250910071225_AddUserNotesToBudgetAndBudgetDetails")]
+    partial class AddUserNotesToBudgetAndBudgetDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -4034,11 +4037,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasDefaultValueSql("NOW()");
 
-                    b.Property<string>("UserNotes")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("varchar");
-
                     b.Property<decimal>("WorkMasterCost")
                         .HasPrecision(18, 4)
                         .HasColumnType("decimal");
@@ -4172,11 +4170,6 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp without time zone")
                         .HasDefaultValueSql("NOW()");
-
-                    b.Property<string>("UserNotes")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("varchar");
 
                     b.Property<string>("VatNumber")
                         .IsRequired()
