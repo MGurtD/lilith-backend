@@ -1,5 +1,6 @@
 ﻿using Application.Contracts;
 using Application.Persistance;
+using Application.Services;
 using Application.Services.Production;
 using Domain.Entities.Production;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +14,13 @@ namespace Api.Controllers.Production
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMetricsService _costsService;
+        private readonly ILocalizationService _localizationService;
 
-        public WorkMasterController(IUnitOfWork unitOfWork, IMetricsService costsService)
+        public WorkMasterController(IUnitOfWork unitOfWork, IMetricsService costsService, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
             _costsService = costsService;
+            _localizationService = localizationService;
         }
 
         [HttpPost]
@@ -27,10 +30,10 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
             var existsReference = await _unitOfWork.References.Exists(request.ReferenceId);
-            if (!existsReference) return NotFound(new GenericResponse(false, $"Referencia inexistent"));
+            if (!existsReference) return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("ReferenceNotFound")));
 
             var exists = _unitOfWork.WorkMasters.Find(w => w.Id == request.Id).Any();
-            if (exists) return Conflict(new GenericResponse(false, $"Ruta de fabricació existent"));
+            if (exists) return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterAlreadyExists")));
 
             // Creació
             await _unitOfWork.WorkMasters.Add(request);
@@ -111,7 +114,7 @@ namespace Api.Controllers.Production
             if (request.ReferenceId.HasValue && request.ReferenceId != Guid.Empty)
             {
                 var exists = _unitOfWork.WorkMasters.Find(w => w.ReferenceId == request.ReferenceId && w.Mode == request.Mode).Any();
-                if (exists) return Conflict(new GenericResponse(false, $"Referencia amb ruta de fabricació del mode seleccionat. Seleccioni un altre mode"));
+                if (exists) return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("ReferenceAlreadyExists")));
             }
             
 
@@ -171,7 +174,7 @@ namespace Api.Controllers.Production
         public async Task<IActionResult> GetWorkMasterPhaseById(Guid id)
         {
             var workmasterPhase = await _unitOfWork.WorkMasters.Phases.Get(id);
-            if (workmasterPhase == null) return NotFound(new GenericResponse(false, $"Fase de la ruta de fabricació inexistent"));
+            if (workmasterPhase == null) return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterPhaseNotFound")));
 
             return Ok(workmasterPhase);
         }
@@ -186,10 +189,10 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
             var exists = _unitOfWork.WorkMasters.Phases.Find(w => w.Id == request.Id).Any();
-            if (exists) return Conflict(new GenericResponse(false, $"Fase de la ruta de fabricació existent"));
+            if (exists) return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterPhaseAlreadyExists")));
 
             var workmaster = await _unitOfWork.WorkMasters.Get(request.WorkMasterId);
-            if (workmaster is null) return NotFound(new GenericResponse(false, $"Ruta de fabricació inexistent"));
+            if (workmaster is null) return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterNotFound")));
 
             // Creació
             await _unitOfWork.WorkMasters.Phases.Add(request);
@@ -241,7 +244,7 @@ namespace Api.Controllers.Production
         public async Task<IActionResult> GetWorkMasterPhaseDetailById(Guid id)
         {
             var entities = await _unitOfWork.WorkMasters.Phases.Details.Get(id);
-            if (entities == null) return NotFound(new GenericResponse(false, $"Fase de la ruta de fabricació inexistent"));
+            if (entities == null) return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterPhaseDetailNotFound")));
 
             return Ok(entities);
         }
@@ -256,7 +259,7 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
             var exists = _unitOfWork.WorkMasters.Phases.Details.Find(w => w.Id == request.Id).Any();
-            if (exists) return Conflict(new GenericResponse(false, $"Pas de la fase de la ruta de fabricació existent"));
+            if (exists) return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterPhaseDetailAlreadyExists")));
 
             // Creació
             await _unitOfWork.WorkMasters.Phases.Details.Add(request);
@@ -308,7 +311,7 @@ namespace Api.Controllers.Production
         public async Task<IActionResult> GetWorkMasterPhaseBillOfMaterialsItemById(Guid id)
         {
             var entities = await _unitOfWork.WorkMasters.Phases.BillOfMaterials.Get(id);
-            if (entities == null) return NotFound(new GenericResponse(false, $"Fase de la ruta de fabricació inexistent"));
+            if (entities == null) return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterPhaseDetailNotFound")));
 
             return Ok(entities);
         }
@@ -323,7 +326,7 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
             var exists = _unitOfWork.WorkMasters.Phases.BillOfMaterials.Find(w => w.Id == request.Id).Any();
-            if (exists) return Conflict(new GenericResponse(false, $"Pas de la fase de la ruta de fabricació existent"));
+            if (exists) return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterPhaseDetailAlreadyExists")));
 
             // Creació
             await _unitOfWork.WorkMasters.Phases.BillOfMaterials.Add(request);

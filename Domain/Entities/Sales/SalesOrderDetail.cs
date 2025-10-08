@@ -35,6 +35,8 @@ namespace Domain.Entities.Sales
         // deprecated
         public decimal WorkMasterCost { get; set; }
 
+        public string UserNotes { get; set; }
+
         public SalesOrderDetail() 
         {
             Description = string.Empty;
@@ -57,6 +59,7 @@ namespace Domain.Entities.Sales
             EstimatedDeliveryDate = DateTime.Now;
             Disabled = false;
             IsDelivered = false;
+            UserNotes = string.Empty;
         }
 
         public SalesOrderDetail(BudgetDetail budgetDetail, DateTime estimatedDeliveryDate)

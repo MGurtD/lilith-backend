@@ -1,4 +1,6 @@
-﻿namespace Domain.Entities.Purchase
+﻿using Domain.Entities.Shared;
+
+namespace Domain.Entities.Purchase
 {
     public class PurchaseInvoice : Entity
     {
@@ -22,7 +24,7 @@
         public Exercise? Exercice { get; set; }
         public Guid? ExerciceId { get; set; }
 
-        public PurchaseInvoiceSerie? PurchaseInvoiceSerie { get; set; }
+        public InvoiceSerie? PurchaseInvoiceSerie { get; set; }
         public Guid? PurchaseInvoiceSerieId { get; set; }
 
         public PaymentMethod? PaymentMethod { get; set; }

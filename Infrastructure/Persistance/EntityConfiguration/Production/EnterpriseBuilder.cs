@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using System.Xml;
 using Domain.Entities.Production;
 
 namespace Infrastructure.Persistance.EntityConfiguration.Production
@@ -21,6 +20,17 @@ namespace Infrastructure.Persistance.EntityConfiguration.Production
                 .IsRequired()
                 .HasColumnType("varchar")
                 .HasMaxLength(250);
+
+            // Default site (optional)
+            builder
+                .Property(b => b.DefaultSiteId)
+                .IsRequired(false);
+
+            builder
+                .HasOne(b => b.DefaultSite)
+                .WithMany()
+                .HasForeignKey(b => b.DefaultSiteId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder
                 .HasKey(b => b.Id)

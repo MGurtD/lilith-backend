@@ -1,4 +1,6 @@
-﻿using Application.Persistance;
+﻿using Application.Contracts;
+using Application.Persistance;
+using Application.Services;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +12,12 @@ namespace Api.Controllers.Production
     public class WorkcenterController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILocalizationService _localizationService;
 
-        public WorkcenterController(IUnitOfWork unitOfWork)
+        public WorkcenterController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
+            _localizationService = localizationService;
         }
 
         [HttpPost]
@@ -30,7 +34,7 @@ namespace Api.Controllers.Production
             }
             else
             {
-                return Conflict($"Workcenter {request.Name} existent");
+                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("WorkcenterAlreadyExists", request.Name)));
             }
         }
         [HttpGet]

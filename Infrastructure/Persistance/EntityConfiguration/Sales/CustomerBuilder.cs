@@ -64,6 +64,13 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .HasDefaultValue(false);
 
             builder
+                .Property(b => b.PreferredLanguage)
+                .IsRequired()
+                .HasColumnType("varchar")
+                .HasMaxLength(10)
+                .HasDefaultValue("ca");
+
+            builder
                 .HasKey(b => b.Id)
                 .HasName("PK_Customer");
 

@@ -1,4 +1,6 @@
-﻿using Application.Persistance;
+﻿using Application.Contracts;
+using Application.Persistance;
+using Application.Services;
 using Domain.Entities.Production;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,11 +11,14 @@ namespace Api.Controllers.Production
     public class ShiftController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILocalizationService _localizationService;
 
-        public ShiftController(IUnitOfWork unitOfWork)
+        public ShiftController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
         {
             _unitOfWork = unitOfWork;
+            _localizationService = localizationService;
         }
+
         [HttpPost]
         public async Task<IActionResult> Create(Shift request)
         {
@@ -28,7 +33,7 @@ namespace Api.Controllers.Production
             }
             else
             {
-                return Conflict($"Torn: {request.Name} existent");
+                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("ShiftAlreadyExists", request.Name)));
             }
         }
         [HttpGet]

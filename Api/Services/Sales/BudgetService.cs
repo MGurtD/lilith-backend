@@ -4,43 +4,38 @@ using Application.Persistance;
 using Application.Services;
 using Application.Services.Sales;
 using Domain.Entities.Sales;
+using Api.Constants;
 
 namespace Api.Services.Sales
 {
-    public class BudgetService : IBudgetService
+    public class BudgetService(
+        IUnitOfWork unitOfWork,
+        IExerciseService exerciseService,
+        ILocalizationService localizationService) : IBudgetService
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IExerciseService _exerciseService;
-        private readonly ILogger<BudgetService> _logger;
-
-        public BudgetService(IUnitOfWork unitOfWork, IExerciseService exerciseService, ILogger<BudgetService> logger)
-        {
-            _unitOfWork = unitOfWork;
-            _exerciseService = exerciseService;
-            _logger = logger;
-        }        
-        
         public async Task<Budget?> GetById(Guid id)
         {
-            var budget = await _unitOfWork.Budgets.Get(id);
+            var budget = await unitOfWork.Budgets.Get(id);
             return budget;
         }
 
         public IEnumerable<Budget> GetBetweenDates(DateTime startDate, DateTime endDate)
         {
-            var budgets = _unitOfWork.Budgets.Find(p => p.Date >= startDate && p.Date <= endDate);
+            var budgets = unitOfWork.Budgets.Find(p => p.Date >= startDate && p.Date <= endDate);
             return budgets;
         }
         public IEnumerable<Budget> GetBetweenDatesAndCustomer(DateTime startDate, DateTime endDate, Guid customerId)
         {
-            var budgets = _unitOfWork.Budgets.Find(p => p.Date >= startDate && p.Date <= endDate && p.CustomerId == customerId);
+            var budgets = unitOfWork.Budgets.Find(p => p.Date >= startDate && p.Date <= endDate && p.CustomerId == customerId);
             return budgets;
         }
 
         public async Task<GenericResponse> Create(CreateHeaderRequest createRequest)
         {
-            var counterObj = await _exerciseService.GetNextCounter(createRequest.ExerciseId, "budget");
-            if (!counterObj.Result || counterObj.Content == null) return new GenericResponse(false, new List<string>() { "Error al crear el comptador" });
+            var counterObj = await exerciseService.GetNextCounter(createRequest.ExerciseId, "budget");
+            if (!counterObj.Result || counterObj.Content == null) 
+                return new GenericResponse(false, localizationService.GetLocalizedString("ExerciseCounterError"));
+
             var budget = new Budget
             {
                 Id = createRequest.Id,
@@ -57,15 +52,15 @@ namespace Api.Services.Sales
             }
             else
             {
-                var lifecycle = _unitOfWork.Lifecycles.Find(l => l.Name == "Budget").FirstOrDefault();
+                var lifecycle = unitOfWork.Lifecycles.Find(l => l.Name == StatusConstants.Lifecycles.Budget).FirstOrDefault();
                 if (lifecycle == null)
-                    return new GenericResponse(false, new List<string>() { "El cicle de vida 'Budget' no existeix" });
+                    return new GenericResponse(false, localizationService.GetLocalizedString("LifecycleNotFound", StatusConstants.Lifecycles.Budget));
                 if (!lifecycle.InitialStatusId.HasValue)
-                    return new GenericResponse(false, new List<string>() { "El cicle de vida 'Budget' no té estat inicial" });
+                    return new GenericResponse(false, localizationService.GetLocalizedString("LifecycleNoInitialStatus", StatusConstants.Lifecycles.Budget));
                 budget.StatusId = lifecycle.InitialStatusId;
             }
 
-            await _unitOfWork.Budgets.Add(budget);
+            await unitOfWork.Budgets.Add(budget);
             return new GenericResponse(true, budget);
         }
 
@@ -73,18 +68,18 @@ namespace Api.Services.Sales
         {
             budget.Details.Clear();
 
-            var existingBudget = await _unitOfWork.Budgets.Get(budget.Id);
+            var existingBudget = await unitOfWork.Budgets.Get(budget.Id);
             if (existingBudget == null)
             {
-                return new GenericResponse(false, $"La comanda amb ID {budget.Id} no existeix");
+                return new GenericResponse(false, localizationService.GetLocalizedString("BudgetNotFound", budget.Id));
             }
 
-            var statusPending = await _unitOfWork.Lifecycles.GetStatusByName("Budget", "Pendent d'acceptar");
-            var statusAccept = await _unitOfWork.Lifecycles.GetStatusByName("Budget", "Acceptat");
+            var statusPending = await unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.Budget, StatusConstants.Statuses.PendentAcceptar);
+            var statusAccept = await unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.Budget, StatusConstants.Statuses.Acceptat);
 
             if (statusPending == null || statusAccept == null)
             {
-                return new GenericResponse(false, "No s'han trobat els estats 'Pendent d'acceptar' i 'Acceptat' al cicle de vida 'Budget'");
+                return new GenericResponse(false, localizationService.GetLocalizedString("StatusNotFound", "Pendent d'acceptar/Acceptat"));
             }
 
             if (existingBudget.StatusId == statusPending.Id && budget.StatusId == statusAccept.Id)
@@ -92,81 +87,60 @@ namespace Api.Services.Sales
                 budget.AcceptanceDate = DateTime.Now;                
             }
 
-            await _unitOfWork.Budgets.Update(budget);
+            await unitOfWork.Budgets.Update(budget);
             return new GenericResponse(true);
         }
 
         public async Task<GenericResponse> Remove(Guid id)
         {
-            var budget = _unitOfWork.Budgets.Find(p => p.Id == id).FirstOrDefault();
+            var budget = unitOfWork.Budgets.Find(p => p.Id == id).FirstOrDefault();
             if (budget == null)
             {
-                return new GenericResponse(false, $"La comanda amb ID {id} no existeix");
+                return new GenericResponse(false, localizationService.GetLocalizedString("BudgetNotFound", id));
             }
             else
             {
-                await _unitOfWork.Budgets.Remove(budget);
+                await unitOfWork.Budgets.Remove(budget);
                 return new GenericResponse(true, new List<string> { });
             }
         }
         
         public async Task<GenericResponse> AddDetail(BudgetDetail detail)
         {
-            await _unitOfWork.Budgets.Details.Add(detail);
+            await unitOfWork.Budgets.Details.Add(detail);
             return new GenericResponse(true, detail);
         }
         public async Task<GenericResponse> UpdateDetail(BudgetDetail detail)
         {
-            await _unitOfWork.Budgets.Details.Update(detail);
+            await unitOfWork.Budgets.Details.Update(detail);
             return new GenericResponse(true, detail);
         }
         public async Task<GenericResponse> RemoveDetail(Guid id)
         {
-            var detail = _unitOfWork.Budgets.Details.Find(d => d.Id == id).FirstOrDefault();
-            if (detail == null) return new GenericResponse(false, new List<string> { $"El detall de comanda amb ID {id} no existeix" });
-            await _unitOfWork.Budgets.Details.Remove(detail);
+            var detail = unitOfWork.Budgets.Details.Find(d => d.Id == id).FirstOrDefault();
+            if (detail == null) 
+                return new GenericResponse(false, localizationService.GetLocalizedString("BudgetDetailNotFound", id));
+            await unitOfWork.Budgets.Details.Remove(detail);
 
             return new GenericResponse(true, detail);
         }
 
-        public async Task<BudgetReportResponse?> GetByIdForReporting(Guid id)
-        {
-             var budget = await GetById(id);
-            if (budget is null) return null;
-
-            var customer = await _unitOfWork.Customers.Get(budget.CustomerId);
-            if (customer is null) return null;
-
-            var site = _unitOfWork.Sites.Find(s => s.VatNumber == "B09680521").FirstOrDefault();
-            if (site is null) return null;
-
-            budget.Details = budget.Details.OrderBy(d => d.Reference!.Code).ToList();
-            var salesOrderReport = new BudgetReportResponse
-            {
-                Budget = budget,
-                Customer = customer,
-                Site = site,
-                Total = budget.Details.Sum(d => d.Amount),
-            };
-            return salesOrderReport;
-        }
-
         public async Task<GenericResponse> RejectOutdatedBudgets()
         {
-            var status = await _unitOfWork.Lifecycles.GetStatusByName("Budget", "Pendent d'acceptar");
-            var rejectedstatus = await _unitOfWork.Lifecycles.GetStatusByName("Budget", "Rebutjat");
+            var status = await unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.Budget, StatusConstants.Statuses.PendentAcceptar);
+            var rejectedstatus = await unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.Budget, StatusConstants.Statuses.Rebutjat);
             if (status == null || rejectedstatus == null)
             {
-                return new GenericResponse(false, "No s'han trobat els estats 'Pendent d'acceptar' i 'Rebutjat' al cicle de vida 'Budget'");
+                return new GenericResponse(false, localizationService.GetLocalizedString("StatusNotFound", "Pendent d'acceptar/Rebutjat"));
             }
 
-            var budgets =  await _unitOfWork.Budgets.FindAsync(b => b.StatusId == status.Id && b.Date.AddDays(30) <= DateTime.UtcNow);           
+            var budgets =  await unitOfWork.Budgets.FindAsync(b => b.StatusId == status.Id && b.Date.AddDays(30) <= DateTime.UtcNow);           
             foreach (var budget in budgets)
             {
                 budget.StatusId = rejectedstatus.Id;
                 budget.AutoRejectedDate = DateTime.UtcNow;
-                budget.Notes = "Pressupost rebutjat automaticament en data: " + DateTime.UtcNow.ToString();
-                await _unitOfWork.Budgets.Update(budget);
+                budget.Notes = localizationService.GetLocalizedString("BudgetAutomaticRejection", DateTime.UtcNow.ToString());
+                await unitOfWork.Budgets.Update(budget);
                 
             }
             return (new GenericResponse(true));

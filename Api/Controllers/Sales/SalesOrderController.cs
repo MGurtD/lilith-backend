@@ -9,18 +9,12 @@ namespace Api.Controllers.Sales
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class SalesOrderController : ControllerBase
+    public class SalesOrderController(ISalesOrderService service, ISalesOrderReportService reportService) : ControllerBase
     {
-        private readonly ISalesOrderService _service;
-        public SalesOrderController(ISalesOrderService service)
-        {
-            _service = service;
-        }
-
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var salesOrder = await _service.GetById(id);
+            var salesOrder = await service.GetById(id);
             if (salesOrder == null)
             {
                 return NotFound();
@@ -31,14 +25,14 @@ namespace Api.Controllers.Sales
         [HttpGet("Budget/{id:guid}")]
         public IActionResult GetOrderFromBudget(Guid id)
         {
-            var salesOrders = _service.GetOrderFromBudget(id);
+            var salesOrders = service.GetOrderFromBudget(id);
             return Ok(salesOrders);
         }
 
         [HttpGet("Report/{id:guid}")]
-        public async Task<IActionResult> GetSalesOrderForReport(Guid id)
+        public async Task<IActionResult> GetSalesOrderReport(Guid id)
         {
-            var salesOrders = await _service.GetByIdForReporting(id);
+            var salesOrders = await reportService.GetReportById(id);
             return Ok(salesOrders);
         }
 
@@ -47,9 +41,9 @@ namespace Api.Controllers.Sales
         {
             IEnumerable<SalesOrderHeader> salesOrderHeaders = new List<SalesOrderHeader>();
             if (customerId.HasValue)
-                salesOrderHeaders = _service.GetBetweenDatesAndCustomer(startTime, endTime, customerId.Value);
+                salesOrderHeaders = service.GetBetweenDatesAndCustomer(startTime, endTime, customerId.Value);
             else
-                salesOrderHeaders = _service.GetBetweenDates(startTime, endTime);         
+                salesOrderHeaders = service.GetBetweenDates(startTime, endTime);         
             if (salesOrderHeaders != null) return Ok(salesOrderHeaders.OrderByDescending(e => e.Number));
             else return BadRequest();
         }
@@ -57,14 +51,14 @@ namespace Api.Controllers.Sales
         [HttpGet("DeliveryNote/{id:guid}")]
         public IActionResult GetDeliveryNoteOrders(Guid id)
         {
-            var salesOrders = _service.GetByDeliveryNoteId(id);
+            var salesOrders = service.GetByDeliveryNoteId(id);
             return Ok(salesOrders);
         }
 
         [HttpGet("ToDeliver")]
         public IActionResult GetOrdersToDeliver(Guid customerId)
         {
-            var salesOrderHeaders = _service.GetOrdersToDeliver(customerId);
+            var salesOrderHeaders = service.GetOrdersToDeliver(customerId);
             return Ok(salesOrderHeaders.OrderBy(e => e.Number));
         }
 
@@ -73,7 +67,7 @@ namespace Api.Controllers.Sales
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateFromBudget(Budget budget)
         {
-            var response = await _service.CreateFromBudget(budget);
+            var response = await service.CreateFromBudget(budget);
 
             if (response.Result)
                 return Ok(response);
@@ -87,7 +81,7 @@ namespace Api.Controllers.Sales
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create(CreateHeaderRequest salesOrder)
         {
-            var response = await _service.Create(salesOrder);
+            var response = await service.Create(salesOrder);
 
             if (response.Result)
                 return Ok(response.Content);
@@ -102,7 +96,7 @@ namespace Api.Controllers.Sales
         {
             if (id != salesOrder.Id) return BadRequest();
 
-            var response = await _service.Update(salesOrder);
+            var response = await service.Update(salesOrder);
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
@@ -113,7 +107,7 @@ namespace Api.Controllers.Sales
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Remove(Guid id)
         {
-            var response = await _service.Remove(id);
+            var response = await service.Remove(id);
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
@@ -125,7 +119,7 @@ namespace Api.Controllers.Sales
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddDetail(SalesOrderDetail detail)
         {
-            var response = await _service.AddDetail(detail);
+            var response = await service.AddDetail(detail);
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
@@ -136,7 +130,7 @@ namespace Api.Controllers.Sales
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateCosts(Guid id)
         {
-            var response = await _service.UpdateCosts(id);
+            var response = await service.UpdateCosts(id);
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
         }
@@ -148,7 +142,7 @@ namespace Api.Controllers.Sales
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateDetail(Guid id, [FromBody] SalesOrderDetail detail)
         {
-            var response = await _service.UpdateDetail(detail);
+            var response = await service.UpdateDetail(detail);
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
@@ -160,7 +154,7 @@ namespace Api.Controllers.Sales
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RemoveImport(Guid id)
         {
-            var response = await _service.RemoveDetail(id);
+            var response = await service.RemoveDetail(id);
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);

@@ -1,4 +1,6 @@
-﻿namespace Domain.Entities
+﻿using Domain.Entities.Shared;
+
+namespace Domain.Entities
 {
     public class Status : Entity
     {

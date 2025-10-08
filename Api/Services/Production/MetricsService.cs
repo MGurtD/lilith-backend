@@ -7,20 +7,27 @@ using Domain.Implementations.ReferenceFormat;
 
 namespace Api.Services.Production
 {
-    public class MetricsService(IUnitOfWork unitOfWork) : IMetricsService
+    public class MetricsService : IMetricsService
     {
-        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly ILocalizationService _localizationService;
+
+        public MetricsService(IUnitOfWork unitOfWork, ILocalizationService localizationService)
+        {
+            _unitOfWork = unitOfWork;
+            _localizationService = localizationService;
+        }
 
         public async Task<GenericResponse> GetOperatorCost(Guid operatorId)
         {
             var oper = await _unitOfWork.Operators.Get(operatorId);
-            if (oper == null)
-            {
-                return new GenericResponse(false, "No s'ha trobat l'operari");
+            if (oper == null) {
+                return new GenericResponse(false, _localizationService.GetLocalizedString("OperatorNotFound")); 
             }
 
             var operatorType = await _unitOfWork.OperatorTypes.Get(oper.OperatorTypeId);
-            if (operatorType == null) return new GenericResponse(false, "No s'ha trobat el tipus d'operari");
+            if (operatorType == null) 
+                return new GenericResponse(false, _localizationService.GetLocalizedString("OperatorTypeNotFound"));
 
             return new GenericResponse(true, operatorType.Cost);
         }
@@ -28,7 +35,8 @@ namespace Api.Services.Production
         public Task<GenericResponse> GetWorkcenterStatusCost(Guid workcenterId, Guid statusId)
         {
             var workcenterCost = _unitOfWork.WorkcenterCosts.Find(wc => wc.WorkcenterId == workcenterId && wc.MachineStatusId == statusId).FirstOrDefault();
-            if (workcenterCost == null) return Task.FromResult(new GenericResponse(false, "No s'ha trobat el cost del centre de treball"));
+            if (workcenterCost == null) 
+                return Task.FromResult(new GenericResponse(false, _localizationService.GetLocalizedString("WorkcenterCostNotFound")));
 
             return Task.FromResult(new GenericResponse(true, workcenterCost.Cost));
         }
@@ -45,8 +53,8 @@ namespace Api.Services.Production
             var totalWeight = 0.0M;
             var Amount = 0.0M;
             var materialFactor = producedQuantity.HasValue ? producedQuantity.Value / workMaster.BaseQuantity : 1;
-
-            //Recorrer les phases
+            
+            //Recorrer les fases
             //A cada fase, recollir el operatortypeId, i buscar el seu preu cost/hora
             //Per cada fase recorrer els detalls i obtenim el temps+estat maquina, es busca el cost del binomi
             //Si es temps de cicle es multiplica per la quantitat base, sinó es el temps del bloc. Es multiplica el temps pel cost
@@ -83,9 +91,8 @@ namespace Api.Services.Production
 
                     // Cost Màquina                    
                     var workCenterCost = _unitOfWork.WorkcenterCosts.Find(wc => wc.WorkcenterId == phase.PreferredWorkcenterId && wc.MachineStatusId == detail.MachineStatusId).FirstOrDefault();
-                    if (workCenterCost == null)
-                    {
-                        return new GenericResponse(false, "No s'ha trobat la combinació de centre de treball i estat de màquina");
+                    if (workCenterCost == null) {
+                        return new GenericResponse(false, _localizationService.GetLocalizedString("WorkcenterCombinationNotFound"));
                     }
                     machineCost += (estimatedWorkcenterTime / 60) * workCenterCost.Cost;
 
@@ -99,7 +106,7 @@ namespace Api.Services.Production
                     if (reference == null) continue;
                     if (!reference.ReferenceTypeId.HasValue)
                     {
-                        return new GenericResponse(false, "No s'ha trobat el tipus de material");
+                        return new GenericResponse(false, _localizationService.GetLocalizedString("ReferenceTypeNotFound"));
                     }
 
                     if (reference.ReferenceFormatId.HasValue)
@@ -108,9 +115,8 @@ namespace Api.Services.Production
 
                         // Obtenir calculadora segons el format
                         var format = await _unitOfWork.ReferenceFormats.Get(reference.ReferenceFormatId.Value);
-                        if (format == null)
-                        {
-                            return new GenericResponse(false, "No s'ha trobat el format del material");
+                        if (format == null) {
+                            return new GenericResponse(false, _localizationService.GetLocalizedString("ReferenceFormatNotFound"));
                         }
 
                         // Assignar dimensions a la calculadora

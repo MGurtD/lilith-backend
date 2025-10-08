@@ -6,10 +6,10 @@ namespace Api.Setup;
 
 public static class JwtSetup
 {
-    public static IServiceCollection AddJwtSetup(this IServiceCollection services, bool isDevelopment)
+    public static IServiceCollection AddJwtSetup(this IServiceCollection services, bool isDevelopment, string jwtSecret)
     {
         // JWT Service    
-        var signKey = Encoding.ASCII.GetBytes(Settings.JwtSecret);
+        var signKey = Encoding.ASCII.GetBytes(jwtSecret);
         var tokenValidationParameters = new TokenValidationParameters()
         {
             IssuerSigningKey = new SymmetricSecurityKey(signKey),

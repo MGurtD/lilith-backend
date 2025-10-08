@@ -15,6 +15,7 @@ namespace Domain.Entities.Sales
         public Status? Status { get; set; }
         public DateTime? AutoRejectedDate { get; set; }
         public string Notes { get; set; } = String.Empty;
+        public string UserNotes { get; set; } = String.Empty;
 
         public ICollection<BudgetDetail> Details { get; set; } = new List<BudgetDetail>();
 

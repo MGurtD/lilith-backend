@@ -10,7 +10,6 @@ namespace Application.Services.Sales
         Task<GenericResponse> Create(CreateHeaderRequest createRequest);
         Task<GenericResponse> CreateFromBudget(Budget budget);
 
-        Task<SalesOrderReportResponse?> GetByIdForReporting(Guid id);
         SalesOrderHeader? GetOrderFromBudget(Guid id);
         Task<SalesOrderHeader?> GetById(Guid id);
         IEnumerable<SalesOrderHeader> GetByDeliveryNoteId(Guid deliveryNoteId);

@@ -25,7 +25,8 @@ public class BudgetDetail : Entity
     public decimal ServiceCost { get; set; }
     public decimal TotalCost { get; set; } 
     public decimal UnitPrice { get; set; }
-    public decimal Amount { get; set; }         
+    public decimal Amount { get; set; }
+    public string UserNotes { get; set; }
 
     public BudgetDetail()
     {
@@ -44,6 +45,7 @@ public class BudgetDetail : Entity
         TotalCost = decimal.Zero;
         Amount = decimal.Zero;
         Disabled = false;
+        UserNotes = string.Empty;
     }
 
     public void SetReference(Reference reference, int quantity)

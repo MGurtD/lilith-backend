@@ -1,5 +1,6 @@
 ﻿using Api.Services;
 using Application.Contract;
+using Application.Contracts;
 using Application.Contracts.Purchase;
 using Application.Persistance;
 using Application.Services;
@@ -19,12 +20,14 @@ namespace Api.Controllers.Purchase
         private readonly IPurchaseInvoiceService _service;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IDueDateService _dueDateService;
+        private readonly ILocalizationService _localizationService;
 
-        public PurchaseInvoiceController(IPurchaseInvoiceService service, IUnitOfWork unitOfWork, IDueDateService dueDateService)
+        public PurchaseInvoiceController(IPurchaseInvoiceService service, IUnitOfWork unitOfWork, IDueDateService dueDateService, ILocalizationService localizationService)
         {
             _service = service;
             _unitOfWork = unitOfWork;
             _dueDateService = dueDateService;
+            _localizationService = localizationService;
         }
 
         [HttpGet("{id:guid}")]
@@ -63,7 +66,7 @@ namespace Api.Controllers.Purchase
             var paymentMethod = await _unitOfWork.PaymentMethods.Get(invoice.PaymentMethodId);
             if (paymentMethod == null || paymentMethod.Disabled)
             {
-                return NotFound($"El métode de pagament amb ID {invoice.PaymentMethodId} no existeix o está desactivat");
+                return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("PaymentMethodNotFoundOrDisabled", invoice.PaymentMethodId)));
             }
 
             var invoiceDueDates = new List<PurchaseInvoiceDueDate>();
@@ -179,6 +182,28 @@ namespace Api.Controllers.Purchase
         {
             var response = await _service.RemoveImport(id);
 
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
+        }
+        #endregion
+
+        #region DueDates
+        [HttpPost("DueDate")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddDueDates([FromBody] IEnumerable<PurchaseInvoiceDueDate> dueDates)
+        {
+            var response = await _service.AddDueDates(dueDates);
+            if (response.Result) return Ok();
+            else return BadRequest(response.Errors);
+        }
+
+        [HttpDelete("DueDate")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> RemoveDueDates([FromQuery] IEnumerable<Guid> ids)
+        {
+            var response = await _service.RemoveDueDates(ids);
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
         }
