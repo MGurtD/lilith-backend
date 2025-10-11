@@ -133,28 +133,35 @@ namespace Api.Setup
             // 3. Define profile menu key sets
             var managementKeys = new HashSet<string> { "management_root", "management_purchaseinvoices", "management_salesinvoices" };
             var shopfloorKeys = new HashSet<string> { "shopfloor_root", "shopfloor_reception" };
+            // Default profile: all except management & shopfloor specific menus
+            var defaultKeys = existingMenuItems.Values
+                .Select(v => v.Key)
+                .Where(k => !managementKeys.Contains(k) && !shopfloorKeys.Contains(k))
+                .ToHashSet();
 
-            // 4. Assign menus
-            await EnsureProfileAssignments(uow, defaultProfile, existingMenuItems.Values.Select(v => v.Key).ToHashSet(), existingMenuItems, defaultScreenKey: FindFirstLeaf(existingMenuItems));
-            await EnsureProfileAssignments(uow, managementProfile, managementKeys, existingMenuItems, defaultScreenKey: "management_purchaseinvoices");
-            await EnsureProfileAssignments(uow, shopfloorProfile, shopfloorKeys, existingMenuItems, defaultScreenKey: "shopfloor_root");
+            // 4. Assign menus with tailored sets
+            await EnsureProfileAssignments(uow, defaultProfile, defaultKeys, existingMenuItems, defaultScreenKey: FindFirstLeaf(existingMenuItems, defaultKeys), allowRemoval: true);
+            await EnsureProfileAssignments(uow, managementProfile, managementKeys, existingMenuItems, defaultScreenKey: "management_purchaseinvoices", allowRemoval: true);
+            await EnsureProfileAssignments(uow, shopfloorProfile, shopfloorKeys, existingMenuItems, defaultScreenKey: "shopfloor_root", allowRemoval: true);
 
             // 5. Assign default profile to users without one
             await AssignProfileToUsersWithoutProfile(uow, defaultProfile.Id);
         }
 
-        private static string? FindFirstLeaf(Dictionary<string, MenuItem> items)
+        private static string? FindFirstLeaf(Dictionary<string, MenuItem> items, HashSet<string>? filterKeys = null)
         {
             // Determine a leaf: item whose Id isn't a ParentId of others
             var parents = items.Values.Where(i => i.ParentId != null).Select(i => i.ParentId!.Value).ToHashSet();
-            var firstLeaf = items.Values
-                .Where(i => !parents.Contains(i.Id) && !string.IsNullOrWhiteSpace(i.Route))
-                .OrderBy(i => i.SortOrder)
-                .FirstOrDefault();
+            var query = items.Values.Where(i => !parents.Contains(i.Id) && !string.IsNullOrWhiteSpace(i.Route));
+            if (filterKeys != null && filterKeys.Count > 0)
+            {
+                query = query.Where(i => filterKeys.Contains(i.Key));
+            }
+            var firstLeaf = query.OrderBy(i => i.SortOrder).FirstOrDefault();
             return firstLeaf?.Key;
         }
 
-        private static async Task EnsureProfileAssignments(IUnitOfWork uow, Profile profile, HashSet<string> desiredKeys, Dictionary<string, MenuItem> allItems, string? defaultScreenKey)
+        private static async Task EnsureProfileAssignments(IUnitOfWork uow, Profile profile, HashSet<string> desiredKeys, Dictionary<string, MenuItem> allItems, string? defaultScreenKey, bool allowRemoval = false)
         {
             var currentAssignments = uow.ProfileMenuItems.Find(p => p.ProfileId == profile.Id).ToList();
             var desiredIds = desiredKeys.Select(k => allItems[k].Id).ToHashSet();
@@ -168,8 +175,8 @@ namespace Api.Setup
                     await uow.ProfileMenuItems.Add(new ProfileMenuItem { ProfileId = profile.Id, MenuItemId = id, IsDefault = false });
                 }
             }
-            // Remove extras (only if not default profile)
-            if (profile.Name != DEFAULT_PROFILE_KEY)
+            // Remove extras if allowed (now enabled for default to drop excluded sets)
+            if (allowRemoval)
             {
                 foreach (var extra in currentAssignments.Where(a => !desiredIds.Contains(a.MenuItemId)).ToList())
                 {
