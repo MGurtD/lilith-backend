@@ -38,6 +38,17 @@ The solution follows Clean Architecture with 5 main projects:
 - Soft delete pattern using `Disabled` property on base `Entity` class
 - Decimal precision configured as (18,4) for amounts, (18,2) for prices
 
+
+#### Entity Framework > Create new migration
+  ```
+  dotnet ef migrations add AddProfilesAndMenus --project .\Infrastructure\
+  ```
+
+#### Entity Framework > Apply migrations to database
+  ```
+  dotnet ef database update --project .\Infrastructure\
+  ```
+
 ## Domain Model
 
 ### Base Entity
