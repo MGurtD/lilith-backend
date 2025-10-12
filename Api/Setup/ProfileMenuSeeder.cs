@@ -12,86 +12,85 @@ namespace Api.Setup
         private record SeedMenu(string Key, string Title, string? Icon, string? Route, SeedMenu[]? Children = null);
 
         // Full hierarchy extracted from frontend menus.ts (applicationMenus, managmentMenus, shoopflorMenus)
-        private static readonly SeedMenu[] RootMenus = new[]
-        {
-            // Header (treated as a root non-clickable item)
-            new SeedMenu("header_main","TEMGES",null,null),
+        private static readonly SeedMenu[] RootMenus =
+        [
             // Application Menus
-            new SeedMenu("general","General","pi pi-cog",null, new[]{
+            new SeedMenu("general","General","pi pi-cog",null, [
                 new SeedMenu("users","Usuaris","pi pi-users","/users"),
+                new SeedMenu("menuitems","Elements del menú","pi pi-sitemap","/menuitems"),
                 new SeedMenu("exercise","Exercicis","pi pi-calendar","/exercise"),
                 new SeedMenu("taxes","Impostos","pi pi-percentage","/taxes"),
                 new SeedMenu("paymentmethods","Formes de pagament","pi pi-paypal","/payment-methods"),
                 new SeedMenu("invoiceseries","Sèries de factures","pi pi-sort-numeric-down","/purchaseinvoiceserie"),
                 new SeedMenu("lifecycle","Cicles de vida","pi pi-refresh","/lifecycle")
-            }),
-            new SeedMenu("purchase","Compres","pi pi-cart-plus",null,new[]{
+            ]),
+            new SeedMenu("purchase","Compres","pi pi-cart-plus",null,[
                 new SeedMenu("suppliers","Proveïdors","pi pi-bookmark","/suppliers"),
                 new SeedMenu("referencetype","Tipus de materials","pi pi-palette","/referencetype"),
                 new SeedMenu("material","Referències","pi pi-ticket","/material"),
-                new SeedMenu("purchase_orders_group","Comandes","pi pi-shopping-bag",null,new[]{
+                new SeedMenu("purchase_orders_group","Comandes","pi pi-shopping-bag",null,[
                     new SeedMenu("purchase_orders","Comandes","pi pi-shopping-bag","/purchase-orders"),
                     new SeedMenu("phase_to_purchase_order","Comandes des de producció","pi pi-shopping-cart","/phase-to-purchase-order")
-                }),
+                ]),
                 new SeedMenu("receipts","Albarans","pi pi-truck","/receipts"),
                 new SeedMenu("purchaseinvoice","Factures","pi pi-money-bill","/purchaseinvoice"),
-                new SeedMenu("expenses_group","Despeses","pi pi-wallet",null,new[]{
+                new SeedMenu("expenses_group","Despeses","pi pi-wallet",null,[
                     new SeedMenu("expensetype","Tipus de despesa","pi pi-tag","/expensetype"),
                     new SeedMenu("expense","Declaració despeses","pi pi-wallet","/expense")
-                })
-            }),
-            new SeedMenu("sales","Ventes","pi pi-money-bill",null,new[]{
+                ])
+            ]),
+            new SeedMenu("sales","Ventes","pi pi-money-bill",null,[
                 new SeedMenu("customers","Clients","pi pi-building","/customers"),
                 new SeedMenu("sales_reference","Referències","pi pi-ticket","/sales/reference"),
                 new SeedMenu("budget","Pressupostos","pi pi-flag","/budget"),
                 new SeedMenu("salesorder","Comandes","pi pi-flag-fill","/salesorder"),
                 new SeedMenu("deliverynote","Albarans d'entrega","pi pi-truck","/deliverynote"),
                 new SeedMenu("sales_invoice","Factures","pi pi-wallet","/sales-invoice")
-            }),
-            new SeedMenu("production","Producció","pi pi-chart-bar",null,new[]{
-                new SeedMenu("plantmodel","Model de planta","pi pi-building",null,new[]{
+            ]),
+            new SeedMenu("production","Producció","pi pi-chart-bar",null,[
+                new SeedMenu("plantmodel","Model de planta","pi pi-building",null,[
                     new SeedMenu("enterprise","Empresa","pi pi-building","/enterprise"),
                     new SeedMenu("site","Locals","pi pi-building","/site"),
                     new SeedMenu("area","Arees","pi pi-building","/area"),
                     new SeedMenu("workcentertype","Tipus de màquines","pi pi-building","/workcentertype"),
                     new SeedMenu("workcenter","Màquines","pi pi-building","/workcenter")
-                }),
+                ]),
                 new SeedMenu("shifts","Torns","pi pi-calendar","/shifts"),
                 new SeedMenu("machinestatus","Estats de màquina","pi pi-database","/machinestatus"),
                 new SeedMenu("workcentercost","Costs de màquina","pi pi-euro","/workcentercost"),
-                new SeedMenu("operators_group","Operaris","pi pi-users",null,new[]{
+                new SeedMenu("operators_group","Operaris","pi pi-users",null,[
                     new SeedMenu("operatortype","Tipus d'operari","pi pi-users","/operatortype"),
                     new SeedMenu("operator","Operaris","pi pi-user","/operator")
-                }),
+                ]),
                 new SeedMenu("workmaster","Rutes de fabricació","pi pi-reply","/workmaster"),
                 new SeedMenu("workorder","Ordres de fabricació","pi pi-book","/workorder"),
                 new SeedMenu("productionpart","Tiquets de producció","pi pi-stopwatch","/productionpart")
-            }),
-            new SeedMenu("warehouse","Magatzem","pi pi-box",null,new[]{
+            ]),
+            new SeedMenu("warehouse","Magatzem","pi pi-box",null,[
                 new SeedMenu("warehouse_list","Magatzems","pi pi-box","/warehouse"),
                 new SeedMenu("stocks","Estocs","pi pi-bars","/stocks"),
                 new SeedMenu("stockmovement","Moviments","pi pi-arrow-right-arrow-left","/stockmovement"),
                 new SeedMenu("inventory","Inventari","pi pi-sort-alt","/inventory")
-            }),
-            new SeedMenu("statistics","Estadístiques","pi pi-chart-pie",null,new[]{
+            ]),
+            new SeedMenu("statistics","Estadístiques","pi pi-chart-pie",null,[
                 new SeedMenu("incomes_vs_expenses","Facturació vs Despeses","pi pi-wallet","/incomesandexpensesdashboard"),
                 new SeedMenu("expense_dashboard","Despeses","pi pi-wallet","/expense-dashboard"),
                 new SeedMenu("productioncost","Costs Producció","pi pi-euro","/productioncost")
-            }),
-            new SeedMenu("verifactu","Verifactu","pi pi-shield",null,new[]{
+            ]),
+            new SeedMenu("verifactu","Verifactu","pi pi-shield",null,[
                 new SeedMenu("invoice_integration","Integració de factures","pi pi-upload","/verifactu/invoice-integration"),
                 new SeedMenu("integration_requests","Peticions d'integració","pi pi-search","/verifactu/integration-requests"),
                 new SeedMenu("find_invoices","Consulta a Verifactu","pi pi-search-plus","/verifactu/find-invoices")
-            }),
+            ]),
             // Management menus
-            new SeedMenu("management_root","Gestió de factures","pi pi-book",null,new[]{
+            new SeedMenu("management_root","Gestió de factures","pi pi-book",null,[
                 new SeedMenu("management_purchaseinvoices","Factures de compra","pi pi-download","/purchaseinvoices-by-period"),
                 new SeedMenu("management_salesinvoices","Factures de venta","pi pi-upload","/salesinvoices-by-period")
-            }),
+            ]),
             // Shopfloor menus
             new SeedMenu("shopfloor_root","Taller","pi pi-cog","/purchaseinvoices-by-period"),
             new SeedMenu("shopfloor_reception","Recepció de materials","pi pi-box","/purchaseinvoices-by-period")
-        };
+        ];
 
         public static async Task SeedAsync(IServiceProvider services)
         {

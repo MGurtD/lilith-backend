@@ -208,6 +208,12 @@
     "UserProfileAssigned": "Profile assigned to user",
     "ProfileDeleteForbidden": "System profile cannot be deleted",
     "ProfileMenuUpdated": "Profile menu updated successfully",
-    "ProfileDefaultUpdated": "Default screen updated successfully"
+    "ProfileDefaultUpdated": "Default screen updated successfully",
+    "MenuItemCreated": "Menu item created successfully",
+    "MenuItemUpdated": "Menu item updated successfully",
+    "MenuItemDeleted": "Menu item deleted successfully",
+    "MenuItemParentNotFound": "Parent menu item with ID {0} not found",
+    "MenuItemCannotDeleteHasChildren": "Cannot delete menu item with children",
+    "MenuItemInvalidParent": "Invalid parent menu item"
   }
 }

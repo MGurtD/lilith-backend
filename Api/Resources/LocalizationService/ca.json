@@ -208,6 +208,12 @@
     "UserProfileAssigned": "Perfil assignat a l'usuari",
     "ProfileDeleteForbidden": "No es pot eliminar un perfil de sistema",
     "ProfileMenuUpdated": "Menú de perfil actualitzat correctament",
-    "ProfileDefaultUpdated": "Pantalla per defecte actualitzada correctament"
+    "ProfileDefaultUpdated": "Pantalla per defecte actualitzada correctament",
+    "MenuItemCreated": "Element de menú creat correctament",
+    "MenuItemUpdated": "Element de menú actualitzat correctament",
+    "MenuItemDeleted": "Element de menú eliminat correctament",
+    "MenuItemParentNotFound": "Element de menú pare amb ID {0} no existeix",
+    "MenuItemCannotDeleteHasChildren": "No es pot eliminar un element de menú amb fills",
+    "MenuItemInvalidParent": "Element de menú pare no vàlid"
   }
 }

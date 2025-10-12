@@ -208,6 +208,12 @@
     "UserProfileAssigned": "Perfil asignado al usuario",
     "ProfileDeleteForbidden": "No se puede eliminar un perfil de sistema",
     "ProfileMenuUpdated": "Menú de perfil actualizado correctamente",
-    "ProfileDefaultUpdated": "Pantalla por defecto actualizada correctamente"
+    "ProfileDefaultUpdated": "Pantalla por defecto actualizada correctamente",
+    "MenuItemCreated": "Elemento de menú creado correctamente",
+    "MenuItemUpdated": "Elemento de menú actualizado correctamente",
+    "MenuItemDeleted": "Elemento de menú eliminado correctamente",
+    "MenuItemParentNotFound": "Elemento de menú padre con ID {0} no existe",
+    "MenuItemCannotDeleteHasChildren": "No se puede eliminar un elemento de menú con hijos",
+    "MenuItemInvalidParent": "Elemento de menú padre no válido"
   }
 }
