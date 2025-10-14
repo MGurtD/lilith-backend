@@ -11,6 +11,7 @@ public interface IProfileService
     Task<GenericResponse> GetAll();
     Task<GenericResponse> Get(Guid id);
     Task<GenericResponse> AssignMenu(Guid profileId, IEnumerable<Guid> menuItemIds, Guid? defaultMenuItemId = null);
+    Task<GenericResponse> GetMenuForProfile(Guid profileId);
     Task<GenericResponse> GetMenuForUser(Guid userId);
     Task<GenericResponse> SetUserProfile(Guid userId, Guid profileId);
 }

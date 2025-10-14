@@ -59,6 +59,14 @@ namespace Api.Controllers.Auth
             return Ok(response.Content);
         }
 
+        [HttpGet("{id:guid}/menu")]
+        public async Task<IActionResult> GetAssignedMenu(Guid id)
+        {
+            var response = await service.GetMenuForProfile(id);
+            if (!response.Result) return NotFound(response);
+            return Ok(response.Content);
+        }
+
         [HttpGet("user/{userId:guid}/menu")]
         public async Task<IActionResult> GetMenuForUser(Guid userId)
         {

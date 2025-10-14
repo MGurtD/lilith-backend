@@ -90,6 +90,18 @@ namespace Api.Services
             return new GenericResponse(true, localizationService.GetLocalizedString("ProfileMenuUpdated"));
         }
 
+        public async Task<GenericResponse> GetMenuForProfile(Guid profileId)
+        {
+            var profile = await unitOfWork.Profiles.Get(profileId);
+            if (profile is null)
+                return new GenericResponse(false, localizationService.GetLocalizedString("ProfileNotFound", profileId));
+
+            var assignments = unitOfWork.ProfileMenuItems.Find(p => p.ProfileId == profileId).ToList();
+            var ids = assignments.Select(a => a.MenuItemId).ToList();
+            var defaultId = assignments.FirstOrDefault(a => a.IsDefault)?.MenuItemId;
+            return new GenericResponse(true, new { menuItemIds = ids, defaultMenuItemId = defaultId });
+        }
+
         public async Task<GenericResponse> GetMenuForUser(Guid userId)
         {
             var user = await unitOfWork.Users.Get(userId);
