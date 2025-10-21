@@ -67,7 +67,7 @@ namespace Application.Persistance
         // Production
         IRepository<Enterprise, Guid> Enterprises { get; }
         IRepository<Site, Guid> Sites { get; }
-        IRepository<Area, Guid> Areas { get; }
+        IAreaRepository Areas { get; }
         IRepository<WorkcenterType, Guid> WorkcenterTypes { get; }
         IWorkcenterRepository Workcenters { get; }
         IRepository<WorkcenterCost, Guid> WorkcenterCosts { get; }

@@ -87,9 +87,8 @@ namespace Api.Setup
                 new SeedMenu("management_purchaseinvoices","Factures de compra","pi pi-download","/purchaseinvoices-by-period"),
                 new SeedMenu("management_salesinvoices","Factures de venta","pi pi-upload","/salesinvoices-by-period")
             ]),
-            // Shopfloor menus
-            new SeedMenu("shopfloor_root","Taller","pi pi-cog","/purchaseinvoices-by-period"),
-            new SeedMenu("shopfloor_reception","Recepció de materials","pi pi-box","/purchaseinvoices-by-period")
+            // Plant menus
+            new SeedMenu("shopfloor_root","Planta","pi pi-cog","/plant")
         ];
 
         public static async Task SeedAsync(IServiceProvider services)

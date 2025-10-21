@@ -4,4 +4,5 @@ namespace Application.Persistance.Repositories.Production;
 
 public interface IWorkcenterRepository : IRepository<Workcenter, Guid>
 {
+    Task<IEnumerable<Workcenter>> GetVisibleInPlant();
 }

@@ -74,7 +74,7 @@ namespace Infrastructure.Persistance
         // Production
         public IRepository<Enterprise, Guid> Enterprises { get; private set; } = new Repository<Enterprise, Guid>(context);
         public IRepository<Site, Guid> Sites { get; private set; } = new Repository<Site, Guid>(context);
-        public IRepository<Area, Guid> Areas { get; private set; } = new Repository<Area, Guid>(context);
+        public IAreaRepository Areas { get; private set; } = new AreaRepository(context);
         public IRepository<WorkcenterType, Guid> WorkcenterTypes { get; private set; } = new Repository<WorkcenterType, Guid>(context);
         public IWorkcenterRepository Workcenters { get; private set; } = new WorkcenterRepository(context);
         public IRepository<WorkcenterCost, Guid> WorkcenterCosts { get; private set; } = new Repository<WorkcenterCost, Guid>(context);

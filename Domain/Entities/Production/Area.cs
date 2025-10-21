@@ -7,4 +7,6 @@ public class Area : Entity
     public Guid SiteId { get; set; }
     public Site? Site { get; set; }
     public bool IsVisibleInPlant { get; set; } = true;
+
+    public ICollection<Workcenter> Workcenters { get; } = [];
 }
