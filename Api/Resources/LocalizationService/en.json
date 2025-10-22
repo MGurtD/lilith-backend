@@ -198,6 +198,22 @@
     "VerifactuInvoiceNotIntegrated": "Invoice has not been integrated with Verifactu",
     "VerifactuNoRequestsFound": "No requests found for the specified invoice ID.",
     "VerifactuInvalidMonth": "Month must be between 1 and 12.",
-    "VerifactuInvalidYear": "Year must be between 2024 and {0}."
+    "VerifactuInvalidYear": "Year must be between 2024 and {0}.",
+    "ProfileNotFound": "Profile with ID {0} not found",
+    "MenuItemNotFound": "Menu item with ID {0} not found",
+    "ProfileNameExists": "Profile name {0} already exists",
+    "MenuItemKeyExists": "Menu item key {0} already exists",
+    "InvalidMenuHierarchy": "Invalid menu hierarchy detected",
+    "DefaultMenuItemNotInProfile": "Default menu item is not assigned to profile",
+    "UserProfileAssigned": "Profile assigned to user",
+    "ProfileDeleteForbidden": "System profile cannot be deleted",
+    "ProfileMenuUpdated": "Profile menu updated successfully",
+    "ProfileDefaultUpdated": "Default screen updated successfully",
+    "MenuItemCreated": "Menu item created successfully",
+    "MenuItemUpdated": "Menu item updated successfully",
+    "MenuItemDeleted": "Menu item deleted successfully",
+    "MenuItemParentNotFound": "Parent menu item with ID {0} not found",
+    "MenuItemCannotDeleteHasChildren": "Cannot delete menu item with children",
+    "MenuItemInvalidParent": "Invalid parent menu item"
   }
 }

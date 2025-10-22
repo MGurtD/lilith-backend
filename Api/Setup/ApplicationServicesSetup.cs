@@ -46,6 +46,8 @@ public static class ApplicationServicesSetup
         services.AddScoped<IStockService, StockService>();
         services.AddScoped<IStockMovementService, StockMovementService>();
         services.AddScoped<IVerifactuIntegrationService, VerifactuIntegrationService>();
+        services.AddScoped<IProfileService, ProfileService>();
+    services.AddScoped<IMenuItemService, MenuItemService>();
         services.AddSingleton<IQrCodeService, QrCodeService>();
 
         services.AddHostedService<BudgetBackgroundService>();

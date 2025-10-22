@@ -25,6 +25,11 @@ namespace Infrastructure.Persistance.EntityConfiguration.Production
                 .HasName("PK_Area");
             builder.HasIndex(builder => builder.Name, "UK_Area_Name");
 
+            builder
+                .Property(b => b.IsVisibleInPlant)
+                .HasColumnType("bool")
+                .HasDefaultValue(true);
+
             builder.ToTable("Areas");
         }
     }

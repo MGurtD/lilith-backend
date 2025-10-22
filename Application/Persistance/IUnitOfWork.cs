@@ -24,6 +24,9 @@ namespace Application.Persistance
         IRepository<User, Guid> Users { get; }
         IRepository<UserRefreshToken, Guid> UserRefreshTokens { get; }
         IRepository<UserFilter, Guid> UserFilters { get; }
+        IRepository<Profile, Guid> Profiles { get; }
+        IRepository<MenuItem, Guid> MenuItems { get; }
+        IRepository<ProfileMenuItem, Guid> ProfileMenuItems { get; }
 
         // Shared
         IRepository<Domain.Entities.File, Guid> Files { get; }
@@ -64,7 +67,7 @@ namespace Application.Persistance
         // Production
         IRepository<Enterprise, Guid> Enterprises { get; }
         IRepository<Site, Guid> Sites { get; }
-        IRepository<Area, Guid> Areas { get; }
+        IAreaRepository Areas { get; }
         IRepository<WorkcenterType, Guid> WorkcenterTypes { get; }
         IWorkcenterRepository Workcenters { get; }
         IRepository<WorkcenterCost, Guid> WorkcenterCosts { get; }
