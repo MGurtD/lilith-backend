@@ -52,7 +52,7 @@ namespace Api.Services
 
         public IEnumerable<Domain.Entities.File> GetEntityFiles(string Entity, Guid EntityId)
         {
-            var files = unitOfWork.Files.Find(f => f.OriginalName.EndsWith(".pdf")).OrderByDescending(f => f.CreatedOn).Take(2);
+            var files = unitOfWork.Files.Find(f => f.Entity == Entity && f.EntityId == EntityId).OrderByDescending(f => f.OriginalName);
             return files;
         }
 
