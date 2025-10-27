@@ -52,6 +52,7 @@
     "WorkOrderLineCreateError": "Error creating the order line",
     "WorkOrderAlreadyExists": "Work order already exists",
     "WorkOrderStatusNotFound": "Adequate status for work order not found",
+    "WorkOrderPhaseByWorkcenterNotFound": "No work orders in production found for workcenter {0}",
     "WorkOrderPhaseWithId": "Work order phase with ID {0}",
     "WorkOrderWithId": "Work order with ID {0}",
     "WorkMasterNotFound": "Work master not found",

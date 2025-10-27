@@ -1,6 +1,6 @@
 ﻿using Api.Services.Production;
 using Application.Persistance;
-using Application.Production.Warehouse;
+using Application.Production;
 using Application.Services.Production;
 using Domain.Entities.Production;
 using Infrastructure.Migrations;

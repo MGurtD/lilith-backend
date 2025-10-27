@@ -52,6 +52,7 @@
     "WorkOrderLineCreateError": "Error al crear la linea de la comanda",
     "WorkOrderAlreadyExists": "Ordre de fabricació existent",
     "WorkOrderStatusNotFound": "No s'ha trobat l'estat adequat per l'ordre de fabricació",
+    "WorkOrderPhaseByWorkcenterNotFound": "No s'han trobat ordres de fabricació en producció per al centre de treball {0}",
     "WorkOrderPhaseWithId": "Fase de ordre de fabricació amb ID {0}",
     "WorkOrderWithId": "Ordre de fabricació amb ID {0}",
     "WorkMasterNotFound": "Ruta de fabricació inexistent",

@@ -39,6 +39,19 @@ namespace Infrastructure.Persistance.Repositories.Production
                         .FirstOrDefaultAsync(e => e.Id == id);
         }
 
+        public async Task<IEnumerable<WorkOrder>> GetByWorkcenterIdInProduction(Guid workcenterId, Guid productionStatusId)
+        {
+            return await dbSet
+                .Include(w => w.Reference)
+                .Include(w => w.Phases)
+                .Where(w => w.StatusId == productionStatusId && 
+                            w.Phases.Any(p => 
+                                p.WorkcenterTypeId == workcenterId || p.PreferredWorkcenterId == workcenterId))
+                .AsNoTracking()
+                .OrderBy(w => w.Code)
+                .ToListAsync();
+        }
+
  
     }
 }

@@ -52,6 +52,7 @@
     "WorkOrderLineCreateError": "Error al crear la línea del pedido",
     "WorkOrderAlreadyExists": "Orden de fabricación existente",
     "WorkOrderStatusNotFound": "No se ha encontrado el estado adecuado para la orden de fabricación",
+    "WorkOrderPhaseByWorkcenterNotFound": "No se han encontrado órdenes de fabricación en producción para el centro de trabajo {0}",
     "WorkOrderPhaseWithId": "Fase de orden de fabricación con ID {0}",
     "WorkOrderWithId": "Orden de fabricación con ID {0}",
     "WorkMasterNotFound": "Ruta de fabricación inexistente",
