@@ -43,7 +43,9 @@ namespace Infrastructure.Persistance.Repositories.Production
         {
             return await dbSet
                 .Include(w => w.Reference)
-                .Include(w => w.Phases)
+                    .ThenInclude(r => r!.Customer)
+                .Include(w => w.Phases.Where(p => 
+                    p.WorkcenterTypeId == workcenterId || p.PreferredWorkcenterId == workcenterId))
                 .Where(w => w.StatusId == productionStatusId && 
                             w.Phases.Any(p => 
                                 p.WorkcenterTypeId == workcenterId || p.PreferredWorkcenterId == workcenterId))
