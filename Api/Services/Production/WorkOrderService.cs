@@ -1,34 +1,20 @@
-﻿using Api.Services.Sales;
+﻿
 using Application.Contracts;
 using Application.Contracts.Production;
 using Application.Persistance;
-using Application.Production.Warehouse;
+using Application.Production;
 using Application.Services;
 using Application.Services.Sales;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
-using System.Collections;
 using Api.Constants;
 
 namespace Api.Services.Production
 {
-    public class WorkOrderService : IWorkOrderService
+    public class WorkOrderService(IUnitOfWork unitOfWork, IExerciseService exerciseService, ISalesOrderService salesOrderService, ILocalizationService localizationService) : IWorkOrderService
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IExerciseService _exerciseService;
-        private readonly ISalesOrderService _salesOrderService;
-        private readonly ILocalizationService _localizationService;
-
-        public WorkOrderService(IUnitOfWork unitOfWork, IExerciseService exerciseService, ISalesOrderService salesOrderService, ILocalizationService localizationService)
-        {
-            _unitOfWork = unitOfWork;
-            _exerciseService = exerciseService;
-            _salesOrderService = salesOrderService;
-            _localizationService = localizationService;
-        }        
-
         public IEnumerable<DetailedWorkOrder> GetWorkOrderDetails(Guid id) {
-            var details = _unitOfWork.DetailedWorkOrders.Find(d => d.WorkOrderId == id);
+            var details = unitOfWork.DetailedWorkOrders.Find(d => d.WorkOrderId == id);
 
             var groupedDetails =
             from d in details
@@ -106,25 +92,25 @@ namespace Api.Services.Production
         public async Task<GenericResponse> CreateFromWorkMaster(CreateWorkOrderDto dto)
         {
             // Ruta de fabricació
-            var workMaster = await _unitOfWork.WorkMasters.GetFullById(dto.WorkMasterId);
+            var workMaster = await unitOfWork.WorkMasters.GetFullById(dto.WorkMasterId);
             if (workMaster is null) 
-                return new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterNotFound"));
+                return new GenericResponse(false, localizationService.GetLocalizedString("WorkMasterNotFound"));
 
             // Exercici
-            var exercise = _exerciseService.GetExerciceByDate(dto.PlannedDate);
+            var exercise = exerciseService.GetExerciceByDate(dto.PlannedDate);
             if (exercise is null) 
-                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseNotFoundForDate"));
+                return new GenericResponse(false, localizationService.GetLocalizedString("ExerciseNotFoundForDate"));
             
-            var exerciseServiceResponse = await _exerciseService.GetNextCounter(exercise.Id, "workorder");
+            var exerciseServiceResponse = await exerciseService.GetNextCounter(exercise.Id, "workorder");
             if (!exerciseServiceResponse.Result || exerciseServiceResponse.Content is null) 
-                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseCounterError"));
+                return new GenericResponse(false, localizationService.GetLocalizedString("ExerciseCounterError"));
             
             var code = Convert.ToString(exerciseServiceResponse.Content);
 
             // Estat
             var initialStatusId = await GetInitialStatus();
             if (initialStatusId is null) 
-                return new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterNoInitialStatus"));
+                return new GenericResponse(false, localizationService.GetLocalizedString("WorkMasterNoInitialStatus"));
 
             // Crear ordre de fabricació
             var workOrder = new WorkOrder()
@@ -196,23 +182,23 @@ namespace Api.Services.Production
             }
 
             // Guardar ordre de fabricació a la BDD
-            await _unitOfWork.WorkOrders.Add(workOrder);
+            await unitOfWork.WorkOrders.Add(workOrder);
 
             return new GenericResponse(true, workOrder);
         }
 
         private async Task<Guid?> GetInitialStatus()
         {
-            var status = await _unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.WorkOrder, StatusConstants.Statuses.Creada);
+            var status = await unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.WorkOrder, StatusConstants.Statuses.Creada);
             if (status != null) return status.Id;
             return null;
         }
 
         public async Task<GenericResponse> Start(Guid id)
         {
-            var workOrder = await _unitOfWork.WorkOrders.Get(id);
+            var workOrder = await unitOfWork.WorkOrders.Get(id);
             if (workOrder is null) 
-                return new GenericResponse(false, _localizationService.GetLocalizedString("WorkOrderNotFound", id));
+                return new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderNotFound", id));
 
             if (!workOrder.StartTime.HasValue) workOrder.StartTime = DateTime.Now;
             return new GenericResponse(true);
@@ -220,9 +206,9 @@ namespace Api.Services.Production
 
         public async Task<GenericResponse> End(Guid id)
         {
-            var workOrder = await _unitOfWork.WorkOrders.Get(id);
+            var workOrder = await unitOfWork.WorkOrders.Get(id);
             if (workOrder is null) 
-                return new GenericResponse(false, _localizationService.GetLocalizedString("WorkOrderNotFound", id));
+                return new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderNotFound", id));
 
             if (!workOrder.EndTime.HasValue) workOrder.EndTime = DateTime.Now;
             return new GenericResponse(true);
@@ -230,7 +216,7 @@ namespace Api.Services.Production
 
         public IEnumerable<WorkOrder> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid? statusId)
         {
-            var workOrders = _unitOfWork.WorkOrders.Find(w => w.PlannedDate >= startDate && w.PlannedDate <= endDate);
+            var workOrders = unitOfWork.WorkOrders.Find(w => w.PlannedDate >= startDate && w.PlannedDate <= endDate);
             if (statusId.HasValue) workOrders = workOrders.Where(w => w.StatusId == statusId);
 
             return workOrders;
@@ -240,33 +226,58 @@ namespace Api.Services.Production
         {
             var workOrders = new List<WorkOrder>();
 
-            var salesOrder = await _salesOrderService.GetById(salesOrderId);
+            var salesOrder = await salesOrderService.GetById(salesOrderId);
             if (salesOrder != null)
             {
                 var workOrderIds = salesOrder.SalesOrderDetails.Where(d => d.WorkOrderId != null).Select(d => d.WorkOrderId);
-                workOrders = _unitOfWork.WorkOrders.Find(w => workOrderIds.Contains(w.Id)).ToList();
+                workOrders = unitOfWork.WorkOrders.Find(w => workOrderIds.Contains(w.Id)).ToList();
             }
 
             return workOrders;
         }
 
+        public async Task<GenericResponse> GetByWorkcenterIdInProduction(Guid workcenterId)
+        {
+            var productionStatus = await unitOfWork.Lifecycles.GetStatusByName(
+                StatusConstants.Lifecycles.WorkOrder, 
+                StatusConstants.Statuses.Production);
+            
+            if (productionStatus == null)
+            {
+                return new GenericResponse(
+                    false, 
+                    localizationService.GetLocalizedString("StatusNotFound", StatusConstants.Statuses.Production));
+            }
+
+            var workOrders = await unitOfWork.WorkOrders.GetByWorkcenterIdInProduction(workcenterId, productionStatus.Id);
+            
+            if (!workOrders.Any())
+            {
+                return new GenericResponse(
+                    false, 
+                    localizationService.GetLocalizedString("WorkOrderPhaseByWorkcenterNotFound", workcenterId));
+            }
+
+            return new GenericResponse(true, workOrders);
+        }
+
         public async Task<GenericResponse> Delete(Guid id)
         {
-            var woOrderDetails = _unitOfWork.SalesOrderDetails.Find(d => d.WorkOrderId == id);
+            var woOrderDetails = unitOfWork.SalesOrderDetails.Find(d => d.WorkOrderId == id);
                     if (woOrderDetails.Any()) {
                 var orderDetail = woOrderDetails.FirstOrDefault();
 
                 if (orderDetail is not null) {
                     orderDetail.WorkOrderId = null;
-                    await _unitOfWork.SalesOrderDetails.Update(orderDetail);
+                    await unitOfWork.SalesOrderDetails.Update(orderDetail);
                 }
             }
 
-            var entity = _unitOfWork.WorkOrders.Find(e => e.Id == id).FirstOrDefault();
+            var entity = unitOfWork.WorkOrders.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
-                return new GenericResponse(false, _localizationService.GetLocalizedString("WorkOrderNotFound", id));
+                return new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderNotFound", id));
 
-            await _unitOfWork.WorkOrders.Remove(entity);
+            await unitOfWork.WorkOrders.Remove(entity);
             return new GenericResponse(true, entity);
         }
         
@@ -278,9 +289,9 @@ namespace Api.Services.Production
 
         private async Task<GenericResponse> UpdateWorkOrderTotalsFromProductionPart(Guid id, ProductionPart productionPart, OperationType operationType)
         {
-            var workOrder = await _unitOfWork.WorkOrders.Get(id);            
+            var workOrder = await unitOfWork.WorkOrders.Get(id);            
             if (workOrder is null) 
-                return new GenericResponse(false, _localizationService.GetLocalizedString("WorkOrderNotFound", id));
+                return new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderNotFound", id));
 
             if (operationType == OperationType.Add) {
                 workOrder.OperatorTime += productionPart.OperatorTime;
@@ -296,7 +307,7 @@ namespace Api.Services.Production
                 workOrder.OperatorCost -= (productionPart.OperatorTime/60) * productionPart.OperatorHourCost;
             }
 
-            await _unitOfWork.WorkOrders.Update(workOrder);
+            await unitOfWork.WorkOrders.Update(workOrder);
             return new GenericResponse(true , workOrder);
         }
 
@@ -313,21 +324,22 @@ namespace Api.Services.Production
         public async Task Update(WorkOrder workOrder)
         {
             var lastCost = workOrder.MachineCost + workOrder.OperatorCost + workOrder.MaterialCost;
-            var reference = await _unitOfWork.References.Get(workOrder.ReferenceId);
+            var reference = await unitOfWork.References.Get(workOrder.ReferenceId);
             if (reference != null)
             {
                 reference.LastCost = lastCost;
-                await _unitOfWork.References.Update(reference);
+                await unitOfWork.References.Update(reference);
             }
 
-            var details = _unitOfWork.SalesOrderDetails.Find(e => e.WorkOrderId == workOrder.Id).ToList();
+            var details = unitOfWork.SalesOrderDetails.Find(e => e.WorkOrderId == workOrder.Id).ToList();
             foreach (SalesOrderDetail detail in details)
             {
                 detail.LastCost = lastCost;
-                await _unitOfWork.SalesOrderDetails.Update(detail);
+                await unitOfWork.SalesOrderDetails.Update(detail);
             }
             
-            await _unitOfWork.WorkOrders.Update(workOrder);
+            await unitOfWork.WorkOrders.Update(workOrder);
         }
+
     }
 }

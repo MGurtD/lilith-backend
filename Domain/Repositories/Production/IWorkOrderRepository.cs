@@ -6,6 +6,7 @@ namespace Application.Persistance.Repositories.Production
     {
         
         IWorkOrderPhaseRepository Phases { get; }
+        Task<IEnumerable<WorkOrder>> GetByWorkcenterIdInProduction(Guid workcenterId, Guid productionStatusId);
 
     }
 }
