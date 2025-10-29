@@ -87,6 +87,7 @@ namespace Domain.Entities.Sales
             EstimatedDeliveryDate = estimatedDeliveryDate;
             Disabled = false;
             IsDelivered = false;
+            UserNotes = string.Empty;
         }
 
         public void SetReference(Reference reference, int quantity)
