@@ -13,7 +13,7 @@ namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20240206092639_productionparts")]
-    partial class productionparts
+    partial class ProductionParts
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

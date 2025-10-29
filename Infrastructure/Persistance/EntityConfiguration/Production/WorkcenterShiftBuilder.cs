@@ -11,9 +11,7 @@ public class WorkcenterShiftBuilder : IEntityTypeConfiguration<WorkcenterShift>
 
     public void Configure(EntityTypeBuilder<WorkcenterShift> builder)
     {
-        builder.ConfigureBase();
-        builder.Ignore(e => e.CreatedOn);
-        builder.Ignore(e => e.UpdatedOn);
+        builder.ConfigureBaseWithoutTimestamps();
 
         builder
             .Property(b => b.Current)
