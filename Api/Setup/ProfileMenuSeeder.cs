@@ -7,7 +7,9 @@ namespace Api.Setup
     {
     private const string DEFAULT_PROFILE_KEY = "default";
     private const string MANAGEMENT_PROFILE_KEY = "management";
-    private const string SHOOPFLOOR_PROFILE_KEY = "shoopfloor"; // aligned with user request naming
+    private const string SHOOPFLOOR_PROFILE_KEY = "shoopfloor";
+    private const string SUPERUSER_PROFILE_KEY = "superuser";
+
 
         private record SeedMenu(string Key, string Title, string? Icon, string? Route, SeedMenu[]? Children = null);
 
@@ -17,6 +19,7 @@ namespace Api.Setup
             // Application Menus
             new SeedMenu("general","General","pi pi-cog",null, [
                 new SeedMenu("users","Usuaris","pi pi-users","/users"),
+                new SeedMenu("profiles","Perfils d'usuari","pi pi-users","/profiles"),
                 new SeedMenu("menuitems","Elements del menú","pi pi-sitemap","/menuitems"),
                 new SeedMenu("exercise","Exercicis","pi pi-calendar","/exercise"),
                 new SeedMenu("taxes","Impostos","pi pi-percentage","/taxes"),
@@ -64,7 +67,8 @@ namespace Api.Setup
                 ]),
                 new SeedMenu("workmaster","Rutes de fabricació","pi pi-reply","/workmaster"),
                 new SeedMenu("workorder","Ordres de fabricació","pi pi-book","/workorder"),
-                new SeedMenu("productionpart","Tiquets de producció","pi pi-stopwatch","/productionpart")
+                new SeedMenu("productionpart","Tiquets de producció","pi pi-stopwatch","/productionpart"),
+                new SeedMenu("workcentershift","Històric de producció","pi pi-calendar","/workcentershift")
             ]),
             new SeedMenu("warehouse","Magatzem","pi pi-box",null,[
                 new SeedMenu("warehouse_list","Magatzems","pi pi-box","/warehouse"),
@@ -127,20 +131,30 @@ namespace Api.Setup
                 await uow.Profiles.Add(shopfloorProfile);
                 profiles[SHOOPFLOOR_PROFILE_KEY] = shopfloorProfile;
             }
+            if (!profiles.TryGetValue(SUPERUSER_PROFILE_KEY, out var superuserProfile))
+            {
+                superuserProfile = new Profile { Name = SUPERUSER_PROFILE_KEY, Description = "Superuser profile with full access", IsSystem = true };
+                await uow.Profiles.Add(superuserProfile);
+                profiles[SUPERUSER_PROFILE_KEY] = superuserProfile;
+            }
 
             // 3. Define profile menu key sets
             var managementKeys = new HashSet<string> { "management_root", "management_purchaseinvoices", "management_salesinvoices" };
-            var shopfloorKeys = new HashSet<string> { "shopfloor_root", "shopfloor_reception" };
+            var shopfloorKeys = new HashSet<string> { "shopfloor_root" };
+            var superUserOnlyKeys = new HashSet<string> { "users", "profiles", "menuitems" };
+
+            var superuserKeys = existingMenuItems.Values.Select(v => v.Key).ToHashSet();
             // Default profile: all except management & shopfloor specific menus
             var defaultKeys = existingMenuItems.Values
                 .Select(v => v.Key)
-                .Where(k => !managementKeys.Contains(k) && !shopfloorKeys.Contains(k))
+                .Where(k => !managementKeys.Contains(k) && !shopfloorKeys.Contains(k) && !superUserOnlyKeys.Contains(k))
                 .ToHashSet();
 
             // 4. Assign menus with tailored sets
             await EnsureProfileAssignments(uow, defaultProfile, defaultKeys, existingMenuItems, defaultScreenKey: FindFirstLeaf(existingMenuItems, defaultKeys), allowRemoval: true);
             await EnsureProfileAssignments(uow, managementProfile, managementKeys, existingMenuItems, defaultScreenKey: "management_purchaseinvoices", allowRemoval: true);
             await EnsureProfileAssignments(uow, shopfloorProfile, shopfloorKeys, existingMenuItems, defaultScreenKey: "shopfloor_root", allowRemoval: true);
+            await EnsureProfileAssignments(uow, superuserProfile, superuserKeys, existingMenuItems, defaultScreenKey: FindFirstLeaf(existingMenuItems, superuserKeys), allowRemoval: true);
 
             // 5. Assign default profile to users without one
             await AssignProfileToUsersWithoutProfile(uow, defaultProfile.Id);
@@ -220,10 +234,23 @@ namespace Api.Setup
         private static async Task AssignProfileToUsersWithoutProfile(IUnitOfWork uow, Guid? profileId = null)
         {
             var users = await uow.Users.GetAll();
-            var targetProfileId = profileId ?? (await uow.Profiles.GetAll()).First().Id;
+            var profiles = await uow.Profiles.GetAll();
+            //Temges
             foreach (var user in users.Where(u => u.ProfileId == null))
             {
-                user.ProfileId = targetProfileId;
+                if (user.Username == "ezapater" || user.Username == "marcgurt")
+                {
+                    var superuserProfile = profiles.Where(u => u.Name == "superuser").FirstOrDefault();
+                    user.ProfileId = superuserProfile.Id;
+                }
+                else if (user.Username == "gestoria")
+                {
+                    var managementProfile = profiles.Where(u => u.Name == "management").FirstOrDefault();
+                    user.ProfileId = managementProfile.Id;
+                } else {
+                    var defaultProfile = profiles.Where(u => u.Name == "default").FirstOrDefault();
+                    user.ProfileId = defaultProfile.Id;
+                }
                 await uow.Users.Update(user);
             }
         }
