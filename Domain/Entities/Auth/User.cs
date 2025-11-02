@@ -12,5 +12,9 @@
         public Guid RoleId { get; set; }
         public Role? Role { get; set; }
 
+        // Profile association (optional)
+        public Guid? ProfileId { get; set; }
+        public Profile? Profile { get; set; }
+
     }
 }

@@ -331,6 +331,148 @@ namespace Infrastructure.Migrations
                     b.ToTable("LogHttpTransactions", "audit");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Auth.MenuItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<bool>("Disabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Icon")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Route")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar");
+
+                    b.Property<int>("SortOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.HasKey("Id")
+                        .HasName("PK_MenuItem");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex(new[] { "Key" }, "UK_MenuItem_Key");
+
+                    b.ToTable("MenuItems", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.Auth.Profile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar");
+
+                    b.Property<bool>("Disabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsSystem")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.HasKey("Id")
+                        .HasName("PK_Profile");
+
+                    b.HasIndex(new[] { "Name" }, "UK_Profile_Name");
+
+                    b.ToTable("Profiles", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.Auth.ProfileMenuItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<bool>("Disabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsDefault")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<Guid>("MenuItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.HasKey("Id")
+                        .HasName("PK_ProfileMenuItem");
+
+                    b.HasIndex("MenuItemId");
+
+                    b.HasIndex(new[] { "ProfileId", "IsDefault" }, "IX_ProfileMenuItem_Profile_IsDefault");
+
+                    b.HasIndex(new[] { "ProfileId", "MenuItemId" }, "UK_ProfileMenuItem_Profile_MenuItem");
+
+                    b.ToTable("ProfileMenuItems", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.Auth.Role", b =>
                 {
                     b.Property<Guid>("Id")
@@ -410,6 +552,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("varchar")
                         .HasDefaultValue("ca");
 
+                    b.Property<Guid?>("ProfileId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("RoleId")
                         .HasColumnType("uuid");
 
@@ -425,6 +570,8 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("PK_Users");
+
+                    b.HasIndex("ProfileId");
 
                     b.HasIndex("RoleId");
 
@@ -756,6 +903,11 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bool")
                         .HasDefaultValue(false);
 
+                    b.Property<bool>("IsVisibleInPlant")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -839,6 +991,9 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp without time zone")
                         .HasDefaultValueSql("NOW()");
+
+                    b.Property<bool>("Default")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -1226,47 +1381,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "Name" }, "UK_Site_Name");
 
                     b.ToTable("Sites", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.Production.WorkCenterCost", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Cost")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("decimal");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<Guid>("MachineStatusId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<Guid>("WorkcenterId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id")
-                        .HasName("PK_WorkcenterCost");
-
-                    b.HasIndex("MachineStatusId");
-
-                    b.HasIndex(new[] { "WorkcenterId", "MachineStatusId" }, "UK_WorkcenterCosts_Workcenter_MachineStatus")
-                        .IsUnique();
-
-                    b.ToTable("WorkCenterCosts", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Production.WorkMaster", b =>
@@ -1918,6 +2032,163 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "Name" }, "UK_Workcenter_Name");
 
                     b.ToTable("Workcenters", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.Production.WorkcenterCost", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Cost")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<bool>("Disabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<Guid>("MachineStatusId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<Guid>("WorkcenterId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id")
+                        .HasName("PK_WorkcenterCost");
+
+                    b.HasIndex("MachineStatusId");
+
+                    b.HasIndex(new[] { "WorkcenterId", "MachineStatusId" }, "UK_WorkcenterCosts_Workcenter_MachineStatus")
+                        .IsUnique();
+
+                    b.ToTable("WorkCenterCosts", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.Production.WorkcenterShift", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Current")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("Disabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("ShiftDetailId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("WorkcenterId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id")
+                        .HasName("PK_WorkcenterShifts");
+
+                    b.HasIndex("ShiftDetailId");
+
+                    b.HasIndex("WorkcenterId", "StartTime")
+                        .IsUnique()
+                        .HasDatabaseName("IX_WorkcenterShifts_Unique");
+
+                    b.ToTable("WorkcenterShifts", "data");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Production.WorkcenterShiftDetail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ConcurrentOperatorWorkcenters")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("ConcurrentWorkorderPhases")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<bool>("Current")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("Disabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("MachineStatusId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("OperatorCost")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal")
+                        .HasDefaultValue(0m);
+
+                    b.Property<Guid?>("OperatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("QuantityKo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("QuantityOk")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("WorkOrderPhaseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("WorkcenterCost")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal")
+                        .HasDefaultValue(0m);
+
+                    b.Property<Guid>("WorkcenterShiftId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id")
+                        .HasName("PK_WorkcenterShiftDetails");
+
+                    b.HasIndex("MachineStatusId");
+
+                    b.HasIndex("OperatorId");
+
+                    b.HasIndex("WorkOrderPhaseId");
+
+                    b.HasIndex("WorkcenterShiftId", "MachineStatusId", "OperatorId", "WorkOrderPhaseId", "StartTime")
+                        .IsUnique()
+                        .HasDatabaseName("IX_WorkcenterShiftDetails_Unique");
+
+                    b.ToTable("WorkcenterShiftDetails", "data");
                 });
 
             modelBuilder.Entity("Domain.Entities.Production.WorkcenterType", b =>
@@ -3016,6 +3287,11 @@ namespace Infrastructure.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasDefaultValueSql("NOW()");
 
+                    b.Property<string>("UserNotes")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("varchar");
+
                     b.HasKey("Id")
                         .HasName("PK_Budgets");
 
@@ -3117,6 +3393,11 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp without time zone")
                         .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("UserNotes")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("varchar");
 
                     b.Property<Guid?>("WorkMasterId")
                         .HasColumnType("uuid");
@@ -4024,6 +4305,11 @@ namespace Infrastructure.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasDefaultValueSql("NOW()");
 
+                    b.Property<string>("UserNotes")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("varchar");
+
                     b.Property<decimal>("WorkMasterCost")
                         .HasPrecision(18, 4)
                         .HasColumnType("decimal");
@@ -4157,6 +4443,11 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp without time zone")
                         .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("UserNotes")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("varchar");
 
                     b.Property<string>("VatNumber")
                         .IsRequired()
@@ -4858,13 +5149,48 @@ namespace Infrastructure.Migrations
                     b.ToTable("Warehouses", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.Auth.MenuItem", b =>
+                {
+                    b.HasOne("Domain.Entities.Auth.MenuItem", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Auth.ProfileMenuItem", b =>
+                {
+                    b.HasOne("Domain.Entities.Auth.MenuItem", "MenuItem")
+                        .WithMany("ProfileMenuItems")
+                        .HasForeignKey("MenuItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Auth.Profile", "Profile")
+                        .WithMany("ProfileMenuItems")
+                        .HasForeignKey("ProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MenuItem");
+
+                    b.Navigation("Profile");
+                });
+
             modelBuilder.Entity("Domain.Entities.Auth.User", b =>
                 {
+                    b.HasOne("Domain.Entities.Auth.Profile", "Profile")
+                        .WithMany("Users")
+                        .HasForeignKey("ProfileId");
+
                     b.HasOne("Domain.Entities.Auth.Role", "Role")
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Profile");
 
                     b.Navigation("Role");
                 });
@@ -4973,25 +5299,6 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Enterprise");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Production.WorkCenterCost", b =>
-                {
-                    b.HasOne("Domain.Entities.Production.MachineStatus", "MachineStatus")
-                        .WithMany()
-                        .HasForeignKey("MachineStatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Production.Workcenter", "Workcenter")
-                        .WithMany()
-                        .HasForeignKey("WorkcenterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MachineStatus");
-
-                    b.Navigation("Workcenter");
                 });
 
             modelBuilder.Entity("Domain.Entities.Production.WorkMaster", b =>
@@ -5223,6 +5530,75 @@ namespace Infrastructure.Migrations
                     b.Navigation("Shift");
 
                     b.Navigation("WorkcenterType");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Production.WorkcenterCost", b =>
+                {
+                    b.HasOne("Domain.Entities.Production.MachineStatus", "MachineStatus")
+                        .WithMany()
+                        .HasForeignKey("MachineStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Production.Workcenter", "Workcenter")
+                        .WithMany()
+                        .HasForeignKey("WorkcenterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MachineStatus");
+
+                    b.Navigation("Workcenter");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Production.WorkcenterShift", b =>
+                {
+                    b.HasOne("Domain.Entities.Production.ShiftDetail", "ShiftDetail")
+                        .WithMany()
+                        .HasForeignKey("ShiftDetailId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Production.Workcenter", "Workcenter")
+                        .WithMany()
+                        .HasForeignKey("WorkcenterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ShiftDetail");
+
+                    b.Navigation("Workcenter");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Production.WorkcenterShiftDetail", b =>
+                {
+                    b.HasOne("Domain.Entities.Production.MachineStatus", "MachineStatus")
+                        .WithMany()
+                        .HasForeignKey("MachineStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Production.Operator", "Operator")
+                        .WithMany()
+                        .HasForeignKey("OperatorId");
+
+                    b.HasOne("Domain.Entities.Production.WorkOrderPhase", "WorkOrderPhase")
+                        .WithMany()
+                        .HasForeignKey("WorkOrderPhaseId");
+
+                    b.HasOne("Domain.Entities.Production.WorkcenterShift", "WorkcenterShift")
+                        .WithMany("Details")
+                        .HasForeignKey("WorkcenterShiftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MachineStatus");
+
+                    b.Navigation("Operator");
+
+                    b.Navigation("WorkOrderPhase");
+
+                    b.Navigation("WorkcenterShift");
                 });
 
             modelBuilder.Entity("Domain.Entities.Purchase.Expenses", b =>
@@ -5977,6 +6353,20 @@ namespace Infrastructure.Migrations
                     b.Navigation("Site");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Auth.MenuItem", b =>
+                {
+                    b.Navigation("Children");
+
+                    b.Navigation("ProfileMenuItems");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Auth.Profile", b =>
+                {
+                    b.Navigation("ProfileMenuItems");
+
+                    b.Navigation("Users");
+                });
+
             modelBuilder.Entity("Domain.Entities.Production.Enterprise", b =>
                 {
                     b.Navigation("Sites");
@@ -6008,6 +6398,11 @@ namespace Infrastructure.Migrations
                 {
                     b.Navigation("BillOfMaterials");
 
+                    b.Navigation("Details");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Production.WorkcenterShift", b =>
+                {
                     b.Navigation("Details");
                 });
 

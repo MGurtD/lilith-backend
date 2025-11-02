@@ -7,6 +7,7 @@ public class MachineStatus : Entity
     public string Color { get; set;} = string.Empty;
     public bool Stopped { get; set;} = false;
     public bool OperatorsAllowed { get; set; } = true;
+    public bool Default { get; set; } = false;
     public bool Closed { get; set;} = false;
     public bool Preferred { get; set; } = false;
     public string Icon { get; set;} = string.Empty;

@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.EntityConfiguration.Production
 {
-    public class WorkCenterCostBuilder : IEntityTypeConfiguration<WorkCenterCost>
+    public class WorkCenterCostBuilder : IEntityTypeConfiguration<WorkcenterCost>
     {
-        public void Configure(EntityTypeBuilder<WorkCenterCost> builder)
+        public void Configure(EntityTypeBuilder<WorkcenterCost> builder)
         {
             builder.ConfigureBase();
             builder

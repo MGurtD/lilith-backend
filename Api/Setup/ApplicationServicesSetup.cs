@@ -5,14 +5,13 @@ using Api.Services.Sales;
 using Api.Services.Verifactu;
 using Api.Services.Warehouse;
 using Application.Persistance;
-using Application.Production.Warehouse;
+using Application.Production;
 using Application.Services;
 using Application.Services.Production;
 using Application.Services.Purchase;
 using Application.Services.Sales;
 using Application.Services.Warehouse;
 using Infrastructure.Persistance;
-using Verifactu;
 
 namespace Api.Setup;
 
@@ -42,9 +41,12 @@ public static class ApplicationServicesSetup
         services.AddScoped<IEnterpriseService, EnterpriseService>();
         services.AddScoped<IWorkOrderService, WorkOrderService>();
         services.AddScoped<IMetricsService, MetricsService>();
+        services.AddScoped<IWorkcenterShiftService, WorkcenterShiftService>();
         services.AddScoped<IStockService, StockService>();
         services.AddScoped<IStockMovementService, StockMovementService>();
         services.AddScoped<IVerifactuIntegrationService, VerifactuIntegrationService>();
+        services.AddScoped<IProfileService, ProfileService>();
+    services.AddScoped<IMenuItemService, MenuItemService>();
         services.AddSingleton<IQrCodeService, QrCodeService>();
 
         services.AddHostedService<BudgetBackgroundService>();

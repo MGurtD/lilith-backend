@@ -24,6 +24,9 @@ namespace Application.Persistance
         IRepository<User, Guid> Users { get; }
         IRepository<UserRefreshToken, Guid> UserRefreshTokens { get; }
         IRepository<UserFilter, Guid> UserFilters { get; }
+        IRepository<Profile, Guid> Profiles { get; }
+        IRepository<MenuItem, Guid> MenuItems { get; }
+        IRepository<ProfileMenuItem, Guid> ProfileMenuItems { get; }
 
         // Shared
         IRepository<Domain.Entities.File, Guid> Files { get; }
@@ -64,10 +67,10 @@ namespace Application.Persistance
         // Production
         IRepository<Enterprise, Guid> Enterprises { get; }
         IRepository<Site, Guid> Sites { get; }
-        IRepository<Area, Guid> Areas { get; }
+        IAreaRepository Areas { get; }
         IRepository<WorkcenterType, Guid> WorkcenterTypes { get; }
         IWorkcenterRepository Workcenters { get; }
-        IRepository<WorkCenterCost, Guid> WorkcenterCosts { get; }
+        IRepository<WorkcenterCost, Guid> WorkcenterCosts { get; }
         IRepository<Operator, Guid> Operators { get;  }
         IRepository<OperatorType, Guid> OperatorTypes { get; }        
         IRepository<MachineStatus, Guid> MachineStatuses { get; }
@@ -76,6 +79,7 @@ namespace Application.Persistance
         IWorkMasterRepository WorkMasters { get; }
         IWorkOrderRepository WorkOrders { get; }
         IProductionPartRepository ProductionParts { get; }
+        IWorkcenterShiftRepository WorkcenterShifts { get; }
         IContractReader<DetailedWorkOrder> DetailedWorkOrders { get; }
         IContractReader<ProductionCost> ProductionCosts { get; }
 

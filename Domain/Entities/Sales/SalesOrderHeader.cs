@@ -21,6 +21,8 @@ namespace Domain.Entities.Sales
         public Site? Site { get; set; }
         public Guid? SiteId { get; set;}
 
+        public string UserNotes { get; set; } = string.Empty;
+
         public string CustomerNumber { get; set; } = string.Empty;
         public string CustomerCode { get; set; } = string.Empty;
         public string CustomerComercialName { get; set; } = string.Empty;

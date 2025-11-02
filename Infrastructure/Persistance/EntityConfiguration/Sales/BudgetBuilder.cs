@@ -39,6 +39,12 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .Property(b => b.Notes)
                 .HasColumnType("varchar")
                 .HasMaxLength(4000);
+
+            builder
+                .Property(b => b.UserNotes)
+                .HasColumnType("varchar")
+                .HasMaxLength(4000);
+
             builder
                 .HasKey(b => b.Id)
                 .HasName($"PK_{TABLE_NAME}");
@@ -47,6 +53,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .HasIndex(b => b.Date)
                 .IsDescending()
                 .HasDatabaseName($"IX_{TABLE_NAME}_{nameof(Budget.Date)}");
+            
 
             builder.ToTable(TABLE_NAME);
         }

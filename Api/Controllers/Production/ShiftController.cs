@@ -3,7 +3,6 @@ using Application.Persistance;
 using Application.Services;
 using Domain.Entities.Production;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Policy;
 
 namespace Api.Controllers.Production
 {

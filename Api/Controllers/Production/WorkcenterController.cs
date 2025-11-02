@@ -45,6 +45,13 @@ namespace Api.Controllers.Production
             return Ok(entities.OrderBy(w => w.Name));
         }
 
+        [HttpGet("plant")]
+        public async Task<IActionResult> GetVisibleInPlant()
+        {
+            var entities = await _unitOfWork.Workcenters.GetVisibleInPlant();
+            return Ok(entities);
+        }
+
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {

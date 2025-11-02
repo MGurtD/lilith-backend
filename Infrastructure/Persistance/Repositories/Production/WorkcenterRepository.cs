@@ -13,4 +13,16 @@ public class WorkcenterRepository : Repository<Workcenter, Guid>, IWorkcenterRep
     {
         return await dbSet.AsNoTracking().OrderBy(w => w.Description).ToListAsync();
     }
+
+    public async Task<IEnumerable<Workcenter>> GetVisibleInPlant()
+    {
+        return await dbSet
+            .Include(w => w.Area)
+            .Include(w => w.WorkcenterType)
+            .Include(w => w.Shift)
+            .Where(w => !w.Disabled && w.Area != null && w.Area.IsVisibleInPlant)
+            .OrderBy(w => w.Name)
+            .AsNoTracking()
+            .ToListAsync();
+    }
 }

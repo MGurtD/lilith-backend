@@ -52,6 +52,7 @@
     "WorkOrderLineCreateError": "Error al crear la línea del pedido",
     "WorkOrderAlreadyExists": "Orden de fabricación existente",
     "WorkOrderStatusNotFound": "No se ha encontrado el estado adecuado para la orden de fabricación",
+    "WorkOrderPhaseByWorkcenterNotFound": "No se han encontrado órdenes de fabricación en producción para el centro de trabajo {0}",
     "WorkOrderPhaseWithId": "Fase de orden de fabricación con ID {0}",
     "WorkOrderWithId": "Orden de fabricación con ID {0}",
     "WorkMasterNotFound": "Ruta de fabricación inexistente",
@@ -198,6 +199,22 @@
     "VerifactuInvoiceNotIntegrated": "La factura no ha sido integrada con Verifactu",
     "VerifactuNoRequestsFound": "No se encontraron solicitudes para el ID de factura especificado.",
     "VerifactuInvalidMonth": "El mes debe estar entre 1 y 12.",
-    "VerifactuInvalidYear": "El año debe estar entre 2024 y {0}."
+    "VerifactuInvalidYear": "El año debe estar entre 2024 y {0}.",
+    "ProfileNotFound": "Perfil con ID {0} no existe",
+    "MenuItemNotFound": "Elemento de menú con ID {0} no existe",
+    "ProfileNameExists": "Nombre de perfil {0} existente",
+    "MenuItemKeyExists": "Clave de elemento de menú {0} existente",
+    "InvalidMenuHierarchy": "Jerarquía de menú inválida",
+    "DefaultMenuItemNotInProfile": "El elemento de menú por defecto no está asignado al perfil",
+    "UserProfileAssigned": "Perfil asignado al usuario",
+    "ProfileDeleteForbidden": "No se puede eliminar un perfil de sistema",
+    "ProfileMenuUpdated": "Menú de perfil actualizado correctamente",
+    "ProfileDefaultUpdated": "Pantalla por defecto actualizada correctamente",
+    "MenuItemCreated": "Elemento de menú creado correctamente",
+    "MenuItemUpdated": "Elemento de menú actualizado correctamente",
+    "MenuItemDeleted": "Elemento de menú eliminado correctamente",
+    "MenuItemParentNotFound": "Elemento de menú padre con ID {0} no existe",
+    "MenuItemCannotDeleteHasChildren": "No se puede eliminar un elemento de menú con hijos",
+    "MenuItemInvalidParent": "Elemento de menú padre no válido"
   }
 }

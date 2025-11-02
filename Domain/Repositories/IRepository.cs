@@ -15,7 +15,9 @@ namespace Application.Persistance.Repositories
         Task<bool> Exists(Guid id);
 
         Task Add(TEntity entity);
+        Task AddWithoutSave(TEntity entity);
         Task AddRange(IEnumerable<TEntity> entities);
+        Task AddRangeWithoutSave(IEnumerable<TEntity> entities);
 
         Task Update(TEntity entity);
         bool UpdateWithoutSave(TEntity entity);

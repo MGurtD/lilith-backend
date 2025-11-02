@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Entities.Production
+﻿namespace Domain.Entities.Production
 {
-    public class WorkCenterCost : Entity
+    public class WorkcenterCost : Entity
     {
         public Guid WorkcenterId { get; set; }
         public Workcenter? Workcenter { get; set; }

@@ -67,6 +67,9 @@ try
 
         app.MapControllers();
 
+        // Seed profiles and menu items (idempotent)
+        await ProfileMenuSeeder.SeedAsync(app.Services);
+
         app.Run();
     }
 }

@@ -92,6 +92,10 @@ namespace Infrastructure.Persistance.EntityConfiguration.Sales
                 .HasColumnType("varchar")
                 .HasMaxLength(12);
             builder
+                .Property(b => b.UserNotes)
+                .HasColumnType("varchar")
+                .HasMaxLength(4000);
+            builder
                 .HasKey(b => b.Id)
                 .HasName("PK_SalesOrderHeader");
             builder

@@ -52,6 +52,7 @@
     "WorkOrderLineCreateError": "Error al crear la linea de la comanda",
     "WorkOrderAlreadyExists": "Ordre de fabricació existent",
     "WorkOrderStatusNotFound": "No s'ha trobat l'estat adequat per l'ordre de fabricació",
+    "WorkOrderPhaseByWorkcenterNotFound": "No s'han trobat ordres de fabricació en producció per al centre de treball {0}",
     "WorkOrderPhaseWithId": "Fase de ordre de fabricació amb ID {0}",
     "WorkOrderWithId": "Ordre de fabricació amb ID {0}",
     "WorkMasterNotFound": "Ruta de fabricació inexistent",
@@ -198,6 +199,22 @@
     "VerifactuInvoiceNotIntegrated": "La factura no ha estat integrada amb Verifactu",
     "VerifactuNoRequestsFound": "No s'han trobat peticions per l'ID de factura especificat.",
     "VerifactuInvalidMonth": "El mes ha d'estar entre 1 i 12.",
-    "VerifactuInvalidYear": "L'any ha d'estar entre 2024 i {0}."
+    "VerifactuInvalidYear": "L'any ha d'estar entre 2024 i {0}.",
+    "ProfileNotFound": "Perfil amb ID {0} no existeix",
+    "MenuItemNotFound": "Element de menú amb ID {0} no existeix",
+    "ProfileNameExists": "Nom de perfil {0} existent",
+    "MenuItemKeyExists": "Clau d'element de menú {0} existent",
+    "InvalidMenuHierarchy": "Jerarquia de menú invàlida",
+    "DefaultMenuItemNotInProfile": "L'element de menú per defecte no està assignat al perfil",
+    "UserProfileAssigned": "Perfil assignat a l'usuari",
+    "ProfileDeleteForbidden": "No es pot eliminar un perfil de sistema",
+    "ProfileMenuUpdated": "Menú de perfil actualitzat correctament",
+    "ProfileDefaultUpdated": "Pantalla per defecte actualitzada correctament",
+    "MenuItemCreated": "Element de menú creat correctament",
+    "MenuItemUpdated": "Element de menú actualitzat correctament",
+    "MenuItemDeleted": "Element de menú eliminat correctament",
+    "MenuItemParentNotFound": "Element de menú pare amb ID {0} no existeix",
+    "MenuItemCannotDeleteHasChildren": "No es pot eliminar un element de menú amb fills",
+    "MenuItemInvalidParent": "Element de menú pare no vàlid"
   }
 }

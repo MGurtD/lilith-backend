@@ -32,6 +32,9 @@ namespace Infrastructure.Persistance
         public IRepository<User, Guid> Users { get; private set; } = new Repository<User, Guid>(context);
         public IRepository<UserRefreshToken, Guid> UserRefreshTokens { get; private set; } = new Repository<UserRefreshToken, Guid>(context);
         public IRepository<UserFilter, Guid> UserFilters { get; private set; } = new Repository<UserFilter, Guid>(context);
+    public IRepository<Profile, Guid> Profiles { get; private set; } = new Repository<Profile, Guid>(context);
+    public IRepository<MenuItem, Guid> MenuItems { get; private set; } = new Repository<MenuItem, Guid>(context);
+    public IRepository<ProfileMenuItem, Guid> ProfileMenuItems { get; private set; } = new Repository<ProfileMenuItem, Guid>(context);
 
         // Shared
         public IRepository<Domain.Entities.File, Guid> Files { get; private set; } = new Repository<Domain.Entities.File, Guid>(context);
@@ -71,10 +74,10 @@ namespace Infrastructure.Persistance
         // Production
         public IRepository<Enterprise, Guid> Enterprises { get; private set; } = new Repository<Enterprise, Guid>(context);
         public IRepository<Site, Guid> Sites { get; private set; } = new Repository<Site, Guid>(context);
-        public IRepository<Area, Guid> Areas { get; private set; } = new Repository<Area, Guid>(context);
+        public IAreaRepository Areas { get; private set; } = new AreaRepository(context);
         public IRepository<WorkcenterType, Guid> WorkcenterTypes { get; private set; } = new Repository<WorkcenterType, Guid>(context);
         public IWorkcenterRepository Workcenters { get; private set; } = new WorkcenterRepository(context);
-        public IRepository<WorkCenterCost, Guid> WorkcenterCosts { get; private set; } = new Repository<WorkCenterCost, Guid>(context);
+        public IRepository<WorkcenterCost, Guid> WorkcenterCosts { get; private set; } = new Repository<WorkcenterCost, Guid>(context);
         public IRepository<Operator, Guid> Operators { get; private set; } = new Repository<Operator, Guid>(context);
         public IRepository<OperatorType, Guid> OperatorTypes { get; private set; } = new Repository<OperatorType, Guid>(context);
         public IRepository<MachineStatus, Guid> MachineStatuses { get; private set; } = new Repository<MachineStatus, Guid>(context);
@@ -83,6 +86,7 @@ namespace Infrastructure.Persistance
         public IWorkMasterRepository WorkMasters { get; private set; } = new WorkMasterRepository(context);
         public IWorkOrderRepository WorkOrders { get; private set; } = new WorkOrderRepository(context);
         public IProductionPartRepository ProductionParts { get; private set; } = new ProductionPartRepository(context);
+        public IWorkcenterShiftRepository WorkcenterShifts { get; private set; } = new WorkcenterShiftRepository(context);
         public IContractReader<DetailedWorkOrder> DetailedWorkOrders { get; private set; } = new ContractReader<DetailedWorkOrder>(context);
         public IContractReader<ProductionCost> ProductionCosts { get; private set; } = new ContractReader<ProductionCost>(context);
 

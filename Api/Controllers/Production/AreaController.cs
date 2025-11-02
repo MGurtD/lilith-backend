@@ -36,6 +36,14 @@ namespace Api.Controllers.Production
                 return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("AreaAlreadyExists", request.Name)));
             }
         }
+
+        [HttpGet("plant")]
+        public async Task<IActionResult> GetAllVisibleInPlant()
+        {
+            var entities = await _unitOfWork.Areas.GetVisibleInPlantWithWorkcenters();
+            return Ok(entities);
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {

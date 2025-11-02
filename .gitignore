@@ -267,3 +267,4 @@ FakesAssemblies/
 
 # Local Development Files
 docker-compose.yml
+/Api/appsettings.json
