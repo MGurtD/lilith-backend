@@ -241,15 +241,24 @@ namespace Api.Setup
                 if (user.Username == "ezapater" || user.Username == "marcgurt")
                 {
                     var superuserProfile = profiles.Where(u => u.Name == "superuser").FirstOrDefault();
-                    user.ProfileId = superuserProfile.Id;
+                    if (superuserProfile != null)
+                    {
+                        user.ProfileId = superuserProfile.Id;
+                    }
                 }
                 else if (user.Username == "gestoria")
                 {
                     var managementProfile = profiles.Where(u => u.Name == "management").FirstOrDefault();
-                    user.ProfileId = managementProfile.Id;
+                    if (managementProfile != null)
+                    {
+                        user.ProfileId = managementProfile.Id;
+                    }
                 } else {
                     var defaultProfile = profiles.Where(u => u.Name == "default").FirstOrDefault();
-                    user.ProfileId = defaultProfile.Id;
+                    if (defaultProfile != null)
+                    {
+                        user.ProfileId = defaultProfile.Id;
+                    }
                 }
                 await uow.Users.Update(user);
             }
