@@ -4,7 +4,6 @@ using Application.Persistance.Repositories.Purchase;
 using Application.Services;
 using Domain.Entities.Shared;
 using Microsoft.AspNetCore.Mvc;
-using NLog.LayoutRenderers.Wrappers;
 
 namespace Api.Controllers.Shared
 {

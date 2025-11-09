@@ -1,22 +1,22 @@
 using Api;
 using Api.Middlewares;
 using Api.Setup;
-using NLog;
-using NLog.Web;
+using Serilog;
 using System.Text.Json.Serialization;
 using Application.Services; // ILanguageCatalog
 using Api.Services; // LanguageCatalog
 
-// Early init of NLog to allow startup and exception logging, before host is built
-var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
+// Configure Serilog bootstrap logger for early startup logging
+SerilogSetup.ConfigureBootstrapLogger();
 
 try
 {
+    Log.Information("Starting Lilith Backend API");
+    
     var builder = WebApplication.CreateBuilder(args);
     {
-        // Logging with NLog
-        builder.Logging.ClearProviders();
-        builder.Host.UseNLog();
+        // Add Serilog (configuration read from appsettings.json)
+        builder.Host.AddSerilogSetup();
 
         // Configuration and settings
         builder.Services.Configure<AppSettings>(builder.Configuration);
@@ -45,6 +45,9 @@ try
 
     var app = builder.Build();
     {
+        // Serilog HTTP request logging
+        app.UseSerilogRequestLogging();
+        
         app.UseSwagger();
         app.UseSwaggerUI();
 
@@ -75,11 +78,10 @@ try
 }
 catch (Exception exception)
 {
-    logger.Error(exception, "Stopped program because of exception");
+    Log.Fatal(exception, "Application terminated unexpectedly");
     throw;
 }
 finally
 {
-    // Ensure to flush and stop internal timers/threads before application-exit (Avoid segmentation fault on Linux)
-    LogManager.Shutdown();
+    Log.CloseAndFlush();
 }
