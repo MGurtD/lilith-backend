@@ -109,9 +109,29 @@ namespace Api.Services
 
         public static string GetContentType(string path)
         {
+            var ext = Path.GetExtension(path).ToLowerInvariant();
+            
+            // Añadir tipos MIME específicos para archivos CAD
+            return ext switch
+            {
+                // Archivos CAD
+                ".stp" => "application/step",
+                ".step" => "application/step",
+                ".dxf" => "application/dxf",
+                ".dwg" => "application/acad",
+                ".stl" => "application/sla",
+                ".iges" => "application/iges",
+                ".igs" => "application/iges",
+                
+                // Para otros archivos, usar el provider estándar
+                _ => GetStandardContentType(path)
+            };
+        }
+
+        private static string GetStandardContentType(string path)
+        {
             var provider = new FileExtensionContentTypeProvider();
-            var contentType = string.Empty;
-            if (!provider.TryGetContentType(path, out contentType))
+            if (!provider.TryGetContentType(path, out var contentType))
             {
                 contentType = "application/octet-stream";
             }
