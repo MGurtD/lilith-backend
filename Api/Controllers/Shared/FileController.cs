@@ -50,7 +50,14 @@ namespace Api.Controllers
                 await stream.CopyToAsync(memory);
             }
             memory.Position = 0;
-            return File(memory, Services.FileService.GetContentType(file.Path), Path.GetFileName(file.Path));
+            
+            var contentType = Services.FileService.GetContentType(file.Path);
+            var fileName = Path.GetFileName(file.Path);
+            
+            // Añadir header Content-Disposition para forzar descarga con nombre correcto
+            Response.Headers.Append("Content-Disposition", $"attachment; filename=\"{fileName}\"");
+            
+            return File(memory, contentType, fileName);
         }
 
         [Route("Upload")]
