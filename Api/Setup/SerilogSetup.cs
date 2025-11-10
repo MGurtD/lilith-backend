@@ -41,7 +41,7 @@ namespace Api.Setup
                     .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
                     .WriteTo.Console(outputTemplate: OutputTemplate)
                     .WriteTo.File(
-                        path: "Logs/log-.txt",
+                        path: "logs/log-.txt",
                         rollingInterval: RollingInterval.Day,
                         retainedFileTimeLimit: TimeSpan.FromDays(7),
                         outputTemplate: OutputTemplate);
