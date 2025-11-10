@@ -1,5 +1,7 @@
 using Api.Models;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
+using Serilog.Core;
 using System.Globalization;
 using System.Text.Json;
 
@@ -10,11 +12,13 @@ namespace Api.Services
         private readonly Dictionary<string, Dictionary<string, string>> _localizations = new();
         private readonly string _resourcesPath;
         private readonly string _baseName;
+        private readonly ILogger<JsonStringLocalizer> _logger;
 
-        public JsonStringLocalizer(string resourcesPath, string baseName)
+        public JsonStringLocalizer(string resourcesPath, string baseName, ILogger<JsonStringLocalizer> logger)
         {
             _resourcesPath = resourcesPath;
             _baseName = baseName;
+            _logger = logger;
             LoadLocalizations();
         }
 
@@ -94,12 +98,12 @@ namespace Api.Services
             if (!Directory.Exists(resourcePath))
             {
                 // Log that the directory doesn't exist for debugging
-                Console.WriteLine($"Resource directory not found: {Path.GetFullPath(resourcePath)}");
+                _logger.LogWarning($"Resource directory not found: {Path.GetFullPath(resourcePath)}");
                 return;
             }
 
             var jsonFiles = Directory.GetFiles(resourcePath, "*.json");
-            Console.WriteLine($"Found {jsonFiles.Length} localization files in {resourcePath}");
+            _logger.LogInformation($"Found {jsonFiles.Length} localization files in {resourcePath}");
 
             foreach (var file in jsonFiles)
             {
@@ -111,17 +115,17 @@ namespace Api.Services
                     if (localizationFile != null && !string.IsNullOrEmpty(localizationFile.Culture) && localizationFile.Texts != null)
                     {
                         _localizations[localizationFile.Culture] = localizationFile.Texts;
-                        Console.WriteLine($"Loaded {localizationFile.Texts.Count} translations for culture '{localizationFile.Culture}'");
+                        _logger.LogInformation($"Loaded {localizationFile.Texts.Count} translations for culture '{localizationFile.Culture}'");
                     }
                     else
                     {
-                        Console.WriteLine($"Invalid localization file format: {file}. Expected format with 'culture' and 'texts' properties.");
+                        _logger.LogWarning($"Invalid localization file format: {file}. Expected format with 'culture' and 'texts' properties.");
                     }
                 }
                 catch (Exception ex)
                 {
                     // Log error but continue loading other files
-                    Console.WriteLine($"Error loading localization file {file}: {ex.Message}");
+                    _logger.LogError(ex, $"Error loading localization file {file}");
                 }
             }
         }

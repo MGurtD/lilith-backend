@@ -143,7 +143,7 @@ namespace Api.Services.Sales
                 await unitOfWork.Budgets.Update(budget);
                 
             }
-            return (new GenericResponse(true));
+            return new GenericResponse(true);
         }
     }
 }

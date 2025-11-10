@@ -3,7 +3,8 @@ using Microsoft.Extensions.Options;
 
 namespace Api.Services
 {
-    public class JsonStringLocalizerFactory(IOptions<LocalizationOptions> options) : IStringLocalizerFactory
+    public class JsonStringLocalizerFactory(IOptions<LocalizationOptions> options,
+        ILogger<JsonStringLocalizer> logger) : IStringLocalizerFactory
     {
         private readonly string _resourcesPath = options.Value.ResourcesPath ?? "Resources";
 
@@ -14,7 +15,7 @@ namespace Api.Services
 
         public IStringLocalizer Create(string baseName, string location)
         {
-            return new JsonStringLocalizer(_resourcesPath, baseName);
+            return new JsonStringLocalizer(_resourcesPath, baseName, logger);
         }
 
         private IStringLocalizer Create(string baseName)

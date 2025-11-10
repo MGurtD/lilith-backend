@@ -35,20 +35,16 @@ namespace Api.Setup
                     .ReadFrom.Configuration(context.Configuration)
                     .ReadFrom.Services(services)
                     .Enrich.FromLogContext()
+                    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+                    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+                    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
                     .WriteTo.Console(outputTemplate: OutputTemplate)
                     .WriteTo.File(
                         path: "Logs/log-.txt",
                         rollingInterval: RollingInterval.Day,
+                        retainedFileTimeLimit: TimeSpan.FromDays(7),
                         outputTemplate: OutputTemplate);
-
-                // Apply environment-specific overrides
-                if (!context.HostingEnvironment.IsDevelopment())
-                {
-                    // Production: Override to Warning if not explicitly configured
-                    logConfig
-                        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                        .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information);
-                }
             });
 
             return host;
