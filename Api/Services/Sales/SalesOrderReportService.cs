@@ -10,7 +10,7 @@ namespace Api.Services.Sales
         ISalesOrderService salesOrderService,
         ILocalizationService localizationService) : ISalesOrderReportService
     {
-        public async Task<SalesOrderReportResponse?> GetReportById(Guid id)
+        public async Task<SalesOrderReportResponse?> GetReportById(Guid id, bool showPrices = true)
         {
             // Get order header and validate
             var order = await salesOrderService.GetById(id);
@@ -28,7 +28,7 @@ namespace Api.Services.Sales
             order.SalesOrderDetails = [.. order.SalesOrderDetails.OrderBy(d => d.Reference!.Code)];
 
             // Build report response using customer's preferred language
-            var report = new SalesOrderReportResponse(customer.PreferredLanguage, localizationService)
+            var report = new SalesOrderReportResponse(customer.PreferredLanguage, showPrices, localizationService)
             {
                 Order = order,
                 Customer = customer,
