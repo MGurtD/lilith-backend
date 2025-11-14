@@ -1,10 +1,11 @@
 ﻿using Application.Contracts;
+using Application.Contracts.Sales;
 using Application.Services;
 using Domain.Entities.Production;
 
 namespace Domain.Entities.Sales;
 
-public class SalesOrderReportResponse(string languageCode, ILocalizationService localizationService) : ReportResponse(languageCode)
+public class SalesOrderReportResponse(string languageCode, bool showPrices, ILocalizationService localizationService) : ReportResponse(languageCode)
 {
     public string Title { get; set; } = localizationService.GetLocalizedStringForCulture("Report.SalesOrder.Title", languageCode);
     public string HeaderNumber { get; set; } = localizationService.GetLocalizedStringForCulture("Report.HeaderNumber", languageCode);
@@ -18,7 +19,10 @@ public class SalesOrderReportResponse(string languageCode, ILocalizationService 
 
     public Customer? Customer { get; set; }
     public Site? Site { get; set; }
-    public SalesOrderHeader? Order { get; set; }
+    public SalesOrderHeaderReportDto? Order { get; set; }
+    public List<SalesOrderDetailReportDto> OrderDetails { get; set; } = [];
     public decimal Total { get; set; }
+
+    public bool ShowPrices => showPrices;
 }
 

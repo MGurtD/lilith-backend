@@ -30,16 +30,16 @@ namespace Api.Controllers.Sales
         }
 
         [HttpGet("Report/{id:guid}")]
-        public async Task<IActionResult> GetSalesOrderReport(Guid id)
+        public async Task<IActionResult> GetSalesOrderReport(Guid id, bool showPrices = true)
         {
-            var salesOrders = await reportService.GetReportById(id);
+            var salesOrders = await reportService.GetReportById(id, showPrices);
             return Ok(salesOrders);
         }
 
         [HttpGet]
         public IActionResult GetSalesOrders(DateTime startTime, DateTime endTime, Guid? customerId)
         {
-            IEnumerable<SalesOrderHeader> salesOrderHeaders = new List<SalesOrderHeader>();
+            IEnumerable<SalesOrderHeader> salesOrderHeaders = [];
             if (customerId.HasValue)
                 salesOrderHeaders = service.GetBetweenDatesAndCustomer(startTime, endTime, customerId.Value);
             else
