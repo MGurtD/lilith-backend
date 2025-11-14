@@ -1,3 +1,4 @@
+using Application.Contracts.Sales;
 using Application.Persistance;
 using Application.Services;
 using Application.Services.Sales;
@@ -24,13 +25,24 @@ namespace Api.Services.Sales
             var site = await unitOfWork.Sites.Get(order.SiteId.Value);
             if (site is null) return null;
 
-            // Order details ordered by reference
-            order.SalesOrderDetails = [.. order.SalesOrderDetails.OrderBy(d => d.Reference!.Code)];
-
             // Build report response using customer's preferred language
             var report = new SalesOrderReportResponse(customer.PreferredLanguage, showPrices, localizationService)
             {
-                Order = order,
+                Order = new SalesOrderHeaderReportDto
+                {
+                    Number = order.Number,
+                    Date = order.Date,
+                    CustomerNumber = order.CustomerNumber
+                },
+                OrderDetails = [.. order.SalesOrderDetails
+                    .OrderBy(d => d.Reference!.Code)
+                    .Select(d => new SalesOrderDetailReportDto
+                    {
+                        Quantity = d.Quantity,
+                        Description = $"{d.Reference!.Code} - {d.Description}",
+                        UnitPrice = d.UnitPrice,
+                        Amount = d.Amount
+                    })],
                 Customer = customer,
                 Site = site,
                 Total = order.SalesOrderDetails.Sum(d => d.Amount)

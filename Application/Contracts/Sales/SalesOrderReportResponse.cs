@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.Contracts.Sales;
 using Application.Services;
 using Domain.Entities.Production;
 
@@ -18,7 +19,8 @@ public class SalesOrderReportResponse(string languageCode, bool showPrices, ILoc
 
     public Customer? Customer { get; set; }
     public Site? Site { get; set; }
-    public SalesOrderHeader? Order { get; set; }
+    public SalesOrderHeaderReportDto? Order { get; set; }
+    public List<SalesOrderDetailReportDto> OrderDetails { get; set; } = [];
     public decimal Total { get; set; }
 
     public bool ShowPrices => showPrices;
