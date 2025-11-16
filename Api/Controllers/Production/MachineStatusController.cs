@@ -8,41 +8,32 @@ namespace Api.Controllers.Production
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class MachineStatusController : ControllerBase
+    public class MachineStatusController(IUnitOfWork unitOfWork, ILocalizationService localizationService) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ILocalizationService _localizationService;
-
-        public MachineStatusController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
-        {
-            _unitOfWork = unitOfWork;
-            _localizationService = localizationService;
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(MachineStatus request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.MachineStatuses.Find(r => request.Name == r.Name).Any();
+            var exists = unitOfWork.MachineStatuses.Find(r => request.Name == r.Name).Any();
             if (!exists)
             {
                 if (request.Default)
-                    DisableCurrentDefault();
+                    DisableCurrentDefault(request.Id);
 
-                await _unitOfWork.MachineStatuses.Add(request);
+                await unitOfWork.MachineStatuses.Add(request);
                 var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
                 return Created(location, request);
             }
             else
             {
-                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("MachineStatusAlreadyExists", request.Name)));
+                return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("MachineStatusAlreadyExists", request.Name)));
             }
         }
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.MachineStatuses.GetAll();
+            var entities = await unitOfWork.MachineStatuses.GetAll();
 
             return Ok(entities.OrderBy(w => w.Name));
         }
@@ -50,7 +41,7 @@ namespace Api.Controllers.Production
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.MachineStatuses.Get(id);
+            var entity = await unitOfWork.MachineStatuses.Get(id);
             if (entity is not null)
             {
                 return Ok(entity);
@@ -61,13 +52,13 @@ namespace Api.Controllers.Production
             }
         }
 
-        private void DisableCurrentDefault()
+        private void DisableCurrentDefault(Guid currentDefaultId)
         {
-            var currentDefault = _unitOfWork.MachineStatuses.Find(e => e.Default).FirstOrDefault();
+            var currentDefault = unitOfWork.MachineStatuses.Find(e => e.Id != currentDefaultId && e.Default).FirstOrDefault();
             if (currentDefault is not null)
             {
                 currentDefault.Default = false;
-                _unitOfWork.MachineStatuses.UpdateWithoutSave(currentDefault);
+                unitOfWork.MachineStatuses.UpdateWithoutSave(currentDefault);
             }
         }
 
@@ -79,15 +70,15 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.MachineStatuses.Exists(request.Id);
+            var exists = await unitOfWork.MachineStatuses.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
             if (request.Default)
-                DisableCurrentDefault();
+                DisableCurrentDefault(Id);
 
-            _unitOfWork.MachineStatuses.UpdateWithoutSave(request);
-            await _unitOfWork.CompleteAsync();
+            unitOfWork.MachineStatuses.UpdateWithoutSave(request);
+            await unitOfWork.CompleteAsync();
             return Ok(request);
         }
 
@@ -97,11 +88,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.MachineStatuses.Find(e => e.Id == id).FirstOrDefault();
+            var entity = unitOfWork.MachineStatuses.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.MachineStatuses.Remove(entity);
+            await unitOfWork.MachineStatuses.Remove(entity);
             return Ok(entity);
         }
 

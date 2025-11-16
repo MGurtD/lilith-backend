@@ -4,5 +4,5 @@ namespace Application.Services.Sales;
 
 public interface ISalesOrderReportService
 {
-    Task<SalesOrderReportResponse?> GetReportById(Guid id);
+    Task<SalesOrderReportResponse?> GetReportById(Guid id, bool showPrices = true);
 }

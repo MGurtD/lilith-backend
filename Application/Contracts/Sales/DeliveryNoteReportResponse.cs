@@ -4,7 +4,7 @@ using Domain.Entities.Production;
 
 namespace Domain.Entities.Sales
 {
-    public class DeliveryNoteReportResponse(string languageCode, ILocalizationService localizationService) : ReportResponse(languageCode)
+    public class DeliveryNoteReportResponse(string languageCode, bool showPrices, ILocalizationService localizationService) : ReportResponse(languageCode)
     {
         public string Title { get; set; } = localizationService.GetLocalizedStringForCulture("Report.DeliveryNote.Title", languageCode);
         public string HeaderNumber { get; set; } = localizationService.GetLocalizedStringForCulture("Report.HeaderNumber", languageCode);
@@ -22,6 +22,8 @@ namespace Domain.Entities.Sales
         public DeliveryNote? DeliveryNote { get; set; }
         public IList<DeliveryNoteOrderReportDto>? Orders { get; set; }
         public decimal Total { get; set; }
+
+        public bool ShowPrices => showPrices;
     }
 
     public class DeliveryNoteOrderReportDto

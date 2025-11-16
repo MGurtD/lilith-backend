@@ -68,7 +68,7 @@ namespace Api.Services.Sales
             foreach (var deliveryNote in deliveryNotes)
             {
                 var orders = salesOrderService.GetByDeliveryNoteId(deliveryNote.Id);
-                var customerOrderNumbers = String.Join(",", [.. orders.Select(orders => orders.CustomerNumber)]);
+                var customerOrderNumbers = string.Join(",", [.. orders.Select(orders => orders.CustomerNumber)]);
                 var deliveryDate = (deliveryNote.DeliveryDate ?? DateTime.Now).ToString("dd/MM/yyyy");
 
                 reportDto.DeliveryNotes.Add(new InvoiceReportDtoDeliveryNote()

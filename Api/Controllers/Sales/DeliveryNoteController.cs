@@ -23,9 +23,9 @@ namespace Api.Controllers.Purchase
         }
 
         [HttpGet("Report/{id:guid}")]
-        public async Task<IActionResult> GetDeliveryNoteForReport(Guid id)
+        public async Task<IActionResult> GetDeliveryNoteForReport(Guid id, bool showPrices = true)
         {
-            var deliveryNote = await reportService.GetReportById(id);
+            var deliveryNote = await reportService.GetReportById(id, showPrices);
             return Ok(deliveryNote);
         }
 

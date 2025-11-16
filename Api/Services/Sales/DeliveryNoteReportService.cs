@@ -7,7 +7,7 @@ namespace Api.Services.Sales
 {
     public class DeliveryNoteReportService(IUnitOfWork unitOfWork, ISalesOrderService salesOrderService, ILocalizationService localizationService) : IDeliveryNoteReportService
     {
-        public async Task<DeliveryNoteReportResponse?> GetReportById(Guid id)
+        public async Task<DeliveryNoteReportResponse?> GetReportById(Guid id, bool showPrices = true)
         {
             var deliveryNote = await unitOfWork.DeliveryNotes.Get(id);
             if (deliveryNote is null) return null;
@@ -25,11 +25,11 @@ namespace Api.Services.Sales
                 Number = order.Number,
                 Date = order.Date,
                 CustomerNumber = order.CustomerNumber,
-                Details = order.SalesOrderDetails.ToList(),
+                Details = [.. order.SalesOrderDetails],
                 Total = order.SalesOrderDetails.Sum(d => d.Amount)
             }).ToList();
 
-            var report = new DeliveryNoteReportResponse(customer.PreferredLanguage, localizationService)
+            var report = new DeliveryNoteReportResponse(customer.PreferredLanguage, showPrices, localizationService)
             {
                 DeliveryNote = deliveryNote,
                 Orders = deliveryNoteOrders,
