@@ -9,6 +9,10 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
+
+    # Selección del entorno dinámico según la rama
+    environment: ${{ github.ref == 'refs/heads/master' && 'production' || 'staging' }}
+
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -40,3 +44,16 @@ jobs:
         with:
           push: true
           tags: marcgurt/lilith-backend:test
+
+      - name: Deploy to server via SSH
+        if: github.ref_name == 'dev'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.PASSWORD }}
+          script: |
+            cd ~/lilith
+            docker pull marcgurt/lilith-backend:dev
+            docker compose up -d --no-deps --force-recreate lilith-backend
