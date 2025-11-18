@@ -73,7 +73,7 @@ namespace Application.Persistance
         IRepository<WorkcenterCost, Guid> WorkcenterCosts { get; }
         IRepository<Operator, Guid> Operators { get;  }
         IRepository<OperatorType, Guid> OperatorTypes { get; }        
-        IRepository<MachineStatus, Guid> MachineStatuses { get; }
+        IMachineStatusRepository MachineStatuses { get; }
         IRepository<Shift, Guid> Shifts { get; }
         IRepository<ShiftDetail, Guid> ShiftDetails { get; }
         IWorkMasterRepository WorkMasters { get; }
