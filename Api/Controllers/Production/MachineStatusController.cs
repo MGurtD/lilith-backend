@@ -3,6 +3,7 @@ using Application.Persistance;
 using Application.Services;
 using Domain.Entities.Production;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Api.Controllers.Production
 {
@@ -96,5 +97,83 @@ namespace Api.Controllers.Production
             return Ok(entity);
         }
 
+        #region Reasons
+        [HttpGet("Reason/{id:guid}")]
+        [SwaggerOperation("GetMachineStatusReasonById")]
+        public async Task<IActionResult> GetReasonById(Guid id)
+        {
+            var entity = await unitOfWork.MachineStatuses.Reasons.Get(id);
+            if (entity is not null)
+            {
+                return Ok(entity);
+            }
+            else
+            {
+                return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("MachineStatusReasonNotFound", id)));
+            }
+        }
+
+        [HttpPost("Reason")]
+        [SwaggerOperation("CreateMachineStatusReason")]
+        public async Task<IActionResult> CreateReason(MachineStatusReason request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.ValidationState);
+
+            var codeExists = unitOfWork.MachineStatuses.Reasons.Find(r => 
+                r.Code == request.Code && 
+                r.MachineStatusId == request.MachineStatusId && 
+                r.Id != request.Id
+            ).Any();
+            
+            if (codeExists)
+                return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("MachineStatusReasonCodeDuplicate", request.Code)));
+
+            await unitOfWork.MachineStatuses.Reasons.Add(request);
+            return Ok(new GenericResponse(true, request));
+        }
+
+        [HttpPut("Reason/{id:guid}")]
+        [SwaggerOperation("UpdateMachineStatusReason")]
+        public async Task<IActionResult> UpdateReason(Guid id, MachineStatusReason request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.ValidationState);
+            if (id != request.Id)
+                return BadRequest();
+
+            var exists = await unitOfWork.MachineStatuses.Reasons.Exists(request.Id);
+            if (!exists)
+                return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("MachineStatusReasonNotFound", id)));
+
+            var codeExists = unitOfWork.MachineStatuses.Reasons.Find(r => 
+                r.Code == request.Code && 
+                r.MachineStatusId == request.MachineStatusId && 
+                r.Id != request.Id
+            ).Any();
+            
+            if (codeExists)
+                return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("MachineStatusReasonCodeDuplicate", request.Code)));
+
+            unitOfWork.MachineStatuses.Reasons.UpdateWithoutSave(request);
+            await unitOfWork.CompleteAsync();
+            return Ok(new GenericResponse(true, request));
+        }
+
+        [HttpDelete("Reason/{id:guid}")]
+        [SwaggerOperation("DeleteMachineStatusReason")]
+        public async Task<IActionResult> DeleteReason(Guid id)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.ValidationState);
+
+            var entity = unitOfWork.MachineStatuses.Reasons.Find(e => e.Id == id).FirstOrDefault();
+            if (entity is null)
+                return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("MachineStatusReasonNotFound", id)));
+
+            await unitOfWork.MachineStatuses.Reasons.Remove(entity);
+            return Ok(new GenericResponse(true, entity));
+        }
+        #endregion
     }
 }
