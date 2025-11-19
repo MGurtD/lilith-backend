@@ -127,6 +127,7 @@ namespace Api.Services.Production
                 {
                     WorkcenterShiftId = otherWorkcenterDetail.WorkcenterShiftId,
                     MachineStatusId = otherWorkcenterDetail.MachineStatusId,
+                    MachineStatusReasonId = otherWorkcenterDetail.MachineStatusReasonId,
                     WorkcenterCost = otherWorkcenterDetail.WorkcenterCost,
                     WorkOrderPhaseId = otherWorkcenterDetail.WorkOrderPhaseId,
                     ConcurrentWorkorderPhases = otherWorkcenterDetail.ConcurrentWorkorderPhases,
@@ -173,6 +174,7 @@ namespace Api.Services.Production
                 {
                     WorkcenterShiftId = currentWorkcenterDetail.WorkcenterShiftId,
                     MachineStatusId = currentWorkcenterDetail.MachineStatusId,
+                    MachineStatusReasonId = currentWorkcenterDetail.MachineStatusReasonId,
                     WorkOrderPhaseId = currentWorkcenterDetail.WorkOrderPhaseId,
                     WorkcenterCost = currentWorkcenterDetail.WorkcenterCost,
                     ConcurrentWorkorderPhases = currentWorkcenterDetail.ConcurrentWorkorderPhases
@@ -260,6 +262,7 @@ namespace Api.Services.Production
                     {
                         WorkcenterShiftId = currentDetail.WorkcenterShiftId,
                         MachineStatusId = currentDetail.MachineStatusId,
+                        MachineStatusReasonId = currentDetail.MachineStatusReasonId,
                         WorkcenterCost = currentDetail.WorkcenterCost,
                         WorkOrderPhaseId = request.WorkOrderPhaseId,
                         ConcurrentWorkorderPhases = currentDetail.ConcurrentWorkorderPhases + 1,
@@ -302,6 +305,7 @@ namespace Api.Services.Production
                 {
                     WorkcenterShiftId = currentDetail.WorkcenterShiftId,
                     MachineStatusId = currentDetail.MachineStatusId,
+                    MachineStatusReasonId = currentDetail.MachineStatusReasonId,
                     WorkcenterCost = currentDetail.WorkcenterCost,
                     WorkOrderPhaseId = null,
                     ConcurrentWorkorderPhases = currentDetail.ConcurrentWorkorderPhases - 1,
@@ -356,6 +360,7 @@ namespace Api.Services.Production
                 {
                     WorkcenterShiftId = currentWorkcenterShift.Id,
                     MachineStatusId = request.MachineStatusId,
+                    MachineStatusReasonId = request.MachineStatusReasonId,
                     WorkcenterCost = workcenterCost
                 };
                 newDetail.Open(request.Timestamp);
@@ -373,6 +378,7 @@ namespace Api.Services.Production
                     {
                         WorkcenterShiftId = detail.WorkcenterShiftId,
                         MachineStatusId = request.MachineStatusId,
+                        MachineStatusReasonId = request.MachineStatusReasonId,
                         WorkcenterCost = workcenterCost,
                         WorkOrderPhaseId = detail.WorkOrderPhaseId,
                         ConcurrentWorkorderPhases = detail.ConcurrentWorkorderPhases,
