@@ -51,8 +51,9 @@ public class VerifactuInvoiceService : IVerifactuInvoiceService
                 ? sfPortTypeVerifactuClient.EndpointConfiguration.SistemaVerifactuPruebas
                 : sfPortTypeVerifactuClient.EndpointConfiguration.SistemaVerifactu);
 
-        // Configurar certificado
-        client.ClientCredentials.ClientCertificate.Certificate = new X509Certificate2(certificatePath, certificatePassword);
+        // Configurar certificado usando X509CertificateLoader
+        client.ClientCredentials.ClientCertificate.Certificate = 
+            X509CertificateLoader.LoadPkcs12FromFile(certificatePath, certificatePassword);
 
         // Configurar binding para seguridad de transporte
         var binding = (System.ServiceModel.BasicHttpBinding)client.Endpoint.Binding;

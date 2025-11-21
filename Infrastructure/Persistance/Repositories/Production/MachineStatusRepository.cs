@@ -16,5 +16,14 @@ namespace Infrastructure.Persistance.Repositories.Production
                         .AsNoTracking()
                         .FirstOrDefaultAsync(e => e.Id == id);
         }
+
+        public async Task<IEnumerable<MachineStatus>> GetAllWithReasons()
+        {
+            return await dbSet
+                        .Include(m => m.Reasons.Where(r => !r.Disabled))
+                        .Where(m => !m.Disabled)
+                        .AsNoTracking()
+                        .ToListAsync();
+        }
     }
 }

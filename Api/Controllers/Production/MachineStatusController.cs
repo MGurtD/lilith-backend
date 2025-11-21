@@ -32,9 +32,18 @@ namespace Api.Controllers.Production
             }
         }
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] bool includeReasons = false)
         {
-            var entities = await unitOfWork.MachineStatuses.GetAll();
+            IEnumerable<MachineStatus> entities;
+            
+            if (includeReasons)
+            {
+                entities = await unitOfWork.MachineStatuses.GetAllWithReasons();
+            }
+            else
+            {
+                entities = await unitOfWork.MachineStatuses.GetAll();
+            }
 
             return Ok(entities.OrderBy(w => w.Name));
         }
