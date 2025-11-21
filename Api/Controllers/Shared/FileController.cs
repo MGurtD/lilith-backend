@@ -51,11 +51,20 @@ namespace Api.Controllers
             }
             memory.Position = 0;
             
-            var contentType = Services.FileService.GetContentType(file.Path);
             var fileName = Path.GetFileName(file.Path);
+
+            // CRÍTICO: Forzar descarga binaria para archivos CAD
+            var ext = Path.GetExtension(file.Path).ToLowerInvariant();
+            var contentType = ext switch
+            {
+                ".stp" or ".step" or ".dxf" => "application/octet-stream",
+                _ => Services.FileService.GetContentType(file.Path)
+            };
             
-            // Añadir header Content-Disposition para forzar descarga con nombre correcto
+            // Headers críticos para Chrome Android
             Response.Headers.Append("Content-Disposition", $"attachment; filename=\"{fileName}\"");
+            Response.Headers.Append("Content-Type", contentType);
+            Response.Headers.Append("X-Content-Type-Options", "nosniff");
             
             return File(memory, contentType, fileName);
         }
