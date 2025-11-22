@@ -218,6 +218,9 @@
     "MenuItemDeleted": "Element de menú eliminat correctament",
     "MenuItemParentNotFound": "Element de menú pare amb ID {0} no existeix",
     "MenuItemCannotDeleteHasChildren": "No es pot eliminar un element de menú amb fills",
-    "MenuItemInvalidParent": "Element de menú pare no vàlid"
+    "MenuItemInvalidParent": "Element de menú pare no vàlid",
+    "CustomerRanking.NoDataFound": "No s'han trobat dades de vendes per a l'any {0}",
+    "CustomerRanking.InvalidYear": "L'any proporcionat no és vàlid",
+    "CustomerRanking.YearRequired": "L'any és obligatori"
   }
 }
