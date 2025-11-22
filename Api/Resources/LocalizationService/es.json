@@ -218,6 +218,9 @@
     "MenuItemDeleted": "Elemento de menú eliminado correctamente",
     "MenuItemParentNotFound": "Elemento de menú padre con ID {0} no existe",
     "MenuItemCannotDeleteHasChildren": "No se puede eliminar un elemento de menú con hijos",
-    "MenuItemInvalidParent": "Elemento de menú padre no válido"
+    "MenuItemInvalidParent": "Elemento de menú padre no válido",
+    "CustomerRanking.NoDataFound": "No se han encontrado datos de ventas para el año {0}",
+    "CustomerRanking.InvalidYear": "El año proporcionado no es válido",
+    "CustomerRanking.YearRequired": "El año es obligatorio"
   }
 }

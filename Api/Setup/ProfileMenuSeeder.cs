@@ -79,7 +79,8 @@ namespace Api.Setup
             new SeedMenu("statistics","Estadístiques","pi pi-chart-pie",null,[
                 new SeedMenu("incomes_vs_expenses","Facturació vs Despeses","pi pi-wallet","/incomesandexpensesdashboard"),
                 new SeedMenu("expense_dashboard","Despeses","pi pi-wallet","/expense-dashboard"),
-                new SeedMenu("productioncost","Costs Producció","pi pi-euro","/productioncost")
+                new SeedMenu("productioncost","Costs Producció","pi pi-euro","/productioncost"),
+                new SeedMenu("ranking_customers","Ranking Clients","pi pi-euro","/ranking-customers")
             ]),
             new SeedMenu("verifactu","Verifactu","pi pi-shield",null,[
                 new SeedMenu("invoice_integration","Integració de factures","pi pi-upload","/verifactu/invoice-integration"),

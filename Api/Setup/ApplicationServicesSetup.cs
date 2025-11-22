@@ -32,6 +32,7 @@ public static class ApplicationServicesSetup
         services.AddScoped<ISalesOrderService, SalesOrderService>();
         services.AddScoped<IDeliveryNoteService, DeliveryNoteService>();
         services.AddScoped<ISalesInvoiceService, SalesInvoiceService>();
+        services.AddScoped<ICustomerRankingService, CustomerRankingService>();
         services.AddScoped<ISalesInvoiceReportService, SalesInvoiceReportService>();
         services.AddScoped<ISalesOrderReportService, SalesOrderReportService>();
         services.AddScoped<IBudgetReportService, BudgetReportService>();
