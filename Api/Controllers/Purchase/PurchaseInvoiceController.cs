@@ -45,6 +45,8 @@ namespace Api.Controllers.Purchase
             IEnumerable<PurchaseInvoice> purchaseInvoices = new List<PurchaseInvoice>();
             if (exerciceId.HasValue)
                 purchaseInvoices = await _service.GetByExercise(exerciceId.Value);
+            else if (excludeStatusId.HasValue && supplierId.HasValue)
+                purchaseInvoices = _service.GetBetweenDatesExcludingStatusAndSupplier(startTime, endTime, excludeStatusId.Value, supplierId.Value);
             else if (supplierId.HasValue)
                 purchaseInvoices = _service.GetBetweenDatesAndSupplier(startTime, endTime, supplierId.Value);
             else if (statusId.HasValue)

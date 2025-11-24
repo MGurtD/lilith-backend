@@ -14,6 +14,7 @@ namespace Application.Services.Purchase
         IEnumerable<PurchaseInvoice> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid statusId);
         IEnumerable<PurchaseInvoice> GetBetweenDatesAndExcludeStatus(DateTime startDate, DateTime endDate, Guid statusId);
         IEnumerable<PurchaseInvoice> GetBetweenDatesAndSupplier(DateTime startDate, DateTime endDate, Guid supplierId);
+        IEnumerable<PurchaseInvoice> GetBetweenDatesExcludingStatusAndSupplier(DateTime startDate, DateTime endDate, Guid excludeStatusId, Guid supplierId);
         Task<IEnumerable<PurchaseInvoice>> GetByExercise(Guid exerciseId);
 
         Task<GenericResponse> RecreateDueDates(PurchaseInvoice purchaseInvoice);
