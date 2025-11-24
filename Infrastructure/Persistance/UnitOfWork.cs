@@ -89,6 +89,7 @@ namespace Infrastructure.Persistance
         public IWorkcenterShiftRepository WorkcenterShifts { get; private set; } = new WorkcenterShiftRepository(context);
         public IContractReader<DetailedWorkOrder> DetailedWorkOrders { get; private set; } = new ContractReader<DetailedWorkOrder>(context);
         public IContractReader<ProductionCost> ProductionCosts { get; private set; } = new ContractReader<ProductionCost>(context);
+        public IContractReader<WorkcenterShiftHistoricalOperator> WorkcenterShiftHistoricalOperators { get; private set; } = new ContractReader<WorkcenterShiftHistoricalOperator>(context);
 
         // Warehouse
         public IWarehouseRepository Warehouses { get; private set; } = new WarehouseRepository(context);

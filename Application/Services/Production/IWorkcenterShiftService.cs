@@ -15,8 +15,6 @@ public interface IWorkcenterShiftService
     Task<GenericResponse> CreateWorkcenterShifts(List<CreateWorkcenterShiftDto> dtos);
 
     Task<GenericResponse> DisableWorkcenterShift(Guid workcenterShiftId);
+    Task<List<WorkcenterShiftHistoricalOperator>> GetWorkcenterShiftHistorical(WorkcenterShiftHistoricRequest request);
 
-    Task<List<WorkcenterShiftDetailResponseDto>> GetWorkcenterShiftDetails(WorkcenterShiftDetailsQueryDto query);
-
-    Task<List<GroupedWorkcenterShiftDetailsDto>> GetGroupedWorkcenterShiftDetails(WorkcenterShiftDetailsQueryDto query);
 }
