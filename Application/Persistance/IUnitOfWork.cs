@@ -82,6 +82,7 @@ namespace Application.Persistance
         IWorkcenterShiftRepository WorkcenterShifts { get; }
         IContractReader<DetailedWorkOrder> DetailedWorkOrders { get; }
         IContractReader<ProductionCost> ProductionCosts { get; }
+        IContractReader<WorkcenterShiftHistoricalOperator> WorkcenterShiftHistoricalOperators { get; }
 
         //Warehouse
         IWarehouseRepository Warehouses { get; }
