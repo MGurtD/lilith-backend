@@ -163,27 +163,13 @@ public class WorkcenterShiftController : Controller
         }
     }
 
-    [HttpPost("Query")]
-    public async Task<IActionResult> QueryWorkcenterShiftDetails(WorkcenterShiftDetailsQueryDto request)
+    [HttpPost("Historical")]
+    public async Task<IActionResult> GetWorkcenterShiftHistorical([FromBody] WorkcenterShiftHistoricRequest request)
     {
-        if (request == null)
-        {
-            return BadRequest("Request body is null.");
-        }
-        else
-        {
-            if( request.GroupBy.HasValue && request.GroupBy != GroupBy.None)
-            {
-                var response = await _workcenterShiftService.GetGroupedWorkcenterShiftDetails(request);
-                return Ok(response);
-            }
-            else
-            {
-                var response = await _workcenterShiftService.GetWorkcenterShiftDetails(request);
-                return Ok(response);
-            }
-        }        
+        var response = await _workcenterShiftService.GetWorkcenterShiftHistorical(request);
+        return Ok(response);
     }
+
 
 }
 

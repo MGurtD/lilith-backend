@@ -87,6 +87,9 @@
     "WorkcenterCostAlreadyExists": "Cost existent",
     "WorkOrderLifecycle": "WorkOrder",
     "MachineStatusAlreadyExists": "Estat de màquina {0} existent",
+    "MachineStatusReasonNotFound": "El motiu d'estat de màquina amb ID {0} no existeix",
+    "MachineStatusReasonAlreadyExists": "El motiu d'estat de màquina {0} ja existeix",
+    "MachineStatusReasonCodeDuplicate": "Ja existeix un motiu amb el codi {0} per aquest estat de màquina",
     "OperatorNotFound": "No s'ha trobat l'operari",
     "OperatorTypeNotFound": "No s'ha trobat el tipus d'operari",
     "OperatorAlreadyExists": "Operari {0} existent",
@@ -215,6 +218,9 @@
     "MenuItemDeleted": "Element de menú eliminat correctament",
     "MenuItemParentNotFound": "Element de menú pare amb ID {0} no existeix",
     "MenuItemCannotDeleteHasChildren": "No es pot eliminar un element de menú amb fills",
-    "MenuItemInvalidParent": "Element de menú pare no vàlid"
+    "MenuItemInvalidParent": "Element de menú pare no vàlid",
+    "CustomerRanking.NoDataFound": "No s'han trobat dades de vendes per a l'any {0}",
+    "CustomerRanking.InvalidYear": "L'any proporcionat no és vàlid",
+    "CustomerRanking.YearRequired": "L'any és obligatori"
   }
 }

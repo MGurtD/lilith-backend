@@ -87,6 +87,9 @@
     "WorkcenterCostAlreadyExists": "Costo existente",
     "WorkOrderLifecycle": "WorkOrder",
     "MachineStatusAlreadyExists": "Estado de máquina {0} existente",
+    "MachineStatusReasonNotFound": "El motivo de estado de máquina con ID {0} no existe",
+    "MachineStatusReasonAlreadyExists": "El motivo de estado de máquina {0} ya existe",
+    "MachineStatusReasonCodeDuplicate": "Ya existe un motivo con el código {0} para este estado de máquina",
     "OperatorNotFound": "No se ha encontrado el operario",
     "OperatorTypeNotFound": "No se ha encontrado el tipo de operario",
     "OperatorAlreadyExists": "Operario {0} existente",
@@ -215,6 +218,9 @@
     "MenuItemDeleted": "Elemento de menú eliminado correctamente",
     "MenuItemParentNotFound": "Elemento de menú padre con ID {0} no existe",
     "MenuItemCannotDeleteHasChildren": "No se puede eliminar un elemento de menú con hijos",
-    "MenuItemInvalidParent": "Elemento de menú padre no válido"
+    "MenuItemInvalidParent": "Elemento de menú padre no válido",
+    "CustomerRanking.NoDataFound": "No se han encontrado datos de ventas para el año {0}",
+    "CustomerRanking.InvalidYear": "El año proporcionado no es válido",
+    "CustomerRanking.YearRequired": "El año es obligatorio"
   }
 }

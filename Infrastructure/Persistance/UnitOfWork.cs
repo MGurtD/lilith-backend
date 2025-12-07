@@ -43,7 +43,6 @@ namespace Infrastructure.Persistance
         public IRepository<Tax, Guid> Taxes { get; private set; } = new Repository<Tax, Guid>(context);
         public IRepository<PaymentMethod, Guid> PaymentMethods { get; private set; } = new Repository<PaymentMethod, Guid>(context);
         public ILifecycleRepository Lifecycles { get; private set; } = new LifecycleRepository(context);
-        // Removed Languages repository (now JSON based catalog)
 
         // Purchase
         public IRepository<SupplierType, Guid> SupplierTypes { get; private set; } = new Repository<SupplierType, Guid>(context);
@@ -80,7 +79,7 @@ namespace Infrastructure.Persistance
         public IRepository<WorkcenterCost, Guid> WorkcenterCosts { get; private set; } = new Repository<WorkcenterCost, Guid>(context);
         public IRepository<Operator, Guid> Operators { get; private set; } = new Repository<Operator, Guid>(context);
         public IRepository<OperatorType, Guid> OperatorTypes { get; private set; } = new Repository<OperatorType, Guid>(context);
-        public IRepository<MachineStatus, Guid> MachineStatuses { get; private set; } = new Repository<MachineStatus, Guid>(context);
+        public IMachineStatusRepository MachineStatuses { get; private set; } = new MachineStatusRepository(context);
         public IRepository<Shift, Guid> Shifts { get; private set; } = new Repository<Shift, Guid>(context);
         public IRepository<ShiftDetail, Guid> ShiftDetails { get; private set; } = new Repository<ShiftDetail, Guid>(context);
         public IWorkMasterRepository WorkMasters { get; private set; } = new WorkMasterRepository(context);
@@ -89,6 +88,7 @@ namespace Infrastructure.Persistance
         public IWorkcenterShiftRepository WorkcenterShifts { get; private set; } = new WorkcenterShiftRepository(context);
         public IContractReader<DetailedWorkOrder> DetailedWorkOrders { get; private set; } = new ContractReader<DetailedWorkOrder>(context);
         public IContractReader<ProductionCost> ProductionCosts { get; private set; } = new ContractReader<ProductionCost>(context);
+        public IContractReader<WorkcenterShiftHistoricalOperator> WorkcenterShiftHistoricalOperators { get; private set; } = new ContractReader<WorkcenterShiftHistoricalOperator>(context);
 
         // Warehouse
         public IWarehouseRepository Warehouses { get; private set; } = new WarehouseRepository(context);

@@ -17,7 +17,7 @@ namespace Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -1035,6 +1035,65 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "Name" }, "UK_MachineStatus_Name");
 
                     b.ToTable("MachineStatuses", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.Production.MachineStatusReason", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Disabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bool")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar");
+
+                    b.Property<Guid>("MachineStatusId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.HasKey("Id")
+                        .HasName("PK_MachineStatusReasons");
+
+                    b.HasIndex("MachineStatusId");
+
+                    b.HasIndex("Code", "MachineStatusId")
+                        .IsUnique()
+                        .HasDatabaseName("UK_MachineStatusReason_Code_MachineStatusId");
+
+                    b.ToTable("MachineStatusReasons", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Production.Operator", b =>
@@ -2141,6 +2200,9 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("MachineStatusId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("MachineStatusReasonId")
+                        .HasColumnType("uuid");
+
                     b.Property<decimal>("OperatorCost")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 4)
@@ -2179,6 +2241,8 @@ namespace Infrastructure.Migrations
                         .HasName("PK_WorkcenterShiftDetails");
 
                     b.HasIndex("MachineStatusId");
+
+                    b.HasIndex("MachineStatusReasonId");
 
                     b.HasIndex("OperatorId");
 
@@ -4191,8 +4255,7 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("Success")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime?>("TimestampResponse")
-                        .IsRequired()
+                    b.Property<DateTime>("TimestampResponse")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("UpdatedOn")
@@ -5227,6 +5290,17 @@ namespace Infrastructure.Migrations
                     b.Navigation("DefaultSite");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Production.MachineStatusReason", b =>
+                {
+                    b.HasOne("Domain.Entities.Production.MachineStatus", "MachineStatus")
+                        .WithMany("Reasons")
+                        .HasForeignKey("MachineStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MachineStatus");
+                });
+
             modelBuilder.Entity("Domain.Entities.Production.Operator", b =>
                 {
                     b.HasOne("Domain.Entities.Production.OperatorType", "OperatorType")
@@ -5508,7 +5582,7 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.Production.Workcenter", b =>
                 {
                     b.HasOne("Domain.Entities.Production.Area", "Area")
-                        .WithMany()
+                        .WithMany("Workcenters")
                         .HasForeignKey("AreaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -5578,6 +5652,10 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.Production.MachineStatusReason", "MachineStatusReason")
+                        .WithMany()
+                        .HasForeignKey("MachineStatusReasonId");
+
                     b.HasOne("Domain.Entities.Production.Operator", "Operator")
                         .WithMany()
                         .HasForeignKey("OperatorId");
@@ -5593,6 +5671,8 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("MachineStatus");
+
+                    b.Navigation("MachineStatusReason");
 
                     b.Navigation("Operator");
 
@@ -6367,9 +6447,19 @@ namespace Infrastructure.Migrations
                     b.Navigation("Users");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Production.Area", b =>
+                {
+                    b.Navigation("Workcenters");
+                });
+
             modelBuilder.Entity("Domain.Entities.Production.Enterprise", b =>
                 {
                     b.Navigation("Sites");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Production.MachineStatus", b =>
+                {
+                    b.Navigation("Reasons");
                 });
 
             modelBuilder.Entity("Domain.Entities.Production.Shift", b =>

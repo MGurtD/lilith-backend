@@ -9,6 +9,8 @@ public class WorkcenterShiftDetail : Entity
     public WorkcenterShift? WorkcenterShift { get; set; }
     public Guid MachineStatusId { get; set; }
     public MachineStatus? MachineStatus { get; set; }
+    public Guid? MachineStatusReasonId { get; set; }
+    public MachineStatusReason? MachineStatusReason { get; set; }
     public Guid? OperatorId { get; set; }
     public Operator? Operator { get; set; }
     public Guid? WorkOrderPhaseId { get; set; }

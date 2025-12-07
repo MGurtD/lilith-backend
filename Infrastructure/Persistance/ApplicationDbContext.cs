@@ -48,6 +48,10 @@ namespace Infrastructure.Persistance
                 .Entity<ConsolidatedIncomes>()
                 .ToView("vw_consolidatedIncomes")
                 .HasNoKey();
+            builder
+                .Entity<WorkcenterShiftHistoricalOperator>()
+                .ToView("vw_workcentershift_historical_operator")
+                .HasNoKey();
             builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
 

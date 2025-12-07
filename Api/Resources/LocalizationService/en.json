@@ -87,6 +87,9 @@
     "WorkcenterCostAlreadyExists": "Cost already exists",
     "WorkOrderLifecycle": "WorkOrder",
     "MachineStatusAlreadyExists": "Machine status {0} already exists",
+    "MachineStatusReasonNotFound": "Machine status reason with ID {0} not found",
+    "MachineStatusReasonAlreadyExists": "Machine status reason {0} already exists",
+    "MachineStatusReasonCodeDuplicate": "A reason with code {0} already exists for this machine status",
     "OperatorNotFound": "Operator not found",
     "OperatorTypeNotFound": "Operator type not found",
     "OperatorAlreadyExists": "Operator {0} already exists",
@@ -214,7 +217,10 @@
     "MenuItemUpdated": "Menu item updated successfully",
     "MenuItemDeleted": "Menu item deleted successfully",
     "MenuItemParentNotFound": "Parent menu item with ID {0} not found",
-    "MenuItemCannotDeleteHasChildren": "Cannot delete menu item with children",
-    "MenuItemInvalidParent": "Invalid parent menu item"
+    "MenuItemCannotDeleteHasChildren": "Cannot delete a menu item with children",
+    "MenuItemInvalidParent": "Invalid parent menu item",
+    "CustomerRanking.NoDataFound": "No sales data found for year {0}",
+    "CustomerRanking.InvalidYear": "The provided year is not valid",
+    "CustomerRanking.YearRequired": "Year is required"
   }
 }

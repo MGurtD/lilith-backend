@@ -11,4 +11,5 @@ public class MachineStatus : Entity
     public bool Closed { get; set;} = false;
     public bool Preferred { get; set; } = false;
     public string Icon { get; set;} = string.Empty;
+    public ICollection<MachineStatusReason> Reasons { get; set; } = [];
 }

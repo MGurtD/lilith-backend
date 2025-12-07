@@ -51,6 +51,12 @@ namespace Api.Services.Purchase
             return invoices;
         }
 
+        public IEnumerable<PurchaseInvoice> GetBetweenDatesExcludingStatusAndSupplier(DateTime startDate, DateTime endDate, Guid excludeStatusId, Guid supplierId)
+        {
+            var invoices = _unitOfWork.PurchaseInvoices.Find(p => p.PurchaseInvoiceDate >= startDate && p.PurchaseInvoiceDate <= endDate && p.StatusId != excludeStatusId && p.SupplierId == supplierId);
+            return invoices;
+        }
+
         public async Task<IEnumerable<PurchaseInvoice>> GetByExercise(Guid exerciseId)
         {
             var exercice = await _unitOfWork.Exercices.Get(exerciseId);
