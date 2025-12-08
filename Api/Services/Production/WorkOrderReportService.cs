@@ -12,6 +12,10 @@ namespace Api.Services.Production
             if (workOrder == null) return null;
 
             var status = await unitOfWork.Lifecycles.StatusRepository.Get(workOrder.StatusId);
+            var machineStatuses = await unitOfWork.MachineStatuses.FindAsync(s => !s.Disabled);
+            var operatorTypes = await unitOfWork.OperatorTypes.FindAsync(ot => !ot.Disabled);
+            var workcenterTypes = await unitOfWork.WorkcenterTypes.FindAsync(wt => !wt.Disabled);
+            var workcenters = await unitOfWork.Workcenters.FindAsync(wc => !wc.Disabled);
 
             var orderDto = new WorkOrderReportDto()
             {
@@ -20,35 +24,23 @@ namespace Api.Services.Production
                 ReferenceDescription = workOrder.Reference!.Description,
                 PlannedDate = workOrder.PlannedDate,
                 PlannedQuantity = workOrder.PlannedQuantity,
-                TotalQuantity = workOrder.TotalQuantity,
                 StatusName = status?.Name ?? string.Empty,
-                OperatorCost = workOrder.OperatorCost,
-                MachineCost = workOrder.MachineCost,
-                MaterialCost = workOrder.MaterialCost,
-                TotalCost = workOrder.OperatorCost + workOrder.MachineCost + workOrder.MaterialCost
+                Comment = workOrder.Comment,
+                HasExternalWork = workOrder.Phases.Where(p => !p.Disabled).Any(p => p.IsExternalWork && p.ExternalWorkCost > 0)
             };
 
             var phaseDtos = new List<WorkOrderPhaseReportDto>();
             foreach (var phase in workOrder.Phases.Where(p => !p.Disabled).OrderBy(p => p.Code))
             {
-                var phaseStatus = await unitOfWork.Lifecycles.StatusRepository.Get(phase.StatusId);
-                var operatorType = phase.OperatorTypeId.HasValue 
-                    ? await unitOfWork.OperatorTypes.Get(phase.OperatorTypeId.Value) 
-                    : null;
-                var workcenterType = phase.WorkcenterTypeId.HasValue 
-                    ? await unitOfWork.WorkcenterTypes.Get(phase.WorkcenterTypeId.Value) 
-                    : null;
-
                 var detailDtos = new List<WorkOrderPhaseDetailReportDto>();
                 foreach (var detail in phase.Details.Where(d => !d.Disabled).OrderBy(d => d.Order))
                 {
                     detailDtos.Add(new WorkOrderPhaseDetailReportDto()
                     {
                         Description = detail.Comment,
-                        WorkcenterTypeName = workcenterType?.Name ?? string.Empty,
-                        OperatorTypeName = operatorType?.Name ?? string.Empty,
                         EstimatedTime = detail.EstimatedTime,
-                        RealTime = 0 // Real time would come from production parts if tracked
+                        EstimatedOperatorTime = detail.EstimatedOperatorTime,
+                        MachineStatusName = machineStatuses.FirstOrDefault(s => s.Id == detail.MachineStatusId)?.Name ?? string.Empty
                     });
                 }
 
@@ -71,15 +63,17 @@ namespace Api.Services.Production
                     }
                 }
 
+                var workcenterType = workcenterTypes.FirstOrDefault(wt => wt.Id == phase.WorkcenterTypeId);
+                var operatorType = operatorTypes.FirstOrDefault(ot => ot.Id == phase.OperatorTypeId);
+                var workcenter = workcenters.FirstOrDefault(wc => wc.Id == phase.PreferredWorkcenterId);
+
                 phaseDtos.Add(new WorkOrderPhaseReportDto()
                 {
                     Code = phase.Code,
                     Description = phase.Description,
-                    StatusName = phaseStatus?.Name ?? string.Empty,
-                    OperatorTime = phase.Details.Sum(d => d.EstimatedOperatorTime),
-                    MachineTime = phase.Details.Sum(d => d.EstimatedTime),
-                    ExternalWorkCost = phase.ExternalWorkCost,
-                    TransportCost = phase.TransportCost,
+                    WorkcenterTypeName = workcenterType?.Name ?? string.Empty,
+                    WorkcenterName = workcenter?.Name ?? string.Empty,
+                    OperatorTypeName = operatorType?.Name ?? string.Empty,
                     Details = detailDtos,
                     BillOfMaterials = bomDtos
                 });

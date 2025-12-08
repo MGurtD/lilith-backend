@@ -17,34 +17,28 @@ public class WorkOrderReportDto
     public required string ReferenceDescription { get; set; }
     public required DateTime PlannedDate { get; set; }
     public required decimal PlannedQuantity { get; set; }
-    public required decimal TotalQuantity { get; set; }
     public required string StatusName { get; set; }
-    public required decimal OperatorCost { get; set; }
-    public required decimal MachineCost { get; set; }
-    public required decimal MaterialCost { get; set; }
-    public required decimal TotalCost { get; set; }
+    public required bool HasExternalWork { get; set; }
+    public required string Comment { get; set; }
 }
 
 public class WorkOrderPhaseReportDto
 {
     public required string Code { get; set; }
     public required string Description { get; set; }
-    public required string StatusName { get; set; }
-    public required decimal OperatorTime { get; set; }
-    public required decimal MachineTime { get; set; }
-    public required decimal ExternalWorkCost { get; set; }
-    public required decimal TransportCost { get; set; }
+    public required string WorkcenterTypeName { get; set; }
+    public required string OperatorTypeName { get; set; }
+    public required string WorkcenterName { get; set; }
     public required List<WorkOrderPhaseDetailReportDto> Details { get; set; }
     public required List<WorkOrderPhaseBillOfMaterialsReportDto> BillOfMaterials { get; set; }
 }
 
 public class WorkOrderPhaseDetailReportDto
 {
-    public required string Description { get; set; }
-    public required string WorkcenterTypeName { get; set; }
-    public required string OperatorTypeName { get; set; }
+    public required string Description { get; set; }    
+    public required string MachineStatusName { get; set; }
     public required decimal EstimatedTime { get; set; }
-    public required decimal RealTime { get; set; }
+    public required decimal EstimatedOperatorTime { get; set; }
 }
 
 public class WorkOrderPhaseBillOfMaterialsReportDto
