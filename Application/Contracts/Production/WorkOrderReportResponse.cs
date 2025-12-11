@@ -29,6 +29,7 @@ public class WorkOrderPhaseReportDto
     public required string WorkcenterTypeName { get; set; }
     public required string OperatorTypeName { get; set; }
     public required string WorkcenterName { get; set; }
+    public required bool IsExternalWork { get; set; }
     public required List<WorkOrderPhaseDetailReportDto> Details { get; set; }
     public required List<WorkOrderPhaseBillOfMaterialsReportDto> BillOfMaterials { get; set; }
 }

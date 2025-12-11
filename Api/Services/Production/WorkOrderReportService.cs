@@ -74,6 +74,7 @@ namespace Api.Services.Production
                     WorkcenterTypeName = workcenterType?.Name ?? string.Empty,
                     WorkcenterName = workcenter?.Name ?? string.Empty,
                     OperatorTypeName = operatorType?.Name ?? string.Empty,
+                    IsExternalWork = phase.IsExternalWork,
                     Details = detailDtos,
                     BillOfMaterials = bomDtos
                 });

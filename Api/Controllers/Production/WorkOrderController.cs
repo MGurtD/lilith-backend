@@ -55,7 +55,7 @@ namespace Api.Controllers.Production
             if (customerId.HasValue)
                 workOrders = workOrders.Where(e => e.Reference!.CustomerId == customerId.Value);
 
-            return Ok(workOrders.OrderBy(e => e.Code));
+            return Ok(workOrders.OrderByDescending(e => e.Code));
         }
 
         [HttpGet("SalesOrder/{id:guid}")]
