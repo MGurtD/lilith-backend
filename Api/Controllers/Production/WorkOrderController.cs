@@ -3,6 +3,7 @@ using Application.Contracts.Production;
 using Application.Persistance;
 using Application.Production;
 using Application.Services;
+using Application.Services.Production;
 using Domain.Entities.Production;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -12,7 +13,7 @@ namespace Api.Controllers.Production
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class WorkOrderController(IUnitOfWork unitOfWork, IWorkOrderService workOrderService, ILocalizationService localizationService) : ControllerBase
+    public class WorkOrderController(IUnitOfWork unitOfWork, IWorkOrderService workOrderService, IWorkOrderReportService reportService, ILocalizationService localizationService) : ControllerBase
     {
         [HttpPost("CreateFromWorkMaster")]
         public async Task<IActionResult> CreateFromWorkMaster([FromBody] CreateWorkOrderDto request)
@@ -54,7 +55,7 @@ namespace Api.Controllers.Production
             if (customerId.HasValue)
                 workOrders = workOrders.Where(e => e.Reference!.CustomerId == customerId.Value);
 
-            return Ok(workOrders.OrderBy(e => e.Code));
+            return Ok(workOrders.OrderByDescending(e => e.Code));
         }
 
         [HttpGet("SalesOrder/{id:guid}")]
@@ -83,6 +84,13 @@ namespace Api.Controllers.Production
         {
             var details = workOrderService.GetWorkOrderDetails(id);
             return Ok(details);
+        }
+
+        [HttpGet("Report/{id:guid}")]
+        public async Task<IActionResult> GetReportDataById(Guid id)
+        {
+            var reportData = await reportService.GetReportById(id);
+            return Ok(reportData);
         }
 
         [HttpGet("{id:guid}")]
