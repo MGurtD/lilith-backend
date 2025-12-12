@@ -6,6 +6,7 @@ public class WorkOrderReportResponse : ReportResponse
 {
     public required WorkOrderReportDto Order { get; set; }
     public required List<WorkOrderPhaseReportDto> Phases { get; set; }
+    public required List<WorkOrderPhaseBillOfMaterialsReportDto> BillOfMaterials { get; set; }
 
     public WorkOrderReportResponse() : base() { }
 }
@@ -31,7 +32,6 @@ public class WorkOrderPhaseReportDto
     public required string WorkcenterName { get; set; }
     public required bool IsExternalWork { get; set; }
     public required List<WorkOrderPhaseDetailReportDto> Details { get; set; }
-    public required List<WorkOrderPhaseBillOfMaterialsReportDto> BillOfMaterials { get; set; }
 }
 
 public class WorkOrderPhaseDetailReportDto
