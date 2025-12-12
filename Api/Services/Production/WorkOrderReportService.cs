@@ -30,6 +30,7 @@ namespace Api.Services.Production
             };
 
             var phaseDtos = new List<WorkOrderPhaseReportDto>();
+            var bomDtos = new List<WorkOrderPhaseBillOfMaterialsReportDto>();
             foreach (var phase in workOrder.Phases.Where(p => !p.Disabled).OrderBy(p => p.Code))
             {
                 var detailDtos = new List<WorkOrderPhaseDetailReportDto>();
@@ -44,7 +45,6 @@ namespace Api.Services.Production
                     });
                 }
 
-                var bomDtos = new List<WorkOrderPhaseBillOfMaterialsReportDto>();
                 foreach (var bom in phase.BillOfMaterials.Where(b => !b.Disabled))
                 {
                     var bomReference = await unitOfWork.References.Get(bom.ReferenceId);
@@ -75,15 +75,15 @@ namespace Api.Services.Production
                     WorkcenterName = workcenter?.Name ?? string.Empty,
                     OperatorTypeName = operatorType?.Name ?? string.Empty,
                     IsExternalWork = phase.IsExternalWork,
-                    Details = detailDtos,
-                    BillOfMaterials = bomDtos
+                    Details = detailDtos
                 });
             }
 
             return new WorkOrderReportResponse()
             {
                 Order = orderDto,
-                Phases = phaseDtos
+                Phases = phaseDtos,
+                BillOfMaterials = bomDtos
             };
         }
     }
