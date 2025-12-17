@@ -9,4 +9,5 @@ public class Lifecycle : Entity
     public Guid? FinalStatusId { get; set; }
 
     public ICollection<Status>? Statuses { get; set; }
+    public ICollection<LifecycleTag>? Tags { get; set; }
 }
