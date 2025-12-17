@@ -9,16 +9,10 @@ namespace Api.Controllers.Sales
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class LifecycleController : ControllerBase
+    public class LifecycleController(IUnitOfWork unitOfWork, ILocalizationService localizationService) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ILocalizationService _localizationService;
-
-        public LifecycleController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
-        {
-            _unitOfWork = unitOfWork;
-            _localizationService = localizationService;
-        }
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly ILocalizationService _localizationService = localizationService;
 
         [HttpPost]
         public async Task<IActionResult> Create(Lifecycle request)

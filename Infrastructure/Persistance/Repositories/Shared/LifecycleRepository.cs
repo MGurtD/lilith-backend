@@ -26,6 +26,7 @@ namespace Infrastructure.Persistance.Repositories.Purchase
         {
             return await dbSet
                 .AsNoTracking()
+                .Include(l => l.Tags)
                 .Include("Statuses.Transitions")
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
@@ -35,6 +36,7 @@ namespace Infrastructure.Persistance.Repositories.Purchase
             return await dbSet
                 .AsNoTracking()
                 .Include("Statuses.Transitions")
+                .Include(l => l.Tags)
                 .FirstOrDefaultAsync(e => e.Name == name);
         }
 

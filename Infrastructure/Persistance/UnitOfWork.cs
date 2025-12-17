@@ -14,6 +14,7 @@ using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
 using Domain.Entities.Shared;
 using Domain.Entities.Warehouse;
+using Domain.Repositories;
 using Domain.Repositories.Sales;
 using Infrastructure.Persistance.Repositories;
 using Infrastructure.Persistance.Repositories.Production;
@@ -43,6 +44,8 @@ namespace Infrastructure.Persistance
         public IRepository<Tax, Guid> Taxes { get; private set; } = new Repository<Tax, Guid>(context);
         public IRepository<PaymentMethod, Guid> PaymentMethods { get; private set; } = new Repository<PaymentMethod, Guid>(context);
         public ILifecycleRepository Lifecycles { get; private set; } = new LifecycleRepository(context);
+        public ILifecycleTagRepository LifecycleTags { get; private set; } = new LifecycleTagRepository(context);
+        public IRepository<StatusLifecycleTag, Guid> StatusLifecycleTags { get; private set; } = new Repository<StatusLifecycleTag, Guid>(context);
 
         // Purchase
         public IRepository<SupplierType, Guid> SupplierTypes { get; private set; } = new Repository<SupplierType, Guid>(context);
