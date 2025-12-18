@@ -163,5 +163,105 @@ namespace Api.Controllers.Shared
             else
                 return NotFound(response);
         }
+
+        [Route("Tag/{id:guid}")]
+        [HttpGet]
+        public async Task<IActionResult> GetTagById(Guid id)
+        {
+            var tag = await lifecycleService.GetTagById(id);
+            if (tag is not null)
+                return Ok(tag);
+            else
+                return NotFound();
+        }
+
+        [Route("Tag/Lifecycle/{lifecycleId:guid}")]
+        [HttpGet]
+        public async Task<IActionResult> GetTagsByLifecycle(Guid lifecycleId)
+        {
+            var tags = await lifecycleService.GetTagsByLifecycle(lifecycleId);
+            return Ok(tags);
+        }
+
+        [Route("Tag/Lifecycle/{lifecycleId:guid}")]
+        [HttpPost]
+        public async Task<IActionResult> CreateTag(Guid lifecycleId, LifecycleTag request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+
+            var response = await lifecycleService.CreateTag(lifecycleId, request);
+            if (response.Result)
+            {
+                var location = Url.Action(nameof(GetTagById), new { id = request.Id }) ?? $"/Tag/{request.Id}";
+                return Created(location, response.Content);
+            }
+            else if (response.Errors.Any(e => e.Contains("already exists")))
+                return Conflict(response);
+            else
+                return BadRequest(response);
+        }
+
+        [Route("Tag/{id:guid}")]
+        [HttpPut]
+        public async Task<IActionResult> UpdateTag(Guid id, LifecycleTag request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+            if (id != request.Id) return BadRequest();
+
+            var response = await lifecycleService.UpdateTag(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else if (response.Errors.Any(e => e.Contains("already exists")))
+                return Conflict(response);
+            else if (response.Errors.Any(e => e.Contains("not found")))
+                return NotFound(response);
+            else
+                return BadRequest(response);
+        }
+
+        [Route("Tag/{id:guid}")]
+        [HttpDelete]
+        public async Task<IActionResult> RemoveTag(Guid id)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+
+            var response = await lifecycleService.RemoveTag(id);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
+        }
+
+        [Route("Tag/Status/{statusId:guid}")]
+        [HttpGet]
+        public async Task<IActionResult> GetTagsByStatus(Guid statusId)
+        {
+            var tags = await lifecycleService.GetTagsByStatus(statusId);
+            return Ok(tags);
+        }
+
+        [Route("Status/{statusId:guid}/Tag/{tagId:guid}")]
+        [HttpPost]
+        public async Task<IActionResult> AssignTagToStatus(Guid statusId, Guid tagId)
+        {
+            var response = await lifecycleService.AssignTagToStatus(statusId, tagId);
+            if (response.Result)
+                return Ok(response);
+            else if (response.Errors.Any(e => e.Contains("not found")))
+                return NotFound(response);
+            else
+                return BadRequest(response);
+        }
+
+        [Route("Status/{statusId:guid}/Tag/{tagId:guid}")]
+        [HttpDelete]
+        public async Task<IActionResult> RemoveTagFromStatus(Guid statusId, Guid tagId)
+        {
+            var response = await lifecycleService.RemoveTagFromStatus(statusId, tagId);
+            if (response.Result)
+                return Ok(response);
+            else
+                return NotFound(response);
+        }
     }
 }

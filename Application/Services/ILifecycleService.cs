@@ -23,4 +23,14 @@ public interface ILifecycleService
     Task<GenericResponse> CreateStatusTransition(StatusTransition transition);
     Task<GenericResponse> UpdateStatusTransition(StatusTransition transition);
     Task<GenericResponse> RemoveStatusTransition(Guid id);
+
+    // LifecycleTag operations
+    Task<LifecycleTag?> GetTagById(Guid id);
+    Task<IEnumerable<LifecycleTag>> GetTagsByLifecycle(Guid lifecycleId);
+    Task<GenericResponse> CreateTag(Guid lifecycleId, LifecycleTag tag);
+    Task<GenericResponse> UpdateTag(LifecycleTag tag);
+    Task<GenericResponse> RemoveTag(Guid id);
+    Task<IEnumerable<LifecycleTag>> GetTagsByStatus(Guid statusId);
+    Task<GenericResponse> AssignTagToStatus(Guid statusId, Guid tagId);
+    Task<GenericResponse> RemoveTagFromStatus(Guid statusId, Guid tagId);
 }

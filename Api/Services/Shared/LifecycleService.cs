@@ -156,4 +156,173 @@ public class LifecycleService(IUnitOfWork unitOfWork, ILocalizationService local
         await unitOfWork.Lifecycles.StatusRepository.TransitionRepository.Remove(transition);
         return new GenericResponse(true, transition);
     }
+
+    // LifecycleTag operations
+    public async Task<LifecycleTag?> GetTagById(Guid id)
+    {
+        return await unitOfWork.LifecycleTags.Get(id);
+    }
+
+    public async Task<IEnumerable<LifecycleTag>> GetTagsByLifecycle(Guid lifecycleId)
+    {
+        return await unitOfWork.LifecycleTags.GetByLifecycleId(lifecycleId);
+    }
+
+    public async Task<GenericResponse> CreateTag(Guid lifecycleId, LifecycleTag tag)
+    {
+        // Validate lifecycle exists
+        var lifecycle = await unitOfWork.Lifecycles.Get(lifecycleId);
+        if (lifecycle is null)
+        {
+            var message = localizationService.GetLocalizedString("LifecycleNotFound", lifecycleId);
+            return new GenericResponse(false, message);
+        }
+
+        // Validate name is provided
+        if (string.IsNullOrWhiteSpace(tag.Name))
+        {
+            var message = localizationService.GetLocalizedString("LifecycleTagNameRequired");
+            return new GenericResponse(false, message);
+        }
+
+        // Check if name already exists in this lifecycle
+        var exists = await unitOfWork.LifecycleTags.ExistsInLifecycle(tag.Name, lifecycleId);
+        if (exists)
+        {
+            var message = localizationService.GetLocalizedString("LifecycleTagAlreadyExists", tag.Name);
+            return new GenericResponse(false, message);
+        }
+
+        // Set lifecycle ID from parameter
+        tag.LifecycleId = lifecycleId;
+        
+        await unitOfWork.LifecycleTags.Add(tag);
+        return new GenericResponse(true, tag);
+    }
+
+    public async Task<GenericResponse> UpdateTag(LifecycleTag tag)
+    {
+        var existingTag = await unitOfWork.LifecycleTags.Get(tag.Id);
+        if (existingTag is null)
+        {
+            var message = localizationService.GetLocalizedString("LifecycleTagNotFound", tag.Id);
+            return new GenericResponse(false, message);
+        }
+
+        // Validate name is provided
+        if (string.IsNullOrWhiteSpace(tag.Name))
+        {
+            var message = localizationService.GetLocalizedString("LifecycleTagNameRequired");
+            return new GenericResponse(false, message);
+        }
+
+        // Check if name already exists (excluding current tag)
+        var nameExists = await unitOfWork.LifecycleTags.ExistsInLifecycle(tag.Name, tag.LifecycleId, tag.Id);
+        if (nameExists)
+        {
+            var message = localizationService.GetLocalizedString("LifecycleTagAlreadyExists", tag.Name);
+            return new GenericResponse(false, message);
+        }
+
+        await unitOfWork.LifecycleTags.Update(tag);
+        return new GenericResponse(true, tag);
+    }
+
+    public async Task<GenericResponse> RemoveTag(Guid id)
+    {
+        var tag = await unitOfWork.LifecycleTags.Get(id);
+        if (tag is null)
+        {
+            var message = localizationService.GetLocalizedString("LifecycleTagNotFound", id);
+            return new GenericResponse(false, message);
+        }
+
+        await unitOfWork.LifecycleTags.Remove(tag);
+        return new GenericResponse(true, tag);
+    }
+
+    public async Task<IEnumerable<LifecycleTag>> GetTagsByStatus(Guid statusId)
+    {
+        return await unitOfWork.LifecycleTags.GetTagsByStatus(statusId);
+    }
+
+    public async Task<GenericResponse> AssignTagToStatus(Guid statusId, Guid tagId)
+    {
+        var status = await unitOfWork.Lifecycles.StatusRepository.Get(statusId);
+        if (status is null)
+        {
+            var message = localizationService.GetLocalizedString("StatusNotFound", statusId);
+            return new GenericResponse(false, message);
+        }
+
+        var tag = await unitOfWork.LifecycleTags.Get(tagId);
+        if (tag is null)
+        {
+            var message = localizationService.GetLocalizedString("LifecycleTagNotFound", tagId);
+            return new GenericResponse(false, message);
+        }
+
+        // Validate both belong to the same lifecycle
+        if (status.LifecycleId != tag.LifecycleId)
+        {
+            var message = localizationService.GetLocalizedString("TagNotInSameLifecycle");
+            return new GenericResponse(false, message);
+        }
+
+        // Check if already assigned
+        var alreadyAssigned = unitOfWork.StatusLifecycleTags
+            .Find(slt => slt.StatusId == statusId && slt.LifecycleTagId == tagId && !slt.Disabled)
+            .Any();
+
+        if (alreadyAssigned)
+        {
+            var message = localizationService.GetLocalizedString("LifecycleTagAssigned");
+            return new GenericResponse(true, message);
+        }
+
+        // Create the assignment
+        var assignment = new StatusLifecycleTag
+        {
+            StatusId = statusId,
+            LifecycleTagId = tagId
+        };
+
+        await unitOfWork.StatusLifecycleTags.Add(assignment);
+
+        var successMessage = localizationService.GetLocalizedString("LifecycleTagAssigned");
+        return new GenericResponse(true, successMessage);
+    }
+
+    public async Task<GenericResponse> RemoveTagFromStatus(Guid statusId, Guid tagId)
+    {
+        var status = await unitOfWork.Lifecycles.StatusRepository.Get(statusId);
+        if (status is null)
+        {
+            var message = localizationService.GetLocalizedString("StatusNotFound", statusId);
+            return new GenericResponse(false, message);
+        }
+
+        var tag = await unitOfWork.LifecycleTags.Get(tagId);
+        if (tag is null)
+        {
+            var message = localizationService.GetLocalizedString("LifecycleTagNotFound", tagId);
+            return new GenericResponse(false, message);
+        }
+
+        // Find the assignment
+        var assignment = unitOfWork.StatusLifecycleTags
+            .Find(slt => slt.StatusId == statusId && slt.LifecycleTagId == tagId && !slt.Disabled)
+            .FirstOrDefault();
+
+        if (assignment is null)
+        {
+            var message = localizationService.GetLocalizedString("LifecycleTagNotFound", tagId);
+            return new GenericResponse(false, message);
+        }
+
+        await unitOfWork.StatusLifecycleTags.Remove(assignment);
+
+        var successMessage = localizationService.GetLocalizedString("LifecycleTagRemoved");
+        return new GenericResponse(true, successMessage);
+    }
 }
