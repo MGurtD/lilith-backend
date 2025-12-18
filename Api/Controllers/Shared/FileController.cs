@@ -44,18 +44,18 @@ namespace Api.Controllers
             }
             memory.Position = 0;
             
-            var fileName = Path.GetFileName(file.Path);
+            // Use original filename to preserve extension
+            var fileName = !string.IsNullOrEmpty(file.OriginalName) 
+                ? file.OriginalName 
+                : Path.GetFileName(file.Path);
 
-            // CRÍTICO: Forzar descarga binaria para archivos CAD
-            var ext = Path.GetExtension(file.Path).ToLowerInvariant();
-            var contentType = ext switch
-            {
-                ".stp" or ".step" or ".dxf" => "application/octet-stream",
-                _ => Services.FileService.GetContentType(file.Path)
-            };
+            // Get proper MIME type for the file
+            var contentType = Services.FileService.GetContentType(file.Path);
             
-            // Headers críticos para Chrome Android
-            Response.Headers.Append("Content-Disposition", $"attachment; filename=\"{fileName}\"");
+            // CRITICAL: Use 'inline' disposition to prevent Android from renaming files
+            // Encode filename using RFC 2231 for better compatibility with special characters
+            var encodedFileName = Uri.EscapeDataString(fileName);
+            Response.Headers.Append("Content-Disposition", $"inline; filename=\"{fileName}\"; filename*=UTF-8''{encodedFileName}");
             Response.Headers.Append("Content-Type", contentType);
             Response.Headers.Append("X-Content-Type-Options", "nosniff");
             

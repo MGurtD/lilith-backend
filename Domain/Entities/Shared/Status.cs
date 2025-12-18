@@ -13,5 +13,6 @@ namespace Domain.Entities
         public Guid? LifecycleId { get; set; }
 
         public ICollection<StatusTransition>? Transitions { get; set; }
+        public ICollection<StatusLifecycleTag>? LifecycleTags { get; set; }
     }
 }

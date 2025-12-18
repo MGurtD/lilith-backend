@@ -8,6 +8,7 @@ using Application.Persistance.Repositories.Sales;
 using Application.Persistance.Repositories.Warehouse;
 using Domain.Entities;
 using Domain.Entities.Auth;
+using Domain.Repositories;
 using Domain.Entities.Production;
 using Domain.Entities.Purchase;
 using Domain.Entities.Sales;
@@ -35,6 +36,8 @@ namespace Application.Persistance
         IRepository<Tax, Guid> Taxes { get; }
         IRepository<PaymentMethod, Guid> PaymentMethods { get; }
         ILifecycleRepository Lifecycles { get; }
+        ILifecycleTagRepository LifecycleTags { get; }
+        IRepository<StatusLifecycleTag, Guid> StatusLifecycleTags { get; }
         // Removed Languages repository (now JSON based catalog)
 
         // Purchase
