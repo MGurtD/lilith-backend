@@ -5,19 +5,12 @@ namespace Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class FileController : ControllerBase
+    public class FileController(IFileService fileService) : ControllerBase
     {
-        private readonly IFileService _fileService;
-
-        public FileController(IFileService fileService)
-        {
-            _fileService = fileService;
-        }
-
         [HttpGet]
         public IActionResult GetEntityFiles(string entity, Guid entityId)
         {
-            var files = _fileService.GetEntityFiles(entity, entityId);
+            var files = fileService.GetEntityFiles(entity, entityId);
             return Ok(files);
         }
 
@@ -25,7 +18,7 @@ namespace Api.Controllers
         [HttpGet]
         public IActionResult GetEntityDocuments(string entity, Guid entityId)
         {
-            var files = _fileService.GetEntityDocuments(entity, entityId);
+            var files = fileService.GetEntityDocuments(entity, entityId);
             return Ok(files);
         }
 
@@ -33,7 +26,7 @@ namespace Api.Controllers
         [HttpGet]
         public IActionResult GetEntityImages(string entity, Guid entityId)
         {
-            var files = _fileService.GetEntityImages(entity, entityId);
+            var files = fileService.GetEntityImages(entity, entityId);
             return Ok(files);
         }
 
@@ -73,14 +66,14 @@ namespace Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Upload(IFormFile file, [FromForm] string entity, [FromForm] string id)
         {
-            var response = await _fileService.UploadFile(file, entity, Guid.Parse(id));
+            var response = await fileService.UploadFile(file, entity, Guid.Parse(id));
             return response.Result ? Ok(response.Content) : BadRequest(response.Errors);
         }
         
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var response = await _fileService.RemoveFile(id);
+            var response = await fileService.RemoveFile(id);
             return response.Result ? Ok(response.Content) : BadRequest(response.Errors);
         }
     }

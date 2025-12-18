@@ -2,6 +2,7 @@
 using Api.Services.Production;
 using Api.Services.Purchase;
 using Api.Services.Sales;
+using Api.Services.Shared;
 using Api.Services.Verifactu;
 using Api.Services.Warehouse;
 using Application.Persistance;
@@ -49,6 +50,7 @@ public static class ApplicationServicesSetup
         services.AddScoped<IVerifactuIntegrationService, VerifactuIntegrationService>();
         services.AddScoped<IProfileService, ProfileService>();
     services.AddScoped<IMenuItemService, MenuItemService>();
+        services.AddScoped<ILifecycleService, LifecycleService>();
         services.AddSingleton<IQrCodeService, QrCodeService>();
 
         services.AddHostedService<BudgetBackgroundService>();
