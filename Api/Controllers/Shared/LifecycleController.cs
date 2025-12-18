@@ -1,79 +1,61 @@
 ﻿using Application.Contracts;
-using Application.Persistance;
 using Application.Services;
 using Domain.Entities;
 using Domain.Entities.Shared;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers.Sales
+namespace Api.Controllers.Shared
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class LifecycleController : ControllerBase
+    public class LifecycleController(ILifecycleService lifecycleService) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ILocalizationService _localizationService;
-
-        public LifecycleController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
-        {
-            _unitOfWork = unitOfWork;
-            _localizationService = localizationService;
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(Lifecycle request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.Lifecycles.Find(r => request.Name == r.Name).Any();
-            if (!exists)
+            var response = await lifecycleService.CreateLifecycle(request);
+            if (response.Result)
             {
-                await _unitOfWork.Lifecycles.Add(request);
-
                 var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
-                return Created(location, request);
+                return Created(location, response.Content);
             }
             else
             {
-                var message = _localizationService.GetLocalizedString("LifecycleNotFound", request.Name);
-                return Conflict(new GenericResponse(false, message));
+                return Conflict(response);
             }
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.Lifecycles.GetAll();
-
-            return Ok(entities.OrderBy(e => e.Name));
+            var entities = await lifecycleService.GetAllLifecycles();
+            return Ok(entities);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.Lifecycles.Get(id);
+            var entity = await lifecycleService.GetLifecycleById(id);
             if (entity is not null)
             {
                 return Ok(entity);
             }
             else
             {
-                var message = _localizationService.GetLocalizedString("EntityNotFound", id);
-                return NotFound(new GenericResponse(false, message));
+                return NotFound();
             }
         }
 
         [HttpGet("Name/{name}")]
         public async Task<IActionResult> GetByName(string name)
         {
-            var entity = await _unitOfWork.Lifecycles.GetByName(name);
+            var entity = await lifecycleService.GetLifecycleByName(name);
             if (entity is not null)
                 return Ok(entity);
             else
-            {
-                var message = _localizationService.GetLocalizedString("LifecycleNotFound", name);
-                return NotFound(new GenericResponse(false, message));
-            }
+                return NotFound();
         }
 
         [HttpPut("{id:guid}")]
@@ -84,15 +66,11 @@ namespace Api.Controllers.Sales
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.Lifecycles.Exists(request.Id);
-            if (!exists)
-            {
-                var message = _localizationService.GetLocalizedString("EntityNotFound", Id);
-                return NotFound(new GenericResponse(false, message));
-            }
-
-            await _unitOfWork.Lifecycles.Update(request);
-            return Ok(request);
+            var response = await lifecycleService.UpdateLifecycle(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         [HttpDelete("{id:guid}")]
@@ -101,15 +79,11 @@ namespace Api.Controllers.Sales
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.Lifecycles.Find(e => e.Id == id).FirstOrDefault();
-            if (entity is null)
-            {
-                var message = _localizationService.GetLocalizedString("EntityNotFound", id);
-                return NotFound(new GenericResponse(false, message));
-            }
-
-            await _unitOfWork.Lifecycles.Remove(entity);
-            return Ok(entity);
+            var response = await lifecycleService.RemoveLifecycle(id);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         [Route("Status")]
@@ -118,17 +92,11 @@ namespace Api.Controllers.Sales
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var entity = await _unitOfWork.Lifecycles.StatusRepository.Get(request.Id);
-            if (entity is null)
-            {
-                await _unitOfWork.Lifecycles.StatusRepository.Add(request);
-                return Ok(request);
-            }
+            var response = await lifecycleService.CreateStatus(request);
+            if (response.Result)
+                return Ok(response.Content);
             else
-            {
-                var message = _localizationService.GetLocalizedString("EntityAlreadyExists");
-                return BadRequest(new GenericResponse(false, message));
-            }
+                return BadRequest(response);
         }
 
         [Route("Status/{id:guid}")]
@@ -137,17 +105,11 @@ namespace Api.Controllers.Sales
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.Lifecycles.StatusRepository.Find(s => s.Id == id).FirstOrDefault();
-            if (exists is not null)
-            {
-                await _unitOfWork.Lifecycles.StatusRepository.Update(request);
-                return Ok(request);
-            }
+            var response = await lifecycleService.UpdateStatus(request);
+            if (response.Result)
+                return Ok(response.Content);
             else
-            {
-                var message = _localizationService.GetLocalizedString("EntityNotFound", id);
-                return NotFound(new GenericResponse(false, message));
-            }
+                return NotFound(response);
         }
 
         [Route("Status/{id:guid}")]
@@ -156,17 +118,11 @@ namespace Api.Controllers.Sales
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var status = _unitOfWork.Lifecycles.StatusRepository.Find(s => s.Id == id).FirstOrDefault();
-            if (status is not null)
-            {
-                await _unitOfWork.Lifecycles.StatusRepository.Remove(status);
-                return Ok(status);
-            }
+            var response = await lifecycleService.RemoveStatus(id);
+            if (response.Result)
+                return Ok(response.Content);
             else
-            {
-                var message = _localizationService.GetLocalizedString("EntityNotFound", id);
-                return NotFound(new GenericResponse(false, message));
-            }
+                return NotFound(response);
         }
 
         [Route("StatusTransition")]
@@ -175,25 +131,11 @@ namespace Api.Controllers.Sales
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            if (request.StatusId.HasValue && request.StatusToId.HasValue)
-            {
-                var status = await _unitOfWork.Lifecycles.StatusRepository.Get(request.StatusId.Value);
-                var statusTo = await _unitOfWork.Lifecycles.StatusRepository.Get(request.StatusToId.Value);
-                if (status is not null && statusTo is not null)
-                {
-                    await _unitOfWork.Lifecycles.StatusRepository.TransitionRepository.Add(request);
-                    return Ok(request);
-                }
-                else
-                {
-                    var message = _localizationService.GetLocalizedString("StatusTransitionNotFound");
-                    return NotFound(new GenericResponse(false, message));
-                }
-            }
+            var response = await lifecycleService.CreateStatusTransition(request);
+            if (response.Result)
+                return Ok(response.Content);
             else
-            {
-                return BadRequest();
-            }
+                return BadRequest(response);
         }
 
         [Route("StatusTransition/{id:guid}")]
@@ -202,17 +144,11 @@ namespace Api.Controllers.Sales
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var transition = _unitOfWork.Lifecycles.StatusRepository.TransitionRepository.Find(t => t.Id == id).FirstOrDefault();
-            if (transition is not null)
-            {
-                await _unitOfWork.Lifecycles.StatusRepository.TransitionRepository.Update(request);
-                return Ok(transition);
-            }
+            var response = await lifecycleService.UpdateStatusTransition(request);
+            if (response.Result)
+                return Ok(response.Content);
             else
-            {
-                var message = _localizationService.GetLocalizedString("EntityNotFound", id);
-                return NotFound(new GenericResponse(false, message));
-            }
+                return NotFound(response);
         }
 
         [Route("StatusTransition/{id:guid}")]
@@ -221,17 +157,11 @@ namespace Api.Controllers.Sales
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var transition = _unitOfWork.Lifecycles.StatusRepository.TransitionRepository.Find(t => t.Id == id).FirstOrDefault();
-            if (transition is not null)
-            {
-                await _unitOfWork.Lifecycles.StatusRepository.TransitionRepository.Remove(transition);
-                return Ok(transition);
-            }
+            var response = await lifecycleService.RemoveStatusTransition(id);
+            if (response.Result)
+                return Ok(response.Content);
             else
-            {
-                var message = _localizationService.GetLocalizedString("EntityNotFound", id);
-                return NotFound(new GenericResponse(false, message));
-            }
+                return NotFound(response);
         }
     }
 }
