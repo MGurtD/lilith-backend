@@ -48,6 +48,9 @@ try
         // Serilog HTTP request logging
         app.UseSerilogRequestLogging();
         
+        // Correlation ID middleware for request tracking
+        app.UseMiddleware<CorrelationMiddleware>();
+        
         app.UseSwagger();
         app.UseSwaggerUI();
 
@@ -58,8 +61,7 @@ try
         app.UseLocalizationSetup();
         app.UseAuthorization();
 
-        // middlewares
-        app.UseMiddleware<HttpLoggingMiddleware>();
+        // Enhanced error handling middleware (after authentication/authorization)
         app.UseMiddleware<ErrorHandlerMiddleware>();
 
         // global cors policy
@@ -69,10 +71,6 @@ try
             .AllowAnyHeader());
 
         app.MapControllers();
-
-        // Seed profiles and menu items (idempotent)
-        await ProfileMenuSeeder.SeedAsync(app.Services);
-
         app.Run();
     }
 }

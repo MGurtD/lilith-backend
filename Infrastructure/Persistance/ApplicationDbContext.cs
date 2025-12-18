@@ -1,7 +1,6 @@
 ﻿using Application.Contracts.Production;
 using Application.Contracts.Purchase;
 using Application.Contracts.Sales;
-using Domain.Entities.Audit;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistance
@@ -21,8 +20,6 @@ namespace Infrastructure.Persistance
 
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
-        public DbSet<HttpTransactionLog>? HttpTransactionLogs { get; set; }
-
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

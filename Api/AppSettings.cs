@@ -6,7 +6,6 @@ public class AppSettings
     public JwtConfigSettings JwtConfig { get; set; } = new();
     public FileManagmentSettings FileManagment { get; set; } = new();
     public VerifactuSettings? Verifactu { get; set; }
-
     public void Validate()
     {
         ConnectionStrings.Validate();

@@ -227,6 +227,13 @@
     "MenuItemInvalidParent": "Elemento de menú padre no válido",
     "CustomerRanking.NoDataFound": "No se han encontrado datos de ventas para el año {0}",
     "CustomerRanking.InvalidYear": "El año proporcionado no es válido",
-    "CustomerRanking.YearRequired": "El año es obligatorio"
+    "CustomerRanking.YearRequired": "El año es obligatorio",
+    "ErrorResponse.InternalServerError": "Se ha producido un error interno del servidor",
+    "ErrorResponse.BadRequest": "La solicitud no es válida",
+    "ErrorResponse.NotFound": "El recurso solicitado no existe",
+    "ErrorResponse.Validation": "Error de validación",
+    "ErrorResponse.Unauthorized": "Autenticación requerida",
+    "ErrorResponse.Forbidden": "Acceso denegado",
+    "ErrorResponse.Conflict": "Conflicto con el estado actual del recurso"
   }
 }

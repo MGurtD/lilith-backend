@@ -227,6 +227,13 @@
     "MenuItemInvalidParent": "Element de menú pare no vàlid",
     "CustomerRanking.NoDataFound": "No s'han trobat dades de vendes per a l'any {0}",
     "CustomerRanking.InvalidYear": "L'any proporcionat no és vàlid",
-    "CustomerRanking.YearRequired": "L'any és obligatori"
+    "CustomerRanking.YearRequired": "L'any és obligatori",
+    "ErrorResponse.InternalServerError": "S'ha produït un error intern del servidor",
+    "ErrorResponse.BadRequest": "La sol·licitud no és vàlida",
+    "ErrorResponse.NotFound": "El recurs sol·licitat no existeix",
+    "ErrorResponse.Validation": "Error de validació",
+    "ErrorResponse.Unauthorized": "Autenticació requerida",
+    "ErrorResponse.Forbidden": "Accés denegat",
+    "ErrorResponse.Conflict": "Conflicte amb l'estat actual del recurs"
   }
 }

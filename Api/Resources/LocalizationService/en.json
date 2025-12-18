@@ -227,6 +227,13 @@
     "MenuItemInvalidParent": "Invalid parent menu item",
     "CustomerRanking.NoDataFound": "No sales data found for year {0}",
     "CustomerRanking.InvalidYear": "The provided year is not valid",
-    "CustomerRanking.YearRequired": "Year is required"
+    "CustomerRanking.YearRequired": "Year is required",
+    "ErrorResponse.InternalServerError": "An internal server error occurred",
+    "ErrorResponse.BadRequest": "The request is invalid",
+    "ErrorResponse.NotFound": "The requested resource does not exist",
+    "ErrorResponse.Validation": "Validation error",
+    "ErrorResponse.Unauthorized": "Authentication required",
+    "ErrorResponse.Forbidden": "Access denied",
+    "ErrorResponse.Conflict": "Conflict with the current state of the resource"
   }
 }
