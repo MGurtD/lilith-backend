@@ -6,6 +6,14 @@ namespace Domain.Entities.Production;
 public class WorkOrderPhase : Entity
 {
     public string Code { get; set; } = string.Empty;
+    
+    public int CodeAsNumber
+    {
+        get
+        {
+            return int.TryParse(Code, out var number) ? number : 0;
+        }
+    }
     public string Description { get; set; } = string.Empty;
 
     public Guid WorkOrderId { get; set; }
