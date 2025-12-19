@@ -54,6 +54,37 @@ namespace Infrastructure.Persistance.Repositories.Production
                 .ToListAsync();
         }
 
- 
+        public async Task<IEnumerable<WorkOrder>> GetByWorkcenterType(Guid workcenterTypeId, Guid[] excludedStatusIds)
+        {
+            return await dbSet
+                .Where(w => !excludedStatusIds.Contains(w.StatusId))
+                .Where(w => w.Phases.Any(p => p.WorkcenterTypeId == workcenterTypeId))
+                .Include(w => w.Reference)
+                    .ThenInclude(r => r!.Customer)
+                .Include(w => w.Status)
+                .Include(w => w.Phases.Where(p => p.WorkcenterTypeId == workcenterTypeId))                   
+                .AsNoTracking()
+                .OrderBy(w => w.Order)
+                .ToListAsync();
+        }
+
+        public async Task<bool> UpdateOrders(List<UpdateWorkOrderOrderDTO> orders)
+        {
+            var ids = orders.Select(o => o.Id).ToArray();
+            var workOrders = await dbSet.Where(w => ids.Contains(w.Id)).ToListAsync();
+            if (workOrders.Count != ids.Length)
+                return false;
+            
+            foreach (var workOrder in workOrders)
+            {
+                var order = orders.First(o => o.Id == workOrder.Id);
+                workOrder.Order = order.Order;
+                UpdateWithoutSave(workOrder);
+            }
+            await SaveChanges();
+            return true;
+        }
+
+
     }
 }

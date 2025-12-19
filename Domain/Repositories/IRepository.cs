@@ -10,6 +10,8 @@ namespace Application.Persistance.Repositories
 
         Task<List<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate);
 
+        Task<List<TEntity>> FindAsyncWithQueryParams(Expression<Func<TEntity, bool>> predicate, Func<IQueryable<TEntity>, IQueryable<TEntity>>? includeFunc);
+
 
         IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate);
         Task<bool> Exists(Guid id);

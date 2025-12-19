@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Application.Persistance.Repositories;
+using Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using SkiaSharp;
 using System.Linq.Expressions;
-using Application.Persistance.Repositories;
 
 namespace Infrastructure.Persistance.Repositories
 {
@@ -28,6 +30,18 @@ namespace Infrastructure.Persistance.Repositories
         public async Task<List<Entity>> FindAsync(Expression<Func<Entity, bool>> predicate)
         {
             return await dbSet.AsNoTracking().Where(predicate).ToListAsync();
+        }
+
+        public async Task<List<Entity>> FindAsyncWithQueryParams(Expression<Func<Entity, bool>> predicate, Func<IQueryable<Entity>, IQueryable<Entity>>? includeFunc)
+        {
+            IQueryable<Entity> query = dbSet.Where(predicate);
+
+            if (includeFunc != null)
+            {
+                query = includeFunc(query);
+            }
+
+            return await query.ToListAsync();
         }
 
         public virtual IEnumerable<Entity> Find(Expression<Func<Entity, bool>> predicate)
