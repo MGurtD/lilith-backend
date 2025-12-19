@@ -31,7 +31,7 @@ namespace Api.Services.Production
 
             var phaseDtos = new List<WorkOrderPhaseReportDto>();
             var bomDtos = new List<WorkOrderPhaseBillOfMaterialsReportDto>();
-            foreach (var phase in workOrder.Phases.Where(p => !p.Disabled).OrderBy(p => p.Code))
+            foreach (var phase in workOrder.Phases.Where(p => !p.Disabled).OrderBy(p => p.CodeAsNumber))
             {
                 var detailDtos = new List<WorkOrderPhaseDetailReportDto>();
                 foreach (var detail in phase.Details.Where(d => !d.Disabled).OrderBy(d => d.Order))
