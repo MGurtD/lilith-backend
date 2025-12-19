@@ -30,3 +30,8 @@ public class WorkOrder : Entity
 
     public ICollection<WorkOrderPhase> Phases { get; set; } = new List<WorkOrderPhase>();
 }
+public class UpdateWorkOrderOrderDTO
+{
+    public Guid Id { get; set; }
+    public int Order { get; set; }
+}

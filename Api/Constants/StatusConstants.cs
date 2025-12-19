@@ -32,6 +32,8 @@ namespace Api.Constants
             // Work Order statuses
             public const string Creada = "Creada";
             public const string Production = "Producció";
+            public const string Tancada = "Tancada";
+            public const string OFCancellada = "Cancel·lada";
 
             // Sales Order statuses
             public const string Comanda = "Comanda";

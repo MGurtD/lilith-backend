@@ -10,5 +10,8 @@ namespace Application.Persistance.Repositories.Production
         Task<WorkOrder?> GetDetailed(Guid id);
         Task<IEnumerable<WorkOrder>> GetByWorkcenterIdInProduction(Guid workcenterId, Guid productionStatusId);
 
+        Task<IEnumerable<WorkOrder>> GetByWorkcenterType(Guid workcenterTypeId, Guid[] excludedStatusIds);
+        Task<bool> UpdateOrders(List<UpdateWorkOrderOrderDTO> orders);
+
     }
 }

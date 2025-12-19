@@ -1,4 +1,5 @@
 ﻿
+using Api.Constants;
 using Application.Contracts;
 using Application.Contracts.Production;
 using Application.Persistance;
@@ -7,7 +8,7 @@ using Application.Services;
 using Application.Services.Sales;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
-using Api.Constants;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.Production
 {
@@ -339,6 +340,33 @@ namespace Api.Services.Production
             }
             
             await unitOfWork.WorkOrders.Update(workOrder);
+        }
+
+        public async Task<IEnumerable<WorkOrder>> GetWorkordersByWorkcenterTypeId(Guid id)
+        {
+            var workOrders = Enumerable.Empty<WorkOrder>();
+            var statusClosed = await unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.WorkOrder, StatusConstants.Statuses.Tancada);
+            if (statusClosed == null)
+            {
+                return workOrders;
+            }
+            var statusCancelled = await unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.WorkOrder, StatusConstants.Statuses.OFCancellada);
+            if (statusCancelled == null)
+            {
+                return workOrders;
+            }
+            var excludedStatusIds = new[] { statusClosed.Id, statusCancelled.Id };
+            workOrders = await unitOfWork.WorkOrders.GetByWorkcenterType(id, excludedStatusIds);
+
+            if (workOrders == null || !workOrders.Any())
+                return workOrders;
+
+            return workOrders;
+        }
+
+        public async Task<bool> UpdateOrders(List<UpdateWorkOrderOrderDTO> orders)
+        {
+            return await unitOfWork.WorkOrders.UpdateOrders(orders);
         }
 
     }

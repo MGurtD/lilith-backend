@@ -79,6 +79,28 @@ namespace Api.Controllers.Production
             return Ok(response.Content);
         }
 
+        [HttpGet("WorkcenterType/{id:guid}")]
+        [SwaggerOperation("GetWorkordersByWorkcenterTypeId")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetWorkordersByWorkcenterTypeId(Guid id)
+        {
+            var workorders = await workOrderService.GetWorkordersByWorkcenterTypeId(id);
+            if (workorders.Any())
+                return Ok(workorders);
+            else
+                return NotFound();
+        }
+        [HttpPut("UpdateOrders")]
+        public async Task<IActionResult> UpdateOrders(List<UpdateWorkOrderOrderDTO> orders)
+        {
+            var response = await workOrderService.UpdateOrders(orders);
+            if (response)
+                return Ok();
+            else
+                return BadRequest();
+        }
+
         [HttpGet("{id:guid}/Detailed")]
         public IActionResult GetDetailedWorkOrder(Guid id)
         {
@@ -143,7 +165,7 @@ namespace Api.Controllers.Production
             if (WorkOrderPhase == null) return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderPhaseNotFound")));
 
             return Ok(WorkOrderPhase);
-        }
+        }        
 
         [HttpGet("Phase/External")]
         [SwaggerOperation("GetExternalWorkOrderPhase")]
