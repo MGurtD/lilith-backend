@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.Contracts.Shared;
 using Application.Services;
 using Domain.Entities;
 using Domain.Entities.Shared;
@@ -162,6 +163,15 @@ namespace Api.Controllers.Shared
                 return Ok(response.Content);
             else
                 return NotFound(response);
+        }
+
+        [Route("Status/{statusId:guid}/AvailableTransitions")]
+        [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<AvailableStatusTransitionDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAvailableTransitions(Guid statusId)
+        {
+            var transitions = await lifecycleService.GetAvailableTransitions(statusId);
+            return Ok(transitions);
         }
 
         [Route("Tag/{id:guid}")]

@@ -107,6 +107,21 @@ public class WorkcenterShiftController : Controller
             return BadRequest(response);
         }
     }
+
+    [HttpPost("WorkOrderPhaseAndStatus/In")]
+    public async Task<IActionResult> WorkOrderPhaseAndStatusIn(WorkOrderPhaseAndStatusInRequest request)
+    {
+        var response = await _workcenterShiftService.DetailsService.WorkOrderPhaseAndStatusIn(request);
+        if (response.Result)
+        {
+            return Ok(response);
+        }
+        else
+        {
+            return BadRequest(response);
+        }
+    }
+
     [HttpPost("WorkOrderPhase/Out")]
     public async Task<IActionResult> WorkOrderPhaseOut(WorkOrderPhaseInOutRequest request)
     {

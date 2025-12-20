@@ -218,6 +218,18 @@ namespace Api.Services.Production
             return new GenericResponse(true);
         }
 
+        private static async Task<GenericResponse> ValidateWorkOrderPhaseAndStatus(List<WorkcenterShiftDetail> currentWorkcenterDetails, WorkOrderPhaseAndStatusInRequest request)
+        {
+            // Validar que la fase de fabricació + estat de màquina no estigui ja carregada
+            if (currentWorkcenterDetails.Any(wsd => wsd.WorkOrderPhaseId == request.WorkOrderPhaseId && wsd.MachineStatusId == request.MachineStatusId))
+            {
+                return new GenericResponse(false, "La fase de fabricació indicada es troba actualment al centre de treball amb l'estat de màquina indicat");
+            }
+
+            return new GenericResponse(true);
+        }       
+        
+
         public async Task<GenericResponse> WorkOrderPhaseIn(WorkOrderPhaseInOutRequest request)
         {
             var currentWorkcenterShift = await unitOfWork.WorkcenterShifts.GetCurrentWorkcenterShiftWithCurrentDetails(request.WorkcenterId);
@@ -264,6 +276,73 @@ namespace Api.Services.Production
                         MachineStatusId = currentDetail.MachineStatusId,
                         MachineStatusReasonId = currentDetail.MachineStatusReasonId,
                         WorkcenterCost = currentDetail.WorkcenterCost,
+                        WorkOrderPhaseId = request.WorkOrderPhaseId,
+                        ConcurrentWorkorderPhases = currentDetail.ConcurrentWorkorderPhases + 1,
+                        OperatorId = currentDetail.OperatorId,
+                        OperatorCost = currentDetail.OperatorCost,
+                        ConcurrentOperatorWorkcenters = currentDetail.ConcurrentOperatorWorkcenters
+                    };
+                    newDetail.Open(request.Timestamp);
+                    await unitOfWork.WorkcenterShifts.Details.AddWithoutSave(newDetail);
+                }
+            }
+
+            await unitOfWork.CompleteAsync();
+            return new GenericResponse(true);
+        }
+
+        public async Task<GenericResponse> WorkOrderPhaseAndStatusIn(WorkOrderPhaseAndStatusInRequest request)
+        {
+            var currentWorkcenterShift = await unitOfWork.WorkcenterShifts.GetCurrentWorkcenterShiftWithCurrentDetails(request.WorkcenterId);
+            if (currentWorkcenterShift == null)
+            {
+                return new GenericResponse(false, "El centre de treball no té cap torn actiu");
+            }
+            var currentWorkcenterShiftDetails = currentWorkcenterShift.Details.ToList();
+
+            // Validar la petició de la fase i l'estat
+            var validationResponse = await ValidateWorkOrderPhaseAndStatus(currentWorkcenterShiftDetails, request);
+            if (!validationResponse.Result)
+            {
+                return validationResponse;
+            }
+
+            // Obtenir el cost del workcenter per l'estat indicat
+            decimal workcenterCost = 0;
+            var getWorkcenterStatusCostResponse = await metricsService.GetWorkcenterStatusCost(request.WorkcenterId, request.MachineStatusId);
+            if (getWorkcenterStatusCostResponse.Result)
+            {
+                workcenterCost = (decimal)getWorkcenterStatusCostResponse.Content!;
+            }
+
+            if (currentWorkcenterShiftDetails.Count == 0)
+            {
+                // No hi ha detalls actius al centre de treball
+                var newDetail = new WorkcenterShiftDetail()
+                {
+                    WorkcenterShiftId = currentWorkcenterShift.Id,
+                    MachineStatusId = request.MachineStatusId,
+                    WorkcenterCost = workcenterCost,
+                    WorkOrderPhaseId = request.WorkOrderPhaseId,
+                    ConcurrentWorkorderPhases = 1
+                };
+                newDetail.Open(request.Timestamp);
+
+                await unitOfWork.WorkcenterShifts.Details.AddWithoutSave(newDetail);
+            }
+            else
+            {
+                // Hi ha detalls actius al centre de treball
+                foreach (var currentDetail in currentWorkcenterShiftDetails)
+                {
+                    currentDetail.Close(request.Timestamp);
+                    unitOfWork.WorkcenterShifts.Details.UpdateWithoutSave(currentDetail);
+
+                    var newDetail = new WorkcenterShiftDetail()
+                    {
+                        WorkcenterShiftId = currentDetail.WorkcenterShiftId,
+                        MachineStatusId = request.MachineStatusId,
+                        WorkcenterCost = workcenterCost,
                         WorkOrderPhaseId = request.WorkOrderPhaseId,
                         ConcurrentWorkorderPhases = currentDetail.ConcurrentWorkorderPhases + 1,
                         OperatorId = currentDetail.OperatorId,
@@ -445,7 +524,6 @@ namespace Api.Services.Production
             await unitOfWork.WorkcenterShifts.Details.Update(workcenterShiftDetail);
             return new GenericResponse(true);
         }
-
-
+        
     }
 }

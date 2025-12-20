@@ -359,7 +359,7 @@ namespace Api.Services.Production
             workOrders = await unitOfWork.WorkOrders.GetByWorkcenterType(id, excludedStatusIds);
 
             if (workOrders == null || !workOrders.Any())
-                return workOrders;
+                return [];
 
             return workOrders;
         }

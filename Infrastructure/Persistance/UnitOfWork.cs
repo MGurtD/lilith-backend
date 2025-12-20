@@ -16,6 +16,7 @@ using Domain.Entities.Shared;
 using Domain.Entities.Warehouse;
 using Domain.Repositories;
 using Domain.Repositories.Sales;
+using Domain.Repositories.Shared;
 using Infrastructure.Persistance.Repositories;
 using Infrastructure.Persistance.Repositories.Production;
 using Infrastructure.Persistance.Repositories.Purchase; // contains LifecycleRepository as per current project structure

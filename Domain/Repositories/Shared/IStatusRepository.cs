@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Domain.Entities.Shared;
 
 namespace Application.Persistance.Repositories
 {
@@ -9,5 +10,6 @@ namespace Application.Persistance.Repositories
         Task AddTransition(StatusTransition transition);
         Task UpdateTransition(StatusTransition transition);
         Task<bool> RemoveTransition(StatusTransition transition);
+        Task<IEnumerable<AvailableStatusTransitionDto>> GetAvailableTransitions(Guid statusId);
     }
 }

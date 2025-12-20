@@ -2,7 +2,7 @@ using Application.Persistance.Repositories;
 using Domain.Entities;
 using Domain.Entities.Shared;
 
-namespace Domain.Repositories;
+namespace Domain.Repositories.Shared;
 
 public interface ILifecycleTagRepository : IRepository<LifecycleTag, Guid>
 {

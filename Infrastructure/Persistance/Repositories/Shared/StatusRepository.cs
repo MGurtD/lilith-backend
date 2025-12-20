@@ -1,5 +1,6 @@
 ﻿using Application.Persistance.Repositories;
 using Domain.Entities;
+using Domain.Entities.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistance.Repositories.Purchase
@@ -33,5 +34,20 @@ namespace Infrastructure.Persistance.Repositories.Purchase
             return true;
         }
 
+        public async Task<IEnumerable<AvailableStatusTransitionDto>> GetAvailableTransitions(Guid statusId)
+        {
+            var query = from st in context.Set<StatusTransition>()
+                        join s in context.Set<Status>() on st.StatusToId equals s.Id
+                        where st.StatusId == statusId && !st.Disabled && !s.Disabled
+                        select new AvailableStatusTransitionDto(
+                            s.Id,
+                            s.Name,
+                            s.Description,
+                            s.Color,
+                            st.Name
+                        );
+
+            return await query.ToListAsync();
+        }
     }
 }

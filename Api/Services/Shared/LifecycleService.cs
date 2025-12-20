@@ -1,4 +1,5 @@
 using Application.Contracts;
+using Application.Contracts.Shared;
 using Application.Persistance;
 using Application.Services;
 using Domain.Entities;
@@ -155,6 +156,11 @@ public class LifecycleService(IUnitOfWork unitOfWork, ILocalizationService local
 
         await unitOfWork.Lifecycles.StatusRepository.TransitionRepository.Remove(transition);
         return new GenericResponse(true, transition);
+    }
+
+    public async Task<IEnumerable<AvailableStatusTransitionDto>> GetAvailableTransitions(Guid statusId)
+    {
+        return await unitOfWork.Lifecycles.StatusRepository.GetAvailableTransitions(statusId);
     }
 
     // LifecycleTag operations
