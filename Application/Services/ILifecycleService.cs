@@ -1,4 +1,5 @@
 using Application.Contracts;
+using Application.Contracts.Shared;
 using Domain.Entities;
 using Domain.Entities.Shared;
 
@@ -23,6 +24,7 @@ public interface ILifecycleService
     Task<GenericResponse> CreateStatusTransition(StatusTransition transition);
     Task<GenericResponse> UpdateStatusTransition(StatusTransition transition);
     Task<GenericResponse> RemoveStatusTransition(Guid id);
+    Task<IEnumerable<AvailableStatusTransitionDto>> GetAvailableTransitions(Guid statusId);
 
     // LifecycleTag operations
     Task<LifecycleTag?> GetTagById(Guid id);

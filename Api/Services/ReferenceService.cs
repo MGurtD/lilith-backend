@@ -3,7 +3,6 @@ using Application.Persistance;
 using Application.Services;
 using Domain.Entities.Purchase;
 using Domain.Entities.Shared;
-using Infrastructure.Persistance;
 using System.Text;
 
 namespace Api.Services
