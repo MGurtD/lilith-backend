@@ -8,13 +8,13 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
 WORKDIR /src
 COPY . .
 
-RUN dotnet restore "Api/Api.csproj"
+RUN dotnet restore "src/Api/Api.csproj"
 WORKDIR "/src/."
 COPY . .
-RUN dotnet build "Api/Api.csproj" -c Release -o /app/build
+RUN dotnet build "src/Api/Api.csproj" -c Release -o /app/build
 
 FROM build as publish
-RUN dotnet publish "Api/Api.csproj" -c Release -o /app/publish
+RUN dotnet publish "src/Api/Api.csproj" -c Release -o /app/publish
 
 FROM base AS final
 # Set timezone

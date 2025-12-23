@@ -1,4 +1,4 @@
-name: dockerImageToDockerHub
+name: docker-image-ci
 
 on:
   push:

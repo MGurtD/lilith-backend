@@ -1,51 +1,62 @@
-# How to add a new read-only endpoint that queries the database
+# How to Create Endpoints
 
-This guide explains how to add a new GET endpoint that queries the database and returns data using the Lilith backend architecture and conventions.
+This guide explains how to add new API endpoints that query the database and return data using the Lilith backend architecture and conventions.
 
-Architecture layers involved
+## Overview
 
-- Domain: repository interfaces (contracts).
-- Infrastructure: repository implementations (EF Core).
-- Application: service interfaces and service logic.
-- API: controllers and request/response shaping.
+**Architecture layers involved:**
 
-Conventions used here come from existing code like `ISalesInvoiceRepository`, `VerifactuIntegrationService`, and `VerifactuController`.
+- **Domain** - Entity definitions
+- **Application.Contracts** - Repository and service interfaces
+- **Application** - Service implementations with business logic
+- **Infrastructure** - Repository implementations (EF Core)
+- **Api** - Controllers and HTTP request/response shaping
 
-## 1) Add a repository method (Domain)
+**Key conventions:** Follow patterns from existing implementations like `BudgetService`, `SalesInvoiceService`, and their controllers.
 
-Define an explicit query contract on the corresponding repository interface under `Domain/Repositories/...`.
+---
 
-Example (Sales):
+## Step 1: Add Repository Method (Application.Contracts)
+
+Define an explicit query contract on the corresponding repository interface in `Application.Contracts/Contracts/`.
+
+**Example:**
 
 ```csharp
-// File: Domain/Repositories/Sales/ISalesInvoiceRepository.cs
+// File: src/Application.Contracts/Contracts/ISalesInvoiceRepository.cs
+namespace Application.Contracts;
+
 public interface ISalesInvoiceRepository : IRepository<SalesInvoice, Guid>
 {
-		// ...existing members...
-		Task<IEnumerable<SalesInvoice>> GetIntegrationsBetweenDates(DateTime fromDate, DateTime toDate);
+    // ...existing members...
+    Task<IEnumerable<SalesInvoice>> GetBetweenDates(DateTime fromDate, DateTime toDate);
 }
 ```
 
-Notes
+**Notes:**
 
-- Prefer Task-returning async methods for IO.
-- Name methods after the query intent (e.g., BetweenDates, PendingToIntegrate).
+- Prefer `Task<T>` for all async IO operations
+- Name methods after query intent (e.g., `GetBetweenDates`, `GetPendingIntegration`)
+- RStep 2: Implement Repository (Infrastructure)
 
-## 2) Implement the repository (Infrastructure)
+Implement the interface in `Infrastructure/Persistance/Repositories/`. Use `AsNoTracking()` for read-only queries and eager load only required navigation properties.
 
-Implement the interface in `Infrastructure/Persistance/Repositories/...`. Use `AsNoTracking()` for read-only queries and include only what you need.
-
-Example implementation:
+**Example:**
 
 ```csharp
-// File: Infrastructure/Persistance/Repositories/Sales/SalesInvoiceRepository.cs
-public class SalesInvoiceRepository(ApplicationDbContext context)
-		: Repository<SalesInvoice, Guid>(context), ISalesInvoiceRepository
-{
-		// ...existing code...
+// File: src/Infrastructure/Persistance/Repositories/SalesInvoiceRepository.cs
+namespace Infrastructure.Persistance.Repositories;
 
-		public async Task<IEnumerable<SalesInvoice>> GetIntegrationsBetweenDates(DateTime fromDate, DateTime toDate)
-		{
+public class SalesInvoiceRepository(ApplicationDbContext context)
+    : Repository<SalesInvoice, Guid>(context), ISalesInvoiceRepository
+{
+    // ...existing code...
+
+    public async Task<IEnumerable<SalesInvoice>> GetBetweenDates(
+        DateTime fromDate, DateTime toDate)
+    {
+        return await dbSet
+
 				return await dbSet
 						.AsNoTracking()
 						.Include(i => i.VerifactuRequests) // include requests if needed by consumers

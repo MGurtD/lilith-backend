@@ -1,0 +1,18 @@
+using Application.Contracts;
+using Domain.Entities.Production;
+
+namespace Application.Contracts;
+
+public interface IWorkcenterShiftService
+{
+    IWorkcenterShiftDetailService DetailsService { get; }
+
+    Task<WorkcenterShift?> GetWorkcenterShift(Guid workcenterShiftId);
+    Task<List<WorkcenterShift>> GetCurrentWorkcenterShifts();
+
+    Task<GenericResponse> CreateWorkcenterShifts(List<CreateWorkcenterShiftDto> dtos);
+
+    Task<GenericResponse> DisableWorkcenterShift(Guid workcenterShiftId);
+    Task<List<WorkcenterShiftHistoricalOperator>> GetWorkcenterShiftHistorical(WorkcenterShiftHistoricRequest request);
+
+}

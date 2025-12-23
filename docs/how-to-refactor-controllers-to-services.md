@@ -1,53 +1,56 @@
-# How to Refactor Controllers to Service Layer
+# How to Refactor Controllers to Services
 
-This guide explains how to extract business logic from controllers into dedicated service classes, following Clean Architecture principles and the established patterns in the Lilith backend.
+This guide explains how to extract business logic from controllers into dedicated service classes, following Clean Architecture principles and established patterns.
 
-**When to apply this refactoring:**
+## When to Apply This Refactoring
+
+✅ **Apply when:**
 
 - Controller has business logic mixed with HTTP concerns
 - Controller directly injects `IUnitOfWork` and performs data access
 - Controller contains validation, entity existence checks, or complex orchestration
 - Multiple controllers share similar business logic patterns
 
-**Example:** See the `LifecycleController` refactoring (completed December 2025) as a reference implementation.
+**Reference implementation:** `LifecycleController` refactoring (completed December 2025)
 
 ---
 
-## Architecture Layers
+## Architecture Overview
 
-- **Domain**: Entities, value objects, domain services, repository interfaces
-- **Application**: Service interfaces (`ILifecycleService`, `IBudgetService`)
-- **Infrastructure**: Repository implementations, data access (EF Core)
-- **Api**: Service implementations + Controllers (HTTP only)
+```
+Controller (Api) → Service (Application) → Repository (Infrastructure) → Database
+     HTTP              Business Logic          Data Access
+```
+
+**Layer responsibilities:**
+
+- **Api** - HTTP concerns only (routing, status codes, request/response)
+- **Application** - Business logic, validation, workflow orchestration
+- **Application.Contracts** - Service and repository interfaces, DTOs
+- **Infrastructure** - Repository implementations, EF Core data access
 
 ---
 
-## Step-by-Step Migration Guide
+## Step 1: Create Service Interface (Application.Contracts)
 
-### Step 1: Create Service Interface (Application Layer)
-
-**Location:** `Application/Services/I{EntityName}Service.cs`
+**Location:** `src/Application.Contracts/Services/I{EntityName}Service.cs`
 
 **Pattern:**
 
 ```csharp
-using Application.Contracts;
-using Domain.Entities;
-using Domain.Entities.Shared;
-
-namespace Application.Services;
+namespace Application.Contracts;
 
 public interface I{EntityName}Service
 {
     // Read operations: Return entities directly (nullable for single, enumerable for lists)
-    Task<{Entity}?> Get{Entity}ById(Guid id);
-    Task<{Entity}?> Get{Entity}ByName(string name);
-    Task<IEnumerable<{Entity}>> GetAll{Entity}s();
+    Task<{Entity}?> GetById(Guid id);
+    Task<{Entity}?> GetByName(string name);
+    Task<IEnumerable<{Entity}>> GetAll();
 
     // Write operations: Return GenericResponse for error handling
-    Task<GenericResponse> Create{Entity}({Entity} entity);
-    Task<GenericResponse> Update{Entity}({Entity} entity);
-    Task<GenericResponse> Remove{Entity}(Guid id);
+    Task<GenericResponse> Create({Entity} entity);
+    Task<GenericResponse> Update(Guid id, {Entity} entity);
+    Task<GenericResponse> Remove(Guid id);
 
     // Complex operations: Use request DTOs if needed
     Task<GenericResponse> ChangeStatus(Guid id, Guid newStatusId);

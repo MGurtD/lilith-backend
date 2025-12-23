@@ -2,54 +2,65 @@
 
 ## Solution Overview
 
-Lilith Backend is a comprehensive manufacturing ERP system built with .NET 8 using Clean Architecture principles. The solution manages the complete manufacturing lifecycle including purchases, sales, production planning, inventory, and financial operations for a manufacturing company.
+Lilith Backend is a comprehensive manufacturing ERP system built with .NET 10 using Clean Architecture principles. The solution manages the complete manufacturing lifecycle including purchases, sales, production planning, inventory, and financial operations for a manufacturing company.
+
+**Architecture Grade: B+** - Solid foundation with clear layer separation, modern patterns, and comprehensive multilanguage support.
+
+## 📚 Comprehensive Documentation System
+
+**Before coding, review the comprehensive documentation in `/docs`:**
+
+- **[README.md](../README.md)** - Quick start, architecture overview, and documentation index
+- **[Architecture Layers](../docs/architecture-layers.md)** - Deep dive into all 6 projects and responsibilities
+- **[Domain Model](../docs/domain-model.md)** - Business entities across 4 areas (Sales, Purchase, Production, Warehouse)
+- **[Architectural Patterns](../docs/architectural-patterns.md)** - Repository, Service, GenericResponse patterns with examples
+- **[Request Flow](../docs/request-flow.md)** - How HTTP requests flow through layers (with ASCII diagrams)
+- **[Localization](../docs/localization.md)** - Multilanguage support system (ca/es/en)
+- **[Developer Guide](../docs/developer-guide.md)** - Setup, common tasks, conventions, code style
+- **[External Integrations](../docs/external-integrations.md)** - Verifactu tax service and future integrations
+- **[How to Create Endpoints](../docs/how-to-create-endpoints.md)** - Step-by-step endpoint creation guide
+- **[How to Refactor Controllers to Services](../docs/how-to-refactor-controllers-to-services.md)** - Service layer refactoring patterns
+- **[Architectural Debt Assessment](../docs/architectural-debt-assessment.md)** - Known issues and improvement roadmap
+
+**Use these docs to understand patterns before implementing new features.**
 
 ## Architecture & Structure
 
-### Project Organization
+**For detailed architecture information, see [Architecture Layers](../docs/architecture-layers.md)**
 
-The solution follows Clean Architecture with 5 main projects:
+### Solution Structure
 
-1. **Domain** - Core business entities, interfaces, and domain logic
-2. **Application** - Use cases, DTOs, and service interfaces
-3. **Infrastructure** - Data access, external services, and infrastructure concerns
-4. **Api** - Web API controllers and application services
-5. **Verifactu** - External tax integration service (Spanish tax authority)
+```
+lilith-backend/
+├── src/                              # All source projects
+│   ├── Api/                         # Web API controllers
+│   ├── Application/                 # Application services
+│   ├── Application.Contracts/       # Service interfaces, DTOs
+│   ├── Domain/                      # Domain entities
+│   ├── Infrastructure/              # Data access, repositories
+│   └── Verifactu/                   # Tax integration service
+├── test/                             # Test projects (unit, integration)
+├── docs/                             # Comprehensive documentation system
+└── Lilith.Backend.slnx              # Solution file (XML format)
+```
 
-### Key Architectural Patterns
+### Quick Architecture Summary
 
-#### Clean Architecture Layers
+**Clean Architecture with 6 projects:**
+1. **Domain** - Pure entities (no dependencies) - See [Domain Model](../docs/domain-model.md)
+2. **Application.Contracts** - All interfaces, DTOs, constants (flat namespace)
+3. **Application** - Business logic services - See [Architectural Patterns](../docs/architectural-patterns.md)
+4. **Infrastructure** - Repository implementations, EF Core
+5. **Api** - Controllers, middleware, startup configuration
+6. **Verifactu** - Spanish tax integration - See [External Integrations](../docs/external-integrations.md)
 
-- **Domain Layer**: Contains entities, value objects, domain services, and repository interfaces
-- **Application Layer**: Contains application services, DTOs, and use case interfaces
-- **Infrastructure Layer**: Implements repositories, data access, and external integrations
-- **API Layer**: Contains controllers and application-specific services
+**Dependency flow:** Api → Application/Infrastructure → Application.Contracts → Domain
 
-#### Repository Pattern
-
-- Generic `IRepository<TEntity, TId>` interface for common CRUD operations
-- Specialized repositories for complex queries (e.g., `IWorkOrderRepository`, `ISalesOrderHeaderRepository`)
-- Unit of Work pattern via `IUnitOfWork` to manage transactions and repository instances
-
-#### Entity Framework & Data Access
-
-- PostgreSQL database with Entity Framework Core
-- Database views for reporting (prefixed with `vw_`)
-- Soft delete pattern using `Disabled` property on base `Entity` class
-- Decimal precision configured as (18,4) for amounts, (18,2) for prices
-
-
-#### Entity Framework > Create new migration
-  ```
-  dotnet ef migrations add AddProfilesAndMenus --project .\Infrastructure\
-  ```
-
-#### Entity Framework > Apply migrations to database
-  ```
-  dotnet ef database update --project .\Infrastructure\
-  ```
+**For complete layer details, request flow diagrams, and interaction patterns, see the documentation links above.**
 
 ## Domain Model
+
+**For complete domain model with entity hierarchies and relationships, see [Domain Model](../docs/domain-model.md)**
 
 ### Base Entity
 
@@ -61,47 +72,27 @@ public abstract class Entity
     public Guid Id { get; set; } = Guid.NewGuid();
     public DateTime CreatedOn { get; set; }
     public DateTime UpdatedOn { get; set; }
-    public bool Disabled { get; set; } = false;
+    public bool Disabled { get; set; } = false;  // Soft delete
 }
 ```
 
 ### Core Business Areas
 
-#### Production Management
+**Sales:** Customer → Budget → SalesOrder → DeliveryNote → SalesInvoice  
+**Purchase:** Supplier → PurchaseOrder → Receipt → PurchaseInvoice  
+**Production:** WorkMaster → WorkOrder → Phases → ProductionPart → Cost tracking  
+**Warehouse:** Stock → StockMovement → Location management  
+**Shared:** Reference (products), Lifecycle/Status (workflows), Exercise (fiscal periods)
 
-- **WorkMaster**: Manufacturing routes/processes for references
-- **WorkOrder**: Actual production orders with phases and details
-- **WorkOrderPhase**: Individual manufacturing phases within work orders
-- **WorkOrderPhaseDetail**: Detailed steps within phases
-- **ProductionPart**: Time tracking and cost capture for production activities
-- **Workcenter**: Manufacturing resources and machine centers
-
-#### Sales Management
-
-- **Customer**: Client management with addresses and contacts
-- **SalesOrderHeader/Detail**: Sales orders with line items
-- **DeliveryNote**: Shipping documents
-- **SalesInvoice**: Customer invoicing with due dates and tax calculations
-- **Budget**: Customer quotations with automated rejection of outdated budgets
-
-#### Purchase Management
-
-- **Supplier**: Vendor management with references and pricing
-- **PurchaseOrder/Detail**: Purchase orders with reception tracking
-- **Receipt**: Goods receipt with weight/dimension calculations
-- **PurchaseInvoice**: Vendor invoicing and payment tracking
-
-#### Shared Components
-
-- **Reference**: Product/service catalog with pricing and specifications
-- **Lifecycle/Status**: Workflow state management across all business processes
-- **Exercise**: Fiscal periods with document numbering sequences
+**See [Domain Model](../docs/domain-model.md) for complete entity details, relationships, and ASCII diagrams.**
 
 ## Common Patterns & Conventions
 
+**For detailed pattern implementations with code examples, see [Architectural Patterns](../docs/architectural-patterns.md)**
+
 ### Response Pattern
 
-Use `GenericResponse` for service layer returns:
+Use `GenericResponse` from `Application.Contracts` for service layer returns:
 
 ```csharp
 public class GenericResponse
@@ -109,11 +100,46 @@ public class GenericResponse
     public bool Result { get; }
     public IList<string> Errors { get; }
     public object? Content { get; }
-
-    public GenericResponse(bool result, object? content = null)
-    public GenericResponse(bool result, string error, object? content = null)
-    public GenericResponse(bool result, IList<string> errors, object? content = null)
 }
+```
+
+**Usage:**
+- **Read operations:** Return entities directly (`Task<Budget?>`, `IEnumerable<Budget>`)
+- **Write operations:** Return `GenericResponse` for error handling
+- **Controllers:** Map `GenericResponse.Result` to HTTP status codes (200/201 success, 400/404/409 errors)
+
+### Primary Constructor Pattern (C# 12)
+
+**Always use primary constructors** for dependency injection:
+
+```csharp
+// ✅ Correct - Primary constructor
+public class BudgetService(IUnitOfWork unitOfWork, ILocalizationService localization) : IBudgetService
+{
+    // Direct usage of injected dependencies
+}
+
+// ❌ Avoid - Old verbose pattern
+public class BudgetService : IBudgetService
+{
+    private readonly IUnitOfWork _unitOfWork;
+    public BudgetService(IUnitOfWork unitOfWork) { _unitOfWork = unitOfWork; }
+}
+```
+
+### Namespace Conventions
+
+**Application.Contracts namespace** contains all contracts with flat structure:
+- Service interfaces: `Application.Contracts` (e.g., `IBudgetService`, `ISalesOrderService`)
+- DTOs and request/response models: `Application.Contracts` (e.g., `GenericResponse`, `CreateHeaderRequest`)
+- Repository interfaces: `Application.Contracts` (e.g., `IRepository<T>`, `IUnitOfWork`)
+- Constants: `Application.Contracts` (e.g., `StatusConstants`)
+
+**Usage in files:**
+```csharp
+using Application.Contracts;  // All contracts, interfaces, DTOs, constants
+using Domain.Entities.Sales;  // Domain entities
+using Infrastructure.Persistance;  // Only for ApplicationDbContext
 ```
 
 ### Controller Conventions
@@ -143,7 +169,7 @@ public class GenericResponse
 
 ### Database Configuration
 
-- Entity configurations in `Infrastructure/Persistance/EntityConfiguration/`
+- Entity configurations in `src/Infrastructure/Persistance/EntityConfiguration/`
 - Use `EntityBaseConfiguration.ConfigureBase<T>()` for common entity properties
 - UUID primary keys with `ValueGeneratedNever()`
 - Timestamp columns with PostgreSQL-specific types
@@ -188,6 +214,8 @@ All major business entities use lifecycle/status management:
 
 ## Language & Localization
 
+**For complete localization system documentation, see [Localization](../docs/localization.md)**
+
 The system implements **comprehensive multilanguage support** with full internationalization across all business logic.
 
 ### Supported Languages
@@ -198,11 +226,10 @@ The system implements **comprehensive multilanguage support** with full internat
 
 ### Localization Architecture
 
-- **JSON-based resource files** in `Api/Resources/LocalizationService/`
+- **JSON-based resource files** in `src/Api/Resources/LocalizationService/`
 - **ILocalizationService** for dependency injection and string retrieval
 - **CultureMiddleware** for automatic language detection
-- **Microsoft.Extensions.Localization** framework integration
-- **StatusConstants** in `Api/Constants/StatusConstants.cs` for database-stored values
+- **StatusConstants** in `src/Application.Contracts/Constants/StatusConstants.cs` for database-stored values
 
 ### Culture Detection Priority
 
@@ -210,310 +237,167 @@ The system implements **comprehensive multilanguage support** with full internat
 2. Accept-Language header
 3. Default to Catalan (ca)
 
-### Database vs User-Facing Strings
+### Critical Rules
 
-- **Database Values**: Lifecycle and status names remain in Catalan in the database
-- **Constants**: Use `StatusConstants` to reference database values (prevents typos)
-- **User Messages**: All error messages and UI text support full localization
-
-### Constants Usage
-
-Use constants instead of magic strings for database-stored values:
-
-```csharp
-// Using Constants (Recommended)
-var lifecycle = _unitOfWork.Lifecycles.Find(l => l.Name == StatusConstants.Lifecycles.Budget).FirstOrDefault();
-var status = await _unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.WorkOrder, StatusConstants.Statuses.Creada);
-
-// Available Constants:
-StatusConstants.Lifecycles.Budget
-StatusConstants.Lifecycles.SalesOrder
-StatusConstants.Lifecycles.WorkOrder
-StatusConstants.Statuses.Creada
-StatusConstants.Statuses.PendentAcceptar
-```
+⚠️ **ALL services MUST:**
+1. Inject `ILocalizationService` in constructor
+2. Use `StatusConstants` for database values (lifecycles/statuses)
+3. Add localization keys to ALL 3 language files (ca.json, es.json, en.json)
+4. Use parameterized messages for dynamic content
+5. NEVER use hardcoded error strings
 
 ### Using Localization in Services
 
-All API services must inject and use `ILocalizationService`:
+**Example:**
 
 ```csharp
-public class ExampleService(IUnitOfWork unitOfWork, ILocalizationService localizationService) : IExampleService
+public class BudgetService(IUnitOfWork unitOfWork, ILocalizationService localization) : IBudgetService
 {
-    public async Task<GenericResponse> SomeMethod(Guid id)
+    public async Task<GenericResponse> Create(Budget budget)
     {
-        var entity = await unitOfWork.Entities.Get(id);
-        if (entity == null)
-        {
-            return new GenericResponse(false, localizationService.GetLocalizedString("EntityNotFound", id));
-        }
-
-        // Business logic here
-        return new GenericResponse(true, entity);
+        var exists = unitOfWork.Budgets.Find(b => b.Id == budget.Id).Any();
+        if (exists)
+            return new GenericResponse(false, 
+                localization.GetLocalizedString("BudgetAlreadyExists"));
+        
+        // Use StatusConstants for database values
+        var lifecycle = unitOfWork.Lifecycles
+            .Find(l => l.Name == StatusConstants.Lifecycles.Budget)
+            .FirstOrDefault();
+        
+        // ...
     }
 }
 ```
 
-### Using Localization in Controllers
-
-```csharp
-public class ExampleController(ILocalizationService localizationService) : ControllerBase
-{
-    public IActionResult SomeAction(Guid id)
-    {
-        // For current request culture
-        var message = localizationService.GetLocalizedString("EntityNotFound", id);
-
-        // For specific culture
-        var spanishMessage = localizationService.GetLocalizedStringForCulture("EntityNotFound", "es", id);
-
-        return NotFound(new GenericResponse(false, message));
-    }
-}
-```
-
-### Localization Methods
-
-- **GetLocalizedString(key, params args)** - Uses current request culture
-- **GetLocalizedStringForCulture(key, culture, params args)** - Forces specific culture
-
-### Standard Localization Keys
-
-All services use standardized localization keys organized by category:
-
-#### Entity Operations
-
-- `EntityNotFound`: "Entity with ID {0} not found"
-- `EntityAlreadyExists`: "Entity already exists"
-- `EntityDisabled`: "Entity with ID {0} is disabled"
-- `Common.IdNotExist`: "Id {0} does not exist"
-
-#### Business Entities
-
-- `CustomerNotFound`: "Customer not found"
-- `CustomerInvalid`: "Customer is not valid for creating an invoice..."
-- `WorkOrderNotFound`: "Work order with ID {0} not found"
-- `BudgetNotFound`: "Budget with ID {0} not found"
-- `InvoiceNotFound`: "Invoice with ID {0} not found"
-
-#### Exercise & Document Management
-
-- `ExerciseNotFound`: "Exercise not found"
-- `ExerciseCounterError`: "Error creating counter"
-- `ExerciseCounterNotFound`: "The provided counter '{0}' is not valid"
-
-#### Lifecycle & Status Management
-
-- `LifecycleNotFound`: "Lifecycle '{0}' not found"
-- `LifecycleNoInitialStatus`: "Lifecycle '{0}' has no initial status"
-- `StatusNotFound`: "Status with ID {0} not found or is disabled"
-
-#### Validation Messages
-
-- `Validation.Required`: "The {0} field is required"
-- `Validation.InvalidEmail`: "Email format is not valid"
-
-#### Authentication
-
-- `UserNotFound`: "User not found"
-- `UserPasswordInvalid`: "Password is not valid"
-- `AuthTokenExpired`: "Token expired"
-
-### Language File Structure
-
-Each language file (ca.json, es.json, en.json) contains categorized keys:
-
-```json
-{
-  "EntityNotFound": "Entity with ID {0} not found",
-  "CustomerNotFound": "Customer not found",
-  "CustomerInvalid": "Customer is not valid for creating an invoice...",
-  "ExerciseCounterError": "Error creating counter",
-  "LifecycleNotFound": "Lifecycle '{0}' not found",
-  "StatusNames.Created": "Created",
-  "Validation.Required": "The {0} field is required",
-  "Movement.AlbaranDescription": "Delivery note {0}",
-  "Common.IdNotExist": "Id {0} does not exist"
-}
-```
-
-## External Integrations
-
-### Verifactu Tax Service
-
-- **Separate project** for Spanish tax authority integration
-- **Soap client** with X.509 certificate authentication
-- **Key services**: `IVerifactuInvoiceService`, `IVerifactuIntegrationService`
-- **Request/Response pattern** with specialized DTOs
-- **Factory pattern** for request creation
-
-## API Conventions
-
-### Controller Structure
-
-```csharp
-[ApiController]
-[Route("api/[controller]")]
-public class EntityController(IUnitOfWork unitOfWork, IEntityService entityService, ILocalizationService localizationService) : ControllerBase
-{
-    // Standard CRUD + specialized endpoints
-    // Sub-resource management (e.g., /Entity/{id}/SubEntity)
-}
-```
-
-### Standard Responses
-
-- `200 OK`: Successful operations, return entity or collection
-- `201 Created`: Entity creation, return entity and Location header
-- `400 BadRequest`: Validation errors, return `ModelState.ValidationState`
-- `404 NotFound`: Entity not found, return localized `GenericResponse` with error message
-- `409 Conflict`: Business rule violations, return localized `GenericResponse` with error message
-
-### Sub-Resource Management
-
-Many entities have sub-resources (e.g., WorkMaster has Phases, Phases have Details):
-
-- Separate endpoints for sub-resource CRUD
-- Use Swagger annotations for API documentation
-- Validate parent entity existence before sub-resource operations
-
-## Development Workflows
-
-### Build and Run Tasks
-
-Available VS Code tasks (use Run Task command):
-
-- **build**: Compiles the Api project
-- **publish**: Publishes the Api project
-- **watch**: Runs the project with hot reload (`dotnet watch run`)
-
-### Docker Development
-
-- **docker-compose.yml** for local development with PostgreSQL
-- **Dockerfile** for containerized deployment
-- SSL certificate configuration for HTTPS in development
-
-### Testing Endpoints
-
-Use PowerShell for quick API testing:
-
-```powershell
-$from = [DateTime]::UtcNow.AddDays(-7).ToString("o")
-$to = [DateTime]::UtcNow.ToString("o")
-Invoke-RestMethod -Uri "https://localhost:5001/api/Controller/Method?param=$([uri]::EscapeDataString($value))" -Method GET
-```
+**For complete localization patterns, standard keys, and best practices, see [Localization](../docs/localization.md)**
 
 ## Development Guidelines
 
+**For detailed setup instructions and common tasks, see [Developer Guide](../docs/developer-guide.md)**
+
 ### When Adding New Features
 
-1. **Domain First**: Define entities in Domain layer with proper relationships
-2. **Repository Pattern**: Create specialized repositories if complex queries needed
-3. **Service Layer**: Implement business logic in Application services
-4. **Controller Layer**: Create RESTful endpoints following existing conventions
-5. **Validation**: Use data annotations and business validation
-6. **Localization**: Add new message keys to all language JSON files
-7. **Testing**: Consider integration tests for complex workflows
+1. **Review documentation first** - Check [Architecture Layers](../docs/architecture-layers.md) and [Architectural Patterns](../docs/architectural-patterns.md)
+2. **Domain First** - Define entities in Domain layer with proper relationships
+3. **Follow patterns** - Use existing implementations as reference (see [How to Create Endpoints](../docs/how-to-create-endpoints.md))
+4. **Service Layer** - Implement business logic in Application services
+5. **Localization** - Add keys to all 3 language files (see [Localization](../docs/localization.md))
+6. **Update Documentation** - ⚠️ **MANDATORY** - Keep markdown files in sync with code changes
 
 ### Error Handling
 
-- Use `GenericResponse` with multiple error support for business logic errors
+- Use `GenericResponse` with multiple error support
 - Return appropriate HTTP status codes
 - Validate `ModelState` in controllers
-- Handle entity not found scenarios consistently
 - **ALWAYS use localized error messages** via `ILocalizationService`
-- **NEVER use hardcoded strings** in business logic
+- **NEVER use hardcoded strings**
 
-### Localization Implementation Requirements
+### Database Migrations
 
-#### For All New Services:
+```bash
+# Create new migration
+dotnet ef migrations add MigrationName --project src/Infrastructure/
 
-1. **Inject ILocalizationService** in constructor
-2. **Use StatusConstants** for database-stored values
-3. **Add localization keys** to all 3 language files (ca.json, es.json, en.json)
-4. **Use parameterized messages** for dynamic content
-5. **Follow established key naming patterns**
-
-#### Adding New Localization Keys:
-
-```csharp
-// 1. Add to ca.json
-"MyNewErrorKey": "El meu nou missatge d'error amb {0}"
-
-// 2. Add to es.json
-"MyNewErrorKey": "Mi nuevo mensaje de error con {0}"
-
-// 3. Add to en.json
-"MyNewErrorKey": "My new error message with {0}"
-
-// 4. Use in service
-return new GenericResponse(false, localizationService.GetLocalizedString("MyNewErrorKey", someValue));
+# Apply to database
+dotnet ef database update --project src/Infrastructure/
 ```
 
-#### Constants Pattern:
+### Code Style & Conventions
 
-```csharp
-// Add to Api/Constants/StatusConstants.cs
-public static class StatusConstants
-{
-    public static class Lifecycles
-    {
-        public const string MyNewLifecycle = "MyNewLifecycle";
-    }
+- **Primary constructors** - Use C# 12 syntax for all services/controllers
+- **Async/await** - All I/O operations must be asynchronous
+- **Localization** - Inject `ILocalizationService` in all services
+- **Constants** - Use `StatusConstants` for lifecycle/status names
+- **Nullable types** - Use appropriately (`Type?` for nullable)
 
-    public static class Statuses
-    {
-        public const string MyNewStatus = "MyNewStatus"; // In Catalan as stored in DB
-    }
-}
-```
+**For complete coding conventions, see [Developer Guide](../docs/developer-guide.md)**
 
-### Localization Best Practices
+---
 
-- **Add new strings to all language files** (ca.json, es.json, en.json)
-- **Use parameterized messages** for dynamic content: `localizationService.GetLocalizedString("EntityNotFound", id)`
-- **Use GetLocalizedStringForCulture** when you need to force a specific culture
-- **Test with different cultures** using query parameter: `?culture=en`
-- **Maintain consistent key naming** following established patterns
-- **Prefer specific keys** over generic ones for better translations
-- **Use constants for database values** to prevent typos and ensure consistency
-- **Group related keys** with dot notation (e.g., `Validation.Required`, `StatusNames.Created`)
+## 📝 Documentation Maintenance - MANDATORY
 
-### Performance Considerations
+**⚠️ CRITICAL: Code and documentation must stay synchronized.**
 
-- Use async/await for all database operations
-- Prefer `Find()` over `GetAll().Where()` for filtering
-- Use `AsNoTracking()` for read-only queries
-- Use specialized repositories for complex queries
-- Clear navigation properties to avoid EF tracking issues
+### When to Update Documentation
 
-### Code Style
+**ALWAYS update relevant documentation when:**
 
-- Follow C# naming conventions and primary constructor patterns
-- Use nullable reference types appropriately
-- Prefer explicit types over `var` for clarity
-- Comment business logic in English for international team
-- Use meaningful variable names reflecting business concepts
+1. **Adding new entities** → Update [Domain Model](../docs/domain-model.md)
+2. **Adding new patterns** → Update [Architectural Patterns](../docs/architectural-patterns.md)
+3. **Changing architecture** → Update [Architecture Layers](../docs/architecture-layers.md)
+4. **Adding localization keys** → Update [Localization](../docs/localization.md)
+5. **Adding external integrations** → Update [External Integrations](../docs/external-integrations.md)
+6. **Changing request flow** → Update [Request Flow](../docs/request-flow.md)
+7. **Adding setup steps** → Update [Developer Guide](../docs/developer-guide.md)
+8. **Identifying architectural issues** → Update [Architectural Debt Assessment](../docs/architectural-debt-assessment.md)
 
-## Localization Implementation Status
+### Documentation Update Checklist
 
-All 15 API services have been fully updated with comprehensive localization support:
+When making code changes, verify:
 
-### ✅ Fully Localized Services:
+- [ ] **README.md** - Updated if quick start or tech stack changed
+- [ ] **Architecture Layers** - Updated if project structure or responsibilities changed
+- [ ] **Domain Model** - Updated if entities added/modified or relationships changed
+- [ ] **Architectural Patterns** - Updated if new patterns introduced or existing ones changed
+- [ ] **Request Flow** - Updated if middleware, layers, or flow changed
+- [ ] **Localization** - Updated if new keys added or culture detection changed
+- [ ] **Developer Guide** - Updated if setup, tasks, or conventions changed
+- [ ] **External Integrations** - Updated if integrations added/modified
+- [ ] **How-to guides** - Updated if step-by-step processes changed
 
-- **Sales**: BudgetService, SalesOrderService, SalesInvoiceService, DeliveryNoteService
-- **Purchase**: PurchaseOrderService, PurchaseInvoiceService, ReceiptService
-- **Production**: WorkOrderService, MetricsService
-- **Warehouse**: StockMovementService
-- **Shared**: ExerciseService, ReferenceService, FileService, AuthenticationService
+### Documentation Quality Standards
 
-### Key Achievements:
+**All documentation updates must:**
 
-- **40+ localization keys** covering all business scenarios
-- **Constants for database values** preventing runtime errors
-- **Consistent error handling** patterns across all services
-- **Full multilingual support** for Catalan, Spanish, and English
-- **Parameterized messages** for dynamic content
-- **Type-safe constants** for lifecycle and status references
+1. ✅ **Use consistent structure** - Follow existing markdown format and headers
+2. ✅ **Include ASCII diagrams** - Simple box-and-arrow relationships for architecture
+3. ✅ **Provide code examples** - 5-10 line concise snippets showing patterns
+4. ✅ **Add cross-references** - Link to related documentation
+5. ✅ **Update index** - Ensure README.md index reflects all documents
+6. ✅ **Match code reality** - Examples must reflect actual implementation
+7. ✅ **Use clear language** - Write for developers joining the team
 
-This solution represents a comprehensive manufacturing ERP with sophisticated business workflows, multi-entity relationships, financial tracking capabilities, **complete multilanguage support**, and modern .NET patterns including primary constructors and background services. When working with this codebase, prioritize understanding the business domain, maintaining consistency with established patterns, and ensuring all user-facing messages are properly localized using the established localization infrastructure.
+### Documentation Review Process
+
+Before committing code changes:
+
+1. **Identify affected docs** - Which markdown files relate to your changes?
+2. **Update content** - Modify relevant sections with accurate information
+3. **Add examples** - Include code snippets if introducing new patterns
+4. **Update diagrams** - Modify ASCII diagrams if architecture changed
+5. **Test links** - Verify all cross-references work
+6. **Review consistency** - Ensure tone and format match existing docs
+
+### Documentation File Ownership
+
+| File | When to Update | Owner Mindset |
+|------|---------------|---------------|
+| **README.md** | Tech stack, quick start changes | First impression document |
+| **architecture-layers.md** | Project structure, layer changes | Architecture authority |
+| **domain-model.md** | Entity changes, new business areas | Business domain expert |
+| **architectural-patterns.md** | New patterns, pattern changes | Pattern library |
+| **request-flow.md** | Middleware, flow, layer changes | Flow diagram master |
+| **localization.md** | Localization changes, new keys | i18n expert |
+| **developer-guide.md** | Setup, tasks, conventions | Onboarding guide |
+| **external-integrations.md** | External service changes | Integration specialist |
+
+### Common Documentation Mistakes to Avoid
+
+❌ **DON'T:**
+- Leave outdated code examples in documentation
+- Document planned features not yet implemented
+- Use inconsistent terminology across files
+- Forget to update ASCII diagrams when structure changes
+- Add documentation without cross-references
+- Use overly complex language or unexplained jargon
+
+✅ **DO:**
+- Update docs in the same commit as code changes
+- Keep examples concise and relevant
+- Use established terminology consistently
+- Verify all links and references work
+- Write for developers with varying experience levels
+- Include "why" explanations, not just "what"
+
+---
