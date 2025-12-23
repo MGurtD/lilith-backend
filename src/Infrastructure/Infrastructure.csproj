@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="_Migrations\**" />
-    <EmbeddedResource Remove="_Migrations\**" />
-    <None Remove="_Migrations\**" />
+    <Compile Remove="Migrations\Archive\**" />
+    <EmbeddedResource Remove="Migrations\Archive\**" />
+    <None Remove="Migrations\Archive\**" />
   </ItemGroup>
 
   <ItemGroup>
