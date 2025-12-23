@@ -6,15 +6,8 @@ namespace Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ExerciseController : ControllerBase
+    public class ExerciseController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public ExerciseController(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(Exercise request)
         {
@@ -23,10 +16,10 @@ namespace Api.Controllers
 
 
             // Validate existence of the unique user key
-            var exists = _unitOfWork.Exercices.Find(r => request.Name == r.Name).Count() > 0;
+            var exists = unitOfWork.Exercices.Find(r => request.Name == r.Name).Count() > 0;
             if (!exists)
             {
-                await _unitOfWork.Exercices.Add(request);
+                await unitOfWork.Exercices.Add(request);
 
                 return Ok(request);
             }
@@ -39,14 +32,14 @@ namespace Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var exercice = await _unitOfWork.Exercices.GetAll();
+            var exercice = await unitOfWork.Exercices.GetAll();
             return Ok(exercice.OrderBy(e => e.Name));
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var exercice = await _unitOfWork.Exercices.Get(id);
+            var exercice = await unitOfWork.Exercices.Get(id);
             if (exercice is not null)
             {
                 return Ok(exercice);
@@ -63,21 +56,21 @@ namespace Api.Controllers
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.Exercices.Exists(request.Id);
+            var exists = await unitOfWork.Exercices.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.Exercices.Update(request);
+            await unitOfWork.Exercices.Update(request);
             return Ok(request);
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var exercice = await _unitOfWork.Exercices.Get(id);
+            var exercice = await unitOfWork.Exercices.Get(id);
             if (exercice is not null)
             {
-                await _unitOfWork.Exercices.Remove(exercice);
+                await unitOfWork.Exercices.Remove(exercice);
                 return NoContent();
             }
             else

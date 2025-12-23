@@ -6,15 +6,8 @@ namespace Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class PaymentMethodController : ControllerBase
+    public class PaymentMethodController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public PaymentMethodController(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(PaymentMethod request)
         {
@@ -23,10 +16,10 @@ namespace Api.Controllers
 
 
             // Validate existence of the unique user key
-            var exists = _unitOfWork.PaymentMethods.Find(r => request.Name == r.Name).Count() > 0;
+            var exists = unitOfWork.PaymentMethods.Find(r => request.Name == r.Name).Count() > 0;
             if (!exists)
             {
-                await _unitOfWork.PaymentMethods.Add(request);
+                await unitOfWork.PaymentMethods.Add(request);
 
                 return Ok(request);
             }
@@ -39,14 +32,14 @@ namespace Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var paymentMethods = await _unitOfWork.PaymentMethods.GetAll();
+            var paymentMethods = await unitOfWork.PaymentMethods.GetAll();
             return Ok(paymentMethods.OrderBy(e => e.Name));
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var paymentMethod = await _unitOfWork.PaymentMethods.Get(id);
+            var paymentMethod = await unitOfWork.PaymentMethods.Get(id);
             if (paymentMethod is not null)
             {
                 return Ok(paymentMethod);
@@ -65,21 +58,21 @@ namespace Api.Controllers
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.PaymentMethods.Exists(request.Id);
+            var exists = await unitOfWork.PaymentMethods.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.PaymentMethods.Update(request);
+            await unitOfWork.PaymentMethods.Update(request);
             return Ok(request);
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var payementMethod = await _unitOfWork.PaymentMethods.Get(id);
+            var payementMethod = await unitOfWork.PaymentMethods.Get(id);
             if (payementMethod is not null)
             {
-                await _unitOfWork.PaymentMethods.Remove(payementMethod);
+                await unitOfWork.PaymentMethods.Remove(payementMethod);
                 return NoContent();
             }
             else

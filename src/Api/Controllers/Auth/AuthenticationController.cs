@@ -53,7 +53,7 @@ namespace Api.Controllers.Auth
                 return BadRequest(new AuthResponse()
                 {
                     Result = false,
-                    Errors = new List<string>() { localizationService.GetLocalizedString("AuthInvalidParameters") }
+                    Errors = [localizationService.GetLocalizedString("AuthInvalidParameters")]
                 });
             }
 

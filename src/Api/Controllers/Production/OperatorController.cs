@@ -6,38 +6,29 @@ namespace Api.Controllers.Production
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class OperatorController : ControllerBase
+    public class OperatorController(IUnitOfWork unitOfWork, ILocalizationService localizationService) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ILocalizationService _localizationService;
-
-        public OperatorController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
-        {
-            _unitOfWork = unitOfWork;
-            _localizationService = localizationService;
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(Operator request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.Operators.Find(r => request.Code == r.Code).Any();
+            var exists = unitOfWork.Operators.Find(r => request.Code == r.Code).Any();
             if (!exists)
             {
-                await _unitOfWork.Operators.Add(request);
+                await unitOfWork.Operators.Add(request);
                 var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
                 return Created(location, request);
             }
             else
             {
-                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("OperatorAlreadyExists", request.Name)));
+                return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("OperatorAlreadyExists", request.Name)));
             }
         }
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.Operators.GetAll();
+            var entities = await unitOfWork.Operators.GetAll();
 
             return Ok(entities.OrderBy(w => w.Name));
         }
@@ -45,7 +36,7 @@ namespace Api.Controllers.Production
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.Operators.Get(id);
+            var entity = await unitOfWork.Operators.Get(id);
             if (entity is not null)
             {
                 return Ok(entity);
@@ -63,11 +54,11 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.Operators.Exists(request.Id);
+            var exists = await unitOfWork.Operators.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.Operators.Update(request);
+            await unitOfWork.Operators.Update(request);
             return Ok(request);
         }
 
@@ -77,11 +68,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.Operators.Find(e => e.Id == id).FirstOrDefault();
+            var entity = unitOfWork.Operators.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.Operators.Remove(entity);
+            await unitOfWork.Operators.Remove(entity);
             return Ok(entity);
         }
     }

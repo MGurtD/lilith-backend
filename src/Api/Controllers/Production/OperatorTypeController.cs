@@ -6,38 +6,29 @@ namespace Api.Controllers.Production
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class OperatorTypeController : ControllerBase
+    public class OperatorTypeController(IUnitOfWork unitOfWork, ILocalizationService localizationService) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ILocalizationService _localizationService;
-
-        public OperatorTypeController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
-        {
-            _unitOfWork = unitOfWork;
-            _localizationService = localizationService;
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(OperatorType request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.OperatorTypes.Find(r => request.Name == r.Name).Any();
+            var exists = unitOfWork.OperatorTypes.Find(r => request.Name == r.Name).Any();
             if (!exists)
             {
-                await _unitOfWork.OperatorTypes.Add(request);
+                await unitOfWork.OperatorTypes.Add(request);
                 var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
                 return Created(location, request);
             }
             else
             {
-                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("OperatorTypeAlreadyExists", request.Name)));
+                return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("OperatorTypeAlreadyExists", request.Name)));
             }
         }
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.OperatorTypes.GetAll();
+            var entities = await unitOfWork.OperatorTypes.GetAll();
 
             return Ok(entities.OrderBy(w => w.Name));
         }
@@ -45,7 +36,7 @@ namespace Api.Controllers.Production
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.OperatorTypes.Get(id);
+            var entity = await unitOfWork.OperatorTypes.Get(id);
             if (entity is not null)
             {
                 return Ok(entity);
@@ -63,11 +54,11 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.OperatorTypes.Exists(request.Id);
+            var exists = await unitOfWork.OperatorTypes.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.OperatorTypes.Update(request);
+            await unitOfWork.OperatorTypes.Update(request);
             return Ok(request);
         }
 
@@ -77,11 +68,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.OperatorTypes.Find(e => e.Id == id).FirstOrDefault();
+            var entity = unitOfWork.OperatorTypes.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.OperatorTypes.Remove(entity);
+            await unitOfWork.OperatorTypes.Remove(entity);
             return Ok(entity);
         }
 

@@ -1,8 +1,5 @@
-﻿using Application.Services.System;
-using Application.Contracts;
+﻿using Application.Contracts;
 using Domain.Entities.Purchase;
-using Domain.Entities.Sales;
-using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -10,25 +7,12 @@ namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class PurchaseInvoiceController : ControllerBase
+    public class PurchaseInvoiceController(IPurchaseInvoiceService service, IUnitOfWork unitOfWork, IDueDateService dueDateService, ILocalizationService localizationService) : ControllerBase
     {
-        private readonly IPurchaseInvoiceService _service;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IDueDateService _dueDateService;
-        private readonly ILocalizationService _localizationService;
-
-        public PurchaseInvoiceController(IPurchaseInvoiceService service, IUnitOfWork unitOfWork, IDueDateService dueDateService, ILocalizationService localizationService)
-        {
-            _service = service;
-            _unitOfWork = unitOfWork;
-            _dueDateService = dueDateService;
-            _localizationService = localizationService;
-        }
-
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var invoice = await _service.GetById(id);
+            var invoice = await service.GetById(id);
 
             if (invoice == null) return BadRequest();
             else return Ok(invoice);
@@ -39,17 +23,17 @@ namespace Api.Controllers.Purchase
         {
             IEnumerable<PurchaseInvoice> purchaseInvoices = new List<PurchaseInvoice>();
             if (exerciceId.HasValue)
-                purchaseInvoices = await _service.GetByExercise(exerciceId.Value);
+                purchaseInvoices = await service.GetByExercise(exerciceId.Value);
             else if (excludeStatusId.HasValue && supplierId.HasValue)
-                purchaseInvoices = _service.GetBetweenDatesExcludingStatusAndSupplier(startTime, endTime, excludeStatusId.Value, supplierId.Value);
+                purchaseInvoices = service.GetBetweenDatesExcludingStatusAndSupplier(startTime, endTime, excludeStatusId.Value, supplierId.Value);
             else if (supplierId.HasValue)
-                purchaseInvoices = _service.GetBetweenDatesAndSupplier(startTime, endTime, supplierId.Value);
+                purchaseInvoices = service.GetBetweenDatesAndSupplier(startTime, endTime, supplierId.Value);
             else if (statusId.HasValue)
-                purchaseInvoices = _service.GetBetweenDatesAndStatus(startTime, endTime, statusId.Value);
+                purchaseInvoices = service.GetBetweenDatesAndStatus(startTime, endTime, statusId.Value);
             else if (excludeStatusId.HasValue)
-                purchaseInvoices = _service.GetBetweenDatesAndExcludeStatus(startTime, endTime, excludeStatusId.Value);
+                purchaseInvoices = service.GetBetweenDatesAndExcludeStatus(startTime, endTime, excludeStatusId.Value);
             else
-                purchaseInvoices = _service.GetBetweenDates(startTime, endTime);
+                purchaseInvoices = service.GetBetweenDates(startTime, endTime);
 
             if (purchaseInvoices != null) return Ok(purchaseInvoices.OrderByDescending(e => e.Number));
             else return BadRequest();
@@ -60,14 +44,14 @@ namespace Api.Controllers.Purchase
         public async Task<IActionResult> GetDueDates(PurchaseInvoice invoice)
         {
             // Recuperar metode de pagament
-            var paymentMethod = await _unitOfWork.PaymentMethods.Get(invoice.PaymentMethodId);
+            var paymentMethod = await unitOfWork.PaymentMethods.Get(invoice.PaymentMethodId);
             if (paymentMethod == null || paymentMethod.Disabled)
             {
-                return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("PaymentMethodNotFoundOrDisabled", invoice.PaymentMethodId)));
+                return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("PaymentMethodNotFoundOrDisabled", invoice.PaymentMethodId)));
             }
 
             var invoiceDueDates = new List<PurchaseInvoiceDueDate>();
-            _dueDateService.GenerateDueDates(paymentMethod, invoice.PurchaseInvoiceDate, invoice.NetAmount)
+            dueDateService.GenerateDueDates(paymentMethod, invoice.PurchaseInvoiceDate, invoice.NetAmount)
                 .ForEach(dueDate => invoiceDueDates.Add(new PurchaseInvoiceDueDate()
                 {
                     DueDate = dueDate.Date,
@@ -83,7 +67,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create(PurchaseInvoice purchaseInvoice)
         {
-            var response = await _service.Create(purchaseInvoice);
+            var response = await service.Create(purchaseInvoice);
 
             if (response.Result)
                 return Ok();
@@ -99,7 +83,7 @@ namespace Api.Controllers.Purchase
         {
             if (!ModelState.IsValid) return BadRequest();
 
-            var response = await _service.ChangeStatuses(request);
+            var response = await service.ChangeStatuses(request);
             if (response.Result)
                 return Ok();
             else
@@ -114,7 +98,7 @@ namespace Api.Controllers.Purchase
         {
             if (!ModelState.IsValid) return BadRequest();
 
-            var response = await _service.RecreateDueDates(request);
+            var response = await service.RecreateDueDates(request);
             if (response.Result)
                 return Ok();
             else
@@ -129,7 +113,7 @@ namespace Api.Controllers.Purchase
         {
             if (id != purchaseInvoice.Id) return BadRequest();
 
-            var response = await _service.Update(purchaseInvoice);
+            var response = await service.Update(purchaseInvoice);
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
@@ -140,7 +124,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Remove(Guid id)
         {
-            var response = await _service.Remove(id);
+            var response = await service.Remove(id);
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
@@ -153,7 +137,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddImport(PurchaseInvoiceImport import)
         {
-            var response = await _service.AddImport(import);
+            var response = await service.AddImport(import);
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
@@ -165,7 +149,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateImport(Guid id, [FromBody] PurchaseInvoiceImport import)
         {
-            var response = await _service.UpdateImport(import);
+            var response = await service.UpdateImport(import);
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
@@ -177,7 +161,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RemoveImport(Guid id)
         {
-            var response = await _service.RemoveImport(id);
+            var response = await service.RemoveImport(id);
 
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
@@ -190,7 +174,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddDueDates([FromBody] IEnumerable<PurchaseInvoiceDueDate> dueDates)
         {
-            var response = await _service.AddDueDates(dueDates);
+            var response = await service.AddDueDates(dueDates);
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
         }
@@ -200,7 +184,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RemoveDueDates([FromQuery] IEnumerable<Guid> ids)
         {
-            var response = await _service.RemoveDueDates(ids);
+            var response = await service.RemoveDueDates(ids);
             if (response.Result) return Ok();
             else return BadRequest(response.Errors);
         }

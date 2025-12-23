@@ -6,24 +6,17 @@ namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class PurchaseInvoiceStatusController : ControllerBase
+    public class PurchaseInvoiceStatusController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public PurchaseInvoiceStatusController(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(PurchaseInvoiceStatus request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.PurchaseInvoiceStatuses.Find(r => request.Name == r.Name).Any();
+            var exists = unitOfWork.PurchaseInvoiceStatuses.Find(r => request.Name == r.Name).Any();
             if (!exists)
             {
-                await _unitOfWork.PurchaseInvoiceStatuses.Add(request);
+                await unitOfWork.PurchaseInvoiceStatuses.Add(request);
                 return Ok(request);
             }
             else
@@ -35,14 +28,14 @@ namespace Api.Controllers.Purchase
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.PurchaseInvoiceStatuses.GetAll();
+            var entities = await unitOfWork.PurchaseInvoiceStatuses.GetAll();
             return Ok(entities.OrderBy(e => e.Name));
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.PurchaseInvoiceStatuses.Get(id);
+            var entity = await unitOfWork.PurchaseInvoiceStatuses.Get(id);
             if (entity is not null)
             {
                 return Ok(entity);
@@ -61,11 +54,11 @@ namespace Api.Controllers.Purchase
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.PurchaseInvoiceStatuses.Exists(request.Id);
+            var exists = await unitOfWork.PurchaseInvoiceStatuses.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.PurchaseInvoiceStatuses.Update(request);
+            await unitOfWork.PurchaseInvoiceStatuses.Update(request);
             return Ok(request);
         }
 
@@ -75,11 +68,11 @@ namespace Api.Controllers.Purchase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.PurchaseInvoiceStatuses.Find(e => e.Id == id).FirstOrDefault();
+            var entity = unitOfWork.PurchaseInvoiceStatuses.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.PurchaseInvoiceStatuses.Remove(entity);
+            await unitOfWork.PurchaseInvoiceStatuses.Remove(entity);
             return Ok(entity);
         }
 
@@ -90,11 +83,11 @@ namespace Api.Controllers.Purchase
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
             if (request.FromStatusId == request.ToStatusId) return BadRequest();
 
-            var statusFrom = await _unitOfWork.PurchaseInvoiceStatuses.Get(request.FromStatusId);
-            var statusId = await _unitOfWork.PurchaseInvoiceStatuses.Get(request.ToStatusId);
+            var statusFrom = await unitOfWork.PurchaseInvoiceStatuses.Get(request.FromStatusId);
+            var statusId = await unitOfWork.PurchaseInvoiceStatuses.Get(request.ToStatusId);
             if (statusFrom is not null && statusId is not null)
             {
-                await _unitOfWork.PurchaseInvoiceStatuses.AddTransition(request);
+                await unitOfWork.PurchaseInvoiceStatuses.AddTransition(request);
                 return Ok(request);
             }
             else
@@ -109,7 +102,7 @@ namespace Api.Controllers.Purchase
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var deleted = await _unitOfWork.PurchaseInvoiceStatuses.RemoveTransition(fromStatusId, toStatusId);
+            var deleted = await unitOfWork.PurchaseInvoiceStatuses.RemoveTransition(fromStatusId, toStatusId);
             return deleted ? Ok() : NotFound();
         }
 

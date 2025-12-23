@@ -6,24 +6,17 @@ namespace Api.Controllers.Sales
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class CustomerTypeController : ControllerBase
+    public class CustomerTypeController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public CustomerTypeController(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(CustomerType request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.CustomerTypes.Find(r => request.Name == r.Name).Any();
+            var exists = unitOfWork.CustomerTypes.Find(r => request.Name == r.Name).Any();
             if (!exists)
             {
-                await _unitOfWork.CustomerTypes.Add(request);
+                await unitOfWork.CustomerTypes.Add(request);
 
                 return Ok(request);
             }
@@ -36,14 +29,14 @@ namespace Api.Controllers.Sales
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.CustomerTypes.GetAll();
+            var entities = await unitOfWork.CustomerTypes.GetAll();
             return Ok(entities.OrderBy(e => e.Name));
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.CustomerTypes.Get(id);
+            var entity = await unitOfWork.CustomerTypes.Get(id);
             if (entity is not null)
             {
                 return Ok(entity);
@@ -61,11 +54,11 @@ namespace Api.Controllers.Sales
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.CustomerTypes.Exists(request.Id);
+            var exists = await unitOfWork.CustomerTypes.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.CustomerTypes.Update(request);
+            await unitOfWork.CustomerTypes.Update(request);
             return Ok(request);
         }
 
@@ -75,11 +68,11 @@ namespace Api.Controllers.Sales
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.CustomerTypes.Find(e => e.Id == id).FirstOrDefault();
+            var entity = unitOfWork.CustomerTypes.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.CustomerTypes.Remove(entity);
+            await unitOfWork.CustomerTypes.Remove(entity);
             return Ok(entity);
         }
     }

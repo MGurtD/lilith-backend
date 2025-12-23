@@ -7,23 +7,12 @@ namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class PurchaseOrderController : ControllerBase
+    public class PurchaseOrderController(IPurchaseOrderService service, IUnitOfWork unitOfWork, ILocalizationService localizationService) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IPurchaseOrderService _service;
-        private readonly ILocalizationService _localizationService;
-
-        public PurchaseOrderController(IPurchaseOrderService service, IUnitOfWork unitOfWork, ILocalizationService localizationService)
-        {
-            _service = service;
-            _unitOfWork = unitOfWork;
-            _localizationService = localizationService;
-        }
-
         [HttpGet]
         public async Task<IActionResult> Get(DateTime startTime, DateTime endTime, Guid? supplierId, Guid? statusId)
         {
-            var orders = await _service.GetBetweenDates(startTime, endTime, supplierId, statusId);
+            var orders = await service.GetBetweenDates(startTime, endTime, supplierId, statusId);
 
             if (orders != null) return Ok(orders.OrderByDescending(e => e.Number));
             else return BadRequest();
@@ -32,14 +21,14 @@ namespace Api.Controllers.Purchase
         [HttpGet("Report/{id:guid}")]
         public async Task<IActionResult> GetSalesOrderForReport(Guid id)
         {
-            var reportDto = await _service.GetDtoForReportingById(id);
+            var reportDto = await service.GetDtoForReportingById(id);
             return Ok(reportDto);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var receipt = await _unitOfWork.PurchaseOrders.Get(id);
+            var receipt = await unitOfWork.PurchaseOrders.Get(id);
 
             if (receipt == null) return BadRequest();
             else return Ok(receipt);
@@ -51,7 +40,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create(CreatePurchaseDocumentRequest createRequest)
         {
-            var response = await _service.Create(createRequest);
+            var response = await service.Create(createRequest);
 
             if (response.Result)
                 return Ok(response);
@@ -64,7 +53,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateFromWo(PurchaseOrderFromWO[] request)
         {
-            var response = await _service.CreateFromWo(request);
+            var response = await service.CreateFromWo(request);
             if (response.Result)
                 return Ok(response);
             else
@@ -77,9 +66,9 @@ namespace Api.Controllers.Purchase
         public async Task<IActionResult> Update(Guid id, [FromBody] PurchaseOrder request)
         {
             if (id != request.Id) return BadRequest();
-            var order = _unitOfWork.PurchaseOrders.Find(r => r.Id == request.Id).FirstOrDefault();
-            if (order == null) return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("PurchaseOrderNotFound", request.Id)));
-            var response = await _service.Update(request);
+            var order = unitOfWork.PurchaseOrders.Find(r => r.Id == request.Id).FirstOrDefault();
+            if (order == null) return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("PurchaseOrderNotFound", request.Id)));
+            var response = await service.Update(request);
 
             if (response.Result) return Ok(response);
             else return BadRequest(response);
@@ -90,7 +79,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Remove(Guid id)
         {
-            var response = await _service.Remove(id);
+            var response = await service.Remove(id);
 
             if (response.Result) return Ok();
             else return BadRequest(response);
@@ -103,7 +92,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddDetail(PurchaseOrderDetail detail)
         {
-            var response = await _service.AddDetail(detail);
+            var response = await service.AddDetail(detail);
 
             if (response.Result) return Ok(response);
             else return BadRequest(response);
@@ -115,7 +104,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateDetail(Guid id, [FromBody] PurchaseOrderDetail detail)
         {
-            var response = await _service.UpdateDetail(detail);
+            var response = await service.UpdateDetail(detail);
 
             if (response.Result) return Ok(response);
             else return BadRequest(response);
@@ -127,7 +116,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RemoveDetail(Guid id)
         {
-            var response = await _service.RemoveDetail(id);
+            var response = await service.RemoveDetail(id);
 
             if (response.Result) return Ok(response);
             else return BadRequest(response);
@@ -142,7 +131,7 @@ namespace Api.Controllers.Purchase
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetOrdersToReceiptBySupplier(Guid supplierId)
         {
-            var groupedOrderDetails = await _service.GetGroupedOrdersWithDetailsToReceiptBySupplier(supplierId);
+            var groupedOrderDetails = await service.GetGroupedOrdersWithDetailsToReceiptBySupplier(supplierId);
             if (groupedOrderDetails != null) return Ok(groupedOrderDetails.OrderBy(e => e.Reference.Code));
             else return BadRequest();
         }
@@ -154,10 +143,10 @@ namespace Api.Controllers.Purchase
         public async Task<IActionResult> GetReceptions(Guid id)
         {
             if (id == Guid.Empty) return BadRequest();
-            var order = await _unitOfWork.PurchaseOrders.Get(id);
+            var order = await unitOfWork.PurchaseOrders.Get(id);
             if (order == null) return NotFound();
 
-            var receptions = await _service.GetReceptions(id);
+            var receptions = await service.GetReceptions(id);
             return Ok(receptions);
         }
 

@@ -6,24 +6,17 @@ namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class SupplierTypeController : ControllerBase
+    public class SupplierTypeController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public SupplierTypeController(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(SupplierType request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.SupplierTypes.Find(r => request.Name == r.Name).Any();
+            var exists = unitOfWork.SupplierTypes.Find(r => request.Name == r.Name).Any();
             if (!exists)
             {
-                await _unitOfWork.SupplierTypes.Add(request);
+                await unitOfWork.SupplierTypes.Add(request);
                 return Ok(request);
             }
             else
@@ -35,14 +28,14 @@ namespace Api.Controllers.Purchase
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.SupplierTypes.GetAll();
+            var entities = await unitOfWork.SupplierTypes.GetAll();
             return Ok(entities.OrderBy(e => e.Name));
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.SupplierTypes.Get(id);
+            var entity = await unitOfWork.SupplierTypes.Get(id);
             if (entity is not null)
             {
                 return Ok(entity);
@@ -61,11 +54,11 @@ namespace Api.Controllers.Purchase
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.SupplierTypes.Exists(request.Id);
+            var exists = await unitOfWork.SupplierTypes.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.SupplierTypes.Update(request);
+            await unitOfWork.SupplierTypes.Update(request);
             return Ok(request);
         }
 
@@ -75,11 +68,11 @@ namespace Api.Controllers.Purchase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.SupplierTypes.Find(e => e.Id == id).FirstOrDefault();
+            var entity = unitOfWork.SupplierTypes.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.SupplierTypes.Remove(entity);
+            await unitOfWork.SupplierTypes.Remove(entity);
             return Ok(entity);
         }
     }

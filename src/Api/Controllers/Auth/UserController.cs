@@ -6,24 +6,17 @@ namespace Api.Controllers.Auth
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    public class UserController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public UserController(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(User request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.Users.Find(r => request.Username == r.Username).Count() > 0;
+            var exists = unitOfWork.Users.Find(r => request.Username == r.Username).Count() > 0;
             if (!exists)
             {
-                await _unitOfWork.Users.Add(request);
+                await unitOfWork.Users.Add(request);
                 return Ok(request);
             }
             else
@@ -35,14 +28,14 @@ namespace Api.Controllers.Auth
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var users = await _unitOfWork.Users.GetAll();
+            var users = await unitOfWork.Users.GetAll();
             return Ok(users.OrderBy(e => e.Username));
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var user = await _unitOfWork.Users.Get(id);
+            var user = await unitOfWork.Users.Get(id);
             if (user is not null)
             {
                 return Ok(user);
@@ -63,7 +56,7 @@ namespace Api.Controllers.Auth
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            await _unitOfWork.Users.Update(request);
+            await unitOfWork.Users.Update(request);
             return Ok(request);
         }
     }

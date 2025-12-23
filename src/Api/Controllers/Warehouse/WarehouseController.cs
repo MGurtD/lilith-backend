@@ -6,21 +6,12 @@ namespace Api.Controllers.Warehouse
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class WarehouseController : ControllerBase
+    public class WarehouseController(IUnitOfWork unitOfWork, ILocalizationService localizationService) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ILocalizationService _localizationService;
-
-        public WarehouseController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
-        {
-            _unitOfWork = unitOfWork;
-            _localizationService = localizationService;
-        }
-
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.Warehouses.GetAll();
+            var entities = await unitOfWork.Warehouses.GetAll();
 
             return Ok(entities);
         }
@@ -28,21 +19,21 @@ namespace Api.Controllers.Warehouse
         [HttpGet("Site/{id:guid}")]
         public async Task<IActionResult> GetBySiteId(Guid id)
         {
-            var entities = await _unitOfWork.Warehouses.GetBySiteId(id);
+            var entities = await unitOfWork.Warehouses.GetBySiteId(id);
             return Ok(entities);
         }
 
         [HttpGet("WithLocations")]
         public async Task<IActionResult> GetAllWithLocations()
         {
-            var entities = await _unitOfWork.Warehouses.GetAllWithLocations();
+            var entities = await unitOfWork.Warehouses.GetAllWithLocations();
             return Ok(entities);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.Warehouses.Get(id);
+            var entity = await unitOfWork.Warehouses.Get(id);
             if (entity is null) return NotFound();
 
             return Ok(entity);
@@ -53,16 +44,16 @@ namespace Api.Controllers.Warehouse
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.Warehouses.Find(r => request.Name == r.Name).Any();
+            var exists = unitOfWork.Warehouses.Find(r => request.Name == r.Name).Any();
             if (!exists)
             {
-                await _unitOfWork.Warehouses.Add(request);
+                await unitOfWork.Warehouses.Add(request);
                 var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
                 return Created(location, request);
             }
             else
             {
-                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("WarehouseAlreadyExists", request.Name)));
+                return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("WarehouseAlreadyExists", request.Name)));
             }
         }
 
@@ -74,11 +65,11 @@ namespace Api.Controllers.Warehouse
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.Warehouses.Exists(request.Id);
+            var exists = await unitOfWork.Warehouses.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.Warehouses.Update(request);
+            await unitOfWork.Warehouses.Update(request);
             return Ok(request);
         }
 
@@ -88,11 +79,11 @@ namespace Api.Controllers.Warehouse
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.Warehouses.Find(e => e.Id == id).FirstOrDefault();
+            var entity = unitOfWork.Warehouses.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.Warehouses.Remove(entity);
+            await unitOfWork.Warehouses.Remove(entity);
             return Ok(entity);
         }
 
@@ -101,15 +92,15 @@ namespace Api.Controllers.Warehouse
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.Warehouses.Locations.Find(r => request.Name == r.Name && request.WarehouseId == r.WarehouseId).Any();
+            var exists = unitOfWork.Warehouses.Locations.Find(r => request.Name == r.Name && request.WarehouseId == r.WarehouseId).Any();
             if (!exists)
             {
-                await _unitOfWork.Warehouses.Locations.Add(request);
+                await unitOfWork.Warehouses.Locations.Add(request);
                 return Ok(new GenericResponse(true, request));
             }
             else
             {
-                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("LocationAlreadyExists", request.Name)));
+                return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("LocationAlreadyExists", request.Name)));
             }
         }
 
@@ -119,15 +110,15 @@ namespace Api.Controllers.Warehouse
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
             if (id != request.Id) return BadRequest();
 
-            var exists = _unitOfWork.Warehouses.Locations.Find(r => request.Id == r.Id).Any();
+            var exists = unitOfWork.Warehouses.Locations.Find(r => request.Id == r.Id).Any();
             if (exists)
             {
-                await _unitOfWork.Warehouses.Locations.Update(request);
+                await unitOfWork.Warehouses.Locations.Update(request);
                 return Ok(new GenericResponse(true, request));
             }
             else
             {
-                return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("LocationNotFound", request.Id)));
+                return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("LocationNotFound", request.Id)));
             }
         }
 
@@ -136,15 +127,15 @@ namespace Api.Controllers.Warehouse
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var location = _unitOfWork.Warehouses.Locations.Find(r => id == r.Id).FirstOrDefault();
+            var location = unitOfWork.Warehouses.Locations.Find(r => id == r.Id).FirstOrDefault();
             if (location is not null)
             {
-                await _unitOfWork.Warehouses.Locations.Remove(location);
+                await unitOfWork.Warehouses.Locations.Remove(location);
                 return Ok(new GenericResponse(true, location));
             }
             else
             {
-                return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("LocationNotFound", id)));
+                return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("LocationNotFound", id)));
             }
         }
     }

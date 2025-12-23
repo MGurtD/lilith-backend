@@ -1,44 +1,35 @@
 ﻿using Application.Contracts;
 using Domain.Entities.Production;
-using Domain.Entities.Sales;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Production
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class WorkcenterController : ControllerBase
+    public class WorkcenterController(IUnitOfWork unitOfWork, ILocalizationService localizationService) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ILocalizationService _localizationService;
-
-        public WorkcenterController(IUnitOfWork unitOfWork, ILocalizationService localizationService)
-        {
-            _unitOfWork = unitOfWork;
-            _localizationService = localizationService;
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(Workcenter request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.Workcenters.Find(r => request.Name == r.Name).Any();
+            var exists = unitOfWork.Workcenters.Find(r => request.Name == r.Name).Any();
             if (!exists)
             {
-                await _unitOfWork.Workcenters.Add(request);
+                await unitOfWork.Workcenters.Add(request);
                 var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
                 return Created(location, request);
             }
             else
             {
-                return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("WorkcenterAlreadyExists", request.Name)));
+                return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("WorkcenterAlreadyExists", request.Name)));
             }
         }
+        
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.Workcenters.GetAll();
+            var entities = await unitOfWork.Workcenters.GetAll();
 
             return Ok(entities.OrderBy(w => w.Name));
         }
@@ -46,14 +37,14 @@ namespace Api.Controllers.Production
         [HttpGet("plant")]
         public async Task<IActionResult> GetVisibleInPlant()
         {
-            var entities = await _unitOfWork.Workcenters.GetVisibleInPlant();
+            var entities = await unitOfWork.Workcenters.GetVisibleInPlant();
             return Ok(entities);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.Workcenters.Get(id);
+            var entity = await unitOfWork.Workcenters.Get(id);
             if (entity is not null)
             {
                 return Ok(entity);
@@ -71,11 +62,11 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.Workcenters.Exists(request.Id);
+            var exists = await unitOfWork.Workcenters.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.Workcenters.Update(request);
+            await unitOfWork.Workcenters.Update(request);
             return Ok(request);
         }
 
@@ -85,11 +76,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.Workcenters.Find(e => e.Id == id).FirstOrDefault();
+            var entity = unitOfWork.Workcenters.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.Workcenters.Remove(entity);
+            await unitOfWork.Workcenters.Remove(entity);
             return Ok(entity);
         }
     }

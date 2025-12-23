@@ -6,15 +6,8 @@ namespace Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class TaxController : ControllerBase
+    public class TaxController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public TaxController(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(Tax request)
         {
@@ -23,10 +16,10 @@ namespace Api.Controllers
 
 
             // Validate existence of the unique user key
-            var exists = _unitOfWork.Taxes.Find(r => request.Name == r.Name).Count() > 0;
+            var exists = unitOfWork.Taxes.Find(r => request.Name == r.Name).Count() > 0;
             if (!exists)
             {
-                await _unitOfWork.Taxes.Add(request);
+                await unitOfWork.Taxes.Add(request);
                 return Ok(request);
             }
             else
@@ -38,14 +31,14 @@ namespace Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var taxes = await _unitOfWork.Taxes.GetAll();
+            var taxes = await unitOfWork.Taxes.GetAll();
             return Ok(taxes.OrderBy(e => e.Name));
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var Tax = await _unitOfWork.Taxes.Get(id);
+            var Tax = await unitOfWork.Taxes.Get(id);
             if (Tax is not null)
             {
                 return Ok(Tax);
@@ -64,21 +57,21 @@ namespace Api.Controllers
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.Taxes.Exists(request.Id);
+            var exists = await unitOfWork.Taxes.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.Taxes.Update(request);
+            await unitOfWork.Taxes.Update(request);
             return Ok(request);
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var payementMethod = await _unitOfWork.Taxes.Get(id);
+            var payementMethod = await unitOfWork.Taxes.Get(id);
             if (payementMethod is not null)
             {
-                await _unitOfWork.Taxes.Remove(payementMethod);
+                await unitOfWork.Taxes.Remove(payementMethod);
                 return NoContent();
             }
             else

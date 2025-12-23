@@ -6,15 +6,8 @@ namespace Api.Controllers.Auth
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class RoleController : ControllerBase
+    public class RoleController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public RoleController(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(Role request)
         {
@@ -23,10 +16,10 @@ namespace Api.Controllers.Auth
 
 
             // Validate existence of the unique user key
-            var exists = _unitOfWork.Roles.Find(r => request.Name == r.Name).Count() > 0;
+            var exists = unitOfWork.Roles.Find(r => request.Name == r.Name).Any();
             if (!exists)
             {
-                await _unitOfWork.Roles.Add(request);
+                await unitOfWork.Roles.Add(request);
 
                 return Ok(request);
             }
@@ -39,14 +32,14 @@ namespace Api.Controllers.Auth
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var roles = await _unitOfWork.Roles.GetAll();
+            var roles = await unitOfWork.Roles.GetAll();
             return Ok(roles.OrderBy(e => e.Name));
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var role = await _unitOfWork.Roles.Get(id);
+            var role = await unitOfWork.Roles.Get(id);
             if (role is not null)
             {
                 return Ok(role);
@@ -60,10 +53,10 @@ namespace Api.Controllers.Auth
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var role = await _unitOfWork.Roles.Get(id);
+            var role = await unitOfWork.Roles.Get(id);
             if (role is not null)
             {
-                await _unitOfWork.Roles.Remove(role);
+                await unitOfWork.Roles.Remove(role);
                 return NoContent();
             }
             else

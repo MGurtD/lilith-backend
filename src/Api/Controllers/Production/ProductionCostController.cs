@@ -5,18 +5,12 @@ namespace Api.Controllers.Production
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ProductionCostController : ControllerBase
+    public class ProductionCostController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public ProductionCostController(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var entities = await _unitOfWork.ProductionCosts.GetAll();
+            var entities = await unitOfWork.ProductionCosts.GetAll();
             return Ok(entities);
         }
 
@@ -24,7 +18,7 @@ namespace Api.Controllers.Production
         [Route("GroupedByMonthAndWorkcenterType")]
         public async Task<IActionResult> GetByMonthAndWorkcenterType(DateTime startTime, DateTime endTime)
         {
-            var entities = await _unitOfWork.ProductionCosts.FindAsync(p => p.Date >= startTime && p.Date < endTime);
+            var entities = await unitOfWork.ProductionCosts.FindAsync(p => p.Date >= startTime && p.Date < endTime);
             if (entities.Count == 0)
             {
                 return Ok(entities);
@@ -48,7 +42,7 @@ namespace Api.Controllers.Production
         [Route("GroupedByMonthAndWorkcenter")]
         public async Task<IActionResult> GetByMonthAndWorkcenter(DateTime startTime, DateTime endTime)
         {
-            var entities = await _unitOfWork.ProductionCosts.FindAsync(p => p.Date >= startTime && p.Date < endTime);
+            var entities = await unitOfWork.ProductionCosts.FindAsync(p => p.Date >= startTime && p.Date < endTime);
             if (entities.Count == 0)
             {
                 return Ok(entities);
@@ -72,7 +66,7 @@ namespace Api.Controllers.Production
         [Route("GroupedByMonthAndOperator")]
         public async Task<IActionResult> GroupedByMonthAndOperator(DateTime startTime, DateTime endTime)
         {
-            var entities = await _unitOfWork.ProductionCosts.FindAsync(p => p.Date >= startTime && p.Date < endTime);
+            var entities = await unitOfWork.ProductionCosts.FindAsync(p => p.Date >= startTime && p.Date < endTime);
             if (entities.Count == 0)
             {
                 return Ok(entities);

@@ -1,27 +1,20 @@
 ﻿using Application.Contracts;
 using Domain.Entities.Production;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Policy;
 
 namespace Api.Controllers.Production
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ShiftDetailDetailController : ControllerBase
+    public class ShiftDetailDetailController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public ShiftDetailDetailController(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
         [HttpPost]
         public async Task<IActionResult> Create(ShiftDetail request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-           await _unitOfWork.ShiftDetails.Add(request);
-            var entity = await _unitOfWork.ShiftDetails.Get(request.Id);
+           await unitOfWork.ShiftDetails.Add(request);
+            var entity = await unitOfWork.ShiftDetails.Get(request.Id);
             if (entity is not null)
             {
                 return Ok(entity);
@@ -35,7 +28,7 @@ namespace Api.Controllers.Production
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.ShiftDetails.GetAll();
+            var entities = await unitOfWork.ShiftDetails.GetAll();
 
             return Ok(entities);
         }
@@ -43,7 +36,7 @@ namespace Api.Controllers.Production
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.ShiftDetails.Get(id);
+            var entity = await unitOfWork.ShiftDetails.Get(id);
             if (entity is not null)
             {
                 return Ok(entity);
@@ -61,11 +54,11 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.ShiftDetails.Exists(request.Id);
+            var exists = await unitOfWork.ShiftDetails.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.ShiftDetails.Update(request);
+            await unitOfWork.ShiftDetails.Update(request);
             return Ok(request);
         }
 
@@ -75,11 +68,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.ShiftDetails.Find(e => e.Id == id).FirstOrDefault();
+            var entity = unitOfWork.ShiftDetails.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.ShiftDetails.Remove(entity);
+            await unitOfWork.ShiftDetails.Remove(entity);
             return Ok(entity);
         }
     }

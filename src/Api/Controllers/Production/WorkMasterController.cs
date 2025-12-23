@@ -7,33 +7,22 @@ namespace Api.Controllers.Production
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class WorkMasterController : ControllerBase
+    public class WorkMasterController(IUnitOfWork unitOfWork, IMetricsService costsService, ILocalizationService localizationService) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IMetricsService _costsService;
-        private readonly ILocalizationService _localizationService;
-
-        public WorkMasterController(IUnitOfWork unitOfWork, IMetricsService costsService, ILocalizationService localizationService)
-        {
-            _unitOfWork = unitOfWork;
-            _costsService = costsService;
-            _localizationService = localizationService;
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(WorkMaster request)
         {
             // Validacions
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var existsReference = await _unitOfWork.References.Exists(request.ReferenceId);
-            if (!existsReference) return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("ReferenceNotFound")));
+            var existsReference = await unitOfWork.References.Exists(request.ReferenceId);
+            if (!existsReference) return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("ReferenceNotFound")));
 
-            var exists = _unitOfWork.WorkMasters.Find(w => w.Id == request.Id).Any();
-            if (exists) return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterAlreadyExists")));
+            var exists = unitOfWork.WorkMasters.Find(w => w.Id == request.Id).Any();
+            if (exists) return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("WorkMasterAlreadyExists")));
 
             // Creació
-            await _unitOfWork.WorkMasters.Add(request);
+            await unitOfWork.WorkMasters.Add(request);
             var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
             return Created(location, request);
         }
@@ -41,7 +30,7 @@ namespace Api.Controllers.Production
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.WorkMasters.GetAll();
+            var entities = await unitOfWork.WorkMasters.GetAll();
 
             return Ok(entities.OrderBy(w => w.ReferenceId));
         }
@@ -49,7 +38,7 @@ namespace Api.Controllers.Production
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.WorkMasters.Get(id);
+            var entity = await unitOfWork.WorkMasters.Get(id);
             if (entity is not null)
                 return Ok(entity);
             else
@@ -64,11 +53,11 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.WorkMasters.Exists(request.Id);
+            var exists = await unitOfWork.WorkMasters.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            var resultCosts = await _costsService.GetWorkmasterMetrics(request, request.BaseQuantity);
+            var resultCosts = await costsService.GetWorkmasterMetrics(request, request.BaseQuantity);
             if (resultCosts.Result && resultCosts.Content is ProductionMetrics workMasterMetrics)
             {
                 request.operatorCost = workMasterMetrics.OperatorCost;
@@ -78,14 +67,14 @@ namespace Api.Controllers.Production
                 request.totalWeight = workMasterMetrics.TotalWeight;
             }
 
-            await _unitOfWork.WorkMasters.Update(request);
+            await unitOfWork.WorkMasters.Update(request);
             //get reference and update workmastercost
 
-            var reference = await _unitOfWork.References.Get(request.ReferenceId);
+            var reference = await unitOfWork.References.Get(request.ReferenceId);
             if (reference != null)
             {
                 reference.WorkMasterCost = request.operatorCost + request.machineCost + request.externalCost + request.materialCost;
-                await _unitOfWork.References.Update(reference);
+                await unitOfWork.References.Update(reference);
             }
             return Ok(request);
         }
@@ -96,11 +85,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.WorkMasters.Find(e => e.Id == id).FirstOrDefault();
+            var entity = unitOfWork.WorkMasters.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.WorkMasters.Remove(entity);
+            await unitOfWork.WorkMasters.Remove(entity);
             return Ok(entity);
         }
 
@@ -110,13 +99,13 @@ namespace Api.Controllers.Production
             // Validacions
             if (request.ReferenceId.HasValue && request.ReferenceId != Guid.Empty)
             {
-                var exists = _unitOfWork.WorkMasters.Find(w => w.ReferenceId == request.ReferenceId && w.Mode == request.Mode).Any();
-                if (exists) return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("ReferenceAlreadyExists")));
+                var exists = unitOfWork.WorkMasters.Find(w => w.ReferenceId == request.ReferenceId && w.Mode == request.Mode).Any();
+                if (exists) return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("ReferenceAlreadyExists")));
             }
             
 
             // Creació            
-            var result = await _unitOfWork.WorkMasters.Copy(request);            
+            var result = await unitOfWork.WorkMasters.Copy(request);            
             if (result) {
                 return Ok();
             }
@@ -130,17 +119,17 @@ namespace Api.Controllers.Production
         [HttpGet("reference/{id:guid}")]
         public IActionResult GetWorkMasterByReferenceId(Guid id)
         {
-            var entities = _unitOfWork.WorkMasters.Find(w => w.ReferenceId == id && w.Disabled == false);
+            var entities = unitOfWork.WorkMasters.Find(w => w.ReferenceId == id && w.Disabled == false);
             return Ok(entities.OrderBy(w => w.BaseQuantity));
         }
 
         [HttpGet("Cost/{id:guid}")]
         public async Task<IActionResult> GetWorkMasterCostById(Guid id, int? quantity)
         {
-            var workMaster = await _unitOfWork.WorkMasters.Get(id);
+            var workMaster = await unitOfWork.WorkMasters.Get(id);
             if (workMaster == null) return NotFound();
 
-            var result = await _costsService.GetWorkmasterMetrics(workMaster, quantity);
+            var result = await costsService.GetWorkmasterMetrics(workMaster, quantity);
 
             if (result.Result && result.Content is ProductionMetrics workMasterCosts)
                 return Ok(new GenericResponse(true, workMasterCosts.TotalCost()));
@@ -151,10 +140,10 @@ namespace Api.Controllers.Production
         [HttpGet("Costs/{id:guid}")]
         public async Task<IActionResult> GetWorkMasterCostsById(Guid id, int? quantity)
         {
-            var workMaster = await _unitOfWork.WorkMasters.Get(id);
+            var workMaster = await unitOfWork.WorkMasters.Get(id);
             if (workMaster == null) return NotFound();
 
-            var result = await _costsService.GetWorkmasterMetrics(workMaster, quantity);
+            var result = await costsService.GetWorkmasterMetrics(workMaster, quantity);
 
             if (result.Result && result.Content is ProductionMetrics workMasterCosts)
                 return Ok(new GenericResponse(true, workMasterCosts));
@@ -170,8 +159,8 @@ namespace Api.Controllers.Production
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetWorkMasterPhaseById(Guid id)
         {
-            var workmasterPhase = await _unitOfWork.WorkMasters.Phases.Get(id);
-            if (workmasterPhase == null) return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterPhaseNotFound")));
+            var workmasterPhase = await unitOfWork.WorkMasters.Phases.Get(id);
+            if (workmasterPhase == null) return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("WorkMasterPhaseNotFound")));
 
             return Ok(workmasterPhase);
         }
@@ -185,14 +174,14 @@ namespace Api.Controllers.Production
             // Validacions
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.WorkMasters.Phases.Find(w => w.Id == request.Id).Any();
-            if (exists) return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterPhaseAlreadyExists")));
+            var exists = unitOfWork.WorkMasters.Phases.Find(w => w.Id == request.Id).Any();
+            if (exists) return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("WorkMasterPhaseAlreadyExists")));
 
-            var workmaster = await _unitOfWork.WorkMasters.Get(request.WorkMasterId);
-            if (workmaster is null) return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterNotFound")));
+            var workmaster = await unitOfWork.WorkMasters.Get(request.WorkMasterId);
+            if (workmaster is null) return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("WorkMasterNotFound")));
 
             // Creació
-            await _unitOfWork.WorkMasters.Phases.Add(request);
+            await unitOfWork.WorkMasters.Phases.Add(request);
             return Ok(new GenericResponse(true, request));
         }
 
@@ -207,11 +196,11 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.WorkMasters.Phases.Exists(request.Id);
+            var exists = await unitOfWork.WorkMasters.Phases.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.WorkMasters.Phases.Update(request);
+            await unitOfWork.WorkMasters.Phases.Update(request);
             return Ok(request);
         }
 
@@ -224,11 +213,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.WorkMasters.Phases.Find(e => e.Id == id).FirstOrDefault();
+            var entity = unitOfWork.WorkMasters.Phases.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.WorkMasters.Phases.Remove(entity);
+            await unitOfWork.WorkMasters.Phases.Remove(entity);
             return Ok(entity);
         }
         #endregion
@@ -240,8 +229,8 @@ namespace Api.Controllers.Production
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetWorkMasterPhaseDetailById(Guid id)
         {
-            var entities = await _unitOfWork.WorkMasters.Phases.Details.Get(id);
-            if (entities == null) return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterPhaseDetailNotFound")));
+            var entities = await unitOfWork.WorkMasters.Phases.Details.Get(id);
+            if (entities == null) return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("WorkMasterPhaseDetailNotFound")));
 
             return Ok(entities);
         }
@@ -255,11 +244,11 @@ namespace Api.Controllers.Production
             // Validacions
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.WorkMasters.Phases.Details.Find(w => w.Id == request.Id).Any();
-            if (exists) return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterPhaseDetailAlreadyExists")));
+            var exists = unitOfWork.WorkMasters.Phases.Details.Find(w => w.Id == request.Id).Any();
+            if (exists) return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("WorkMasterPhaseDetailAlreadyExists")));
 
             // Creació
-            await _unitOfWork.WorkMasters.Phases.Details.Add(request);
+            await unitOfWork.WorkMasters.Phases.Details.Add(request);
             return Ok(new GenericResponse(true, request));
         }
 
@@ -274,11 +263,11 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.WorkMasters.Phases.Details.Exists(request.Id);
+            var exists = await unitOfWork.WorkMasters.Phases.Details.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.WorkMasters.Phases.Details.Update(request);
+            await unitOfWork.WorkMasters.Phases.Details.Update(request);
             return Ok(request);
         }
 
@@ -291,11 +280,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.WorkMasters.Phases.Details.Find(e => e.Id == id).FirstOrDefault();
+            var entity = unitOfWork.WorkMasters.Phases.Details.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.WorkMasters.Phases.Details.Remove(entity);
+            await unitOfWork.WorkMasters.Phases.Details.Remove(entity);
             return Ok(entity);
         }
         #endregion
@@ -307,8 +296,8 @@ namespace Api.Controllers.Production
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetWorkMasterPhaseBillOfMaterialsItemById(Guid id)
         {
-            var entities = await _unitOfWork.WorkMasters.Phases.BillOfMaterials.Get(id);
-            if (entities == null) return NotFound(new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterPhaseDetailNotFound")));
+            var entities = await unitOfWork.WorkMasters.Phases.BillOfMaterials.Get(id);
+            if (entities == null) return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("WorkMasterPhaseDetailNotFound")));
 
             return Ok(entities);
         }
@@ -322,11 +311,11 @@ namespace Api.Controllers.Production
             // Validacions
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = _unitOfWork.WorkMasters.Phases.BillOfMaterials.Find(w => w.Id == request.Id).Any();
-            if (exists) return Conflict(new GenericResponse(false, _localizationService.GetLocalizedString("WorkMasterPhaseDetailAlreadyExists")));
+            var exists = unitOfWork.WorkMasters.Phases.BillOfMaterials.Find(w => w.Id == request.Id).Any();
+            if (exists) return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("WorkMasterPhaseDetailAlreadyExists")));
 
             // Creació
-            await _unitOfWork.WorkMasters.Phases.BillOfMaterials.Add(request);
+            await unitOfWork.WorkMasters.Phases.BillOfMaterials.Add(request);
             return Ok(new GenericResponse(true, request));
         }
 
@@ -341,11 +330,11 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.WorkMasters.Phases.BillOfMaterials.Exists(request.Id);
+            var exists = await unitOfWork.WorkMasters.Phases.BillOfMaterials.Exists(request.Id);
             if (!exists)
                 return NotFound();
 
-            await _unitOfWork.WorkMasters.Phases.BillOfMaterials.Update(request);
+            await unitOfWork.WorkMasters.Phases.BillOfMaterials.Update(request);
             return Ok(request);
         }
 
@@ -359,11 +348,11 @@ namespace Api.Controllers.Production
 
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.WorkMasters.Phases.BillOfMaterials.Find(e => e.Id == id).FirstOrDefault();
+            var entity = unitOfWork.WorkMasters.Phases.BillOfMaterials.Find(e => e.Id == id).FirstOrDefault();
             if (entity is null)
                 return NotFound();
 
-            await _unitOfWork.WorkMasters.Phases.BillOfMaterials.Remove(entity);
+            await unitOfWork.WorkMasters.Phases.BillOfMaterials.Remove(entity);
             return Ok(entity);
         }
         #endregion
