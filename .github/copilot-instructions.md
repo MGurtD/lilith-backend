@@ -2,28 +2,46 @@
 
 ## Solution Overview
 
-Lilith Backend is a comprehensive manufacturing ERP system built with .NET 8 using Clean Architecture principles. The solution manages the complete manufacturing lifecycle including purchases, sales, production planning, inventory, and financial operations for a manufacturing company.
+Lilith Backend is a comprehensive manufacturing ERP system built with .NET 10 using Clean Architecture principles. The solution manages the complete manufacturing lifecycle including purchases, sales, production planning, inventory, and financial operations for a manufacturing company.
 
 ## Architecture & Structure
 
+### Solution Structure
+
+```
+lilith-backend/
+├── src/                              # All source projects
+│   ├── Api/                         # Web API controllers
+│   ├── Application/                 # Application services
+│   ├── Application.Contracts/       # Service interfaces, DTOs
+│   ├── Domain/                      # Domain entities
+│   ├── Infrastructure/              # Data access, repositories
+│   └── Verifactu/                   # Tax integration service
+├── test/                             # Test projects (unit, integration)
+├── docs/                             # Documentation
+└── Lilith.Backend.slnx              # Solution file (XML format)
+```
+
 ### Project Organization
 
-The solution follows Clean Architecture with 5 main projects:
+The solution follows Clean Architecture with 6 main projects in the `src/` directory:
 
-1. **Domain** - Core business entities, interfaces, and domain logic
-2. **Application** - Use cases, DTOs, and service interfaces
-3. **Infrastructure** - Data access, external services, and infrastructure concerns
-4. **Api** - Web API controllers and application services
-5. **Verifactu** - External tax integration service (Spanish tax authority)
+1. **Domain** (`src/Domain/`) - Core business entities and domain logic (no dependencies)
+2. **Application.Contracts** (`src/Application.Contracts/`) - Service interfaces, DTOs, repository interfaces, and constants
+3. **Application** (`src/Application/`) - Application-specific services and use case implementations
+4. **Infrastructure** (`src/Infrastructure/`) - Data access, repository implementations, and external integrations
+5. **Api** (`src/Api/`) - Web API controllers and service implementations
+6. **Verifactu** (`src/Verifactu/`) - External tax integration service (Spanish tax authority)
 
 ### Key Architectural Patterns
 
 #### Clean Architecture Layers
 
-- **Domain Layer**: Contains entities, value objects, domain services, and repository interfaces
-- **Application Layer**: Contains application services, DTOs, and use case interfaces
-- **Infrastructure Layer**: Implements repositories, data access, and external integrations
-- **API Layer**: Contains controllers and application-specific services
+- **Domain Layer**: Contains entities, value objects, and domain logic (pure - no external dependencies)
+- **Application.Contracts Layer**: Contains all abstractions - service interfaces, DTOs, repository interfaces, and constants
+- **Application Layer**: Contains application services and use case implementations
+- **Infrastructure Layer**: Implements repository interfaces, data access, and external integrations
+- **API Layer**: Contains controllers and service implementations (business logic)
 
 #### Repository Pattern
 
@@ -38,16 +56,17 @@ The solution follows Clean Architecture with 5 main projects:
 - Soft delete pattern using `Disabled` property on base `Entity` class
 - Decimal precision configured as (18,4) for amounts, (18,2) for prices
 
-
 #### Entity Framework > Create new migration
-  ```
-  dotnet ef migrations add AddProfilesAndMenus --project .\Infrastructure\
-  ```
+
+```bash
+dotnet ef migrations add AddProfilesAndMenus --project src/Infrastructure/
+```
 
 #### Entity Framework > Apply migrations to database
-  ```
-  dotnet ef database update --project .\Infrastructure\
-  ```
+
+```bash
+dotnet ef database update --project src/Infrastructure/
+```
 
 ## Domain Model
 
@@ -101,9 +120,11 @@ public abstract class Entity
 
 ### Response Pattern
 
-Use `GenericResponse` for service layer returns:
+Use `GenericResponse` from `Application.Contracts` for service layer returns:
 
 ```csharp
+using Application.Contracts;
+
 public class GenericResponse
 {
     public bool Result { get; }
@@ -112,8 +133,23 @@ public class GenericResponse
 
     public GenericResponse(bool result, object? content = null)
     public GenericResponse(bool result, string error, object? content = null)
-    public GenericResponse(bool result, IList<string> errors, object? content = null)
+    public GenericResponse(bool result, IList<string> Errors, object? content = null)
 }
+```
+
+### Namespace Conventions
+
+**Application.Contracts namespace** contains all contracts with flat structure:
+- Service interfaces: `Application.Contracts` (e.g., `IBudgetService`, `ISalesOrderService`)
+- DTOs and request/response models: `Application.Contracts` (e.g., `GenericResponse`, `CreateHeaderRequest`)
+- Repository interfaces: `Application.Contracts` (e.g., `IRepository<T>`, `IUnitOfWork`)
+- Constants: `Application.Contracts` (e.g., `StatusConstants`)
+
+**Usage in files:**
+```csharp
+using Application.Contracts;  // All contracts, interfaces, DTOs, constants
+using Domain.Entities.Sales;  // Domain entities
+using Infrastructure.Persistance;  // Only for ApplicationDbContext
 ```
 
 ### Controller Conventions
@@ -143,7 +179,7 @@ public class GenericResponse
 
 ### Database Configuration
 
-- Entity configurations in `Infrastructure/Persistance/EntityConfiguration/`
+- Entity configurations in `src/Infrastructure/Persistance/EntityConfiguration/`
 - Use `EntityBaseConfiguration.ConfigureBase<T>()` for common entity properties
 - UUID primary keys with `ValueGeneratedNever()`
 - Timestamp columns with PostgreSQL-specific types
@@ -198,11 +234,11 @@ The system implements **comprehensive multilanguage support** with full internat
 
 ### Localization Architecture
 
-- **JSON-based resource files** in `Api/Resources/LocalizationService/`
+- **JSON-based resource files** in `src/Api/Resources/LocalizationService/`
 - **ILocalizationService** for dependency injection and string retrieval
 - **CultureMiddleware** for automatic language detection
 - **Microsoft.Extensions.Localization** framework integration
-- **StatusConstants** in `Api/Constants/StatusConstants.cs` for database-stored values
+- **StatusConstants** in `src/Application.Contracts/Constants/StatusConstants.cs` for database-stored values
 
 ### Culture Detection Priority
 
@@ -453,7 +489,7 @@ return new GenericResponse(false, localizationService.GetLocalizedString("MyNewE
 #### Constants Pattern:
 
 ```csharp
-// Add to Api/Constants/StatusConstants.cs
+// Add to src/Application.Contracts/Constants/StatusConstants.cs
 public static class StatusConstants
 {
     public static class Lifecycles
