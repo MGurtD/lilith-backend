@@ -83,7 +83,7 @@ namespace Application.Services.Purchase
 
             }
 
-            return new GenericResponse(true, new List<string> { });
+            return new GenericResponse(true);
         }
 
         public async Task<GenericResponse> Update(PurchaseInvoice purchaseInvoice)
@@ -93,7 +93,7 @@ namespace Application.Services.Purchase
             purchaseInvoice.PurchaseInvoiceImports!.Clear();
             await _unitOfWork.PurchaseInvoices.Update(purchaseInvoice);
 
-            return new GenericResponse(true, new List<string> { });
+            return new GenericResponse(true);
         }
 
         public async Task<GenericResponse> RecreateDueDates(PurchaseInvoice requestInvoice)
@@ -105,7 +105,7 @@ namespace Application.Services.Purchase
             if (requestInvoice.PurchaseInvoiceDueDates != null)
                 await _unitOfWork.PurchaseInvoiceDueDates.AddRange(requestInvoice.PurchaseInvoiceDueDates);
 
-            return new GenericResponse(true, new List<string> { });
+            return new GenericResponse(true);
         }
 
         public async Task<GenericResponse> ChangeStatuses(ChangeStatusOfInvoicesRequest changeStatusesRequest)
@@ -125,7 +125,7 @@ namespace Application.Services.Purchase
             }
             await _unitOfWork.CompleteAsync();
 
-            return new GenericResponse(true, new List<string> { });
+            return new GenericResponse(true);
         }
 
         public async Task<GenericResponse> ChangeStatus(ChangeStatusRequest changeStatusOfPurchaseInvoiceRequest)
@@ -145,7 +145,7 @@ namespace Application.Services.Purchase
             invoice.StatusId = changeStatusOfPurchaseInvoiceRequest.StatusToId;
             await _unitOfWork.PurchaseInvoices.Update(invoice);
 
-            return new GenericResponse(true, new List<string> { });
+            return new GenericResponse(true);
         }
 
         public async Task<GenericResponse> Remove(Guid id)
@@ -158,7 +158,7 @@ namespace Application.Services.Purchase
             else
             {
                 await _unitOfWork.PurchaseInvoices.Remove(invoice);
-                return new GenericResponse(true, new List<string> { });
+                return new GenericResponse(true);
             }
 
         }
@@ -168,19 +168,19 @@ namespace Application.Services.Purchase
         public async Task<GenericResponse> AddImport(PurchaseInvoiceImport import)
         {
             await _unitOfWork.PurchaseInvoices.AddImport(import);
-            return new GenericResponse(true, new List<string> { });
+            return new GenericResponse(true);
         }
 
         public async Task<GenericResponse> UpdateImport(PurchaseInvoiceImport import)
         {
             await _unitOfWork.PurchaseInvoices.UpdateImport(import);
-            return new GenericResponse(true, new List<string> { });
+            return new GenericResponse(true);
         }
 
         public async Task<GenericResponse> RemoveImport(Guid id)
         {
             await _unitOfWork.PurchaseInvoices.RemoveImport(id);
-            return new GenericResponse(true, new List<string> { });
+            return new GenericResponse(true);
         }
 
         #endregion
@@ -189,23 +189,23 @@ namespace Application.Services.Purchase
         public async Task<GenericResponse> AddDueDates(IEnumerable<PurchaseInvoiceDueDate> dueDates)
         {
             if (dueDates == null || !dueDates.Any())
-                return new GenericResponse(true, new List<string>()); // nothing to add
+                return new GenericResponse(true); // nothing to add
 
             await _unitOfWork.PurchaseInvoiceDueDates.AddRange(dueDates);
-            return new GenericResponse(true, new List<string>());
+            return new GenericResponse(true);
         }
 
         public async Task<GenericResponse> RemoveDueDates(IEnumerable<Guid> ids)
         {
             if (ids == null || !ids.Any())
-                return new GenericResponse(true, new List<string>()); // nothing to remove
+                return new GenericResponse(true); // nothing to remove
 
             var existing = _unitOfWork.PurchaseInvoiceDueDates.Find(dd => ids.Contains(dd.Id));
             if (existing.Any())
             {
                 await _unitOfWork.PurchaseInvoiceDueDates.RemoveRange(existing);
             }
-            return new GenericResponse(true, new List<string>());
+            return new GenericResponse(true);
         }
         #endregion
 

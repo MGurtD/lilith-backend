@@ -8,6 +8,147 @@ namespace Application.Services.System
 {
     public class ReferenceService(IUnitOfWork unitOfWork, ILocalizationService localizationService) : IReferenceService
     {
+        // New read operations
+        public async Task<IEnumerable<Reference>> GetAllReferences()
+        {
+            var references = await unitOfWork.References.GetAll();
+            return references.OrderBy(r => r.Code);
+        }
+
+        public async Task<IEnumerable<Reference>> GetAllSales()
+        {
+            var references = unitOfWork.References.Find(r => r.Sales);
+            return references.OrderBy(r => r.Code);
+        }
+
+        public async Task<IEnumerable<Reference>> GetAllSalesByCustomerId(Guid customerId)
+        {
+            var references = unitOfWork.References.Find(r => r.CustomerId == customerId);
+            return references.OrderBy(r => r.Code);
+        }
+
+        public async Task<IEnumerable<Reference>> GetAllPurchase(string? categoryName = null)
+        {
+            IEnumerable<Reference> references;
+            if (string.IsNullOrEmpty(categoryName))
+            {
+                references = unitOfWork.References.Find(r => r.Purchase);
+            }
+            else
+            {
+                references = unitOfWork.References.Find(r => r.Purchase && r.CategoryName == categoryName);
+            }
+            return references.OrderBy(r => r.Code);
+        }
+
+        public async Task<IEnumerable<Reference>> GetAllProduction()
+        {
+            var references = unitOfWork.References.Find(r => r.Production);
+            return references.OrderBy(r => r.Code);
+        }
+
+        public async Task<Reference?> GetReferenceById(Guid id)
+        {
+            return await unitOfWork.References.Get(id);
+        }
+
+        public async Task<IEnumerable<SupplierReference>> GetReferenceSuppliers(Guid referenceId)
+        {
+            var supplierReferences = await unitOfWork.Suppliers.GetSuppliersReferencesFromReference(referenceId);
+            return supplierReferences;
+        }
+
+        public async Task<IEnumerable<ReferenceFormat>> GetReferenceFormats()
+        {
+            var formats = await unitOfWork.ReferenceFormats.GetAll();
+            return formats.OrderBy(f => f.Code);
+        }
+
+        public async Task<ReferenceFormat?> GetReferenceFormatById(Guid id)
+        {
+            return await unitOfWork.ReferenceFormats.Get(id);
+        }
+
+        // New write operations
+        public async Task<GenericResponse> CreateReference(Reference reference)
+        {
+            // Check if reference already exists
+            var exists = unitOfWork.References.Find(r => r.Id == reference.Id).Any();
+            if (exists)
+            {
+                return new GenericResponse(false,
+                    localizationService.GetLocalizedString("EntityAlreadyExists"));
+            }
+
+            // Format the code with reference type if applicable
+            reference.Code = await GetReferenceCode(reference);
+
+            // Persist
+            await unitOfWork.References.Add(reference);
+            return new GenericResponse(true, reference);
+        }
+
+        public async Task<GenericResponse> UpdateReference(Reference reference)
+        {
+            // Clear navigation properties to avoid EF tracking issues
+            reference.ReferenceType = null;
+            reference.ReferenceFormat = null;
+            reference.Tax = null;
+            reference.Customer = null;
+
+            // Check if reference exists
+            var existing = await unitOfWork.References.Get(reference.Id);
+            if (existing == null)
+            {
+                return new GenericResponse(false,
+                    localizationService.GetLocalizedString("EntityNotFound", reference.Id));
+            }
+
+            // Format the code with reference type if applicable
+            reference.Code = await GetReferenceCode(reference);
+
+            // Update
+            await unitOfWork.References.Update(reference);
+            return new GenericResponse(true, reference);
+        }
+
+        public async Task<GenericResponse> RemoveReference(Guid id)
+        {
+            var reference = unitOfWork.References.Find(r => r.Id == id).FirstOrDefault();
+            if (reference == null)
+            {
+                return new GenericResponse(false,
+                    localizationService.GetLocalizedString("EntityNotFound", id));
+            }
+
+            await unitOfWork.References.Remove(reference);
+            return new GenericResponse(true, reference);
+        }
+
+        // Private helper method
+        private async Task<string> GetReferenceCode(Reference reference)
+        {
+            if (reference.ReferenceTypeId.HasValue)
+            {
+                var referenceType = await unitOfWork.ReferenceTypes.Get(reference.ReferenceTypeId.Value);
+                if (referenceType is not null && !reference.Code.Contains($" ({referenceType.Name})"))
+                {
+                    var codeParts = reference.Code.Split(" (");
+                    if (codeParts.Length >= 1)
+                    {
+                        return $"{codeParts[0]} ({referenceType.Name})";
+                    }
+                    else
+                    {
+                        return $"{reference.Code} ({referenceType.Name})";
+                    }
+                }
+            }
+
+            return reference.Code;
+        }
+
+        // Existing methods
         public GenericResponse CanDelete(Guid referenceId)
         {
             var sb = new StringBuilder();

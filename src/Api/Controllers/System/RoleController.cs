@@ -1,23 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
 using Application.Contracts;
-using Domain.Entities;
+using Domain.Entities.Auth;
 
-namespace Api.Controllers
+namespace Api.Controllers.Auth
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class PaymentMethodController(IPaymentMethodService service) : ControllerBase
+    public class RoleController(IRoleService service) : ControllerBase
     {
         [HttpPost]
-        public async Task<IActionResult> Create(PaymentMethod request)
+        public async Task<IActionResult> Create(Role request)
         {
-            if (!ModelState.IsValid) 
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var response = await service.CreatePaymentMethod(request);
+            var response = await service.CreateRole(request);
             if (response.Result)
             {
-                var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
+                var location = Url.Action(nameof(GetById), new { id = request.Id })
+                    ?? $"/{request.Id}";
                 return Created(location, response.Content);
             }
             else
@@ -29,33 +30,29 @@ namespace Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var paymentMethods = await service.GetAllPaymentMethods();
-            return Ok(paymentMethods);
+            var roles = await service.GetAllRoles();
+            return Ok(roles);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var paymentMethod = await service.GetPaymentMethodById(id);
-            if (paymentMethod is not null)
-            {
-                return Ok(paymentMethod);
-            } 
+            var role = await service.GetRoleById(id);
+            if (role is not null)
+                return Ok(role);
             else
-            {
                 return NotFound();
-            }
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid id, PaymentMethod request)
+        public async Task<IActionResult> Update(Guid id, Role request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
             if (id != request.Id)
                 return BadRequest();
 
-            var response = await service.UpdatePaymentMethod(request);
+            var response = await service.UpdateRole(request);
             if (response.Result)
                 return Ok(response.Content);
             else
@@ -68,7 +65,7 @@ namespace Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var response = await service.RemovePaymentMethod(id);
+            var response = await service.RemoveRole(id);
             if (response.Result)
                 return Ok(response.Content);
             else

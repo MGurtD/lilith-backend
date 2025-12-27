@@ -14,6 +14,8 @@ public static class ApplicationServicesSetup
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
+        services.AddSingleton<IQrCodeService, QrCodeService>();
+
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IFileService, FileService>();
@@ -43,10 +45,15 @@ public static class ApplicationServicesSetup
         services.AddScoped<IStockMovementService, StockMovementService>();
         services.AddScoped<IVerifactuIntegrationService, VerifactuIntegrationService>();
         services.AddScoped<IProfileService, ProfileService>();
-    services.AddScoped<IMenuItemService, MenuItemService>();
+        services.AddScoped<IMenuItemService, MenuItemService>();
         services.AddScoped<ILifecycleService, LifecycleService>();
-        services.AddSingleton<IQrCodeService, QrCodeService>();
-
+        services.AddScoped<IPaymentMethodService, PaymentMethodService>();
+        services.AddScoped<IReferenceTypeService, ReferenceTypeService>();
+        services.AddScoped<ITaxService, TaxService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<IUserFilterService, UserFilterService>();
+        
         services.AddHostedService<BudgetBackgroundService>();
 
         return services;

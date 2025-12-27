@@ -6,36 +6,37 @@ namespace Api.Controllers.Shared
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ReferenceTypeController(IUnitOfWork unitOfWork, ILocalizationService localizationService) : ControllerBase
+    public class ReferenceTypeController(IReferenceTypeService service) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> Create(ReferenceType request)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+            if (!ModelState.IsValid) 
+                return BadRequest(ModelState.ValidationState);
 
-            var exists = unitOfWork.ReferenceTypes.Find(r => request.Name == r.Name).Any();
-            if (!exists)
+            var response = await service.CreateReferenceType(request);
+            if (response.Result)
             {
-                await unitOfWork.ReferenceTypes.Add(request);
                 var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
-                return Created(location, request);
+                return Created(location, response.Content);
             }
             else
             {
-                return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("ReferenceTypeAlreadyExists", request.Name)));
+                return Conflict(response);
             }
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await unitOfWork.ReferenceTypes.GetAll();
-            return Ok(entities.OrderBy(e => e.Name));
+            var entities = await service.GetAllReferenceTypes();
+            return Ok(entities);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await unitOfWork.ReferenceTypes.Get(id);
+            var entity = await service.GetReferenceTypeById(id);
             if (entity is not null)
             {
                 return Ok(entity);
@@ -45,20 +46,20 @@ namespace Api.Controllers.Shared
                 return NotFound();
             }
         }
+
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid Id, ReferenceType request)
+        public async Task<IActionResult> Update(Guid id, ReferenceType request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
-            if (Id != request.Id)
+            if (id != request.Id)
                 return BadRequest();
 
-            var exists = await unitOfWork.ReferenceTypes.Exists(request.Id);
-            if (!exists)
-                return NotFound();
-
-            await unitOfWork.ReferenceTypes.Update(request);
-            return Ok(request);
+            var response = await service.UpdateReferenceType(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         [HttpDelete("{id:guid}")]
@@ -67,12 +68,11 @@ namespace Api.Controllers.Shared
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = unitOfWork.ReferenceTypes.Find(e => e.Id == id).FirstOrDefault();
-            if (entity is null)
-                return NotFound();
-
-            await unitOfWork.ReferenceTypes.Remove(entity);
-            return Ok(entity);
+            var response = await service.RemoveReferenceType(id);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
     }
 }

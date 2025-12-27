@@ -1,6 +1,5 @@
 ﻿using Application.Contracts;
 using Domain.Entities.Purchase;
-using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Purchase

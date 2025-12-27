@@ -30,7 +30,7 @@ _UpgradeReport_Files/
 bin/
 obj/
 TestResults/
-Api/Files/
+src/Api/Files/
 ###################
 # Web publish log #
 ###################

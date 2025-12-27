@@ -1,149 +1,110 @@
-﻿using Application.Contracts;
-using Domain.Entities.Shared;
+using Application.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Shared
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ReferenceController(IUnitOfWork unitOfWork, IReferenceService referenceService) : ControllerBase
+    public class ReferenceController(IReferenceService service) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork = unitOfWork;
-        private readonly IReferenceService _referenceService = referenceService;
-
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _unitOfWork.References.GetAll();
-
-            return Ok(entities.OrderBy(r => r.Code));
+            var references = await service.GetAllReferences();
+            return Ok(references);
         }
 
-        [Route("Sales")]
-        [HttpGet]
-        public IActionResult GetAllSales(Guid customerId)
+        [HttpGet("Sales")]
+        public async Task<IActionResult> GetAllSales()
         {
-            var entities = _unitOfWork.References.Find(r => r.Sales).OrderBy(r => r.Code);
-            return Ok(entities);
-        }
-        [Route("Sales/Customer/{id:guid}")]
-        [HttpGet]
-        public IActionResult GetAllSalesByCustomerId(Guid id)
-        {
-            var entities = _unitOfWork.References.Find(r => r.Sales && r.CustomerId == id).OrderBy(r => r.Code);
-            return Ok(entities);
+            var references = await service.GetAllSales();
+            return Ok(references);
         }
 
-        [Route("Purchase/{categoryName?}")]
-        [HttpGet]
-        public async Task<IActionResult> GetAllPurchase(string? categoryName = null)
+        [HttpGet("Sales/{customerId:guid}")]
+        public async Task<IActionResult> GetAllSalesByCustomerId(Guid customerId)
         {
-            var entities = await _unitOfWork.References.FindAsync(r => r.Purchase);
+            var references = await service.GetAllSalesByCustomerId(customerId);
+            return Ok(references);
+        }
 
-            if (!string.IsNullOrEmpty(categoryName))
-            {
-                entities = entities.Where(r => r.CategoryName == categoryName).ToList();
-            }
-
-            return Ok(entities.OrderBy(r => r.Code));
-        }        
-
-        [Route("Production")]
-        [HttpGet]
-        public IActionResult GetAllProduction()
+        [HttpGet("Purchase")]
+        public async Task<IActionResult> GetAllPurchase([FromQuery] string? categoryName)
         {
-            var entities = _unitOfWork.References.Find(r => r.Production).OrderBy(r => r.Code);
-            return Ok(entities);
+            var references = await service.GetAllPurchase(categoryName);
+            return Ok(references);
+        }
+
+        [HttpGet("Production")]
+        public async Task<IActionResult> GetAllProduction()
+        {
+            var references = await service.GetAllProduction();
+            return Ok(references);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await _unitOfWork.References.Get(id);
-            if (entity is not null)
-            {
-                return Ok(entity);
-            }
+            var reference = await service.GetReferenceById(id);
+            if (reference is not null)
+                return Ok(reference);
             else
-            {
                 return NotFound();
-            }
         }
 
-        [Route("{id:guid}/Suppliers")]
-        [HttpGet]
-        public async Task<IActionResult> GetReferenceSuppliers(Guid id)
+        [HttpGet("{referenceId:guid}/suppliers")]
+        public async Task<IActionResult> GetReferenceSuppliers(Guid referenceId)
         {
-            var entities = await _unitOfWork.Suppliers.GetSuppliersReferencesFromReference(id);
-            return Ok(entities);
+            var suppliers = await service.GetReferenceSuppliers(referenceId);
+            return Ok(suppliers);
         }
-        [HttpPost("GetPrice")]
-        public async Task<IActionResult> GetPrice(ReferenceGetPriceRequest request)
+
+        [HttpGet("{referenceId:guid}/price/{supplierId:guid}")]
+        public async Task<IActionResult> GetPrice(Guid referenceId, Guid supplierId)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
-            var price = await _referenceService.GetPrice(request.referenceId, request.supplierId);
+            decimal price = await service.GetPrice(referenceId, supplierId);
+            return Ok(price);
+        }
+
+        [HttpGet("{referenceId:guid}/price")]
+        public async Task<IActionResult> GetPriceNoSupplier(Guid referenceId)
+        {
+            decimal price = await service.GetPrice(referenceId, null);
             return Ok(price);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Reference request)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
-            request.Code = request.Code.Trim();
-
-            var exists = _unitOfWork.References.Find(r => request.Code == r.Code && request.Version == r.Version).Any();
-            if (!exists)
-            {
-                // Get reference format "unitats"
-                var referenceFormat = _unitOfWork.ReferenceFormats.Find(r => r.Code == "UNITATS").FirstOrDefault();
-                if(request.CategoryName == "Service" && referenceFormat != null)
-                {
-                    request.ReferenceFormatId = referenceFormat.Id;
-                }
-                request.Code = await GetReferenceCode(request);
-                await _unitOfWork.References.Add(request);
-
-                var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
-                return Created(location, request);
-            }
-            else
-            {
-                return Conflict($"Referencia {request.Code} existent");
-            }
-        }
-
-        private async Task<string> GetReferenceCode(Reference reference) {
-            if (reference.ReferenceTypeId.HasValue) {
-                var referenceType = await _unitOfWork.ReferenceTypes.Get(reference.ReferenceTypeId.Value);
-                if (referenceType is not null && !reference.Code.Contains($" ({referenceType.Name})")) {
-                    var codeParts = reference.Code.Split(" (");
-                    if (codeParts.Length >= 1) {
-                        return $"{codeParts[0]} ({referenceType.Name})";
-                    } else {
-                        return $"{reference.Code} ({referenceType.Name})";
-                    }
-                }
-            }
-
-            return reference.Code;
-        }
-
-        [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid Id, Reference request)
+        public async Task<IActionResult> Create(Domain.Entities.Shared.Reference request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
-            if (Id != request.Id)
+
+            var response = await service.CreateReference(request);
+            if (response.Result)
+            {
+                var location = Url.Action(nameof(GetById), new { id = request.Id })
+                    ?? $"/{request.Id}";
+                return Created(location, response.Content);
+            }
+            else
+            {
+                return Conflict(response);
+            }
+        }
+
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id, Domain.Entities.Shared.Reference request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.ValidationState);
+            if (id != request.Id)
                 return BadRequest();
 
-            var exists = await _unitOfWork.References.Exists(request.Id);
-            if (!exists)
-                return NotFound();
-
-            request.Code = await GetReferenceCode(request);
-            request.Code = request.Code.Trim();
-            await _unitOfWork.References.Update(request);
-            return Ok(request);
+            var response = await service.UpdateReference(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         [HttpDelete("{id:guid}")]
@@ -152,39 +113,32 @@ namespace Api.Controllers.Shared
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = _unitOfWork.References.Find(e => e.Id == id).FirstOrDefault();
-            if (entity is null)
-                return NotFound();
+            var canDeleteResponse = service.CanDelete(id);
+            if (!canDeleteResponse.Result)
+                return BadRequest(canDeleteResponse);
 
-            var canDelete = _referenceService.CanDelete(id);
-            if (canDelete.Result)
-            {
-                await _unitOfWork.References.Remove(entity);
-                return Ok(entity);
-            }
+            var response = await service.RemoveReference(id);
+            if (response.Result)
+                return Ok(response.Content);
             else
-            {
-                return BadRequest(canDelete.Errors[0]);
-            }
+                return NotFound(response);
         }
 
-        [Route("Formats")]
-        [HttpGet]
+        [HttpGet("ReferenceFormats")]
         public async Task<IActionResult> GetReferenceFormats()
         {
-            var entities = await _unitOfWork.ReferenceFormats.GetAll();
-            return Ok(entities);
+            var formats = await service.GetReferenceFormats();
+            return Ok(formats);
         }
 
-        [Route("Formats/{id:guid}")]
-        [HttpGet]
+        [HttpGet("ReferenceFormats/{id:guid}")]
         public async Task<IActionResult> GetReferenceFormatById(Guid id)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState.ValidationState);
-            var entities = await _unitOfWork.ReferenceFormats.Get(id);
-            return Ok(entities);
+            var format = await service.GetReferenceFormatById(id);
+            if (format is not null)
+                return Ok(format);
+            else
+                return NotFound();
         }
-
     }
 }

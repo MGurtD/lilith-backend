@@ -6,58 +6,57 @@ namespace Api.Controllers.Auth
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UserController(IUnitOfWork unitOfWork) : ControllerBase
+    public class UserController(IUserService service) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> Create(User request)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.ValidationState);
 
-            var exists = unitOfWork.Users.Find(r => request.Username == r.Username).Count() > 0;
-            if (!exists)
+            var response = await service.CreateUser(request);
+            if (response.Result)
             {
-                await unitOfWork.Users.Add(request);
-                return Ok(request);
+                var location = Url.Action(nameof(GetById), new { id = request.Id })
+                    ?? $"/{request.Id}";
+                return Created(location, response.Content);
             }
             else
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return Conflict(response);
             }
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var users = await unitOfWork.Users.GetAll();
-            return Ok(users.OrderBy(e => e.Username));
+            var users = await service.GetAllUsers();
+            return Ok(users);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var user = await unitOfWork.Users.Get(id);
+            var user = await service.GetUserById(id);
             if (user is not null)
-            {
                 return Ok(user);
-            }
             else
-            {
                 return NotFound();
-            }
         }
 
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, User request)
         {
-            if (id != request.Id)
-            {
-                return BadRequest();
-            }
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
+            if (id != request.Id)
+                return BadRequest();
 
-            await unitOfWork.Users.Update(request);
-            return Ok(request);
+            var response = await service.UpdateUser(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
     }
 }
