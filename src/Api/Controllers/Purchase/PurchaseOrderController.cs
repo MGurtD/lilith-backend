@@ -7,7 +7,7 @@ namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class PurchaseOrderController(IPurchaseOrderService service, IUnitOfWork unitOfWork, ILocalizationService localizationService) : ControllerBase
+    public class PurchaseOrderController(IPurchaseOrderService service, ILocalizationService localizationService) : ControllerBase
     {
         [HttpGet]
         public async Task<IActionResult> Get(DateTime startTime, DateTime endTime, Guid? supplierId, Guid? statusId)
@@ -28,7 +28,7 @@ namespace Api.Controllers.Purchase
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var receipt = await unitOfWork.PurchaseOrders.Get(id);
+            var receipt = await service.GetById(id);
 
             if (receipt == null) return BadRequest();
             else return Ok(receipt);
@@ -66,7 +66,7 @@ namespace Api.Controllers.Purchase
         public async Task<IActionResult> Update(Guid id, [FromBody] PurchaseOrder request)
         {
             if (id != request.Id) return BadRequest();
-            var order = unitOfWork.PurchaseOrders.Find(r => r.Id == request.Id).FirstOrDefault();
+            var order = await service.GetById(request.Id);
             if (order == null) return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("PurchaseOrderNotFound", request.Id)));
             var response = await service.Update(request);
 
@@ -143,7 +143,7 @@ namespace Api.Controllers.Purchase
         public async Task<IActionResult> GetReceptions(Guid id)
         {
             if (id == Guid.Empty) return BadRequest();
-            var order = await unitOfWork.PurchaseOrders.Get(id);
+            var order = await service.GetById(id);
             if (order == null) return NotFound();
 
             var receptions = await service.GetReceptions(id);

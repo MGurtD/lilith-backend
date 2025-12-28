@@ -7,13 +7,12 @@ namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class DeliveryNoteController(IDeliveryNoteService service, IDeliveryNoteReportService reportService, IUnitOfWork unitOfWork) : ControllerBase
+    public class DeliveryNoteController(IDeliveryNoteService service, IDeliveryNoteReportService reportService, ILifecycleService lifecycleService) : ControllerBase
     {
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var receipt = await unitOfWork.DeliveryNotes.Get(id);
-
+            var receipt = await service.GetById(id);
             if (receipt == null) return BadRequest();
             else return Ok(receipt);
         }
@@ -73,11 +72,14 @@ namespace Api.Controllers.Purchase
         public async Task<IActionResult> Update(Guid id, [FromBody] DeliveryNote request)
         {
             if (id != request.Id) return BadRequest();
-            var deliveryNote = unitOfWork.DeliveryNotes.Find(r => r.Id == request.Id).FirstOrDefault();
-            if (deliveryNote == null) return NotFound(new GenericResponse(false, new List<string>() { $"Albará amb ID {request.Id} inexistent" }));
+            
+            var deliveryNote = await service.GetById(request.Id);
+            if (deliveryNote == null) 
+                return NotFound(new GenericResponse(false, $"Albará amb ID {request.Id} inexistent"));
 
-            var deliveredStatus = unitOfWork.Lifecycles.StatusRepository.Find(s => s.Name == "Entregat").FirstOrDefault();
-            if (deliveredStatus == null) return NotFound(new GenericResponse(false, $"Estat 'Entregat' inexistent" ));
+            var deliveredStatus = await lifecycleService.GetStatusByName(StatusConstants.Lifecycles.DeliveryNote, StatusConstants.Statuses.Entregat);
+            if (deliveredStatus == null) 
+                return NotFound(new GenericResponse(false, $"Estat '{StatusConstants.Statuses.Entregat}' inexistent" ));
 
             var warehouseResponse = new GenericResponse(true);
             if (deliveryNote.StatusId != deliveredStatus.Id && request.StatusId == deliveredStatus.Id)

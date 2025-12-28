@@ -53,6 +53,14 @@ public static class ApplicationServicesSetup
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IUserFilterService, UserFilterService>();
+        services.AddScoped<ICustomerService, CustomerService>();
+        services.AddScoped<ICustomerTypeService, CustomerTypeService>();
+        services.AddScoped<IIncomeService, IncomeService>();
+        services.AddScoped<ISupplierService, SupplierService>();
+        services.AddScoped<ISupplierTypeService, SupplierTypeService>();
+        services.AddScoped<IExpenseTypeService, ExpenseTypeService>();
+        services.AddScoped<IExpenseService, ExpenseService>();
+        services.AddScoped<IInvoiceSerieService, InvoiceSerieService>();
         
         services.AddHostedService<BudgetBackgroundService>();
 

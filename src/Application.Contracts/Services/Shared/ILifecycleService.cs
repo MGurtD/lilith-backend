@@ -16,6 +16,7 @@ public interface ILifecycleService
 
     // Status operations
     Task<GenericResponse> CreateStatus(Status status);
+    Task<Status?> GetStatusByName(string lifecycleName, string name);
     Task<GenericResponse> UpdateStatus(Status status);
     Task<GenericResponse> RemoveStatus(Guid id);
 

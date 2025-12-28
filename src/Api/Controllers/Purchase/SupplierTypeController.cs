@@ -6,44 +6,40 @@ namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class SupplierTypeController(IUnitOfWork unitOfWork) : ControllerBase
+    public class SupplierTypeController(ISupplierTypeService service) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> Create(SupplierType request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = unitOfWork.SupplierTypes.Find(r => request.Name == r.Name).Any();
-            if (!exists)
+            var response = await service.CreateSupplierType(request);
+            if (response.Result)
             {
-                await unitOfWork.SupplierTypes.Add(request);
-                return Ok(request);
+                var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
+                return Created(location, response.Content);
             }
             else
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return Conflict(response);
             }
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await unitOfWork.SupplierTypes.GetAll();
-            return Ok(entities.OrderBy(e => e.Name));
+            var entities = await service.GetAllSupplierTypes();
+            return Ok(entities);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await unitOfWork.SupplierTypes.Get(id);
+            var entity = await service.GetSupplierTypeById(id);
             if (entity is not null)
-            {
                 return Ok(entity);
-            }
             else
-            {
                 return NotFound();
-            }
         }
 
         [HttpPut("{id:guid}")]
@@ -54,12 +50,11 @@ namespace Api.Controllers.Purchase
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await unitOfWork.SupplierTypes.Exists(request.Id);
-            if (!exists)
-                return NotFound();
-
-            await unitOfWork.SupplierTypes.Update(request);
-            return Ok(request);
+            var response = await service.UpdateSupplierType(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         [HttpDelete("{id:guid}")]
@@ -68,12 +63,11 @@ namespace Api.Controllers.Purchase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = unitOfWork.SupplierTypes.Find(e => e.Id == id).FirstOrDefault();
-            if (entity is null)
-                return NotFound();
-
-            await unitOfWork.SupplierTypes.Remove(entity);
-            return Ok(entity);
+            var response = await service.RemoveSupplierType(id);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
     }
 }

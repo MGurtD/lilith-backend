@@ -5,6 +5,7 @@ namespace Application.Contracts
 {
     public interface IDeliveryNoteService
     {
+        Task<DeliveryNote?> GetById(Guid id);
         IEnumerable<DeliveryNote> GetBetweenDates(DateTime startDate, DateTime endDate);
         IEnumerable<DeliveryNote> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid statusId);
         IEnumerable<DeliveryNote> GetByStatus(Guid statusId);

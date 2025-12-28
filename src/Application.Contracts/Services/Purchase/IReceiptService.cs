@@ -1,10 +1,12 @@
-using Application.Contracts;
 using Domain.Entities.Purchase;
 
 namespace Application.Contracts;
 
 public interface IReceiptService
 {
+    Task<Receipt?> GetById(Guid id);
+    Task<IEnumerable<Receipt>> GetReceiptsByReferenceId(Guid referenceId);
+    
     IEnumerable<Receipt> GetBetweenDates(DateTime startDate, DateTime endDate);
     IEnumerable<Receipt> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid statusId);
     IEnumerable<Receipt> GetBetweenDatesAndSupplier(DateTime startDate, DateTime endDate, Guid customerId);

@@ -6,53 +6,32 @@ namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ExpenseController(IUnitOfWork unitOfWork) : ControllerBase
+    public class ExpenseController(IExpenseService service) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> Create(Expenses request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            await unitOfWork.Expenses.Add(request);
-            //TODO add control to create recurring expenses
-            if (request.Recurring)
-            {
-                request.RelatedExpenseId = request.Id.ToString();
-                DateTime paymentDay;
-                while (request.PaymentDate < request.EndDate)
-                {
-                    paymentDay = request.PaymentDate;
-                    paymentDay = paymentDay.AddMonths(request.Frecuency);
-                    if (request.PaymentDate.Day != request.PaymentDay)
-                    {
-                        paymentDay = paymentDay.AddDays(request.PaymentDay - request.PaymentDate.Day);
-                    }
-
-                    //TODO generar un nou ID, i asociar l'ID al related
-                    Guid g = Guid.NewGuid();
-                    request.Id = g;
-                    request.PaymentDate = paymentDay;
-                    await unitOfWork.Expenses.Add(request);
-                }
-            }
-            return Ok(request);
+            var response = await service.Create(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return BadRequest(response);
         }
 
         [HttpGet]
         public IActionResult GetBetweenDatesAndType(DateTime startTime, DateTime endTime, Guid? expenseTypeId)
         {
-            var entities = unitOfWork.Expenses.Find(e => e.PaymentDate >= startTime && e.PaymentDate <= endTime);
-            if (expenseTypeId.HasValue) {
-                entities = entities.Where(e => e.ExpenseTypeId == expenseTypeId.Value);
-            }
-            return Ok(entities.OrderBy(e => e.PaymentDate));
+            var entities = service.GetBetweenDatesAndType(startTime, endTime, expenseTypeId);
+            return Ok(entities);
         }
 
         [Route("ExpenseType/{id:guid}")]
         [HttpGet]        
         public IActionResult GetByType(Guid id)
         {
-            var expenses =  unitOfWork.Expenses.Find(p => p.ExpenseTypeId == id);
+            var expenses = service.GetByType(id);
             return Ok(expenses);
         }
 
@@ -60,28 +39,24 @@ namespace Api.Controllers.Purchase
         [Route("Consolidated")]
         public IActionResult GetAllConsolidation(DateTime startTime, DateTime endTime, string? type = "", string? typeDetail = "")
         {
-            IEnumerable<ConsolidatedExpense> entities = Enumerable.Empty<ConsolidatedExpense>();
+            var entities = service.GetConsolidatedBetweenDates(startTime, endTime);
+            
             if (!string.IsNullOrWhiteSpace(type) && !string.IsNullOrWhiteSpace(typeDetail))
-                entities = unitOfWork.ConsolidatedExpenses.Find(c => c.PaymentDate >= startTime && c.PaymentDate <= endTime && c.Type == type && c.TypeDetail == typeDetail);
+                entities = entities.Where(c => c.Type == type && c.TypeDetail == typeDetail);
             else if (!string.IsNullOrWhiteSpace(type))
-                entities = unitOfWork.ConsolidatedExpenses.Find(c => c.PaymentDate >= startTime && c.PaymentDate <= endTime && c.Type == type);
-            else 
-                entities = unitOfWork.ConsolidatedExpenses.Find(c => c.PaymentDate >= startTime && c.PaymentDate <= endTime);            
+                entities = entities.Where(c => c.Type == type);
+            
             return Ok(entities);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await unitOfWork.Expenses.Get(id);
+            var entity = await service.GetExpenseById(id);
             if (entity is not null)
-            {
                 return Ok(entity);
-            }
             else
-            {
                 return NotFound();
-            }
         }
 
         [HttpPut("{id:guid}")]
@@ -92,12 +67,11 @@ namespace Api.Controllers.Purchase
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await unitOfWork.Expenses.Exists(request.Id);
-            if (!exists)
-                return NotFound();
-
-            await unitOfWork.Expenses.Update(request);
-            return Ok(request);
+            var response = await service.UpdateExpense(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         [HttpDelete("{id:guid}")]
@@ -106,26 +80,11 @@ namespace Api.Controllers.Purchase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = unitOfWork.Expenses.Find(e => e.Id == id).FirstOrDefault();
-            if (entity is null)
-                return NotFound();
-
-            if (entity.Recurring)
-            {
-                var parentId = string.IsNullOrEmpty(entity.RelatedExpenseId) ? entity.Id : Guid.Parse(entity.RelatedExpenseId);
-                var relatedParent = unitOfWork.Expenses.Find(e => e.Id == parentId).FirstOrDefault();
-                if (relatedParent is not null)
-                    await unitOfWork.Expenses.Remove(relatedParent);
-
-                var relatedExpenses = unitOfWork.Expenses.Find(e => e.RelatedExpenseId == parentId.ToString());
-                await unitOfWork.Expenses.RemoveRange(relatedExpenses);
-            }
+            var response = await service.RemoveExpense(id);
+            if (response.Result)
+                return Ok(response.Content);
             else
-            {
-                await unitOfWork.Expenses.Remove(entity);
-            }
-
-            return Ok(entity);
+                return NotFound(response);
         }
 
     }

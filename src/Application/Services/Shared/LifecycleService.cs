@@ -76,6 +76,11 @@ public class LifecycleService(IUnitOfWork unitOfWork, ILocalizationService local
         return new GenericResponse(true, status);
     }
 
+    public async Task<Status?> GetStatusByName(string lifecycleName, string name)
+    {
+        return await unitOfWork.Lifecycles.GetStatusByName(lifecycleName, name);
+    }
+
     public async Task<GenericResponse> UpdateStatus(Status status)
     {
         var exists = unitOfWork.Lifecycles.StatusRepository.Find(s => s.Id == status.Id).FirstOrDefault();

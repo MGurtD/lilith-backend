@@ -124,14 +124,14 @@ namespace Api.Controllers.Shared
                 return NotFound(response);
         }
 
-        [HttpGet("ReferenceFormats")]
+        [HttpGet("Formats")]
         public async Task<IActionResult> GetReferenceFormats()
         {
             var formats = await service.GetReferenceFormats();
             return Ok(formats);
         }
 
-        [HttpGet("ReferenceFormats/{id:guid}")]
+        [HttpGet("Formats/{id:guid}")]
         public async Task<IActionResult> GetReferenceFormatById(Guid id)
         {
             var format = await service.GetReferenceFormatById(id);

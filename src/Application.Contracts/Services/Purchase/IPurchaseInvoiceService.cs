@@ -1,4 +1,5 @@
 using Application.Contracts;
+using Domain.Entities;
 using Domain.Entities.Purchase;
 
 namespace Application.Contracts

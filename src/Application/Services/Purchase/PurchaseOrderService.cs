@@ -13,6 +13,11 @@ namespace Application.Services.Purchase
         private readonly string LifecycleName = StatusConstants.Lifecycles.PurchaseOrder;
         private readonly string LifecycleDetailsName = StatusConstants.Lifecycles.PurchaseOrderDetail;
 
+        public async Task<PurchaseOrder?> GetById(Guid id)
+        {
+            return await _unitOfWork.PurchaseOrders.Get(id);
+        }
+
         public async Task<Application.Contracts.PurchaseOrderReportResponse?> GetDtoForReportingById(Guid id)
         {
             var order = await _unitOfWork.PurchaseOrders.Get(id);
@@ -116,21 +121,25 @@ namespace Application.Services.Purchase
                     Price = 0
                 }).ToList();
 
+            var detailToOrderMap = supplierOrders
+                .SelectMany(o => o.Details.Select(d => new { DetailId = d.Id, OrderNumber = o.Number }))
+                .ToDictionary(x => x.DetailId, x => x.OrderNumber);
+
             // Afegir detalls a cada grup
             foreach (var group in groupedDetails)
             {
-                group.Details = supplierOrders.SelectMany(o => o.Details)
+                group.Details = [.. supplierOrders.SelectMany(o => o.Details)
                     .Where(d => d.ReferenceId == group.Reference.Id && d.Description == group.Description)
                     .Select(d => new ReceiptOrderDetail()
                     {
                         Id = d.Id,
-                        OrderNumber = supplierOrders.FirstOrDefault(o => o.Details.Any(d => d.Id == d.Id))!.Number,
+                        OrderNumber = detailToOrderMap[d.Id],
                         ExpectedReceiptDate = d.ExpectedReceiptDate,
                         WorkOrder = workorderPhases.FirstOrDefault(w => w.Id == d.WorkOrderPhaseId) != null ? workorderPhases.FirstOrDefault(w => w.Id == d.WorkOrderPhaseId)!.WorkOrder!.Code : string.Empty,
                         WorkOrderPhase = workorderPhases.FirstOrDefault(w => w.Id == d.WorkOrderPhaseId) != null ? workorderPhases.FirstOrDefault(w => w.Id == d.WorkOrderPhaseId)!.Description : string.Empty,
                         Quantity = d.Quantity,
                         ReceivedQuantity = d.ReceivedQuantity
-                    }).ToList();
+                    })];
             }
 
             return groupedDetails;

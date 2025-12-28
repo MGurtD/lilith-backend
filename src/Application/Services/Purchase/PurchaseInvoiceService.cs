@@ -1,4 +1,5 @@
 using Application.Contracts;
+using Domain.Entities;
 using Domain.Entities.Purchase;
 
 namespace Application.Services.Purchase
@@ -20,6 +21,11 @@ namespace Application.Services.Purchase
         {
             var invoice = await _unitOfWork.PurchaseInvoices.Get(id);
             return invoice;
+        }
+
+        public async Task<PaymentMethod?> GetPaymentMethodById(Guid id)
+        {
+            return await _unitOfWork.PaymentMethods.Get(id);
         }
 
         public IEnumerable<PurchaseInvoice> GetBetweenDates(DateTime startDate, DateTime endDate)

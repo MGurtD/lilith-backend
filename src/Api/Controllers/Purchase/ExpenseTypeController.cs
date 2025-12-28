@@ -6,44 +6,40 @@ namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ExpenseTypeController(IUnitOfWork unitOfWork) : ControllerBase
+    public class ExpenseTypeController(IExpenseTypeService service) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> Create(ExpenseType request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = unitOfWork.ExpenseTypes.Find(r => request.Name == r.Name).Any();
-            if (!exists)
+            var response = await service.CreateExpenseType(request);
+            if (response.Result)
             {
-                await unitOfWork.ExpenseTypes.Add(request);
-                return Ok(request);
+                var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
+                return Created(location, response.Content);
             }
             else
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return Conflict(response);
             }
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await unitOfWork.ExpenseTypes.GetAll();
-            return Ok(entities.OrderBy(e => e.Name));
+            var entities = await service.GetAllExpenseTypes();
+            return Ok(entities);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await unitOfWork.ExpenseTypes.Get(id);
+            var entity = await service.GetExpenseTypeById(id);
             if (entity is not null)
-            {
                 return Ok(entity);
-            }
             else
-            {
                 return NotFound();
-            }
         }
 
         [HttpPut("{id:guid}")]
@@ -54,12 +50,11 @@ namespace Api.Controllers.Purchase
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await unitOfWork.ExpenseTypes.Exists(request.Id);
-            if (!exists)
-                return NotFound();
-
-            await unitOfWork.ExpenseTypes.Update(request);
-            return Ok(request);
+            var response = await service.UpdateExpenseType(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         [HttpDelete("{id:guid}")]
@@ -68,12 +63,11 @@ namespace Api.Controllers.Purchase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = unitOfWork.ExpenseTypes.Find(e => e.Id == id).FirstOrDefault();
-            if (entity is null)
-                return NotFound();
-
-            await unitOfWork.ExpenseTypes.Remove(entity);
-            return Ok(entity);
+            var response = await service.RemoveExpenseType(id);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
     }
 }
