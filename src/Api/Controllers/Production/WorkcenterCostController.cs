@@ -1,4 +1,4 @@
-﻿using Application.Contracts;
+using Application.Contracts;
 using Domain.Entities.Production;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,56 +6,52 @@ namespace Api.Controllers.Production
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class WorkcenterCostController(IUnitOfWork unitOfWork, ILocalizationService localizationService) : ControllerBase
+    public class WorkcenterCostController(IWorkcenterCostService service) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> Create(WorkcenterCost request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = unitOfWork.WorkcenterCosts.Find(r => request.MachineStatusId == r.MachineStatusId && request.WorkcenterId == r.WorkcenterId).Any();
-            if (!exists)
+            var response = await service.Create(request);
+            if (response.Result)
             {
-                await unitOfWork.WorkcenterCosts.Add(request);
                 var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
-                return Created(location, request);
+                return Created(location, response.Content);
             }
             else
             {
-                return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("WorkcenterCostAlreadyExists")));
+                return Conflict(response);
             }
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await unitOfWork.WorkcenterCosts.GetAll();
-
+            var entities = await service.GetAll();
             return Ok(entities);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await unitOfWork.WorkcenterCosts.Get(id);
+            var entity = await service.GetById(id);
             if (entity is not null)
-            {
                 return Ok(entity);
-            }
             else
-            {
                 return NotFound();
-            }
         }
+
         [HttpGet("workcenter/{workcenterId:guid}/status/{statusId:guid}")]
         public async Task<IActionResult> GetByWorkcenterAndStatusId(Guid workcenterId, Guid statusId)
         {
-            var workcentercost = (await unitOfWork.WorkcenterCosts.FindAsync(r => r.WorkcenterId == workcenterId && r.MachineStatusId == statusId)).FirstOrDefault();
-            if(workcentercost == null)
-            {
+            var entity = await service.GetByWorkcenterAndStatusId(workcenterId, statusId);
+            if (entity is not null)
+                return Ok(entity);
+            else
                 return NotFound();
-            }
-            return Ok(workcentercost);
         }
+
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid Id, WorkcenterCost request)
         {
@@ -64,12 +60,11 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await unitOfWork.WorkcenterCosts.Exists(request.Id);
-            if (!exists)
-                return NotFound();
-
-            await unitOfWork.WorkcenterCosts.Update(request);
-            return Ok(request);
+            var response = await service.Update(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         [HttpDelete("{id:guid}")]
@@ -78,13 +73,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = unitOfWork.WorkcenterCosts.Find(e => e.Id == id).FirstOrDefault();
-            if (entity is null)
-                return NotFound();
-
-            await unitOfWork.WorkcenterCosts.Remove(entity);
-            return Ok(entity);
+            var response = await service.Remove(id);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
-
     }
 }

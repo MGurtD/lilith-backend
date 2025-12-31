@@ -4,30 +4,21 @@ using Domain.Entities;
 
 namespace Application.Services.System
 {
-    public class ExerciseService : IExerciseService
+    public class ExerciseService(IUnitOfWork unitOfWork, ILocalizationService localizationService) : IExerciseService
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ILocalizationService _localizationService;
-
-        public ExerciseService(IUnitOfWork unitOfWork, ILocalizationService localizationService)
-        {
-            _unitOfWork = unitOfWork;
-            _localizationService = localizationService;
-        }
-
         public Exercise? GetExerciceByDate(DateTime dateTime)
         {
-            var exercice = _unitOfWork.Exercices.Find(e => dateTime >= e.StartDate && dateTime <= e.EndDate).FirstOrDefault();
+            var exercice = unitOfWork.Exercices.Find(e => dateTime >= e.StartDate && dateTime <= e.EndDate).FirstOrDefault();
             return exercice;
         }
 
         public async Task<GenericResponse> GetNextCounter(Guid exerciseId, string counterName)
         {
-            var exercise = await _unitOfWork.Exercices.Get(exerciseId);
+            var exercise = await unitOfWork.Exercices.Get(exerciseId);
             var counter = "";
             if (exercise == null)
             {
-                return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseNotFound"));
+                return new GenericResponse(false, localizationService.GetLocalizedString("ExerciseNotFound"));
             }
 
             var prefix = exercise.Name[^2..];
@@ -75,14 +66,66 @@ namespace Application.Services.System
                     exercise.WorkOrderCounter = newcounter.ToString().Substring(newcounter.ToString().Length - 3);
                     break;
                 default:
-                    return new GenericResponse(false, _localizationService.GetLocalizedString("ExerciseCounterNotFound", counterName));
+                    return new GenericResponse(false, localizationService.GetLocalizedString("ExerciseCounterNotFound", counterName));
             }
 
-            await _unitOfWork.Exercices.Update(exercise);
+            await unitOfWork.Exercices.Update(exercise);
             return new GenericResponse(true, newcounter);
+        }
+
+        // CRUD operations
+        public async Task<Exercise?> GetById(Guid id)
+        {
+            return await unitOfWork.Exercices.Get(id);
+        }
+
+        public async Task<IEnumerable<Exercise>> GetAll()
+        {
+            var exercises = await unitOfWork.Exercices.GetAll();
+            return exercises.OrderBy(e => e.Name);
+        }
+
+        public async Task<GenericResponse> Create(Exercise exercise)
+        {
+            var exists = unitOfWork.Exercices.Find(e => e.Name == exercise.Name).Any();
+            if (exists)
+            {
+                return new GenericResponse(false,
+                    localizationService.GetLocalizedString("ExerciseAlreadyExists", exercise.Name));
+            }
+
+            await unitOfWork.Exercices.Add(exercise);
+            return new GenericResponse(true, exercise);
+        }
+
+        public async Task<GenericResponse> Update(Exercise exercise)
+        {
+            var exists = await unitOfWork.Exercices.Exists(exercise.Id);
+            if (!exists)
+            {
+                return new GenericResponse(false,
+                    localizationService.GetLocalizedString("ExerciseNotFound"));
+            }
+
+            await unitOfWork.Exercices.Update(exercise);
+            return new GenericResponse(true, exercise);
+        }
+
+        public async Task<GenericResponse> Remove(Guid id)
+        {
+            var exercise = await unitOfWork.Exercices.Get(id);
+            if (exercise == null)
+            {
+                return new GenericResponse(false,
+                    localizationService.GetLocalizedString("ExerciseNotFound"));
+            }
+
+            await unitOfWork.Exercices.Remove(exercise);
+            return new GenericResponse(true, exercise);
         }
     }
 }
+
 
 
 

@@ -54,6 +54,10 @@ namespace Application.Contracts
 
             // Receipt statuses
             public const string Recepcionat = "Recepcionat";
+
+            // Verifactu statuses
+            public const string Ok = "Ok";
+            public const string Error = "Error";
         }
 
         // Site Names (Catalan - as stored in database)

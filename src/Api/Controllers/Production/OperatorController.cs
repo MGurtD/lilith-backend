@@ -6,37 +6,35 @@ namespace Api.Controllers.Production
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class OperatorController(IUnitOfWork unitOfWork, ILocalizationService localizationService) : ControllerBase
+    public class OperatorController(IOperatorService service) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> Create(Operator request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = unitOfWork.Operators.Find(r => request.Code == r.Code).Any();
-            if (!exists)
+            var response = await service.Create(request);
+            if (response.Result)
             {
-                await unitOfWork.Operators.Add(request);
                 var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
-                return Created(location, request);
+                return Created(location, response.Content);
             }
             else
             {
-                return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("OperatorAlreadyExists", request.Name)));
+                return Conflict(response);
             }
         }
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await unitOfWork.Operators.GetAll();
-
-            return Ok(entities.OrderBy(w => w.Name));
+            var entities = await service.GetAll();
+            return Ok(entities);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await unitOfWork.Operators.Get(id);
+            var entity = await service.GetById(id);
             if (entity is not null)
             {
                 return Ok(entity);
@@ -54,12 +52,11 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await unitOfWork.Operators.Exists(request.Id);
-            if (!exists)
-                return NotFound();
-
-            await unitOfWork.Operators.Update(request);
-            return Ok(request);
+            var response = await service.Update(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         [HttpDelete("{id:guid}")]
@@ -68,12 +65,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = unitOfWork.Operators.Find(e => e.Id == id).FirstOrDefault();
-            if (entity is null)
-                return NotFound();
-
-            await unitOfWork.Operators.Remove(entity);
-            return Ok(entity);
+            var response = await service.Remove(id);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
     }
 }

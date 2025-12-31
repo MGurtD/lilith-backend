@@ -2,6 +2,8 @@ using System.Text;
 using Application.Contracts;
 using QRCoder;
 
+namespace Application.Services.System;
+
 public class QrCodeService : IQrCodeService
 {
     public string GenerateSvgBase64(string content, int pixelsPerModule = 5)

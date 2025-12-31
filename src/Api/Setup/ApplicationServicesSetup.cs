@@ -62,6 +62,31 @@ public static class ApplicationServicesSetup
         services.AddScoped<IExpenseService, ExpenseService>();
         services.AddScoped<IInvoiceSerieService, InvoiceSerieService>();
         
+        // Production services - Group A Simple CRUD
+        services.AddScoped<ISiteService, SiteService>();
+        services.AddScoped<IAreaService, AreaService>();
+        services.AddScoped<IWorkcenterTypeService, WorkcenterTypeService>();
+        services.AddScoped<IOperatorTypeService, OperatorTypeService>();
+        services.AddScoped<IMachineStatusService, MachineStatusService>();
+        services.AddScoped<IShiftService, ShiftService>();
+        services.AddScoped<IShiftDetailService, ShiftDetailService>();
+        services.AddScoped<IWorkcenterCostService, WorkcenterCostService>();
+
+        // Production services - Group B Extend existing
+        services.AddScoped<IWorkMasterService, WorkMasterService>();
+        services.AddScoped<IProductionPartService, ProductionPartService>();
+        
+        // Production services - Group C Specialized
+        services.AddScoped<IWorkcenterService, WorkcenterService>();
+        services.AddScoped<IOperatorService, OperatorService>();
+        services.AddScoped<IProductionCostService, ProductionCostService>();
+        services.AddScoped<IWorkMasterPhaseService, WorkMasterPhaseService>();
+        services.AddScoped<IWorkOrderPhaseService, WorkOrderPhaseService>();
+        services.AddScoped<IDetailedWorkOrderService, DetailedWorkOrderService>();
+        
+        // Warehouse services
+        services.AddScoped<IWarehouseService, WarehouseService>();
+        
         services.AddHostedService<BudgetBackgroundService>();
 
         return services;

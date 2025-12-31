@@ -7,7 +7,7 @@ namespace Api.Controllers.Production
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class WorkOrderController(IUnitOfWork unitOfWork, IWorkOrderService workOrderService, IWorkOrderReportService reportService, ILocalizationService localizationService) : ControllerBase
+    public class WorkOrderController(IWorkOrderService workOrderService, IWorkOrderPhaseService phaseService, IDetailedWorkOrderService detailedWorkOrderService, IWorkOrderReportService reportService) : ControllerBase
     {
         [HttpPost("CreateFromWorkMaster")]
         public async Task<IActionResult> CreateFromWorkMaster([FromBody] CreateWorkOrderDto request)
@@ -22,19 +22,18 @@ namespace Api.Controllers.Production
         [HttpPost]
         public async Task<IActionResult> Create(WorkOrder request)
         {
-            // Validacions
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var existsReference = await unitOfWork.References.Exists(request.ReferenceId);
-            if (!existsReference) return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("ReferenceNotFound")));
-
-            var exists = unitOfWork.WorkOrders.Find(w => w.Id == request.Id).Any();
-            if (exists) return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderAlreadyExists")));
-
-            // Creació
-            await unitOfWork.WorkOrders.Add(request);
-            var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
-            return Created(location, request);
+            var response = await workOrderService.Create(request);
+            if (response.Result)
+            {
+                var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
+                return Created(location, response.Content);
+            }
+            else
+            {
+                return Conflict(response);
+            }
         }
 
         [HttpGet]
@@ -112,7 +111,7 @@ namespace Api.Controllers.Production
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await unitOfWork.WorkOrders.Get(id);
+            var entity = await workOrderService.GetById(id);
             if (entity is not null)
                 return Ok(entity);
             else
@@ -126,10 +125,6 @@ namespace Api.Controllers.Production
                 return BadRequest(ModelState.ValidationState);
             if (Id != request.Id)
                 return BadRequest();
-
-            var exists = await unitOfWork.WorkOrders.Exists(request.Id);
-            if (!exists)
-                return NotFound();
 
             await workOrderService.Update(request);
             return Ok(request);
@@ -155,10 +150,11 @@ namespace Api.Controllers.Production
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetWorkOrderPhaseById(Guid id)
         {
-            var WorkOrderPhase = await unitOfWork.WorkOrders.Phases.Get(id);
-            if (WorkOrderPhase == null) return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderPhaseNotFound")));
-
-            return Ok(WorkOrderPhase);
+            var phase = await phaseService.GetById(id);
+            if (phase is not null)
+                return Ok(phase);
+            else
+                return NotFound();
         }        
 
         [HttpGet("Phase/External")]
@@ -167,38 +163,12 @@ namespace Api.Controllers.Production
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetExternalWorkOrderPhase(DateTime startTime, DateTime endTime)
         {
-            var status = await unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.WorkOrder, StatusConstants.Statuses.Production);
-            if (status == null)
-            {
-                return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderStatusNotFound")));
-            }
+            var phases = await phaseService.GetExternalPhases(startTime, endTime);
+            
+            if (!phases.Any())
+                return NotFound();
 
-            // Asíncron per trobar les ordres de treball
-            var workOrders = await unitOfWork.WorkOrders.FindAsync(w =>
-                                w.StatusId == status.Id &&
-                                w.PlannedDate >= startTime &&
-                                w.PlannedDate < endTime);
-
-            // Asíncron per trobar les fases externes
-            var workOrderPhases = await unitOfWork.WorkOrders.Phases.FindAsync(p =>
-                                p.IsExternalWork == true &&
-                                p.ServiceReferenceId != null &&
-                                p.PurchaseOrderId == null);
-
-            // Uneix les fases amb les ordres de treball
-            var workOrderPhaseJoin = from w in workOrders
-                                     join p in workOrderPhases
-                                     on w.Id equals p.WorkOrderId
-                                     select new
-                                     {
-                                         WorkOrder = w,
-                                         Phase = p
-                                     };
-
-            if (workOrderPhaseJoin == null || !workOrderPhaseJoin.Any())
-                return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderPhaseNotFound")));
-
-            return Ok(workOrderPhaseJoin);
+            return Ok(phases);
         }
 
 
@@ -208,18 +178,18 @@ namespace Api.Controllers.Production
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreatePhase(WorkOrderPhase request)
         {
-            // Validacions
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = unitOfWork.WorkOrders.Phases.Find(w => w.Id == request.Id).Any();
-            if (exists) return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderPhaseAlreadyExists")));
-
-            var WorkOrder = await unitOfWork.WorkOrders.Get(request.WorkOrderId);
-            if (WorkOrder is null) return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderNotFound", request.WorkOrderId)));
-
-            // Creació
-            await unitOfWork.WorkOrders.Phases.Add(request);
-            return Ok(new GenericResponse(true, request));
+            var response = await phaseService.Create(request);
+            if (response.Result)
+            {
+                var location = Url.Action(nameof(GetWorkOrderPhaseById), new { id = request.Id }) ?? $"/{request.Id}";
+                return Created(location, response.Content);
+            }
+            else
+            {
+                return Conflict(response);
+            }
         }
 
         [HttpPut("Phase/{id:guid}")]
@@ -233,12 +203,11 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await unitOfWork.WorkOrders.Phases.Exists(request.Id);
-            if (!exists)
-                return NotFound();
-
-            await unitOfWork.WorkOrders.Phases.Update(request);
-            return Ok(request);
+            var response = await phaseService.Update(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         [HttpDelete("Phase/{id:guid}")]
@@ -250,12 +219,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = unitOfWork.WorkOrders.Phases.Find(e => e.Id == id).FirstOrDefault();
-            if (entity is null)
-                return NotFound();
-
-            await unitOfWork.WorkOrders.Phases.Remove(entity);
-            return Ok(entity);
+            var response = await phaseService.Remove(id);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
         #endregion
 
@@ -266,10 +234,11 @@ namespace Api.Controllers.Production
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetWorkOrderPhaseDetailById(Guid id)
         {
-            var entities = await unitOfWork.WorkOrders.Phases.Details.Get(id);
-            if (entities == null) return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderPhaseDetailNotFound")));
-
-            return Ok(entities);
+            var detail = await phaseService.GetDetailById(id);
+            if (detail is not null)
+                return Ok(detail);
+            else
+                return NotFound();
         }
 
         [HttpPost("Phase/Detail")]
@@ -278,15 +247,18 @@ namespace Api.Controllers.Production
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreatePhaseDetail(WorkOrderPhaseDetail request)
         {
-            // Validacions
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = unitOfWork.WorkOrders.Phases.Details.Find(w => w.Id == request.Id).Any();
-            if (exists) return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderPhaseDetailAlreadyExists")));
-
-            // Creació
-            await unitOfWork.WorkOrders.Phases.Details.Add(request);
-            return Ok(new GenericResponse(true, request));
+            var response = await phaseService.CreateDetail(request);
+            if (response.Result)
+            {
+                var location = Url.Action(nameof(GetWorkOrderPhaseDetailById), new { id = request.Id }) ?? $"/{request.Id}";
+                return Created(location, response.Content);
+            }
+            else
+            {
+                return Conflict(response);
+            }
         }
 
         [HttpPut("Phase/Detail/{id:guid}")]
@@ -300,12 +272,11 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await unitOfWork.WorkOrders.Phases.Details.Exists(request.Id);
-            if (!exists)
-                return NotFound();
-
-            await unitOfWork.WorkOrders.Phases.Details.Update(request);
-            return Ok(request);
+            var response = await phaseService.UpdateDetail(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         [HttpDelete("Phase/Detail/{id:guid}")]
@@ -317,12 +288,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = unitOfWork.WorkOrders.Phases.Details.Find(e => e.Id == id).FirstOrDefault();
-            if (entity is null)
-                return NotFound();
-
-            await unitOfWork.WorkOrders.Phases.Details.Remove(entity);
-            return Ok(entity);
+            var response = await phaseService.RemoveDetail(id);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
         #endregion
 
@@ -333,10 +303,11 @@ namespace Api.Controllers.Production
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetWorkOrderPhaseBillOfMaterialsItemById(Guid id)
         {
-            var entities = await unitOfWork.WorkOrders.Phases.BillOfMaterials.Get(id);
-            if (entities == null) return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderPhaseDetailNotFound")));
-
-            return Ok(entities);
+            var item = await phaseService.GetBillOfMaterialsById(id);
+            if (item is not null)
+                return Ok(item);
+            else
+                return NotFound();
         }
 
         [HttpPost("Phase/BillOfMaterials")]
@@ -345,15 +316,18 @@ namespace Api.Controllers.Production
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreatePhaseDetail(WorkOrderPhaseBillOfMaterials request)
         {
-            // Validacions
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = unitOfWork.WorkOrders.Phases.BillOfMaterials.Find(w => w.Id == request.Id).Any();
-            if (exists) return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderPhaseDetailAlreadyExists")));
-
-            // Creació
-            await unitOfWork.WorkOrders.Phases.BillOfMaterials.Add(request);
-            return Ok(new GenericResponse(true, request));
+            var response = await phaseService.CreateBillOfMaterials(request);
+            if (response.Result)
+            {
+                var location = Url.Action(nameof(GetWorkOrderPhaseBillOfMaterialsItemById), new { id = request.Id }) ?? $"/{request.Id}";
+                return Created(location, response.Content);
+            }
+            else
+            {
+                return Conflict(response);
+            }
         }
 
         [HttpPut("Phase/BillOfMaterials/{id:guid}")]
@@ -367,12 +341,11 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await unitOfWork.WorkOrders.Phases.BillOfMaterials.Exists(request.Id);
-            if (!exists)
-                return NotFound();
-
-            await unitOfWork.WorkOrders.Phases.BillOfMaterials.Update(request);
-            return Ok(request);
+            var response = await phaseService.UpdateBillOfMaterials(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         [HttpDelete("Phase/BillOfMaterials/{id:guid}")]
@@ -384,12 +357,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = unitOfWork.WorkOrders.Phases.BillOfMaterials.Find(e => e.Id == id).FirstOrDefault();
-            if (entity is null)
-                return NotFound();
-
-            await unitOfWork.WorkOrders.Phases.BillOfMaterials.Remove(entity);
-            return Ok(entity);
+            var response = await phaseService.RemoveBillOfMaterials(id);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
         #endregion
 
@@ -397,24 +369,21 @@ namespace Api.Controllers.Production
         [HttpGet("Detailed/ByWorkcenter/{id:guid}")]
         public IActionResult GetDetailedWorkOrderByWorkcenterId(Guid id)
         {
-            IEnumerable<DetailedWorkOrder> entities = Enumerable.Empty<DetailedWorkOrder>();
-            entities = unitOfWork.DetailedWorkOrders.Find(d => d.WorkcenterId == id);
+            var entities = detailedWorkOrderService.GetByWorkcenterId(id);
             return Ok(entities);
         }
 
         [HttpGet("Detailed/ByWorkOrder/{id:guid}")]
         public IActionResult GetDetailedWorkOrderByWorkOrderId(Guid id)
         {
-            IEnumerable<DetailedWorkOrder> entities = Enumerable.Empty<DetailedWorkOrder>();
-            entities = unitOfWork.DetailedWorkOrders.Find(d => d.WorkOrderId == id);
+            var entities = detailedWorkOrderService.GetByWorkOrderId(id);
             return Ok(entities);
         }
 
         [HttpGet("Detailed/ByWorkOrderPhase/{id:guid}")]
         public IActionResult GetDetailedWorkOrderByWorkOrderPhaseId(Guid id)
         {
-            IEnumerable<DetailedWorkOrder> entities = Enumerable.Empty<DetailedWorkOrder>();
-            entities = unitOfWork.DetailedWorkOrders.Find(d => d.WorkOrderPhaseId == id);
+            var entities = detailedWorkOrderService.GetByWorkOrderPhaseId(id);
             return Ok(entities);
         }
         #endregion

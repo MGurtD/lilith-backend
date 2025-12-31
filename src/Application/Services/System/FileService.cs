@@ -1,5 +1,4 @@
 using Application.Contracts;
-using Application.Services;
 using Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
