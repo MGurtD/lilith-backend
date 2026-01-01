@@ -79,11 +79,9 @@ namespace Api.Controllers.Production
         public async Task<IActionResult> GetWorkordersByWorkcenterTypeId(Guid id)
         {
             var workorders = await workOrderService.GetWorkordersByWorkcenterTypeId(id);
-            if (workorders.Any())
-                return Ok(workorders);
-            else
-                return NotFound();
+            return Ok(workorders);
         }
+        
         [HttpPut("UpdateOrders")]
         public async Task<IActionResult> UpdateOrders(List<UpdateWorkOrderOrderDTO> orders)
         {

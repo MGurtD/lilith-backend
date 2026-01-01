@@ -28,8 +28,8 @@ namespace Api.Controllers.Shared
             return Ok(references);
         }
 
-        [HttpGet("Purchase")]
-        public async Task<IActionResult> GetAllPurchase([FromQuery] string? categoryName)
+        [HttpGet("Purchase/{categoryName?}")]
+        public async Task<IActionResult> GetAllPurchase(string? categoryName)
         {
             var references = await service.GetAllPurchase(categoryName);
             return Ok(references);
