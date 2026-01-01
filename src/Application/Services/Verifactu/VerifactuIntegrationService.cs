@@ -1,6 +1,4 @@
 using Application.Contracts;
-using Application.Services.Sales;
-using Application.Services;
 using Domain.Entities.Sales;
 using Microsoft.Extensions.Options;
 using Verifactu.Contracts;
@@ -8,6 +6,7 @@ using Verifactu;
 using static Application.Contracts.StatusConstants;
 
 namespace Application.Services.Verifactu;
+
 public class VerifactuIntegrationService(IUnitOfWork unitOfWork,
     ISalesInvoiceService salesInvoiceService,
     IQrCodeService qrCodeService,
@@ -133,8 +132,8 @@ public class VerifactuIntegrationService(IUnitOfWork unitOfWork,
         if (updateInvoiceStatus)
         {
             invoice.IntegrationStatusId = response.Success
-                ? (await unitOfWork.Lifecycles.GetStatusByName(Lifecycles.Verifactu, "OK"))?.Id
-                : (await unitOfWork.Lifecycles.GetStatusByName(Lifecycles.Verifactu, "Error"))?.Id;
+                ? (await unitOfWork.Lifecycles.GetStatusByName(Lifecycles.Verifactu, Statuses.Ok))?.Id
+                : (await unitOfWork.Lifecycles.GetStatusByName(Lifecycles.Verifactu, Statuses.Error))?.Id;
             await unitOfWork.SalesInvoices.Update(invoice);
         }
 

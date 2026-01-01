@@ -6,42 +6,40 @@ namespace Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class TaxController(IUnitOfWork unitOfWork) : ControllerBase
+    public class TaxController(ITaxService service) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> Create(Tax request)
         {
-            // Validation the incoming request
-            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+            if (!ModelState.IsValid) 
+                return BadRequest(ModelState.ValidationState);
 
-
-            // Validate existence of the unique user key
-            var exists = unitOfWork.Taxes.Find(r => request.Name == r.Name).Count() > 0;
-            if (!exists)
+            var response = await service.CreateTax(request);
+            if (response.Result)
             {
-                await unitOfWork.Taxes.Add(request);
-                return Ok(request);
+                var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
+                return Created(location, response.Content);
             }
             else
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return Conflict(response);
             }
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var taxes = await unitOfWork.Taxes.GetAll();
-            return Ok(taxes.OrderBy(e => e.Name));
+            var taxes = await service.GetAllTaxes();
+            return Ok(taxes);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var Tax = await unitOfWork.Taxes.Get(id);
-            if (Tax is not null)
+            var tax = await service.GetTaxById(id);
+            if (tax is not null)
             {
-                return Ok(Tax);
+                return Ok(tax);
             } 
             else
             {
@@ -50,35 +48,31 @@ namespace Api.Controllers
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid Id, Tax request)
+        public async Task<IActionResult> Update(Guid id, Tax request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
-            if (Id != request.Id)
+            if (id != request.Id)
                 return BadRequest();
 
-            var exists = await unitOfWork.Taxes.Exists(request.Id);
-            if (!exists)
-                return NotFound();
-
-            await unitOfWork.Taxes.Update(request);
-            return Ok(request);
+            var response = await service.UpdateTax(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var payementMethod = await unitOfWork.Taxes.Get(id);
-            if (payementMethod is not null)
-            {
-                await unitOfWork.Taxes.Remove(payementMethod);
-                return NoContent();
-            }
-            else
-            {
-                return NotFound();
-            }
-        }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.ValidationState);
 
+            var response = await service.RemoveTax(id);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
+        }
     }
 }

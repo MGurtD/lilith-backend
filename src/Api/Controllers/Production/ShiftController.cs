@@ -6,46 +6,42 @@ namespace Api.Controllers.Production
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ShiftController(IUnitOfWork unitOfWork, ILocalizationService localizationService) : ControllerBase
+    public class ShiftController(IShiftService service, IShiftDetailService detailService) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> Create(Shift request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = unitOfWork.Shifts.Find(r => request.Name == r.Name).Any();
-            if (!exists)
+            var response = await service.Create(request);
+            if (response.Result)
             {
-                await unitOfWork.Shifts.Add(request);
                 var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
-                return Created(location, request);
+                return Created(location, response.Content);
             }
             else
             {
-                return Conflict(new GenericResponse(false, localizationService.GetLocalizedString("ShiftAlreadyExists", request.Name)));
+                return Conflict(response);
             }
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await unitOfWork.Shifts.GetAll();
-
+            var entities = await service.GetAll();
             return Ok(entities);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await unitOfWork.Shifts.Get(id);
+            var entity = await service.GetById(id);
             if (entity is not null)
-            {
                 return Ok(entity);
-            }
             else
-            {
                 return NotFound();
-            }
         }
+
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid Id, Shift request)
         {
@@ -54,12 +50,11 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await unitOfWork.Shifts.Exists(request.Id);
-            if (!exists)
-                return NotFound();
-
-            await unitOfWork.Shifts.Update(request);
-            return Ok(request);
+            var response = await service.Update(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         [HttpDelete("{id:guid}")]
@@ -68,12 +63,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = unitOfWork.Shifts.Find(e => e.Id == id).FirstOrDefault();
-            if (entity is null)
-                return NotFound();
-            entity.Disabled = true;
-            await unitOfWork.Shifts.Update(entity);
-            return Ok(entity);
+            var response = await service.Remove(id);  // Soft delete in service
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         #region Details
@@ -82,18 +76,13 @@ namespace Api.Controllers.Production
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            await unitOfWork.ShiftDetails.Add(request);
-            var entity = await unitOfWork.ShiftDetails.Get(request.Id);
-            if (entity is not null)
-            {
-                return Ok(entity);
-            }
+            var response = await detailService.Create(request);
+            if (response.Result)
+                return Ok(response.Content);
             else
-            {
-                return NotFound();
-            }
-
+                return Conflict(response);
         }
+
         [HttpPut("Detail/{id:guid}")]
         public async Task<IActionResult> UpdateDetail(Guid Id, ShiftDetail request)
         {
@@ -102,42 +91,47 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await unitOfWork.ShiftDetails.Exists(request.Id);
-            if (!exists)
-                return NotFound();
-
-            await unitOfWork.ShiftDetails.Update(request);
-            return Ok(request);
+            var response = await detailService.Update(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
+
         [HttpDelete("Detail/{id:guid}")]
         public async Task<IActionResult> DeleteDetail(Guid id)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = unitOfWork.ShiftDetails.Find(e => e.Id == id).FirstOrDefault();
-            if (entity is null)
-                return NotFound();
-
-            await unitOfWork.ShiftDetails.Remove(entity);
-            return Ok(entity);
+            var response = await detailService.Remove(id);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
+
         [HttpGet("Detail/{id:guid}")]
         public async Task<IActionResult> GetDetailsByShiftId(Guid id)
         {
-            var shift = await unitOfWork.Shifts.Get(id);
-            if (shift is null)
-                return NotFound();
-            var details = unitOfWork.ShiftDetails.Find(e => e.ShiftId == id).ToList();
+            var details = await detailService.GetByShiftId(id);
             return Ok(details);
         }
+
         [HttpPost("Detail/ByIdBetweenHours")]
         public async Task<IActionResult> GetDetailsByShiftIdBetweenHours(Guid id, TimeOnly currentTime)
         {
-            var shift = await unitOfWork.Shifts.Get(id);
+            var shift = await service.GetById(id);
             if (shift is null)
                 return NotFound();
-            var detail = unitOfWork.ShiftDetails.Find(e => e.ShiftId == id && e.StartTime <= currentTime && e.EndTime > currentTime).FirstOrDefault();
+
+            // Use repository for this specific query
+            var details = await detailService.GetByShiftId(id);
+            var detail = details.FirstOrDefault(e =>  e.StartTime <= currentTime && e.EndTime > currentTime);
+
+            if (detail is null)
+                return NotFound();
+
             return Ok(detail);
         }
         #endregion

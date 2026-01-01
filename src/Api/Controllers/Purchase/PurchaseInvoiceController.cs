@@ -7,7 +7,7 @@ namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class PurchaseInvoiceController(IPurchaseInvoiceService service, IUnitOfWork unitOfWork, IDueDateService dueDateService, ILocalizationService localizationService) : ControllerBase
+    public class PurchaseInvoiceController(IPaymentMethodService paymentMethodService, IPurchaseInvoiceService service, IDueDateService dueDateService, ILocalizationService localizationService) : ControllerBase
     {
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
@@ -21,7 +21,7 @@ namespace Api.Controllers.Purchase
         [HttpGet]
         public async Task<IActionResult> GetPurchaseInvoices(DateTime startTime, DateTime endTime, Guid? supplierId, Guid? statusId, Guid? excludeStatusId, Guid? exerciceId)
         {
-            IEnumerable<PurchaseInvoice> purchaseInvoices = new List<PurchaseInvoice>();
+            IEnumerable<PurchaseInvoice> purchaseInvoices = [];
             if (exerciceId.HasValue)
                 purchaseInvoices = await service.GetByExercise(exerciceId.Value);
             else if (excludeStatusId.HasValue && supplierId.HasValue)
@@ -44,7 +44,7 @@ namespace Api.Controllers.Purchase
         public async Task<IActionResult> GetDueDates(PurchaseInvoice invoice)
         {
             // Recuperar metode de pagament
-            var paymentMethod = await unitOfWork.PaymentMethods.Get(invoice.PaymentMethodId);
+            var paymentMethod = await paymentMethodService.GetPaymentMethodById(invoice.PaymentMethodId);
             if (paymentMethod == null || paymentMethod.Disabled)
             {
                 return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("PaymentMethodNotFoundOrDisabled", invoice.PaymentMethodId)));

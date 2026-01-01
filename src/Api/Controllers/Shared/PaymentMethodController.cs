@@ -6,40 +6,37 @@ namespace Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class PaymentMethodController(IUnitOfWork unitOfWork) : ControllerBase
+    public class PaymentMethodController(IPaymentMethodService service) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> Create(PaymentMethod request)
         {
-            // Validation the incoming request
-            if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
+            if (!ModelState.IsValid) 
+                return BadRequest(ModelState.ValidationState);
 
-
-            // Validate existence of the unique user key
-            var exists = unitOfWork.PaymentMethods.Find(r => request.Name == r.Name).Count() > 0;
-            if (!exists)
+            var response = await service.CreatePaymentMethod(request);
+            if (response.Result)
             {
-                await unitOfWork.PaymentMethods.Add(request);
-
-                return Ok(request);
+                var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
+                return Created(location, response.Content);
             }
             else
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return Conflict(response);
             }
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var paymentMethods = await unitOfWork.PaymentMethods.GetAll();
-            return Ok(paymentMethods.OrderBy(e => e.Name));
+            var paymentMethods = await service.GetAllPaymentMethods();
+            return Ok(paymentMethods);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var paymentMethod = await unitOfWork.PaymentMethods.Get(id);
+            var paymentMethod = await service.GetPaymentMethodById(id);
             if (paymentMethod is not null)
             {
                 return Ok(paymentMethod);
@@ -51,35 +48,31 @@ namespace Api.Controllers
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid Id, PaymentMethod request)
+        public async Task<IActionResult> Update(Guid id, PaymentMethod request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
-            if (Id != request.Id)
+            if (id != request.Id)
                 return BadRequest();
 
-            var exists = await unitOfWork.PaymentMethods.Exists(request.Id);
-            if (!exists)
-                return NotFound();
-
-            await unitOfWork.PaymentMethods.Update(request);
-            return Ok(request);
+            var response = await service.UpdatePaymentMethod(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var payementMethod = await unitOfWork.PaymentMethods.Get(id);
-            if (payementMethod is not null)
-            {
-                await unitOfWork.PaymentMethods.Remove(payementMethod);
-                return NoContent();
-            }
-            else
-            {
-                return NotFound();
-            }
-        }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.ValidationState);
 
+            var response = await service.RemovePaymentMethod(id);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
+        }
     }
 }

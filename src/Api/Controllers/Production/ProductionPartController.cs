@@ -6,12 +6,12 @@ namespace Api.Controllers.Production
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ProductionPartController(IUnitOfWork unitOfWork, IWorkOrderService workOrderService, IMetricsService costsService) : ControllerBase
+    public class ProductionPartController(IProductionPartService service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var productionPart = await unitOfWork.ProductionParts.Get(id);
+            var productionPart = await service.GetById(id);
             if (productionPart == null) return NotFound();
             else return Ok(productionPart);
         }
@@ -19,23 +19,14 @@ namespace Api.Controllers.Production
         [HttpGet("WorkOrder/{id:guid}")]
         public IActionResult GetByWorkOrderId(Guid id)
         {
-            var productionParts = unitOfWork.ProductionParts.Find(wo => wo.WorkOrderId == id);
+            var productionParts = service.GetByWorkOrderId(id);
             return Ok(productionParts);
         }
 
         [HttpGet]
         public IActionResult GetBetweenDates(DateTime startTime, DateTime endTime, Guid? workcenterId, Guid? operatorId, Guid? workorderId)
         {
-            IEnumerable<ProductionPart> productionParts = new List<ProductionPart>();
-            productionParts = unitOfWork.ProductionParts.Find(r => r.Date >= startTime && r.Date <= endTime);
-
-            if (workcenterId != null)
-                productionParts = productionParts.Where(r => r.WorkcenterId == workcenterId);
-            if (operatorId != null)
-                productionParts = productionParts.Where(r => r.OperatorId == operatorId);
-            if (workorderId != null)
-                productionParts = productionParts.Where(r => r.WorkOrderId == workorderId);
-
+            var productionParts = service.GetBetweenDates(startTime, endTime, workcenterId, operatorId, workorderId);
             return Ok(productionParts);
         }
 
@@ -44,18 +35,18 @@ namespace Api.Controllers.Production
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            // Get current costs from master data
-            var costsRequest = await costsService.GetProductionPartCosts(productionPart);
-            if (costsRequest.Result && costsRequest.Content is ProductionMetrics costs)
+            var response = await service.Create(productionPart);
+            if (response.Result)
             {
-                productionPart.MachineHourCost = costs.MachineCost;
-                productionPart.OperatorHourCost = costs.OperatorCost;
+                var location = Url.Action(nameof(GetById), new { id = productionPart.Id }) ?? $"/{productionPart.Id}";
+                return Created(location, response.Content);
             }
-
-            await unitOfWork.ProductionParts.Add(productionPart);
-            await workOrderService.AddProductionPart(productionPart.WorkOrderId, productionPart);
-            return Created("",productionPart);
+            else
+            {
+                return Conflict(response);
+            }
         }
+
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid Id, ProductionPart request)
         {
@@ -64,12 +55,11 @@ namespace Api.Controllers.Production
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await unitOfWork.ProductionParts.Exists(request.Id);
-            if (!exists)
-                return NotFound();
-
-            await unitOfWork.ProductionParts.Update(request);
-            return Ok(request);
+            var response = await service.Update(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         [HttpDelete("{id:guid}")]
@@ -78,14 +68,11 @@ namespace Api.Controllers.Production
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = unitOfWork.ProductionParts.Find(e => e.Id == id).FirstOrDefault();
-            if (entity is null)
-                return NotFound();
-
-            await workOrderService.RemoveProductionPart(entity.WorkOrderId, entity);
-            await unitOfWork.ProductionParts.Remove(entity);
-            
-            return Ok(entity);
+            var response = await service.Remove(id);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
     }
 }

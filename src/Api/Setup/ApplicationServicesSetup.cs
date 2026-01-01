@@ -14,6 +14,8 @@ public static class ApplicationServicesSetup
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
+        services.AddSingleton<IQrCodeService, QrCodeService>();
+
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IFileService, FileService>();
@@ -43,10 +45,48 @@ public static class ApplicationServicesSetup
         services.AddScoped<IStockMovementService, StockMovementService>();
         services.AddScoped<IVerifactuIntegrationService, VerifactuIntegrationService>();
         services.AddScoped<IProfileService, ProfileService>();
-    services.AddScoped<IMenuItemService, MenuItemService>();
+        services.AddScoped<IMenuItemService, MenuItemService>();
         services.AddScoped<ILifecycleService, LifecycleService>();
-        services.AddSingleton<IQrCodeService, QrCodeService>();
+        services.AddScoped<IPaymentMethodService, PaymentMethodService>();
+        services.AddScoped<IReferenceTypeService, ReferenceTypeService>();
+        services.AddScoped<ITaxService, TaxService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<IUserFilterService, UserFilterService>();
+        services.AddScoped<ICustomerService, CustomerService>();
+        services.AddScoped<ICustomerTypeService, CustomerTypeService>();
+        services.AddScoped<IIncomeService, IncomeService>();
+        services.AddScoped<ISupplierService, SupplierService>();
+        services.AddScoped<ISupplierTypeService, SupplierTypeService>();
+        services.AddScoped<IExpenseTypeService, ExpenseTypeService>();
+        services.AddScoped<IExpenseService, ExpenseService>();
+        services.AddScoped<IInvoiceSerieService, InvoiceSerieService>();
+        
+        // Production services - Group A Simple CRUD
+        services.AddScoped<ISiteService, SiteService>();
+        services.AddScoped<IAreaService, AreaService>();
+        services.AddScoped<IWorkcenterTypeService, WorkcenterTypeService>();
+        services.AddScoped<IOperatorTypeService, OperatorTypeService>();
+        services.AddScoped<IMachineStatusService, MachineStatusService>();
+        services.AddScoped<IShiftService, ShiftService>();
+        services.AddScoped<IShiftDetailService, ShiftDetailService>();
+        services.AddScoped<IWorkcenterCostService, WorkcenterCostService>();
 
+        // Production services - Group B Extend existing
+        services.AddScoped<IWorkMasterService, WorkMasterService>();
+        services.AddScoped<IProductionPartService, ProductionPartService>();
+        
+        // Production services - Group C Specialized
+        services.AddScoped<IWorkcenterService, WorkcenterService>();
+        services.AddScoped<IOperatorService, OperatorService>();
+        services.AddScoped<IProductionCostService, ProductionCostService>();
+        services.AddScoped<IWorkMasterPhaseService, WorkMasterPhaseService>();
+        services.AddScoped<IWorkOrderPhaseService, WorkOrderPhaseService>();
+        services.AddScoped<IDetailedWorkOrderService, DetailedWorkOrderService>();
+        
+        // Warehouse services
+        services.AddScoped<IWarehouseService, WarehouseService>();
+        
         services.AddHostedService<BudgetBackgroundService>();
 
         return services;

@@ -40,7 +40,6 @@ namespace Infrastructure.Persistance
         // Purchase
         public IRepository<SupplierType, Guid> SupplierTypes { get; private set; } = new Repository<SupplierType, Guid>(context);
         public ISupplierRepository Suppliers { get; private set; } = new SupplierRepository(context);
-        public IPurchaseInvoiceStatusRepository PurchaseInvoiceStatuses { get; private set; } = new PurchaseInvoiceStatusRepository(context);
         public IPurchaseOrderRepository PurchaseOrders { get; private set; } = new PurchaseOrderRepository(context);
         public IPurchaseInvoiceRepository PurchaseInvoices { get; private set; } = new PurchaseInvoiceRepository(context);
         public IRepository<PurchaseInvoiceDueDate, Guid> PurchaseInvoiceDueDates { get; private set; } = new Repository<PurchaseInvoiceDueDate, Guid>(context);

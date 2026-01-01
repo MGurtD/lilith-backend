@@ -9,7 +9,7 @@ namespace Api.Controllers.Verifactu;
 public class VerifactuController(
     IVerifactuIntegrationService service,
     ILocalizationService localizationService,
-    IUnitOfWork unitOfWork) : ControllerBase
+    ILifecycleService lifecycleService) : ControllerBase
 {
 
     [HttpGet("PendingIntegrations")]
@@ -19,8 +19,11 @@ public class VerifactuController(
     public async Task<IActionResult> GetPendingIntegration(DateTime? toDate)
     {
         // Get initial status of Verifactu lifecycle and use it to filter pending integrations
-        var initialStatusId = await unitOfWork.Lifecycles.GetInitialStatusByName(StatusConstants.Lifecycles.Verifactu);
-        var invoices = await service.GetInvoicesToIntegrateWithVerifactu(toDate, initialStatusId);
+        var verifactuLifecycle = await lifecycleService.GetLifecycleByName(StatusConstants.Lifecycles.Verifactu);
+        if (verifactuLifecycle is null)
+            return BadRequest(localizationService.GetLocalizedString("LifecycleNotFound"));
+
+        var invoices = await service.GetInvoicesToIntegrateWithVerifactu(toDate, verifactuLifecycle.InitialStatusId);
         return Ok(invoices);
     }
 
@@ -35,9 +38,7 @@ public class VerifactuController(
 
         var invoices = await service.GetIntegrationsBetweenDates(fromDate, toDate);
         return Ok(invoices);
-    }
-
-    
+    }    
 
     [HttpGet("{id:guid}/Requests")]
     [SwaggerOperation("GetInvoiceRequests")]

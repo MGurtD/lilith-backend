@@ -1,5 +1,4 @@
 using Application.Contracts;
-using Application.Services;
 using Microsoft.Extensions.Localization;
 using System.Globalization;
 
@@ -79,7 +78,7 @@ namespace Application.Services.System
                         .Select(l => l.Code.ToLowerInvariant())
                         .Distinct()
                         .ToArray();
-            return codes.Length > 0 ? codes : new[] { "ca", "es", "en" };
+            return codes.Length > 0 ? codes : ["ca", "es", "en"];
         }
     }
 }

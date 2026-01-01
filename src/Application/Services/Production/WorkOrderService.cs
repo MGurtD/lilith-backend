@@ -3,12 +3,36 @@
 using Application.Contracts;
 using Domain.Entities.Production;
 using Domain.Entities.Sales;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services.Production
 {
     public class WorkOrderService(IUnitOfWork unitOfWork, IExerciseService exerciseService, ISalesOrderService salesOrderService, ILocalizationService localizationService) : IWorkOrderService
     {
+        public async Task<WorkOrder?> GetById(Guid id)
+        {
+            return await unitOfWork.WorkOrders.Get(id);
+        }
+
+        public async Task<GenericResponse> Create(WorkOrder workOrder)
+        {
+            var existsReference = await unitOfWork.References.Exists(workOrder.ReferenceId);
+            if (!existsReference)
+            {
+                return new GenericResponse(false,
+                    localizationService.GetLocalizedString("ReferenceNotFound"));
+            }
+
+            var exists = unitOfWork.WorkOrders.Find(w => w.Id == workOrder.Id).Any();
+            if (exists)
+            {
+                return new GenericResponse(false,
+                    localizationService.GetLocalizedString("WorkOrderAlreadyExists"));
+            }
+
+            await unitOfWork.WorkOrders.Add(workOrder);
+            return new GenericResponse(true, workOrder);
+        }
+
         public IEnumerable<DetailedWorkOrder> GetWorkOrderDetails(Guid id) {
             var details = unitOfWork.DetailedWorkOrders.Find(d => d.WorkOrderId == id);
 

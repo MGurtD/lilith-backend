@@ -24,6 +24,16 @@ namespace Application.Services.Purchase
             _localizationService = localizationService;
         }
 
+        public async Task<Receipt?> GetById(Guid id)
+        {
+            return await _unitOfWork.Receipts.Get(id);
+        }
+
+        public async Task<IEnumerable<Receipt>> GetReceiptsByReferenceId(Guid referenceId)
+        {
+            return await _unitOfWork.Receipts.GetReceiptsByReferenceId(referenceId);
+        }
+
         public IEnumerable<Receipt> GetBetweenDates(DateTime startDate, DateTime endDate)
         {
             var receipts = _unitOfWork.Receipts.Find(p => p.Date >= startDate && p.Date <= endDate);
@@ -193,11 +203,8 @@ namespace Application.Services.Purchase
             var detailsToMove = receipt.Details!.Where(d => d.StockMovementId == null);
             foreach (var detail in detailsToMove)
             {
-                detail.Reference = null;
-
                 var stockMovement = new StockMovement
                 {
-                    Id = Guid.NewGuid(),
                     LocationId = defaultLocation.Id,
                     MovementDate = DateTime.Now,
                     CreatedOn = DateTime.Now,
@@ -206,7 +213,7 @@ namespace Application.Services.Purchase
                 };
                 stockMovement.SetFromReceiptDetail(detail);
 
-                if (detail.Reference != null && detail.Reference.CategoryName != ReferenceCategories.Service)
+                if (detail.Reference!.CategoryName != ReferenceCategories.Service)
                 {
                     await _stockMovementService.Create(stockMovement);
                     detail.StockMovementId = stockMovement.Id;

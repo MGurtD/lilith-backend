@@ -7,7 +7,11 @@ namespace Api.Controllers.Purchase
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ReceiptController(IReceiptService service, IUnitOfWork unitOfWork, IReferenceService referenceService, ILocalizationService localizationService) : ControllerBase
+    public class ReceiptController(
+        IReceiptService service, 
+        IReferenceService referenceService, 
+        ILifecycleService lifecycleService,
+        ILocalizationService localizationService) : ControllerBase
     {
         [HttpGet]
         public IActionResult GetReceipts(DateTime startTime, DateTime endTime, Guid? supplierId, Guid? statusId)
@@ -27,7 +31,7 @@ namespace Api.Controllers.Purchase
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var receipt = await unitOfWork.Receipts.Get(id);
+            var receipt = await service.GetById(id);
 
             if (receipt == null) return BadRequest();
             else return Ok(receipt);
@@ -36,7 +40,7 @@ namespace Api.Controllers.Purchase
         [HttpGet("ByReferenceId/{id:guid}")]
         public async Task<IActionResult> GetByReferenceId(Guid id)
         {
-            var receipts = await unitOfWork.Receipts.GetReceiptsByReferenceId(id);
+            var receipts = await service.GetReceiptsByReferenceId(id);
 
             if (receipts == null) return BadRequest();
             else return Ok(receipts);
@@ -79,10 +83,10 @@ namespace Api.Controllers.Purchase
         public async Task<IActionResult> Update(Guid id, [FromBody] Receipt request)
         {
             if (id != request.Id) return BadRequest();
-            var receipt = unitOfWork.Receipts.Find(r => r.Id == request.Id).FirstOrDefault();
+            var receipt = await service.GetById(request.Id);
             if (receipt == null) return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("ReceiptNotFound", request.Id)));
 
-            var moveToWarehouseStatus = unitOfWork.Lifecycles.StatusRepository.Find(s => s.Name == "Recepcionat").FirstOrDefault();
+            var moveToWarehouseStatus = await lifecycleService.GetStatusByName(StatusConstants.Lifecycles.Receipts, StatusConstants.Statuses.Recepcionat);
             if (moveToWarehouseStatus == null) return NotFound(new GenericResponse(false, localizationService.GetLocalizedString("ReceiptStatusNotFound")));
 
             var warehouseResponse = new GenericResponse(true);
@@ -94,9 +98,12 @@ namespace Api.Controllers.Purchase
 
             var globalResponse = new GenericResponse(true);
             if (warehouseResponse.Result)
+            {
                 globalResponse = await service.Update(request);
-                request.Details = await unitOfWork.Receipts.Details.FindAsync(r => r.ReceiptId == request.Id);
-                await referenceService.UpdatePriceFromReceipt(request);
+                var updatedReceipt = await service.GetById(request.Id);
+                if (updatedReceipt != null)
+                    await referenceService.UpdatePriceFromReceipt(updatedReceipt);
+            }
 
             if (globalResponse.Result && warehouseResponse.Result) return Ok(globalResponse);
             else return BadRequest(globalResponse);
@@ -172,7 +179,7 @@ namespace Api.Controllers.Purchase
         public async Task<IActionResult> GetReceptions(Guid id)
         {
             if (id == Guid.Empty) return BadRequest();
-            var receipt = await unitOfWork.Receipts.Get(id);
+            var receipt = await service.GetById(id);
             if (receipt == null) return NotFound();
 
             var receptions = await service.GetReceptions(id);

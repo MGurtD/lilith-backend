@@ -27,6 +27,11 @@ namespace Application.Services.Sales
     {
         private readonly string lifecycleName = StatusConstants.Lifecycles.DeliveryNote;
         
+        public async Task<DeliveryNote?> GetById(Guid id)
+        {
+            return await unitOfWork.DeliveryNotes.Get(id);
+        }
+        
         public IEnumerable<DeliveryNote> GetBetweenDates(DateTime startDate, DateTime endDate)
         {
             var deliveryNotes = unitOfWork.DeliveryNotes.Find(p => p.CreatedOn >= startDate && p.CreatedOn <= endDate);
@@ -131,11 +136,8 @@ namespace Application.Services.Sales
 
             var orderServiceResponse = await salesOrderService.Deliver(deliveryNote.Id);
             if (!orderServiceResponse.Result) return orderServiceResponse;
-            if (deliveryNote.DeliveryDate is null)
-            {
-                deliveryNote.DeliveryDate = DateTime.Now;
-            }
             
+            deliveryNote.DeliveryDate ??= DateTime.Now;
             await Update(deliveryNote);
 
             return new GenericResponse(true);

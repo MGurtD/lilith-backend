@@ -6,45 +6,38 @@ namespace Api.Controllers.Sales
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class CustomerTypeController(IUnitOfWork unitOfWork) : ControllerBase
+    public class CustomerTypeController(ICustomerTypeService service) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> Create(CustomerType request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
-            var exists = unitOfWork.CustomerTypes.Find(r => request.Name == r.Name).Any();
-            if (!exists)
+            var response = await service.CreateCustomerType(request);
+            if (response.Result)
             {
-                await unitOfWork.CustomerTypes.Add(request);
-
-                return Ok(request);
+                var location = Url.Action(nameof(GetById), new { id = request.Id }) ?? $"/{request.Id}";
+                return Created(location, response.Content);
             }
             else
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return Conflict(response);
             }
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await unitOfWork.CustomerTypes.GetAll();
-            return Ok(entities.OrderBy(e => e.Name));
+            var entities = await service.GetAllCustomerTypes();
+            return Ok(entities);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var entity = await unitOfWork.CustomerTypes.Get(id);
-            if (entity is not null)
-            {
-                return Ok(entity);
-            }
-            else
-            {
-                return NotFound();
-            }
+            var entity = await service.GetCustomerTypeById(id);
+            if (entity is not null) return Ok(entity);
+            else return NotFound();
         }
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid Id, CustomerType request)
@@ -54,12 +47,11 @@ namespace Api.Controllers.Sales
             if (Id != request.Id)
                 return BadRequest();
 
-            var exists = await unitOfWork.CustomerTypes.Exists(request.Id);
-            if (!exists)
-                return NotFound();
-
-            await unitOfWork.CustomerTypes.Update(request);
-            return Ok(request);
+            var response = await service.UpdateCustomerType(request);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
 
         [HttpDelete("{id:guid}")]
@@ -68,12 +60,11 @@ namespace Api.Controllers.Sales
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
 
-            var entity = unitOfWork.CustomerTypes.Find(e => e.Id == id).FirstOrDefault();
-            if (entity is null)
-                return NotFound();
-
-            await unitOfWork.CustomerTypes.Remove(entity);
-            return Ok(entity);
+            var response = await service.RemoveCustomerType(id);
+            if (response.Result)
+                return Ok(response.Content);
+            else
+                return NotFound(response);
         }
     }
 }
