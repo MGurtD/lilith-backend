@@ -437,22 +437,34 @@ For detailed Verifactu integration, see [External Integrations](external-integra
 ```
 User Request (HTTP)
       ↓
-  Controller (Api) ──────────┐
-      ↓                      │
-  Service (Application)      │ Validates, Maps, Orchestrates
-      ↓                      │
-  UnitOfWork ────────────────┘
-      ↓
-  Repository (Infrastructure)
+┌─────────────────────────────────┐
+│  Controller (Api)               │
+│  • Validates ModelState         │
+│  • Calls Service Interface      │
+│  • Maps to HTTP Status          │
+└─────────────────────────────────┘
+      ↓ (only service interface)
+┌─────────────────────────────────┐
+│  Service (Application)          │
+│  • Business Validation          │
+│  • Workflow Logic               │
+│  • Orchestrates Repositories    │
+└─────────────────────────────────┘
+      ↓ (uses IUnitOfWork)
+┌─────────────────────────────────┐
+│  Repository (Infrastructure)    │
+│  • Data Access                  │
+│  • EF Core Operations           │
+└─────────────────────────────────┘
       ↓
   EF Core → PostgreSQL
 ```
 
 **Key Points:**
 
-1. **Controllers** handle HTTP, validate requests, return responses
-2. **Services** implement business logic, manage workflows
-3. **Repositories** abstract data access
+1. **Controllers** handle HTTP, validate requests, return responses (NO business logic, NO data access)
+2. **Services** implement business logic, manage workflows, orchestrate repositories
+3. **Repositories** abstract data access through IUnitOfWork interface
 4. **UnitOfWork** ensures transaction boundaries
 5. **Domain entities** flow through all layers unchanged
 
@@ -467,7 +479,6 @@ User Request (HTTP)
 
 ## Current Violations
 
-⚠️ **Application layer references ASP.NET Core** - `IFormFile`, `IHostEnvironment` used in services  
-⚠️ **Some controllers bypass service layer** - Direct `IUnitOfWork` injection
+⚠️ **Application layer references ASP.NET Core** - `IFormFile`, `IHostEnvironment` used in services
 
 See [Architectural Debt Assessment](architectural-debt-assessment.md) for improvement plan.
