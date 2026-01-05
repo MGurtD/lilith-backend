@@ -30,7 +30,7 @@ namespace Infrastructure.Persistance.EntityConfiguration.Production
                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                              ApplicationDbContextConstants.DECIMAL_SCALE);
             builder
-                .Property(b => b.MultiOfAvailable)                
+                .Property(b => b.MultiWoAvailable)                
                 .HasDefaultValue(false)
                 .HasColumnType("boolean");
             builder

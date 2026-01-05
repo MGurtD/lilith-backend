@@ -12,5 +12,5 @@ public class Workcenter : Entity
     public Guid ShiftId { get; set; }
     public Shift? Shift { get; set; }
     public decimal ProfitPercentage { get; set; } = decimal.Zero;
-    public bool MultiOfAvailable { get; set; } = false;
+    public bool MultiWoAvailable { get; set; } = false;
 }
