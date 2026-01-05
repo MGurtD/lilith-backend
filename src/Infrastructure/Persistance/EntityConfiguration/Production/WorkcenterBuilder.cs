@@ -30,6 +30,10 @@ namespace Infrastructure.Persistance.EntityConfiguration.Production
                .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
                              ApplicationDbContextConstants.DECIMAL_SCALE);
             builder
+                .Property(b => b.MultiWoAvailable)                
+                .HasDefaultValue(false)
+                .HasColumnType("boolean");
+            builder
                 .HasKey(b => b.Id)
                 .HasName("PK_Workcenter");
             builder.HasIndex(builder => builder.Name, "UK_Workcenter_Name");
