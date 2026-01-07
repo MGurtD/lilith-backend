@@ -88,12 +88,14 @@ public class WorkOrderPhaseService(
         phase.StartTime = DateTime.Now;
         phase.EndTime = null;  // Reset to reopen the phase
         phase.StatusId = productionStatus.Id;
-        unitOfWork.WorkOrders.Phases.UpdateWithoutSave(phase);
+        await unitOfWork.WorkOrders.Phases.Update(phase);
         
         // Update parent WorkOrder
         var workOrder = await unitOfWork.WorkOrders.Get(phase.WorkOrderId);
         if (workOrder != null)
         {
+            workOrder.Phases = []; // Clear phases to avoid tracking issues
+
             // Reset EndTime if WorkOrder was previously finished (reopen)
             if (workOrder.EndTime.HasValue)
             {
@@ -112,11 +114,8 @@ public class WorkOrderPhaseService(
                 workOrder.StatusId = productionStatus.Id;
             }
             
-            unitOfWork.WorkOrders.UpdateWithoutSave(workOrder);
+            await unitOfWork.WorkOrders.Update(workOrder);
         }
-        
-        // Persist changes
-        await unitOfWork.CompleteAsync();
         
         return new GenericResponse(true, phase);
     }
