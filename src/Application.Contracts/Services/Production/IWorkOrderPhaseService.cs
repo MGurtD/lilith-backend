@@ -1,4 +1,5 @@
 using Application.Contracts;
+using Application.Contracts.Contracts.Production;
 using Domain.Entities.Production;
 
 namespace Application.Contracts;
@@ -11,8 +12,35 @@ public interface IWorkOrderPhaseService
     Task<GenericResponse> Update(WorkOrderPhase phase);
     Task<GenericResponse> Remove(Guid id);
     
+    // Phase Lifecycle
+    Task<GenericResponse> StartPhase(Guid phaseId);
+    Task<GenericResponse> EndPhase(Guid phaseId);
+    
     // Special queries
     Task<IEnumerable<object>> GetExternalPhases(DateTime startTime, DateTime endTime);
+    /// <summary>
+    /// Gets planned work order phases grouped by work order for a specific workcenter type.
+    /// Returns hierarchical structure for TreeTable display.
+    /// </summary>
+    /// <param name="workcenterTypeId">Workcenter type ID to filter phases</param>
+    /// <returns>List of work orders with their planned phases</returns>
+    Task<IEnumerable<WorkOrderWithPhasesDto>> GetPlannedByWorkcenterType(Guid workcenterTypeId);
+    
+    /// <summary>
+    /// Gets detailed work order information for phases currently loaded on a workcenter.
+    /// Returns work orders with customer, reference, and phase details based on phase IDs from WebSocket.
+    /// </summary>
+    /// <param name="phaseIds">List of work order phase IDs currently loaded</param>
+    /// <returns>List of work orders with their phase information. Returns empty list if phases not found.</returns>
+    Task<IEnumerable<WorkOrderWithPhasesDto>> GetLoadedWorkOrdersByPhaseIds(List<Guid> phaseIds);
+    
+    /// <summary>
+    /// Gets detailed phase information for a specific work order including phase details and bill of materials.
+    /// Used for Step 2 of work order selection process in plant module.
+    /// </summary>
+    /// <param name="workOrderId">Work order ID</param>
+    /// <returns>List of phases with detailed information</returns>
+    Task<IEnumerable<WorkOrderPhaseDetailedDto>> GetWorkOrderPhasesDetailed(Guid workOrderId);
     
     // PhaseDetail CRUD
     Task<WorkOrderPhaseDetail?> GetDetailById(Guid id);
@@ -26,3 +54,4 @@ public interface IWorkOrderPhaseService
     Task<GenericResponse> UpdateBillOfMaterials(WorkOrderPhaseBillOfMaterials item);
     Task<GenericResponse> RemoveBillOfMaterials(Guid id);
 }
+

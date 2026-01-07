@@ -1,4 +1,5 @@
-﻿using Application.Contracts;
+using Application.Contracts;
+using Application.Contracts.Contracts.Production;
 using Domain.Entities.Production;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -70,6 +71,15 @@ namespace Api.Controllers.Production
                 return NotFound(response);
             
             return Ok(response.Content);
+        }
+
+        [HttpPost("Loaded")]
+        [SwaggerOperation("GetLoadedWorkOrdersByPhaseIds")]
+        [ProducesResponseType(typeof(IEnumerable<WorkOrderWithPhasesDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetLoadedWorkOrdersByPhaseIds([FromBody] List<Guid> phaseIds)
+        {
+            var workOrders = await phaseService.GetLoadedWorkOrdersByPhaseIds(phaseIds);
+            return Ok(workOrders);
         }
 
         [HttpGet("WorkcenterType/{id:guid}")]
@@ -162,10 +172,26 @@ namespace Api.Controllers.Production
         public async Task<IActionResult> GetExternalWorkOrderPhase(DateTime startTime, DateTime endTime)
         {
             var phases = await phaseService.GetExternalPhases(startTime, endTime);
-            
-            if (!phases.Any())
-                return NotFound();
+            return Ok(phases);
+        }
 
+        [HttpGet("Planned/WorkcenterType/{workcenterTypeId:guid}")]
+        [SwaggerOperation("GetPlannedByWorkcenterType")]
+        [ProducesResponseType(typeof(IEnumerable<WorkOrderWithPhasesDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetPlannedByWorkcenterType(Guid workcenterTypeId)
+        {
+            var workOrders = await phaseService.GetPlannedByWorkcenterType(workcenterTypeId);
+            return Ok(workOrders);
+        }
+
+        [HttpGet("{workOrderId:guid}/PhasesDetailed")]
+        [SwaggerOperation("GetWorkOrderPhasesDetailed")]
+        [ProducesResponseType(typeof(IEnumerable<WorkOrderPhaseDetailedDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetWorkOrderPhasesDetailed(Guid workOrderId)
+        {
+            var phases = await phaseService.GetWorkOrderPhasesDetailed(workOrderId);            
             return Ok(phases);
         }
 
