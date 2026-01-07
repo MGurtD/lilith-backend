@@ -135,7 +135,7 @@ public class WorkOrderPhaseService(
         
         // Update phase
         phase.EndTime = DateTime.Now;
-        unitOfWork.WorkOrders.Phases.UpdateWithoutSave(phase);
+        await unitOfWork.WorkOrders.Phases.Update(phase);
         
         // Get WorkOrder with all phases to check if this is the last one
         var workOrder = await unitOfWork.WorkOrders.Get(phase.WorkOrderId);
@@ -166,7 +166,9 @@ public class WorkOrderPhaseService(
             {
                 workOrder.StatusId = closedStatus.Id;
                 workOrder.EndTime = DateTime.Now;
-                unitOfWork.WorkOrders.UpdateWithoutSave(workOrder);
+                
+                workOrder.Phases = []; // Clear phases to avoid tracking issues
+                await unitOfWork.WorkOrders.Update(workOrder);
             }
         }
         
