@@ -65,5 +65,12 @@ namespace Application.Contracts
         {
             public const string Temges = "Temges";
         }
+
+        // Lifecycle Tag Names
+        public static class LifecycleTags
+        {
+            public const string Planned = "Planned";
+            public const string ReadyToPlan = "ReadyToPlan";
+        }
     }
 }

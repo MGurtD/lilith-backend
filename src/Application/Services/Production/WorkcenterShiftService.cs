@@ -5,9 +5,9 @@ using System.Collections.Immutable;
 
 namespace Application.Services.Production
 {
-    public class WorkcenterShiftService(IUnitOfWork unitOfWork, IMetricsService metricsService) : IWorkcenterShiftService
+    public class WorkcenterShiftService(IUnitOfWork unitOfWork, IMetricsService metricsService, IWorkOrderPhaseService workOrderPhaseService) : IWorkcenterShiftService
     {
-        public IWorkcenterShiftDetailService DetailsService => new WorkcenterShiftDetailService(unitOfWork, metricsService);
+        public IWorkcenterShiftDetailService DetailsService => new WorkcenterShiftDetailService(unitOfWork, metricsService, workOrderPhaseService);
 
         public async Task<WorkcenterShift?> GetWorkcenterShift(Guid workcenterShiftId)
         {

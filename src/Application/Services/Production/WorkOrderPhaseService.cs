@@ -1,9 +1,14 @@
 using Application.Contracts;
+using Application.Contracts.Contracts.Production;
 using Domain.Entities.Production;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services.Production;
 
-public class WorkOrderPhaseService(IUnitOfWork unitOfWork, ILocalizationService localizationService) : IWorkOrderPhaseService
+public class WorkOrderPhaseService(
+    IUnitOfWork unitOfWork, 
+    ILocalizationService localizationService,
+    ILogger<WorkOrderPhaseService> logger) : IWorkOrderPhaseService
 {
     #region Phase CRUD
     
@@ -57,6 +62,123 @@ public class WorkOrderPhaseService(IUnitOfWork unitOfWork, ILocalizationService 
     
     #endregion
 
+    #region Phase Lifecycle
+    
+    public async Task<GenericResponse> StartPhase(Guid phaseId)
+    {
+        // Get phase
+        var phase = await unitOfWork.WorkOrders.Phases.Get(phaseId);
+        if (phase == null)
+            return new GenericResponse(false, 
+                localizationService.GetLocalizedString("WorkOrderPhaseNotFound"));
+        
+        // Get "Producció" status
+        var productionStatus = await unitOfWork.Lifecycles.GetStatusByName(
+            StatusConstants.Lifecycles.WorkOrder, 
+            StatusConstants.Statuses.Production);
+        
+        if (productionStatus == null)
+        {
+            logger.LogError("Production status not found in WorkOrder lifecycle");
+            return new GenericResponse(false, 
+                localizationService.GetLocalizedString("StatusNotFound", StatusConstants.Statuses.Production));
+        }
+        
+        // Update phase (reset EndTime if it was previously finished)
+        phase.StartTime = DateTime.Now;
+        phase.EndTime = null;  // Reset to reopen the phase
+        phase.StatusId = productionStatus.Id;
+        unitOfWork.WorkOrders.Phases.UpdateWithoutSave(phase);
+        
+        // Update parent WorkOrder
+        var workOrder = await unitOfWork.WorkOrders.Get(phase.WorkOrderId);
+        if (workOrder != null)
+        {
+            // Reset EndTime if WorkOrder was previously finished (reopen)
+            if (workOrder.EndTime.HasValue)
+            {
+                workOrder.EndTime = null;
+            }
+            
+            // Start WorkOrder if this is the first phase
+            if (!workOrder.StartTime.HasValue)
+            {
+                workOrder.StartTime = DateTime.Now;
+                workOrder.StatusId = productionStatus.Id;
+            }
+            else
+            {
+                // Ensure status is Production when reopening
+                workOrder.StatusId = productionStatus.Id;
+            }
+            
+            unitOfWork.WorkOrders.UpdateWithoutSave(workOrder);
+        }
+        
+        // Persist changes
+        await unitOfWork.CompleteAsync();
+        
+        return new GenericResponse(true, phase);
+    }
+
+    public async Task<GenericResponse> EndPhase(Guid phaseId)
+    {
+        // Get phase
+        var phase = await unitOfWork.WorkOrders.Phases.Get(phaseId);
+        if (phase == null)
+            return new GenericResponse(false, 
+                localizationService.GetLocalizedString("WorkOrderPhaseNotFound"));
+        
+        // Validate phase has been started
+        if (!phase.StartTime.HasValue)
+            return new GenericResponse(false, 
+                localizationService.GetLocalizedString("WorkOrderPhaseNotStarted"));
+        
+        // Update phase
+        phase.EndTime = DateTime.Now;
+        unitOfWork.WorkOrders.Phases.UpdateWithoutSave(phase);
+        
+        // Get WorkOrder with all phases to check if this is the last one
+        var workOrder = await unitOfWork.WorkOrders.Get(phase.WorkOrderId);
+        if (workOrder == null)
+            return new GenericResponse(false, 
+                localizationService.GetLocalizedString("WorkOrderNotFound", phase.WorkOrderId));
+        
+        // Check if this is the last active phase
+        var activePhasesOrdered = workOrder.Phases
+            .Where(p => !p.Disabled)
+            .OrderByDescending(p => p.CodeAsNumber)
+            .ToList();
+        
+        bool isLastPhase = activePhasesOrdered.FirstOrDefault()?.Id == phaseId;
+        
+        // If last phase, close the work order
+        if (isLastPhase)
+        {
+            var closedStatus = await unitOfWork.Lifecycles.GetStatusByName(
+                StatusConstants.Lifecycles.WorkOrder, 
+                StatusConstants.Statuses.Tancada);
+            
+            if (closedStatus == null)
+            {
+                logger.LogError("Closed status 'Tancada' not found in WorkOrder lifecycle");
+            }
+            else
+            {
+                workOrder.StatusId = closedStatus.Id;
+                workOrder.EndTime = DateTime.Now;
+                unitOfWork.WorkOrders.UpdateWithoutSave(workOrder);
+            }
+        }
+        
+        // Persist changes
+        await unitOfWork.CompleteAsync();
+        
+        return new GenericResponse(true, phase);
+    }
+    
+    #endregion
+
     #region Special Queries
     
     public async Task<IEnumerable<object>> GetExternalPhases(DateTime startTime, DateTime endTime)
@@ -94,6 +216,186 @@ public class WorkOrderPhaseService(IUnitOfWork unitOfWork, ILocalizationService 
                                  };
 
         return workOrderPhaseJoin;
+    }
+
+    public async Task<IEnumerable<WorkOrderWithPhasesDto>> GetPlannedByWorkcenterType(
+        Guid workcenterTypeId)
+    {
+        // Get work orders with phases from repository (efficient EF query)
+        var (workOrders, statusLookup) = await unitOfWork.WorkOrders
+            .GetWorkOrdersWithPlannedPhases(workcenterTypeId);
+
+        // Transform entities to hierarchical DTOs
+        var results = new List<WorkOrderWithPhasesDto>();
+
+        foreach (var wo in workOrders)
+        {
+            var plannedPhases = new List<PlannedPhaseDto>();
+
+            foreach (var phase in wo.Phases)
+            {
+                plannedPhases.Add(new PlannedPhaseDto
+                {
+                    PhaseId = phase.Id,
+                    PhaseCode = phase.Code,
+                    PhaseDescription = phase.Description ?? string.Empty,
+                    PhaseDisplay = $"{phase.Code} - {phase.Description}",
+                    PhaseStatus = statusLookup.GetValueOrDefault(phase.Id, string.Empty),
+                    StartTime = phase.StartTime,
+                    PreferredWorkcenterName = phase.PreferredWorkcenter?.Name ?? string.Empty
+                });
+            }
+
+            if (plannedPhases.Count != 0)
+            {
+                results.Add(new WorkOrderWithPhasesDto
+                {
+                    WorkOrderId = wo.Id,
+                    WorkOrderCode = wo.Code,
+                    CustomerName = wo.Reference?.Customer?.ComercialName ?? string.Empty,
+                    SalesReferenceDisplay = wo.Reference != null 
+                        ? $"{wo.Reference.Code} - {wo.Reference.Description}"
+                        : string.Empty,
+                    PlannedQuantity = wo.PlannedQuantity,
+                    PlannedDate = wo.PlannedDate,
+                    StartTime = wo.StartTime,
+                    WorkOrderStatus = wo.Status?.Name ?? string.Empty,
+                    Priority = wo.Order,
+                    Phases = plannedPhases
+                });
+            }
+        }
+
+        return results;
+    }
+
+    public async Task<IEnumerable<WorkOrderWithPhasesDto>> GetLoadedWorkOrdersByPhaseIds(List<Guid> phaseIds)
+    {
+        if (phaseIds == null || phaseIds.Count == 0)
+            return [];
+
+        // Use optimized repository method with efficient EF Core query
+        var workOrders = await unitOfWork.WorkOrders.GetWorkOrdersByLoadedPhaseIds(phaseIds);
+        
+        if (!workOrders.Any())
+            return [];
+
+        // Transform to DTOs
+        var results = new List<WorkOrderWithPhasesDto>();
+
+        foreach (var wo in workOrders)
+        {
+            var plannedPhases = new List<PlannedPhaseDto>();
+
+            foreach (var phase in wo.Phases)
+            {
+                plannedPhases.Add(new PlannedPhaseDto
+                {
+                    PhaseId = phase.Id,
+                    PhaseCode = phase.Code,
+                    PhaseDescription = phase.Description ?? string.Empty,
+                    PhaseDisplay = $"{phase.Code} - {phase.Description}",
+                    PhaseStatus = phase.Status?.Name ?? string.Empty,
+                    StartTime = phase.StartTime,
+                    PreferredWorkcenterName = phase.PreferredWorkcenter?.Name ?? string.Empty
+                });
+            }
+
+            results.Add(new WorkOrderWithPhasesDto
+            {
+                WorkOrderId = wo.Id,
+                WorkOrderCode = wo.Code,
+                CustomerName = wo.Reference?.Customer?.ComercialName ?? string.Empty,
+                SalesReferenceDisplay = wo.Reference != null 
+                    ? $"{wo.Reference.Code} - {wo.Reference.Description}"
+                    : string.Empty,
+                PlannedQuantity = wo.PlannedQuantity,
+                PlannedDate = wo.PlannedDate,
+                StartTime = wo.StartTime,
+                WorkOrderStatus = wo.Status?.Name ?? string.Empty,
+                Priority = wo.Order,
+                Phases = plannedPhases
+            });
+        }
+
+        return results;
+    }
+
+    public async Task<IEnumerable<WorkOrderPhaseDetailedDto>> GetWorkOrderPhasesDetailed(Guid workOrderId)
+    {
+        var workOrder = await unitOfWork.WorkOrders.GetWorkOrderWithPhasesDetailed(workOrderId);
+        
+        if (workOrder == null || workOrder.Phases == null)
+            return new List<WorkOrderPhaseDetailedDto>();
+
+        var results = new List<WorkOrderPhaseDetailedDto>();
+
+        // Build sales reference display (Customer + Reference + Version)
+        var salesReferenceDisplay = string.Empty;
+        if (workOrder.Reference != null)
+        {
+            var customerName = workOrder.Reference.Customer?.ComercialName ?? string.Empty;
+            var referenceCode = workOrder.Reference.Code ?? string.Empty;
+            var version = !string.IsNullOrEmpty(workOrder.Reference.Version) 
+                ? $" v{workOrder.Reference.Version}" 
+                : string.Empty;
+            
+            salesReferenceDisplay = $"{customerName} - {referenceCode}{version}";
+        }
+
+        foreach (var phase in workOrder.Phases.Where(p => !p.Disabled))
+        {
+            var detailedPhase = new WorkOrderPhaseDetailedDto
+            {
+                WorkOrderId = workOrder.Id,
+                WorkOrderCode = workOrder.Code,
+                SalesReferenceDisplay = salesReferenceDisplay,
+                PlannedQuantity = workOrder.PlannedQuantity,
+                PhaseId = phase.Id,
+                PhaseCode = phase.Code,
+                PhaseDescription = phase.Description,
+                PhaseStatus = phase.Status?.Name ?? string.Empty,
+                StartTime = phase.StartTime,
+                EndTime = phase.EndTime,
+                PreferredWorkcenterName = phase.PreferredWorkcenter?.Name ?? string.Empty,
+                WorkcenterTypeId = phase.WorkcenterTypeId ?? Guid.Empty
+            };
+
+            // Map phase details
+            if (phase.Details != null)
+            {
+                foreach (var detail in phase.Details.Where(d => !d.Disabled))
+                {
+                    detailedPhase.Details.Add(new PhaseDetailItemDto
+                    {
+                        MachineStatusId = detail.MachineStatusId,
+                        MachineStatusName = detail.MachineStatus?.Name ?? string.Empty,
+                        EstimatedTime = detail.EstimatedTime,
+                        EstimatedOperatorTime = detail.EstimatedOperatorTime,
+                        IsCycleTime = detail.IsCycleTime,
+                        Comment = detail.Comment ?? string.Empty
+                    });
+                }
+            }
+
+            // Map bill of materials
+            if (phase.BillOfMaterials != null)
+            {
+                foreach (var bom in phase.BillOfMaterials.Where(b => !b.Disabled))
+                {
+                    detailedPhase.BillOfMaterials.Add(new BillOfMaterialsItemDto
+                    {
+                        ReferenceCode = bom.Reference?.Code ?? string.Empty,
+                        ReferenceDescription = bom.Reference?.Description ?? string.Empty,
+                        Quantity = bom.Quantity
+                    });
+                }
+            }
+
+            results.Add(detailedPhase);
+        }
+
+        return results;
     }
     
     #endregion

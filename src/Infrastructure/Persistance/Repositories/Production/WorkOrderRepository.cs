@@ -1,6 +1,8 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using Application.Contracts;
+using Domain.Entities;
 using Domain.Entities.Production;
+using Domain.Entities.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistance.Repositories.Production
@@ -96,7 +98,106 @@ namespace Infrastructure.Persistance.Repositories.Production
             await SaveChanges();
             return true;
         }
+        /// <summary>
+        /// Gets work orders with planned phases for a specific workcenter type.
+        /// Uses efficient EF Core query with proper includes for hierarchical data.
+        /// </summary>
+        public async Task<(IEnumerable<WorkOrder> workOrders, Dictionary<Guid, string> statusLookup)> 
+            GetWorkOrdersWithPlannedPhases(Guid workcenterTypeId)
+        {
+            // Step 1: Get phase IDs with Planned lifecycle tag and their statuses
+            var phaseDataQuery = from phase in context.Set<WorkOrderPhase>()
+                                 join status in context.Set<Status>() 
+                                     on phase.StatusId equals status.Id
+                                 join statusTag in context.Set<StatusLifecycleTag>() 
+                                     on status.Id equals statusTag.StatusId
+                                 join tag in context.Set<LifecycleTag>() 
+                                     on statusTag.LifecycleTagId equals tag.Id
+                                 where phase.WorkcenterTypeId == workcenterTypeId
+                                     && tag.Name == StatusConstants.LifecycleTags.Planned
+                                     && !tag.Disabled
+                                     && !statusTag.Disabled
+                                     && !status.Disabled
+                                     && !phase.Disabled
+                                 select new 
+                                 { 
+                                     PhaseId = phase.Id,
+                                     phase.WorkOrderId,
+                                     StatusName = status.Name
+                                 };
 
+            var phaseData = await phaseDataQuery.ToListAsync();
+            
+            if (phaseData.Count == 0)
+                return (Enumerable.Empty<WorkOrder>(), new Dictionary<Guid, string>());
+
+            var phaseIds = phaseData.Select(p => p.PhaseId).ToArray();
+            var workOrderIds = phaseData.Select(p => p.WorkOrderId).Distinct().ToArray();
+
+            // Step 2: Load WorkOrders with all navigation properties in single query
+            var workOrders = await dbSet
+                .Where(wo => workOrderIds.Contains(wo.Id) && !wo.Disabled)
+                .Include(wo => wo.Status)
+                .Include(wo => wo.Reference)
+                    .ThenInclude(r => r!.Customer)
+                .Include(wo => wo.Phases.Where(p => phaseIds.Contains(p.Id)))
+                    .ThenInclude(p => p.PreferredWorkcenter)
+                .AsNoTracking()
+                .OrderBy(w => w.Order)
+                    .ThenBy(w => w.PlannedDate)
+                .ToListAsync();
+
+            // Step 3: Build status lookup
+            var statusLookup = phaseData.ToDictionary(p => p.PhaseId, p => p.StatusName);
+
+            return (workOrders, statusLookup);
+        }
+
+        public async Task<WorkOrder?> GetWorkOrderWithPhasesDetailed(Guid workOrderId)
+        {
+            return await dbSet
+                .Include(wo => wo.Reference)
+                    .ThenInclude(r => r!.Customer)
+                .Include(wo => wo.Phases)
+                    .ThenInclude(p => p.Status)
+                .Include(wo => wo.Phases)
+                    .ThenInclude(p => p.PreferredWorkcenter)
+                .Include(wo => wo.Phases)
+                    .ThenInclude(p => p.Details)
+                        .ThenInclude(d => d.MachineStatus)
+                .Include(wo => wo.Phases)
+                    .ThenInclude(p => p.BillOfMaterials)
+                        .ThenInclude(bom => bom.Reference)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(wo => wo.Id == workOrderId);
+        }
+
+        /// <summary>
+        /// Gets work orders by loaded phase IDs with efficient single EF Core query.
+        /// Includes all navigation properties needed for DTO transformation.
+        /// </summary>
+        public async Task<IEnumerable<WorkOrder>> GetWorkOrdersByLoadedPhaseIds(List<Guid> phaseIds)
+        {
+            if (phaseIds == null || phaseIds.Count == 0)
+                return [];
+
+            // Single efficient query with all necessary includes
+            var workOrders = await dbSet
+                .Where(wo => wo.Phases.Any(p => phaseIds.Contains(p.Id)) && !wo.Disabled)
+                .Include(wo => wo.Status)
+                .Include(wo => wo.Reference)
+                    .ThenInclude(r => r!.Customer)
+                .Include(wo => wo.Phases.Where(p => phaseIds.Contains(p.Id)))
+                    .ThenInclude(p => p.Status)
+                .Include(wo => wo.Phases.Where(p => phaseIds.Contains(p.Id)))
+                    .ThenInclude(p => p.PreferredWorkcenter)
+                .AsNoTracking()
+                .OrderBy(w => w.Order)
+                    .ThenBy(w => w.PlannedDate)
+                .ToListAsync();
+
+            return workOrders;
+        }
 
     }
 }

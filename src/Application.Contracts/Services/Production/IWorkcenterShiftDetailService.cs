@@ -1,4 +1,3 @@
-using Application.Contracts;
 using Domain.Entities.Production;
 
 namespace Application.Contracts;

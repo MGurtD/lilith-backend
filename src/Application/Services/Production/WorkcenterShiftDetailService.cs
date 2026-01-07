@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services.Production
 {
-    public class WorkcenterShiftDetailService(IUnitOfWork unitOfWork, IMetricsService metricsService) : IWorkcenterShiftDetailService
+    public class WorkcenterShiftDetailService(IUnitOfWork unitOfWork, IMetricsService metricsService, IWorkOrderPhaseService workOrderPhaseService) : IWorkcenterShiftDetailService
     {
 
         public async Task<WorkcenterShiftDetail?> GetWorkcenterShiftDetailById(Guid id)
@@ -20,9 +20,7 @@ namespace Application.Services.Production
                 return [];
             }
 
-            return currentWorkcenterShift.Details
-                .Where(wsd => wsd.Current)
-                .ToList();
+            return [.. currentWorkcenterShift.Details.Where(wsd => wsd.Current)];
         }
 
         #region ClockInOutOperator
@@ -205,8 +203,6 @@ namespace Application.Services.Production
                 {
                     return new GenericResponse(false, "La fase de fabricació indicada es troba actualment al centre de treball");
                 }
-
-                // TODO : Validar número de fases concurrents en el centre de treball (pendent crear camp i implementar validació)
             }
             else if (direction == OperatorDirection.Out && !currentWorkcenterDetails.Any(wsd => wsd.WorkOrderPhaseId == request.WorkOrderPhaseId))
             {
@@ -285,7 +281,7 @@ namespace Application.Services.Production
             }
 
             await unitOfWork.CompleteAsync();
-            return new GenericResponse(true);
+            return await workOrderPhaseService.StartPhase(request.WorkOrderPhaseId);
         }
 
         public async Task<GenericResponse> WorkOrderPhaseAndStatusIn(WorkOrderPhaseAndStatusInRequest request)
@@ -352,7 +348,7 @@ namespace Application.Services.Production
             }
 
             await unitOfWork.CompleteAsync();
-            return new GenericResponse(true);
+            return await workOrderPhaseService.StartPhase(request.WorkOrderPhaseId);
         }
 
         public async Task<GenericResponse> WorkOrderPhaseOut(WorkOrderPhaseInOutRequest request)
@@ -394,7 +390,7 @@ namespace Application.Services.Production
             }
 
             await unitOfWork.CompleteAsync();
-            return new GenericResponse(true);
+            return await workOrderPhaseService.EndPhase(request.WorkOrderPhaseId);
         }
         #endregion
 
