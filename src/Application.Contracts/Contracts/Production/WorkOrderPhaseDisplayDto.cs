@@ -67,6 +67,9 @@ public class WorkOrderWithPhasesDto
     /// <summary>Customer commercial name</summary>
     public string CustomerName { get; set; } = string.Empty;
     
+    /// <summary>Sales reference ID</summary>
+    public Guid SalesReferenceId { get; set; }
+    
     /// <summary>Sales reference code + description (formatted for display)</summary>
     public string SalesReferenceDisplay { get; set; } = string.Empty;
     

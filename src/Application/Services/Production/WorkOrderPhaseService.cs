@@ -254,6 +254,7 @@ public class WorkOrderPhaseService(
                     WorkOrderId = wo.Id,
                     WorkOrderCode = wo.Code,
                     CustomerName = wo.Reference?.Customer?.ComercialName ?? string.Empty,
+                    SalesReferenceId = wo.ReferenceId,
                     SalesReferenceDisplay = wo.Reference != null 
                         ? $"{wo.Reference.Code} - {wo.Reference.Description}"
                         : string.Empty,
@@ -307,6 +308,7 @@ public class WorkOrderPhaseService(
                 WorkOrderId = wo.Id,
                 WorkOrderCode = wo.Code,
                 CustomerName = wo.Reference?.Customer?.ComercialName ?? string.Empty,
+                SalesReferenceId = wo.ReferenceId,
                 SalesReferenceDisplay = wo.Reference != null 
                     ? $"{wo.Reference.Code} - {wo.Reference.Description}"
                     : string.Empty,
