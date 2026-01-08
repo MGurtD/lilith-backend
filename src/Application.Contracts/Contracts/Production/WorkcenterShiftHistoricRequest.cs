@@ -9,15 +9,31 @@ namespace Application.Contracts
     {
         Operator,
         Workcenter,
-        Shift
+        WorkOrder,
+        Shift,
+        None
     }
+
+    public enum TimeGroupBy
+    {
+        Shift,
+        Day,
+        Week,
+        Month,
+        Year,
+        None
+    }
+
     public class WorkcenterShiftHistoricRequest
     {
         public DateTime StartTime { get; set; }
-        public DateTime? EndTime { get; set; }
+        public DateTime EndTime { get; set; }
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public GroupBy GroupBy { get; set; }
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public TimeGroupBy TimeGroupBy { get; set; }
     }
 
 

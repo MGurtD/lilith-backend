@@ -10,5 +10,7 @@ namespace Application.Contracts
         Task<WorkcenterShift?> GetCurrentWorkcenterShiftWithCurrentDetails(Guid workcenterId);
 
         IQueryable<WorkcenterShift> FindWithDetails(Expression<Func<WorkcenterShift, bool>> predicate);
+
+        Task<List<WorkcenterShiftHistorical>> GetWorkcenterShiftHistorical(WorkcenterShiftHistoricRequest request);
     }
 }

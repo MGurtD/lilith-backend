@@ -131,10 +131,10 @@ namespace Application.Services.Production
             return new GenericResponse(true);
         }
 
-        public async Task<List<WorkcenterShiftHistoricalOperator>> GetWorkcenterShiftHistorical(WorkcenterShiftHistoricRequest request)
+        public async Task<List<WorkcenterShiftHistorical>> GetWorkcenterShiftHistorical(WorkcenterShiftHistoricRequest request)
         {
-            var historicalData = await unitOfWork.WorkcenterShiftHistoricalOperators.FindAsync(q => q.StartTime >= request.StartTime && q.EndTime <= request.EndTime);
-            return historicalData.ToList();
+            var historicalData = await unitOfWork.WorkcenterShifts.GetWorkcenterShiftHistorical(request);
+            return historicalData;
         }
     }
 }

@@ -52,6 +52,11 @@ namespace Infrastructure.Persistance
                 .Entity<WorkcenterShiftHistoricalOperator>()
                 .ToView("vw_workcentershift_historical_operator")
                 .HasNoKey();
+            builder
+                .Entity<WorkcenterShiftHistorical>()
+                .ToView("vw_workcentershift_historical")
+                .HasNoKey()
+                .Ignore(x => x.Key);
         }
 
     }
