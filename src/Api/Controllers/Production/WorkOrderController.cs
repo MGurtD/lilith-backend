@@ -59,20 +59,6 @@ namespace Api.Controllers.Production
             return Ok(workOrders.OrderBy(e => e.Code));
         }
 
-        [HttpGet("Workcenter/{workcenterId:guid}/Production")]
-        [SwaggerOperation("GetByWorkcenterIdInProduction")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetByWorkcenterIdInProduction(Guid workcenterId)
-        {
-            var response = await workOrderService.GetByWorkcenterIdInProduction(workcenterId);
-            
-            if (!response.Result)
-                return NotFound(response);
-            
-            return Ok(response.Content);
-        }
-
         [HttpPost("Loaded")]
         [SwaggerOperation("GetLoadedWorkOrdersByPhaseIds")]
         [ProducesResponseType(typeof(IEnumerable<WorkOrderWithPhasesDto>), StatusCodes.Status200OK)]
@@ -82,24 +68,25 @@ namespace Api.Controllers.Production
             return Ok(workOrders);
         }
 
-        [HttpGet("WorkcenterType/{id:guid}")]
-        [SwaggerOperation("GetWorkordersByWorkcenterTypeId")]
+        [HttpGet("Plannable")]
+        [SwaggerOperation("GetPlannableWorkOrders")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetWorkordersByWorkcenterTypeId(Guid id)
+        public async Task<IActionResult> GetPlannableWorkOrders()
         {
-            var workorders = await workOrderService.GetWorkordersByWorkcenterTypeId(id);
+            var workorders = await workOrderService.GetPlannableWorkOrders();
             return Ok(workorders);
         }
         
-        [HttpPut("UpdateOrders")]
-        public async Task<IActionResult> UpdateOrders(List<UpdateWorkOrderOrderDTO> orders)
+        [HttpPost("Priorize")]
+        public async Task<IActionResult> Priorize(List<UpdateWorkOrderOrderDTO> orders)
         {
-            var response = await workOrderService.UpdateOrders(orders);
-            if (response)
-                return Ok();
+            var response = await workOrderService.Priorize(orders);
+            
+            if (response.Result)
+                return Ok(response);
             else
-                return BadRequest();
+                return BadRequest(response);
         }
 
         [HttpGet("{id:guid}/Detailed")]

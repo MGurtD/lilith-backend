@@ -256,31 +256,6 @@ namespace Application.Services.Production
             return workOrders;
         }
 
-        public async Task<GenericResponse> GetByWorkcenterIdInProduction(Guid workcenterId)
-        {
-            var productionStatus = await unitOfWork.Lifecycles.GetStatusByName(
-                StatusConstants.Lifecycles.WorkOrder, 
-                StatusConstants.Statuses.Production);
-            
-            if (productionStatus == null)
-            {
-                return new GenericResponse(
-                    false, 
-                    localizationService.GetLocalizedString("StatusNotFound", StatusConstants.Statuses.Production));
-            }
-
-            var workOrders = await unitOfWork.WorkOrders.GetByWorkcenterIdInProduction(workcenterId, productionStatus.Id);
-            
-            if (!workOrders.Any())
-            {
-                return new GenericResponse(
-                    false, 
-                    localizationService.GetLocalizedString("WorkOrderPhaseByWorkcenterNotFound", workcenterId));
-            }
-
-            return new GenericResponse(true, workOrders);
-        }
-
         public async Task<GenericResponse> Delete(Guid id)
         {
             var woOrderDetails = unitOfWork.SalesOrderDetails.Find(d => d.WorkOrderId == id);
@@ -361,31 +336,75 @@ namespace Application.Services.Production
             await unitOfWork.WorkOrders.Update(workOrder);
         }
 
-        public async Task<IEnumerable<WorkOrder>> GetWorkordersByWorkcenterTypeId(Guid id)
+        public async Task<IEnumerable<WorkOrder>> GetPlannableWorkOrders()
         {
             var workOrders = Enumerable.Empty<WorkOrder>();
-            var statusClosed = await unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.WorkOrder, StatusConstants.Statuses.Tancada);
-            if (statusClosed == null)
+            
+            // Get WorkOrder lifecycle
+            var lifecycle = await unitOfWork.Lifecycles.GetByName(StatusConstants.Lifecycles.WorkOrder);
+            if (lifecycle == null)
             {
                 return workOrders;
             }
-            var statusCancelled = await unitOfWork.Lifecycles.GetStatusByName(StatusConstants.Lifecycles.WorkOrder, StatusConstants.Statuses.OFCancellada);
-            if (statusCancelled == null)
+
+            // Get statuses with 'Plannable' tag - these are the ones to exclude
+            var plannableStatuses = await unitOfWork.LifecycleTags.GetStatusesByTagName(
+                StatusConstants.LifecycleTags.Plannable, 
+                lifecycle.Id);
+            
+            if (plannableStatuses.Count == 0)
             {
-                return workOrders;
+                return await unitOfWork.WorkOrders.GetPlannableWorkOrders(lifecycle.InitialStatusId.HasValue ? [lifecycle.InitialStatusId.Value] : []);
             }
-            var excludedStatusIds = new[] { statusClosed.Id, statusCancelled.Id };
-            workOrders = await unitOfWork.WorkOrders.GetByWorkcenterType(id, excludedStatusIds);
 
-            if (workOrders == null || !workOrders.Any())
-                return [];
-
-            return workOrders;
+            var includedStatusId = plannableStatuses.Select(s => s.Id).ToArray();
+            return await unitOfWork.WorkOrders.GetPlannableWorkOrders(includedStatusId);
         }
 
-        public async Task<bool> UpdateOrders(List<UpdateWorkOrderOrderDTO> orders)
+        public async Task<GenericResponse> Priorize(List<UpdateWorkOrderOrderDTO> orders)
         {
-            return await unitOfWork.WorkOrders.UpdateOrders(orders);
+            // Validate input
+            if (orders == null || orders.Count == 0)
+                return new GenericResponse(false, 
+                    localizationService.GetLocalizedString("NoOrdersToUpdate"));
+
+            var ids = orders.Select(o => o.Id).ToArray();
+            
+            // Get all work orders by IDs
+            var workOrders = unitOfWork.WorkOrders
+                .Find(w => ids.Contains(w.Id))
+                .ToList();
+            
+            // Business validation: verify all work orders exist
+            if (workOrders.Count != ids.Length)
+            {
+                var missingIds = ids.Except(workOrders.Select(w => w.Id));
+                return new GenericResponse(false,
+                    localizationService.GetLocalizedString("WorkOrdersNotFound"));
+            }
+            
+            var lifecycle = await unitOfWork.Lifecycles.GetByName(StatusConstants.Lifecycles.WorkOrder);
+            if (lifecycle == null)
+            {
+                return new GenericResponse(false,
+                    localizationService.GetLocalizedString("LifecycleNotFound", StatusConstants.Lifecycles.WorkOrder));
+            }
+
+            // Update the order field for each work order
+            foreach (var workOrder in workOrders)
+            {
+                var orderDto = orders.First(o => o.Id == workOrder.Id);
+                workOrder.Order = orderDto.Order;
+
+                if (workOrder.StatusId == lifecycle.InitialStatusId)
+                {
+                    workOrder.StatusId = lifecycle.Statuses!.FirstOrDefault(s => s.Name == StatusConstants.Statuses.Llancada)?.Id ?? workOrder.StatusId;
+                }
+
+                await unitOfWork.WorkOrders.Update(workOrder);
+            }
+
+            return new GenericResponse(true);
         }
 
     }

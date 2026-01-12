@@ -84,9 +84,15 @@ public class WorkOrderPhaseService(
                 localizationService.GetLocalizedString("StatusNotFound", StatusConstants.Statuses.Production));
         }
         
-        // Update phase (reset EndTime if it was previously finished)
-        phase.StartTime = DateTime.Now;
-        phase.EndTime = null;  // Reset to reopen the phase
+        if (!phase.StartTime.HasValue)
+        {
+            phase.StartTime = DateTime.Now;
+        }
+        if (phase.EndTime.HasValue)
+        {
+            phase.EndTime = null;
+        }
+
         phase.StatusId = productionStatus.Id;
         await unitOfWork.WorkOrders.Phases.Update(phase);
         
@@ -95,23 +101,15 @@ public class WorkOrderPhaseService(
         if (workOrder != null)
         {
             workOrder.Phases = []; // Clear phases to avoid tracking issues
+            workOrder.StatusId = productionStatus.Id;
 
-            // Reset EndTime if WorkOrder was previously finished (reopen)
-            if (workOrder.EndTime.HasValue)
-            {
-                workOrder.EndTime = null;
-            }
-            
-            // Start WorkOrder if this is the first phase
             if (!workOrder.StartTime.HasValue)
             {
                 workOrder.StartTime = DateTime.Now;
-                workOrder.StatusId = productionStatus.Id;
             }
-            else
+            if (workOrder.EndTime.HasValue)
             {
-                // Ensure status is Production when reopening
-                workOrder.StatusId = productionStatus.Id;
+                workOrder.EndTime = null;
             }
             
             await unitOfWork.WorkOrders.Update(workOrder);
@@ -132,8 +130,19 @@ public class WorkOrderPhaseService(
         if (!phase.StartTime.HasValue)
             return new GenericResponse(false, 
                 localizationService.GetLocalizedString("WorkOrderPhaseNotStarted"));
+
+        var closedStatus = await unitOfWork.Lifecycles.GetStatusByName(
+                StatusConstants.Lifecycles.WorkOrder, 
+                StatusConstants.Statuses.Tancada);
+        if (closedStatus == null)
+        {
+            logger.LogError("Closed status 'Tancada' not found in WorkOrder lifecycle");
+            return new GenericResponse(false, 
+                localizationService.GetLocalizedString("StatusNotFound", StatusConstants.Statuses.Tancada));
+        }
         
         // Update phase
+        phase.StatusId = closedStatus.Id;
         phase.EndTime = DateTime.Now;
         await unitOfWork.WorkOrders.Phases.Update(phase);
         
@@ -145,7 +154,7 @@ public class WorkOrderPhaseService(
         
         // Check if this is the last active phase
         var activePhasesOrdered = workOrder.Phases
-            .Where(p => !p.Disabled)
+            .Where(p => p.Disabled == false && p.IsExternalWork == false)
             .OrderByDescending(p => p.CodeAsNumber)
             .ToList();
         
@@ -154,22 +163,11 @@ public class WorkOrderPhaseService(
         // If last phase, close the work order
         if (isLastPhase)
         {
-            var closedStatus = await unitOfWork.Lifecycles.GetStatusByName(
-                StatusConstants.Lifecycles.WorkOrder, 
-                StatusConstants.Statuses.Tancada);
+            workOrder.StatusId = closedStatus.Id;
+            workOrder.EndTime = DateTime.Now;
             
-            if (closedStatus == null)
-            {
-                logger.LogError("Closed status 'Tancada' not found in WorkOrder lifecycle");
-            }
-            else
-            {
-                workOrder.StatusId = closedStatus.Id;
-                workOrder.EndTime = DateTime.Now;
-                
-                workOrder.Phases = []; // Clear phases to avoid tracking issues
-                await unitOfWork.WorkOrders.Update(workOrder);
-            }
+            workOrder.Phases = []; // Clear phases to avoid tracking issues
+            await unitOfWork.WorkOrders.Update(workOrder);
         }
         
         // Persist changes
@@ -222,51 +220,26 @@ public class WorkOrderPhaseService(
     public async Task<IEnumerable<WorkOrderWithPhasesDto>> GetPlannedByWorkcenterType(
         Guid workcenterTypeId)
     {
-        // Get work orders with phases from repository (efficient EF query)
-        var (workOrders, statusLookup) = await unitOfWork.WorkOrders
+        // Get work orders from repository (efficient EF query)
+        var workOrders = await unitOfWork.WorkOrders
             .GetWorkOrdersWithPlannedPhases(workcenterTypeId);
 
-        // Transform entities to hierarchical DTOs
-        var results = new List<WorkOrderWithPhasesDto>();
-
-        foreach (var wo in workOrders)
+        // Transform entities to DTOs (without nested phases)
+        var results = workOrders.Select(wo => new WorkOrderWithPhasesDto
         {
-            var plannedPhases = new List<PlannedPhaseDto>();
-
-            foreach (var phase in wo.Phases)
-            {
-                plannedPhases.Add(new PlannedPhaseDto
-                {
-                    PhaseId = phase.Id,
-                    PhaseCode = phase.Code,
-                    PhaseDescription = phase.Description ?? string.Empty,
-                    PhaseDisplay = $"{phase.Code} - {phase.Description}",
-                    PhaseStatus = statusLookup.GetValueOrDefault(phase.Id, string.Empty),
-                    StartTime = phase.StartTime,
-                    PreferredWorkcenterName = phase.PreferredWorkcenter?.Name ?? string.Empty
-                });
-            }
-
-            if (plannedPhases.Count != 0)
-            {
-                results.Add(new WorkOrderWithPhasesDto
-                {
-                    WorkOrderId = wo.Id,
-                    WorkOrderCode = wo.Code,
-                    CustomerName = wo.Reference?.Customer?.ComercialName ?? string.Empty,
-                    SalesReferenceId = wo.ReferenceId,
-                    SalesReferenceDisplay = wo.Reference != null 
-                        ? $"{wo.Reference.Code} - {wo.Reference.Description}"
-                        : string.Empty,
-                    PlannedQuantity = wo.PlannedQuantity,
-                    PlannedDate = wo.PlannedDate,
-                    StartTime = wo.StartTime,
-                    WorkOrderStatus = wo.Status?.Name ?? string.Empty,
-                    Priority = wo.Order,
-                    Phases = plannedPhases
-                });
-            }
-        }
+            WorkOrderId = wo.Id,
+            WorkOrderCode = wo.Code,
+            CustomerName = wo.Reference?.Customer?.ComercialName ?? string.Empty,
+            SalesReferenceId = wo.ReferenceId,
+            SalesReferenceDisplay = wo.Reference != null 
+                ? $"{wo.Reference.Code} - {wo.Reference.Description}"
+                : string.Empty,
+            PlannedQuantity = wo.PlannedQuantity,
+            PlannedDate = wo.PlannedDate,
+            StartTime = wo.StartTime,
+            WorkOrderStatus = wo.Status?.Name ?? string.Empty,
+            Priority = wo.Order
+        }).ToList();
 
         return results;
     }

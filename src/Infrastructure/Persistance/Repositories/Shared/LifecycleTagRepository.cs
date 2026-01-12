@@ -26,6 +26,23 @@ public class LifecycleTagRepository(ApplicationDbContext context) : Repository<L
             .ToListAsync();
     }
 
+    public async Task<List<Status>> GetStatusesByTagName(string tagName, Guid lifecycleId)
+    {
+        return await context.Set<StatusLifecycleTag>()
+            .AsNoTracking()
+            .Include(slt => slt.Status)
+            .Include(slt => slt.LifecycleTag)
+            .Where(slt => 
+                slt.LifecycleTag!.Name == tagName && 
+                slt.LifecycleTag.LifecycleId == lifecycleId && 
+                !slt.Disabled && 
+                !slt.LifecycleTag.Disabled && 
+                slt.Status != null && 
+                !slt.Status.Disabled)
+            .Select(slt => slt.Status!)
+            .ToListAsync();
+    }
+
     public async Task<bool> ExistsInLifecycle(string tagName, Guid lifecycleId, Guid? excludeId = null)
     {
         var query = dbSet.Where(lt => 

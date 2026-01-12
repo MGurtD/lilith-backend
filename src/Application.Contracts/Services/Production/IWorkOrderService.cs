@@ -17,7 +17,6 @@ public interface IWorkOrderService
     Task<GenericResponse> AddProductionPart(Guid id, ProductionPart productionPart);
     Task<GenericResponse> RemoveProductionPart(Guid id, ProductionPart productionPart);
     Task Update(WorkOrder workOrder);
-    Task<GenericResponse> GetByWorkcenterIdInProduction(Guid workcenterId);
-    Task<IEnumerable<WorkOrder>> GetWorkordersByWorkcenterTypeId(Guid id);
-    Task<bool> UpdateOrders(List<UpdateWorkOrderOrderDTO> orders);
+    Task<IEnumerable<WorkOrder>> GetPlannableWorkOrders();
+    Task<GenericResponse> Priorize(List<UpdateWorkOrderOrderDTO> orders);
 }

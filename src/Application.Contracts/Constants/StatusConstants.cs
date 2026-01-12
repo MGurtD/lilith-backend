@@ -1,3 +1,5 @@
+using System.ComponentModel.Design.Serialization;
+
 namespace Application.Contracts
 {
     /// <summary>
@@ -32,6 +34,7 @@ namespace Application.Contracts
             // Work Order statuses
             public const string Creada = "Creada";
             public const string Production = "Producció";
+            public const string Llancada = "Llançada";
             public const string Tancada = "Tancada";
             public const string OFCancellada = "Cancel·lada";
 
@@ -69,8 +72,8 @@ namespace Application.Contracts
         // Lifecycle Tag Names
         public static class LifecycleTags
         {
-            public const string Planned = "Planned";
-            public const string ReadyToPlan = "ReadyToPlan";
+            public const string AvailableForProduction = "AvailableForProduction";
+            public const string Plannable = "Plannable";
         }
     }
 }

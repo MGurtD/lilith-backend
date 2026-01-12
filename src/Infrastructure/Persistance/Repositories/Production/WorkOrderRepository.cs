@@ -7,14 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistance.Repositories.Production
 {
-    public class WorkOrderRepository : Repository<WorkOrder, Guid>, IWorkOrderRepository
+    public class WorkOrderRepository(ApplicationDbContext context) : Repository<WorkOrder, Guid>(context), IWorkOrderRepository
     {
-        public IWorkOrderPhaseRepository Phases { get; }
-
-        public WorkOrderRepository(ApplicationDbContext context) : base(context)
-        {
-            Phases = new WorkOrderPhaseRepository(context);
-        }
+        public IWorkOrderPhaseRepository Phases { get; } = new WorkOrderPhaseRepository(context);
 
         public override async Task<IEnumerable<WorkOrder>> GetAll()
         {
@@ -53,104 +48,56 @@ namespace Infrastructure.Persistance.Repositories.Production
                         .FirstOrDefaultAsync(e => e.Id == id);
         }
 
-        public async Task<IEnumerable<WorkOrder>> GetByWorkcenterIdInProduction(Guid workcenterId, Guid productionStatusId)
+        public async Task<IEnumerable<WorkOrder>> GetPlannableWorkOrders(Guid[] includedStatusIds)
         {
             return await dbSet
+                .Where(w => includedStatusIds.Contains(w.StatusId))
                 .Include(w => w.Reference)
                     .ThenInclude(r => r!.Customer)
-                .Include(w => w.Phases.Where(p => 
-                    p.WorkcenterTypeId == workcenterId || p.PreferredWorkcenterId == workcenterId))
-                .Where(w => w.StatusId == productionStatusId && 
-                            w.Phases.Any(p => 
-                                p.WorkcenterTypeId == workcenterId || p.PreferredWorkcenterId == workcenterId))
-                .AsNoTracking()
-                .OrderBy(w => w.Code)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<WorkOrder>> GetByWorkcenterType(Guid workcenterTypeId, Guid[] excludedStatusIds)
-        {
-            return await dbSet
-                .Where(w => !excludedStatusIds.Contains(w.StatusId))
-                .Where(w => w.Phases.Any(p => p.WorkcenterTypeId == workcenterTypeId))
-                .Include(w => w.Reference)
-                    .ThenInclude(r => r!.Customer)
-                .Include(w => w.Status)
-                .Include(w => w.Phases.Where(p => p.WorkcenterTypeId == workcenterTypeId))                   
+                .Include(w => w.Status)            
                 .AsNoTracking()
                 .OrderBy(w => w.Order)
+                    .ThenBy(w => w.PlannedDate)
                 .ToListAsync();
         }
 
-        public async Task<bool> UpdateOrders(List<UpdateWorkOrderOrderDTO> orders)
-        {
-            var ids = orders.Select(o => o.Id).ToArray();
-            var workOrders = await dbSet.Where(w => ids.Contains(w.Id)).ToListAsync();
-            if (workOrders.Count != ids.Length)
-                return false;
-            
-            foreach (var workOrder in workOrders)
-            {
-                var order = orders.First(o => o.Id == workOrder.Id);
-                workOrder.Order = order.Order;
-                UpdateWithoutSave(workOrder);
-            }
-            await SaveChanges();
-            return true;
-        }
         /// <summary>
-        /// Gets work orders with planned phases for a specific workcenter type.
-        /// Uses efficient EF Core query with proper includes for hierarchical data.
+        /// Gets work orders with Planned lifecycle tag for a specific workcenter type.
+        /// Filters by WorkOrder status with Planned lifecycle tag at WorkOrder level.
+        /// Returns only WorkOrder entities without phase details.
         /// </summary>
-        public async Task<(IEnumerable<WorkOrder> workOrders, Dictionary<Guid, string> statusLookup)> 
-            GetWorkOrdersWithPlannedPhases(Guid workcenterTypeId)
+        public async Task<IEnumerable<WorkOrder>> GetWorkOrdersWithPlannedPhases(Guid workcenterTypeId)
         {
-            // Step 1: Get phase IDs with Planned lifecycle tag and their statuses
-            var phaseDataQuery = from phase in context.Set<WorkOrderPhase>()
-                                 join status in context.Set<Status>() 
-                                     on phase.StatusId equals status.Id
-                                 join statusTag in context.Set<StatusLifecycleTag>() 
-                                     on status.Id equals statusTag.StatusId
-                                 join tag in context.Set<LifecycleTag>() 
-                                     on statusTag.LifecycleTagId equals tag.Id
-                                 where phase.WorkcenterTypeId == workcenterTypeId
-                                     && tag.Name == StatusConstants.LifecycleTags.Planned
-                                     && !tag.Disabled
-                                     && !statusTag.Disabled
-                                     && !status.Disabled
-                                     && !phase.Disabled
-                                 select new 
-                                 { 
-                                     PhaseId = phase.Id,
-                                     phase.WorkOrderId,
-                                     StatusName = status.Name
-                                 };
+            // Get WorkOrder IDs with Planned lifecycle tag at WorkOrder level
+            var workOrderIdsQuery = from wo in context.Set<WorkOrder>()
+                                    join status in context.Set<Status>() 
+                                        on wo.StatusId equals status.Id
+                                    join statusTag in context.Set<StatusLifecycleTag>() 
+                                        on status.Id equals statusTag.StatusId
+                                    join tag in context.Set<LifecycleTag>() 
+                                        on statusTag.LifecycleTagId equals tag.Id
+                                    where tag.Name == StatusConstants.LifecycleTags.AvailableForProduction
+                                        && !wo.Disabled
+                                        && wo.Phases.Any(p => p.WorkcenterTypeId == workcenterTypeId && !p.Disabled)
+                                    select wo.Id;
 
-            var phaseData = await phaseDataQuery.ToListAsync();
+            var workOrderIds = await workOrderIdsQuery.ToListAsync();
             
-            if (phaseData.Count == 0)
-                return (Enumerable.Empty<WorkOrder>(), new Dictionary<Guid, string>());
+            if (workOrderIds.Count == 0)
+                return [];
 
-            var phaseIds = phaseData.Select(p => p.PhaseId).ToArray();
-            var workOrderIds = phaseData.Select(p => p.WorkOrderId).Distinct().ToArray();
-
-            // Step 2: Load WorkOrders with all navigation properties in single query
+            // Load WorkOrders with navigation properties
             var workOrders = await dbSet
-                .Where(wo => workOrderIds.Contains(wo.Id) && !wo.Disabled)
+                .Where(wo => workOrderIds.Contains(wo.Id))
                 .Include(wo => wo.Status)
                 .Include(wo => wo.Reference)
                     .ThenInclude(r => r!.Customer)
-                .Include(wo => wo.Phases.Where(p => phaseIds.Contains(p.Id)))
-                    .ThenInclude(p => p.PreferredWorkcenter)
                 .AsNoTracking()
                 .OrderBy(w => w.Order)
                     .ThenBy(w => w.PlannedDate)
                 .ToListAsync();
 
-            // Step 3: Build status lookup
-            var statusLookup = phaseData.ToDictionary(p => p.PhaseId, p => p.StatusName);
-
-            return (workOrders, statusLookup);
+            return workOrders;
         }
 
         public async Task<WorkOrder?> GetWorkOrderWithPhasesDetailed(Guid workOrderId)

@@ -9,17 +9,14 @@ namespace Application.Contracts
         IWorkOrderPhaseRepository Phases { get; }
 
         Task<WorkOrder?> GetDetailed(Guid id);
-        Task<IEnumerable<WorkOrder>> GetByWorkcenterIdInProduction(Guid workcenterId, Guid productionStatusId);
 
-        Task<IEnumerable<WorkOrder>> GetByWorkcenterType(Guid workcenterTypeId, Guid[] excludedStatusIds);
-        Task<bool> UpdateOrders(List<UpdateWorkOrderOrderDTO> orders);
+        Task<IEnumerable<WorkOrder>> GetPlannableWorkOrders(Guid[] includedStatusIds);
 
         /// <summary>
-        /// Gets work orders with planned phases efficiently using EF Core includes.
-        /// Returns entities and status lookup for DTO transformation in service layer.
+        /// Gets work orders with Planned lifecycle tag for a specific workcenter type.
+        /// Returns only WorkOrder entities without phase details.
         /// </summary>
-        Task<(IEnumerable<WorkOrder> workOrders, Dictionary<Guid, string> statusLookup)> 
-            GetWorkOrdersWithPlannedPhases(Guid workcenterTypeId);
+        Task<IEnumerable<WorkOrder>> GetWorkOrdersWithPlannedPhases(Guid workcenterTypeId);
 
         /// <summary>
         /// Gets work orders by loaded phase IDs with efficient EF Core query.
