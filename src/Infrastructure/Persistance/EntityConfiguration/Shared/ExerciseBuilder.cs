@@ -79,6 +79,16 @@ namespace Infrastructure.Persistance.EntityConfiguration
                 .HasDefaultValue("0")
                 .HasColumnType("varchar")
                 .HasMaxLength(10);
+            builder
+                .Property(b => b.MaterialProfit)
+                .IsRequired()
+                .HasColumnType("decimal(5,2)")
+                .HasDefaultValue(30m);
+            builder
+                .Property(b => b.ExternalProfit)
+                .IsRequired()
+                .HasColumnType("decimal(5,2)")
+                .HasDefaultValue(30m);
 
             builder
                 .HasKey(b => b.Id)
