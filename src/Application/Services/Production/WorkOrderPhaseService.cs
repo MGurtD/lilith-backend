@@ -64,7 +64,7 @@ public class WorkOrderPhaseService(
 
     #region Phase Lifecycle
     
-    public async Task<GenericResponse> StartPhase(Guid phaseId)
+    public async Task<GenericResponse> StartPhase(Guid phaseId, Guid? workOrderStatusId = null)
     {
         // Get phase
         var phase = await unitOfWork.WorkOrders.Phases.Get(phaseId);
@@ -118,7 +118,7 @@ public class WorkOrderPhaseService(
         return new GenericResponse(true, phase);
     }
 
-    public async Task<GenericResponse> EndPhase(Guid phaseId)
+    public async Task<GenericResponse> EndPhase(Guid phaseId, Guid workOrderStatusId)
     {
         // Get phase
         var phase = await unitOfWork.WorkOrders.Phases.Get(phaseId);
@@ -131,18 +131,16 @@ public class WorkOrderPhaseService(
             return new GenericResponse(false, 
                 localizationService.GetLocalizedString("WorkOrderPhaseNotStarted"));
 
-        var closedStatus = await unitOfWork.Lifecycles.GetStatusByName(
-                StatusConstants.Lifecycles.WorkOrder, 
-                StatusConstants.Statuses.Tancada);
-        if (closedStatus == null)
+        var outStatus = await unitOfWork.Lifecycles.StatusRepository.Get(workOrderStatusId);
+        if (outStatus == null)
         {
-            logger.LogError("Closed status 'Tancada' not found in WorkOrder lifecycle");
+            logger.LogError("Status with id {workOrderStatusId} not found in WorkOrder lifecycle", workOrderStatusId);
             return new GenericResponse(false, 
-                localizationService.GetLocalizedString("StatusNotFound", StatusConstants.Statuses.Tancada));
+                localizationService.GetLocalizedString("StatusNotFound"));
         }
         
         // Update phase
-        phase.StatusId = closedStatus.Id;
+        phase.StatusId = outStatus.Id;
         phase.EndTime = DateTime.Now;
         await unitOfWork.WorkOrders.Phases.Update(phase);
         
@@ -163,7 +161,7 @@ public class WorkOrderPhaseService(
         // If last phase, close the work order
         if (isLastPhase)
         {
-            workOrder.StatusId = closedStatus.Id;
+            workOrder.StatusId = outStatus.Id;
             workOrder.EndTime = DateTime.Now;
             
             workOrder.Phases = []; // Clear phases to avoid tracking issues

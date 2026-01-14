@@ -76,7 +76,7 @@ namespace Infrastructure.Persistance.Repositories.Production
                                         on status.Id equals statusTag.StatusId
                                     join tag in context.Set<LifecycleTag>() 
                                         on statusTag.LifecycleTagId equals tag.Id
-                                    where tag.Name == StatusConstants.LifecycleTags.AvailableForProduction
+                                    where tag.Name == StatusConstants.LifecycleTags.Plant
                                         && !wo.Disabled
                                         && wo.Phases.Any(p => p.WorkcenterTypeId == workcenterTypeId && !p.Disabled)
                                     select wo.Id;

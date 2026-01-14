@@ -195,7 +195,7 @@ namespace Application.Services.Production
         #endregion
 
         #region WorkOrderPhaseInOut
-        private static GenericResponse ValidateWorkOrderPhase(List<WorkcenterShiftDetail> currentWorkcenterDetails, WorkOrderPhaseInOutRequest request, OperatorDirection direction)
+        private static GenericResponse ValidateWorkOrderPhase(List<WorkcenterShiftDetail> currentWorkcenterDetails, WorkOrderPhaseOutRequest request, OperatorDirection direction)
         {
             if (direction == OperatorDirection.In)
             {
@@ -223,7 +223,7 @@ namespace Application.Services.Production
         }       
         
 
-        public async Task<GenericResponse> WorkOrderPhaseIn(WorkOrderPhaseInOutRequest request)
+        public async Task<GenericResponse> WorkOrderPhaseIn(WorkOrderPhaseInRequest request)
         {
             var currentWorkcenterShift = await unitOfWork.WorkcenterShifts.GetCurrentWorkcenterShiftWithCurrentDetails(request.WorkcenterId);
             if (currentWorkcenterShift == null)
@@ -233,7 +233,7 @@ namespace Application.Services.Production
             var currentWorkcenterShiftDetails = currentWorkcenterShift.Details.ToList();
 
             // Validar la petició contra l'estat del sistema
-            var validationResponse = ValidateWorkOrderPhase(currentWorkcenterShiftDetails, request, OperatorDirection.In);
+            var validationResponse = ValidateWorkOrderPhase(currentWorkcenterShiftDetails, (WorkOrderPhaseOutRequest) request, OperatorDirection.In);
             if (!validationResponse.Result)
             {
                 return validationResponse;
@@ -351,7 +351,7 @@ namespace Application.Services.Production
             return await workOrderPhaseService.StartPhase(request.WorkOrderPhaseId);
         }
 
-        public async Task<GenericResponse> WorkOrderPhaseOut(WorkOrderPhaseInOutRequest request)
+        public async Task<GenericResponse> WorkOrderPhaseOut(WorkOrderPhaseOutRequest request)
         {
             var currentWorkcenterShift = await unitOfWork.WorkcenterShifts.GetCurrentWorkcenterShiftWithCurrentDetails(request.WorkcenterId);
             if (currentWorkcenterShift == null)
@@ -379,7 +379,7 @@ namespace Application.Services.Production
                     MachineStatusId = currentDetail.MachineStatusId,
                     MachineStatusReasonId = currentDetail.MachineStatusReasonId,
                     WorkcenterCost = currentDetail.WorkcenterCost,
-                    WorkOrderPhaseId = null,
+                    WorkOrderPhaseId = request.NextWorkOrderPhaseId,
                     ConcurrentWorkorderPhases = currentDetail.ConcurrentWorkorderPhases - 1,
                     OperatorId = currentDetail.OperatorId,
                     OperatorCost = currentDetail.OperatorCost,
@@ -390,7 +390,7 @@ namespace Application.Services.Production
             }
 
             await unitOfWork.CompleteAsync();
-            return await workOrderPhaseService.EndPhase(request.WorkOrderPhaseId);
+            return await workOrderPhaseService.EndPhase(request.WorkOrderPhaseId, request.WorkOrderStatusId);
         }
         #endregion
 
