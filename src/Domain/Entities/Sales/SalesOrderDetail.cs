@@ -43,8 +43,8 @@ namespace Domain.Entities.Sales
             Quantity = 0;
             Profit = decimal.Zero;
             ProductionProfit = decimal.Zero;
-            MaterialProfit = decimal.Zero;
-            ExternalProfit = decimal.Zero;
+            MaterialProfit = 30m;
+            ExternalProfit = 30m;
             Discount = decimal.Zero;
             LastCost = decimal.Zero;
             WorkMasterCost = decimal.Zero;

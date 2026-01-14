@@ -15,5 +15,8 @@
         public string DeliveryNoteCounter { get; set; } = string.Empty;
         public string BudgetCounter { get; set; } = string.Empty;
         public string WorkOrderCounter { get; set; } = string.Empty;
+        
+        public decimal MaterialProfit { get; set; } = 30m;
+        public decimal ExternalProfit { get; set; } = 30m;
     }
 }
