@@ -270,3 +270,6 @@ FakesAssemblies/
 # Local Development Files
 docker-compose.yml
 /Api/appsettings.json
+
+# Personal notes
+connectionstrings.txt

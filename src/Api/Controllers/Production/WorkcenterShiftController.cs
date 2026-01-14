@@ -125,7 +125,7 @@ public class WorkcenterShiftController(IWorkcenterShiftService workcenterShiftSe
         }
     }
 
-    [HttpPut("UpdateWorkcenterShiftDetailQuantities")]
+    [HttpPut("WorkOrderPhase/Quantities")]
     public async Task<IActionResult> UpdateWorkcenterShiftDetailQuantities(UpdateWorkcenterShiftDetailQuantitiesDto dto)
     {
         var response = await workcenterShiftService.DetailsService.UpdateWorkcenterShiftDetailQuantities(dto);
