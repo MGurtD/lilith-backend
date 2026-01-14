@@ -349,7 +349,7 @@ namespace Application.Services.Production
 
             // Get statuses with 'Plannable' tag - these are the ones to exclude
             var plannableStatuses = await unitOfWork.LifecycleTags.GetStatusesByTagName(
-                StatusConstants.LifecycleTags.Plannable, 
+                StatusConstants.LifecycleTags.Available, 
                 lifecycle.Id);
             
             if (plannableStatuses.Count == 0)

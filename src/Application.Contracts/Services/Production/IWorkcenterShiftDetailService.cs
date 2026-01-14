@@ -9,9 +9,9 @@ public interface IWorkcenterShiftDetailService
 
     Task<GenericResponse> OperatorIn(OperatorInOutRequest request);
     Task<GenericResponse> OperatorOut(OperatorInOutRequest request);
-    Task<GenericResponse> WorkOrderPhaseIn(WorkOrderPhaseInOutRequest request);
+    Task<GenericResponse> WorkOrderPhaseIn(WorkOrderPhaseInRequest request);
     Task<GenericResponse> WorkOrderPhaseAndStatusIn(WorkOrderPhaseAndStatusInRequest request);
-    Task<GenericResponse> WorkOrderPhaseOut(WorkOrderPhaseInOutRequest request);
+    Task<GenericResponse> WorkOrderPhaseOut(WorkOrderPhaseOutRequest request);
     Task<GenericResponse> ChangeWorkcenterStatus(WorkcenterChangeStatusRequest request);
     Task<GenericResponse> UpdateWorkcenterShiftDetailQuantities(UpdateWorkcenterShiftDetailQuantitiesDto dto);
 

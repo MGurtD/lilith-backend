@@ -84,7 +84,7 @@ public class WorkcenterShiftController(IWorkcenterShiftService workcenterShiftSe
     }
 
     [HttpPost("WorkOrderPhase/In")]
-    public async Task<IActionResult> WorkOrderPhaseIn(WorkOrderPhaseInOutRequest request)
+    public async Task<IActionResult> WorkOrderPhaseIn(WorkOrderPhaseOutRequest request)
     {
         var response = await workcenterShiftService.DetailsService.WorkOrderPhaseIn(request);
         if (response.Result)
@@ -112,7 +112,7 @@ public class WorkcenterShiftController(IWorkcenterShiftService workcenterShiftSe
     }
 
     [HttpPost("WorkOrderPhase/Out")]
-    public async Task<IActionResult> WorkOrderPhaseOut(WorkOrderPhaseInOutRequest request)
+    public async Task<IActionResult> WorkOrderPhaseOut(WorkOrderPhaseOutRequest request)
     {
         var response = await workcenterShiftService.DetailsService.WorkOrderPhaseOut(request);
         if (response.Result)

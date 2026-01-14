@@ -72,8 +72,10 @@ namespace Application.Contracts
         // Lifecycle Tag Names
         public static class LifecycleTags
         {
-            public const string AvailableForProduction = "AvailableForProduction";
-            public const string Plannable = "Plannable";
+            public const string Available = "Available";
+            public const string Unavailable = "Unavailable";
+            public const string Plant = "Plant";
+
         }
     }
 }

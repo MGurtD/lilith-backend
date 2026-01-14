@@ -13,8 +13,8 @@ public interface IWorkOrderPhaseService
     Task<GenericResponse> Remove(Guid id);
     
     // Phase Lifecycle
-    Task<GenericResponse> StartPhase(Guid phaseId);
-    Task<GenericResponse> EndPhase(Guid phaseId);
+    Task<GenericResponse> StartPhase(Guid phaseId, Guid? workOrderStatusId = null);
+    Task<GenericResponse> EndPhase(Guid phaseId, Guid workOrderStatusId);
     
     // Special queries
     Task<IEnumerable<object>> GetExternalPhases(DateTime startTime, DateTime endTime);

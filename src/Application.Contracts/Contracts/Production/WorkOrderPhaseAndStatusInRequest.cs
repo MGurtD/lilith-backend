@@ -12,4 +12,5 @@ public class WorkOrderPhaseAndStatusInRequest
     public Guid MachineStatusId { get; set; }
     [Required]
     public DateTime Timestamp { get; set; }
+    public Guid? WorkOrderStatusId { get; set; }
 }
