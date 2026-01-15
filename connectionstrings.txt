@@ -1,0 +1,7 @@
+dotnet user-secrets set
+
+preprod
+"ConnectionStrings:Default" "Host=51.75.123.239;Port=3000;Database=temges_pre_prod;Username=ubuntu;Password=J0ab#271106;"
+
+dev
+"ConnectionStrings:Default" "Host=localhost;Port=5432;Database=temges;Username=ubuntu;Password=J0ab#271106;"

@@ -187,7 +187,7 @@ namespace Application.Services.Production
                     var workOrderPhaseBomItem = new WorkOrderPhaseBillOfMaterials()
                     {
                         WorkOrderPhaseId = workOrderPhase.Id,
-                        Quantity = dto.PlannedQuantity * workMasterPhaseBomItem.Quantity,
+                        Quantity = (dto.PlannedQuantity/workMaster.BaseQuantity)* workMasterPhaseBomItem.Quantity,
                         Diameter = workMasterPhaseBomItem.Diameter,
                         Height = workMasterPhaseBomItem.Height,
                         Length = workMasterPhaseBomItem.Length,
