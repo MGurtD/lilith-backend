@@ -16,4 +16,5 @@ public class WorkOrderPhaseOutRequest : WorkOrderPhaseInRequest
 {
     public Guid WorkOrderStatusId { get; set; }
     public Guid? NextWorkOrderPhaseId { get; set; }
+    public Guid? NextMachineStatusId { get; set; }
 }

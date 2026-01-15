@@ -109,6 +109,10 @@ public class PlannedPhaseDto
     
     /// <summary>Phase code + description (formatted for display)</summary>
     public string PhaseDisplay { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Phase status ID</summary>
+    public Guid PhaseStatusId { get; set; }
     
     /// <summary>Current phase status name</summary>
     public string PhaseStatus { get; set; } = string.Empty;
@@ -118,6 +122,9 @@ public class PlannedPhaseDto
     
     /// <summary>Preferred workcenter name for this phase</summary>
     public string PreferredWorkcenterName { get; set; } = string.Empty;
+
+    /// <summary>Indicates if this phase involves external work</summary>
+     public bool IsExternalWork { get; set; }
 }
 
 /// <summary>
@@ -146,6 +153,9 @@ public class WorkOrderPhaseDetailedDto
     
     /// <summary>Phase description</summary>
     public string PhaseDescription { get; set; } = string.Empty;
+
+    /// <summary>Phase status ID</summary>
+    public Guid PhaseStatusId { get; set; }
     
     /// <summary>Current phase status name</summary>
     public string PhaseStatus { get; set; } = string.Empty;
@@ -161,12 +171,15 @@ public class WorkOrderPhaseDetailedDto
     
     /// <summary>Workcenter type ID (for filtering selectable phases)</summary>
     public Guid WorkcenterTypeId { get; set; }
+
+    /// <summary>Indicates if this phase involves external work</summary>
+    public bool IsExternalWork { get; set; }
     
     /// <summary>Phase operation details</summary>
-    public List<PhaseDetailItemDto> Details { get; set; } = new();
+    public List<PhaseDetailItemDto> Details { get; set; } = [];
     
     /// <summary>Bill of materials for this phase</summary>
-    public List<BillOfMaterialsItemDto> BillOfMaterials { get; set; } = new();
+    public List<BillOfMaterialsItemDto> BillOfMaterials { get; set; } = [];
 }
 
 /// <summary>

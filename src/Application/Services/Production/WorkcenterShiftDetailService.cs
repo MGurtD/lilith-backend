@@ -1,11 +1,17 @@
 using Application.Contracts;
 using Domain.Entities.Production;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services.Production
 {
-    public class WorkcenterShiftDetailService(IUnitOfWork unitOfWork, IMetricsService metricsService, IWorkOrderPhaseService workOrderPhaseService) : IWorkcenterShiftDetailService
+    public class WorkcenterShiftDetailService(IUnitOfWork unitOfWork, IMetricsService metricsService, IWorkOrderPhaseService workOrderPhaseService, ILogger<WorkcenterShiftDetailService> logger) : IWorkcenterShiftDetailService
     {
+        private GenericResponse LogAndReturnError(string message)
+        {
+            logger.LogWarning("Validation failed: {Message}", message);
+            return new GenericResponse(false, message);
+        }
 
         public async Task<WorkcenterShiftDetail?> GetWorkcenterShiftDetailById(Guid id)
         {
@@ -24,16 +30,16 @@ namespace Application.Services.Production
         }
 
         #region ClockInOutOperator
-        private static GenericResponse ValidateOperatorClockInOut(List<WorkcenterShiftDetail> currentWorkcenterDetails, Guid operatorId, OperatorDirection direction)
+        private GenericResponse ValidateOperatorClockInOut(List<WorkcenterShiftDetail> currentWorkcenterDetails, Guid operatorId, OperatorDirection direction)
         {
             if (direction == OperatorDirection.In && currentWorkcenterDetails.Any(wsd => wsd.OperatorId == operatorId))
             {
-                return new GenericResponse(false, "L'operari indicat es troba actualment al centre de treball");
+                return LogAndReturnError("L'operari indicat es troba actualment al centre de treball");
 
             }
             else if (direction == OperatorDirection.Out && !currentWorkcenterDetails.Any(wsd => wsd.OperatorId == operatorId))
             {
-                return new GenericResponse(false, "L'operari indicat no es troba actualment al centre de treball");
+                return LogAndReturnError("L'operari indicat no es troba actualment al centre de treball");
             }
             return new GenericResponse(true);
         }
@@ -70,7 +76,7 @@ namespace Application.Services.Production
             {
                 // Cas 1 : No hi ha detalls actius al centre de treball
                 var defaultMachineStatus = (await unitOfWork.MachineStatuses.FindAsync(ms => ms.Default)).FirstOrDefault();
-                if (defaultMachineStatus == null) return new GenericResponse(false, "L'estat per defecte no existeix");
+                if (defaultMachineStatus == null) return LogAndReturnError("L'estat per defecte no existeix");
 
                 var newDetail = new WorkcenterShiftDetail()
                 {
@@ -195,28 +201,28 @@ namespace Application.Services.Production
         #endregion
 
         #region WorkOrderPhaseInOut
-        private static GenericResponse ValidateWorkOrderPhase(List<WorkcenterShiftDetail> currentWorkcenterDetails, WorkOrderPhaseOutRequest request, OperatorDirection direction)
+        private GenericResponse ValidateWorkOrderPhase(List<WorkcenterShiftDetail> currentWorkcenterDetails, WorkOrderPhaseOutRequest request, OperatorDirection direction)
         {
             if (direction == OperatorDirection.In)
             {
                 if (currentWorkcenterDetails.Any(wsd => wsd.WorkOrderPhaseId == request.WorkOrderPhaseId))
                 {
-                    return new GenericResponse(false, "La fase de fabricació indicada es troba actualment al centre de treball");
+                    return LogAndReturnError("La fase de fabricació indicada es troba actualment al centre de treball");
                 }
             }
             else if (direction == OperatorDirection.Out && !currentWorkcenterDetails.Any(wsd => wsd.WorkOrderPhaseId == request.WorkOrderPhaseId))
             {
-                return new GenericResponse(false, "La fase de fabricació indicada no es troba actualment al centre de treball");
+                return LogAndReturnError("La fase de fabricació indicada no es troba actualment al centre de treball");
             }
             return new GenericResponse(true);
         }
 
-        private static async Task<GenericResponse> ValidateWorkOrderPhaseAndStatus(List<WorkcenterShiftDetail> currentWorkcenterDetails, WorkOrderPhaseAndStatusInRequest request)
+        private GenericResponse ValidateWorkOrderPhaseAndStatus(List<WorkcenterShiftDetail> currentWorkcenterDetails, WorkOrderPhaseAndStatusInRequest request)
         {
             // Validar que la fase de fabricació + estat de màquina no estigui ja carregada
             if (currentWorkcenterDetails.Any(wsd => wsd.WorkOrderPhaseId == request.WorkOrderPhaseId && wsd.MachineStatusId == request.MachineStatusId))
             {
-                return new GenericResponse(false, "La fase de fabricació indicada es troba actualment al centre de treball amb l'estat de màquina indicat");
+                return LogAndReturnError("La fase de fabricació indicada es troba actualment al centre de treball amb l'estat de màquina indicat");
             }
 
             return new GenericResponse(true);
@@ -228,7 +234,7 @@ namespace Application.Services.Production
             var currentWorkcenterShift = await unitOfWork.WorkcenterShifts.GetCurrentWorkcenterShiftWithCurrentDetails(request.WorkcenterId);
             if (currentWorkcenterShift == null)
             {
-                return new GenericResponse(false, "El centre de treball no té cap torn actiu");
+                return LogAndReturnError("El centre de treball no té cap torn actiu");
             }
             var currentWorkcenterShiftDetails = currentWorkcenterShift.Details.ToList();
 
@@ -243,7 +249,7 @@ namespace Application.Services.Production
             {
                 // No hi ha detalls actius al centre de treball, crear un nou detall amb l'estat per defecte
                 var defaultMachineStatus = (await unitOfWork.MachineStatuses.FindAsync(ms => ms.Default)).FirstOrDefault();
-                if (defaultMachineStatus == null) return new GenericResponse(false, "L'estat per defecte no existeix");
+                if (defaultMachineStatus == null) return LogAndReturnError("L'estat per defecte no existeix");
                 
                 var newDetail = new WorkcenterShiftDetail()
                 {
@@ -289,12 +295,12 @@ namespace Application.Services.Production
             var currentWorkcenterShift = await unitOfWork.WorkcenterShifts.GetCurrentWorkcenterShiftWithCurrentDetails(request.WorkcenterId);
             if (currentWorkcenterShift == null)
             {
-                return new GenericResponse(false, "El centre de treball no té cap torn actiu");
+                return LogAndReturnError("El centre de treball no té cap torn actiu");
             }
             var currentWorkcenterShiftDetails = currentWorkcenterShift.Details.ToList();
 
             // Validar la petició de la fase i l'estat
-            var validationResponse = await ValidateWorkOrderPhaseAndStatus(currentWorkcenterShiftDetails, request);
+            var validationResponse = ValidateWorkOrderPhaseAndStatus(currentWorkcenterShiftDetails, request);
             if (!validationResponse.Result)
             {
                 return validationResponse;
@@ -356,7 +362,7 @@ namespace Application.Services.Production
             var currentWorkcenterShift = await unitOfWork.WorkcenterShifts.GetCurrentWorkcenterShiftWithCurrentDetails(request.WorkcenterId);
             if (currentWorkcenterShift == null)
             {
-                return new GenericResponse(false, "El centre de treball no té cap torn actiu");
+                return LogAndReturnError("El centre de treball no té cap torn actiu");
             }
             var currentWorkcenterShiftDetails = currentWorkcenterShift.Details.ToList();
 
@@ -372,13 +378,30 @@ namespace Application.Services.Production
             {
                 currentDetail.Close(request.Timestamp);
                 unitOfWork.WorkcenterShifts.Details.UpdateWithoutSave(currentDetail);
+                
+                // Determinar el nou estat de màquina
+                var machineStatus = currentDetail.MachineStatusId;
+                var machineStatusReasonId = currentDetail.MachineStatusReasonId;
+                var workcenterCost = currentDetail.WorkcenterCost;
+                if (request.NextMachineStatusId.HasValue && machineStatus != request.NextMachineStatusId)
+                {
+                    machineStatus = request.NextMachineStatusId.Value;
+                    machineStatusReasonId = null;
+
+                    // Obtenir el cost del workcenter per l'estat indicat
+                    var workcenterCostResponse = await metricsService.GetWorkcenterStatusCost(request.WorkcenterId, machineStatus);
+                    if (workcenterCostResponse.Result)
+                    {
+                        workcenterCost = (decimal)workcenterCostResponse.Content!;
+                    }
+                }
 
                 var newDetail = new WorkcenterShiftDetail()
                 {
                     WorkcenterShiftId = currentDetail.WorkcenterShiftId,
-                    MachineStatusId = currentDetail.MachineStatusId,
-                    MachineStatusReasonId = currentDetail.MachineStatusReasonId,
-                    WorkcenterCost = currentDetail.WorkcenterCost,
+                    MachineStatusId = machineStatus,
+                    MachineStatusReasonId = machineStatusReasonId,
+                    WorkcenterCost = workcenterCost,
                     WorkOrderPhaseId = request.NextWorkOrderPhaseId,
                     ConcurrentWorkorderPhases = currentDetail.ConcurrentWorkorderPhases - 1,
                     OperatorId = currentDetail.OperatorId,
@@ -404,7 +427,7 @@ namespace Application.Services.Production
                                                 .FirstOrDefaultAsync();
             if (currentWorkcenterShift == null)
             {
-                return new GenericResponse(false, "El centre de treball no té cap torn actiu");
+                return LogAndReturnError("El centre de treball no té cap torn actiu");
             }
 
             // Obtenir els detalls actius del centre de treball
@@ -473,11 +496,11 @@ namespace Application.Services.Production
             var machineStatus = await unitOfWork.MachineStatuses.Get(machineStatusId);
             if (machineStatus == null)
             {
-                return new GenericResponse(false, "L'estat indicat no existeix");
+                return LogAndReturnError("L'estat indicat no existeix");
             }
             if (currentDetails.Any(wsd => wsd.MachineStatusId == machineStatusId))
             {
-                return new GenericResponse(false, "El centre de treball ja té l'estat indicat");
+                return LogAndReturnError("El centre de treball ja té l'estat indicat");
             }
             return new GenericResponse(true);
         }
@@ -501,7 +524,7 @@ namespace Application.Services.Production
             }
             else
             {
-                return new GenericResponse(false, "La fase de fabricació no está carregada al centre de treball indicat");
+                return LogAndReturnError("La fase de fabricació no está carregada al centre de treball indicat");
             }
         }
 
@@ -510,7 +533,7 @@ namespace Application.Services.Production
             var workcenterShiftDetail = await unitOfWork.WorkcenterShifts.Details.Get(workcenterShiftDetailId);
             if (workcenterShiftDetail == null)
             {
-                return new GenericResponse(false, "Workcenter shift detail not found");
+                return LogAndReturnError("Workcenter shift detail not found");
             }
 
             workcenterShiftDetail.Disabled = true;

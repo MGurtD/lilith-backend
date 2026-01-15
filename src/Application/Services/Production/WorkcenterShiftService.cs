@@ -1,13 +1,14 @@
 using Application.Contracts;
 using Domain.Entities.Production;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Collections.Immutable;
 
 namespace Application.Services.Production
 {
-    public class WorkcenterShiftService(IUnitOfWork unitOfWork, IMetricsService metricsService, IWorkOrderPhaseService workOrderPhaseService) : IWorkcenterShiftService
+    public class WorkcenterShiftService(IUnitOfWork unitOfWork, IMetricsService metricsService, IWorkOrderPhaseService workOrderPhaseService, ILogger<WorkcenterShiftDetailService> logger) : IWorkcenterShiftService
     {
-        public IWorkcenterShiftDetailService DetailsService => new WorkcenterShiftDetailService(unitOfWork, metricsService, workOrderPhaseService);
+        public IWorkcenterShiftDetailService DetailsService => new WorkcenterShiftDetailService(unitOfWork, metricsService, workOrderPhaseService, logger);
 
         public async Task<WorkcenterShift?> GetWorkcenterShift(Guid workcenterShiftId)
         {

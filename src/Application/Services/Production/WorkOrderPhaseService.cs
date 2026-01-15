@@ -268,9 +268,11 @@ public class WorkOrderPhaseService(
                     PhaseCode = phase.Code,
                     PhaseDescription = phase.Description ?? string.Empty,
                     PhaseDisplay = $"{phase.Code} - {phase.Description}",
+                    PhaseStatusId = phase.StatusId,
                     PhaseStatus = phase.Status?.Name ?? string.Empty,
                     StartTime = phase.StartTime,
-                    PreferredWorkcenterName = phase.PreferredWorkcenter?.Name ?? string.Empty
+                    PreferredWorkcenterName = phase.PreferredWorkcenter?.Name ?? string.Empty,
+                    IsExternalWork = phase.IsExternalWork,
                 });
             }
 
@@ -328,10 +330,12 @@ public class WorkOrderPhaseService(
                 PhaseId = phase.Id,
                 PhaseCode = phase.Code,
                 PhaseDescription = phase.Description,
+                PhaseStatusId = phase.StatusId,
                 PhaseStatus = phase.Status?.Name ?? string.Empty,
                 StartTime = phase.StartTime,
                 EndTime = phase.EndTime,
                 PreferredWorkcenterName = phase.PreferredWorkcenter?.Name ?? string.Empty,
+                IsExternalWork = phase.IsExternalWork,
                 WorkcenterTypeId = phase.WorkcenterTypeId ?? Guid.Empty
             };
 
