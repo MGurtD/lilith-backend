@@ -19,4 +19,5 @@ public interface IWorkOrderService
     Task Update(WorkOrder workOrder);
     Task<IEnumerable<WorkOrder>> GetPlannableWorkOrders();
     Task<GenericResponse> Priorize(List<UpdateWorkOrderOrderDTO> orders);
+    Task<IEnumerable<WorkOrderPhaseEstimationDto>>GetWorkcenterLoadBetweenDatesByWorkcenterType(DateTime startDate, DateTime endDate);
 }
