@@ -76,7 +76,8 @@ namespace Application.Contracts
         IContractReader<DetailedWorkOrder> DetailedWorkOrders { get; }
         IContractReader<ProductionCost> ProductionCosts { get; }
         IContractReader<WorkcenterShiftHistoricalOperator> WorkcenterShiftHistoricalOperators { get; }
-
+        IWorkcenterProfitPercentageRepository WorkcenterProfitPercentages { get; }
+        
         //Warehouse
         IWarehouseRepository Warehouses { get; }
         IRepository<ReferenceType, Guid> ReferenceTypes { get; }

@@ -406,7 +406,10 @@ namespace Application.Services.Production
 
             return new GenericResponse(true);
         }
-
+    public async Task<IEnumerable<WorkOrderPhaseEstimationDto>>GetWorkcenterLoadBetweenDatesByWorkcenterType(DateTime startDate, DateTime endDate)
+    {
+        return await unitOfWork.WorkOrders.GetWorkcenterLoadBetweenDatesByWorkcenterType(startDate, endDate);
+    }
     }
 }
 
