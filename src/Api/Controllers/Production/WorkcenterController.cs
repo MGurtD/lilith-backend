@@ -52,6 +52,17 @@ namespace Api.Controllers.Production
                 return NotFound();
             }
         }
+
+        [HttpGet("workcenterload")]
+        public async Task<IActionResult> GetWorkcenterLoadBetweenDatesByWorkcenterType([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        {
+
+            var workorders = await service.GetWorkcenterLoadBetweenDatesByWorkcenterType(startDate, endDate);
+            if (workorders.Count() == 0)
+                return NoContent();
+            return Ok(workorders);
+        }
+        
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid Id, Workcenter request)
         {
