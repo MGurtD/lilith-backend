@@ -231,6 +231,8 @@
     "CustomerRanking.NoDataFound": "No s'han trobat dades de vendes per a l'any {0}",
     "CustomerRanking.InvalidYear": "L'any proporcionat no és vàlid",
     "CustomerRanking.YearRequired": "L'any és obligatori",
+    "WorkOrderPhaseInsufficientQuantity": "La quantitat sol·licitada ({0}) supera les unitats disponibles de la fase anterior ({1})",
+    "WorkOrderPhaseShiftDetailNotLoaded": "La fase de fabricació no està carregada al centre de treball indicat",
     "ErrorResponse.InternalServerError": "S'ha produït un error intern del servidor",
     "ErrorResponse.BadRequest": "La sol·licitud no és vàlida",
     "ErrorResponse.NotFound": "El recurs sol·licitat no existeix",

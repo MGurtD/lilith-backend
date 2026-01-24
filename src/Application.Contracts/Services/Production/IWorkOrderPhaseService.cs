@@ -42,6 +42,19 @@ public interface IWorkOrderPhaseService
     /// <returns>List of phases with detailed information</returns>
     Task<IEnumerable<WorkOrderPhaseDetailedDto>> GetWorkOrderPhasesDetailed(Guid workOrderId);
     
+    /// <summary>
+    /// Gets the next available phase for a workcenter when unloading a phase.
+    /// Finds the next phase of the same work order that:
+    /// - Has a code greater than the current phase
+    /// - Has the same workcenter type as the specified workcenter
+    /// - Is not an external work phase
+    /// - Is not yet completed (EndTime is null)
+    /// </summary>
+    /// <param name="workcenterId">Workcenter ID to get type from</param>
+    /// <param name="currentPhaseId">Current phase ID being unloaded</param>
+    /// <returns>Next phase info or null if no matching phase found</returns>
+    Task<NextPhaseInfoDto?> GetNextPhaseForWorkcenter(Guid workcenterId, Guid currentPhaseId);
+    
     // PhaseDetail CRUD
     Task<WorkOrderPhaseDetail?> GetDetailById(Guid id);
     Task<GenericResponse> CreateDetail(WorkOrderPhaseDetail detail);
@@ -53,5 +66,8 @@ public interface IWorkOrderPhaseService
     Task<GenericResponse> CreateBillOfMaterials(WorkOrderPhaseBillOfMaterials item);
     Task<GenericResponse> UpdateBillOfMaterials(WorkOrderPhaseBillOfMaterials item);
     Task<GenericResponse> RemoveBillOfMaterials(Guid id);
+
+    // Quantity Validation
+    Task<GenericResponse> ValidatePreviousPhaseQuantity(ValidatePreviousPhaseQuantityRequest request);
 }
 

@@ -8,6 +8,7 @@ namespace Application.Services.Production;
 public class WorkOrderPhaseService(
     IUnitOfWork unitOfWork, 
     ILocalizationService localizationService,
+    IWorkOrderService workOrderService,
     ILogger<WorkOrderPhaseService> logger) : IWorkOrderPhaseService
 {
     #region Phase CRUD
@@ -144,34 +145,16 @@ public class WorkOrderPhaseService(
         phase.EndTime = DateTime.Now;
         await unitOfWork.WorkOrders.Phases.Update(phase);
         
-        // Get WorkOrder with all phases to check if this is the last one
-        var workOrder = await unitOfWork.WorkOrders.Get(phase.WorkOrderId);
-        if (workOrder == null)
-            return new GenericResponse(false, 
-                localizationService.GetLocalizedString("WorkOrderNotFound", phase.WorkOrderId));
+        // Delegate work order status update to WorkOrderService
+        var updateResult = await workOrderService.UpdateStatusAfterPhaseEnd(
+            phase.WorkOrderId, 
+            phaseId, 
+            workOrderStatusId);
         
-        // Check if this is the last active phase
-        var activePhasesOrdered = workOrder.Phases
-            .Where(p => p.Disabled == false && p.IsExternalWork == false)
-            .OrderByDescending(p => p.CodeAsNumber)
-            .ToList();
+        if (!updateResult.Result)
+            return updateResult;
         
-        bool isLastPhase = activePhasesOrdered.FirstOrDefault()?.Id == phaseId;
-        
-        // If last phase, close the work order
-        if (isLastPhase)
-        {
-            workOrder.StatusId = outStatus.Id;
-            workOrder.EndTime = DateTime.Now;
-            
-            workOrder.Phases = []; // Clear phases to avoid tracking issues
-            await unitOfWork.WorkOrders.Update(workOrder);
-        }
-        
-        // Persist changes
-        await unitOfWork.CompleteAsync();
-        
-        return new GenericResponse(true, phase);
+        return new GenericResponse(true);
     }
     
     #endregion
@@ -273,6 +256,8 @@ public class WorkOrderPhaseService(
                     StartTime = phase.StartTime,
                     PreferredWorkcenterName = phase.PreferredWorkcenter?.Name ?? string.Empty,
                     IsExternalWork = phase.IsExternalWork,
+                    QuantityOk = phase.QuantityOk,
+                    QuantityKo = phase.QuantityKo
                 });
             }
 
@@ -302,7 +287,7 @@ public class WorkOrderPhaseService(
         var workOrder = await unitOfWork.WorkOrders.GetWorkOrderWithPhasesDetailed(workOrderId);
         
         if (workOrder == null || workOrder.Phases == null)
-            return new List<WorkOrderPhaseDetailedDto>();
+            return [];
 
         var results = new List<WorkOrderPhaseDetailedDto>();
 
@@ -334,6 +319,8 @@ public class WorkOrderPhaseService(
                 PhaseStatus = phase.Status?.Name ?? string.Empty,
                 StartTime = phase.StartTime,
                 EndTime = phase.EndTime,
+                QuantityOk = phase.QuantityOk,
+                QuantityKo = phase.QuantityKo,
                 PreferredWorkcenterName = phase.PreferredWorkcenter?.Name ?? string.Empty,
                 IsExternalWork = phase.IsExternalWork,
                 WorkcenterTypeId = phase.WorkcenterTypeId ?? Guid.Empty
@@ -374,6 +361,50 @@ public class WorkOrderPhaseService(
         }
 
         return results;
+    }
+    
+    public async Task<NextPhaseInfoDto?> GetNextPhaseForWorkcenter(Guid workcenterId, Guid currentPhaseId)
+    {
+        // Get the workcenter to find its type
+        var workcenter = await unitOfWork.Workcenters.Get(workcenterId);
+        if (workcenter == null)
+            return null;
+
+        var workcenterTypeId = workcenter.WorkcenterTypeId;
+
+        // Get the current phase to find the work order and current phase code
+        var currentPhase = await unitOfWork.WorkOrders.Phases.Get(currentPhaseId);
+        if (currentPhase == null)
+            return null;
+
+        var workOrderId = currentPhase.WorkOrderId;
+        var currentPhaseCode = currentPhase.Code;
+
+        // Find next phases that match the criteria:
+        // - Same work order
+        // - Phase code > current phase code (lexicographically)
+        // - Same workcenter type
+        // - Not external work
+        // - Not completed (EndTime is null)
+        var nextPhase = unitOfWork.WorkOrders.Phases
+            .Find(p => 
+                p.WorkOrderId == workOrderId &&
+                p.WorkcenterTypeId == workcenterTypeId &&
+                !p.Disabled &&
+                !p.IsExternalWork &&
+                p.Code.CompareTo(currentPhaseCode) > 0)
+            .OrderBy(p => p.Code)
+            .FirstOrDefault();
+
+        if (nextPhase == null)
+            return null;
+
+        return new NextPhaseInfoDto
+        {
+            PhaseId = nextPhase.Id,
+            PhaseCode = nextPhase.Code,
+            PhaseDescription = nextPhase.Description
+        };
     }
     
     #endregion
@@ -468,5 +499,73 @@ public class WorkOrderPhaseService(
         return new GenericResponse(true, entity);
     }
     
+    #endregion
+
+    #region Quantity Validation
+
+    public async Task<GenericResponse> ValidatePreviousPhaseQuantity(ValidatePreviousPhaseQuantityRequest request)
+    {
+        if (request.Quantity == 0)
+        {
+            return new GenericResponse(true);
+        }
+
+        // 1. Obtener la fase actual
+        var currentPhase = await unitOfWork.WorkOrders.Phases.Get(request.WorkOrderPhaseId);
+        if (currentPhase == null)
+        {
+            logger.LogWarning("ValidatePreviousPhaseQuantity: Phase not found {PhaseId}", request.WorkOrderPhaseId);
+            return new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderPhaseNotFound"));
+        }
+
+        // 2. Obtener la orden de fabricación con todas las fases
+        var workOrder = await unitOfWork.WorkOrders.Get(currentPhase.WorkOrderId);
+        if (workOrder == null)
+        {
+            logger.LogWarning("ValidatePreviousPhaseQuantity: WorkOrder not found {WorkOrderId}", currentPhase.WorkOrderId);
+            return new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderNotFound", currentPhase.WorkOrderId));
+        }
+
+        // 3. Buscar la fase anterior por código
+        var previousPhase = workOrder.Phases
+            .Where(p => !p.Disabled && !p.IsExternalWork && p.CodeAsNumber < currentPhase.CodeAsNumber)
+            .OrderByDescending(p => p.CodeAsNumber)
+            .FirstOrDefault();
+
+        decimal availableQuantity;
+
+        if (previousPhase == null)
+        {
+            // 4. Es la primera fase: permitir hasta 200% de la cantidad planificada
+            availableQuantity = workOrder.PlannedQuantity * 2;
+        }
+        else
+        {
+            // 5. Leer las QuantityOk directamente de la fase anterior
+            availableQuantity = previousPhase.QuantityOk;
+        }
+
+        // 6. Validar que la cantidad solicitada no supere las unidades disponibles
+        // Incluir las unidades ya fabricadas en la fase actual
+        var totalRequested = currentPhase.QuantityOk + request.Quantity;
+        if (totalRequested > availableQuantity)
+        {
+            logger.LogWarning("ValidatePreviousPhaseQuantity: Insufficient quantity. Requested {Requested}, Available {Available}", totalRequested, availableQuantity);
+            return new GenericResponse(false, localizationService.GetLocalizedString(
+                "WorkOrderPhaseInsufficientQuantity",
+                totalRequested,
+                availableQuantity));
+        }
+
+        return new GenericResponse(true, new
+        {
+            previousPhaseId = previousPhase?.Id,
+            previousPhaseCode = previousPhase?.Code,
+            availableQuantity,
+            currentPhaseQuantityOk = currentPhase.QuantityOk,
+            isFirstPhase = previousPhase == null
+        });
+    }
+
     #endregion
 }

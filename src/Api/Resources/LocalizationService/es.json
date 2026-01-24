@@ -231,6 +231,8 @@
     "CustomerRanking.NoDataFound": "No se han encontrado datos de ventas para el año {0}",
     "CustomerRanking.InvalidYear": "El año proporcionado no es válido",
     "CustomerRanking.YearRequired": "El año es obligatorio",
+    "WorkOrderPhaseInsufficientQuantity": "La cantidad solicitada ({0}) supera las unidades disponibles de la fase anterior ({1})",
+    "WorkOrderPhaseShiftDetailNotLoaded": "La fase de fabricación no está cargada en el centro de trabajo indicado",
     "ErrorResponse.InternalServerError": "Se ha producido un error interno del servidor",
     "ErrorResponse.BadRequest": "La solicitud no es válida",
     "ErrorResponse.NotFound": "El recurso solicitado no existe",

@@ -406,10 +406,75 @@ namespace Application.Services.Production
 
             return new GenericResponse(true);
         }
-    public async Task<IEnumerable<WorkOrderPhaseEstimationDto>>GetWorkcenterLoadBetweenDatesByWorkcenterType(DateTime startDate, DateTime endDate)
-    {
-        return await unitOfWork.WorkOrders.GetWorkcenterLoadBetweenDatesByWorkcenterType(startDate, endDate);
-    }
+        
+	    public async Task<IEnumerable<WorkOrderPhaseEstimationDto>>GetWorkcenterLoadBetweenDatesByWorkcenterType(DateTime startDate, DateTime endDate)
+	    {
+	        return await unitOfWork.WorkOrders.GetWorkcenterLoadBetweenDatesByWorkcenterType(startDate, endDate);
+	    }
+
+        public async Task<GenericResponse> UpdateStatusAfterPhaseEnd(Guid workOrderId, Guid completedPhaseId, Guid phaseOutStatusId)
+        {
+            // Get WorkOrder with all phases
+            var workOrder = await unitOfWork.WorkOrders.Get(workOrderId);
+            if (workOrder == null)
+                return new GenericResponse(false, 
+                    localizationService.GetLocalizedString("WorkOrderNotFound", workOrderId));
+
+            // Get the completed phase to determine its position
+            var completedPhase = workOrder.Phases.FirstOrDefault(p => p.Id == completedPhaseId);
+            if (completedPhase == null)
+                return new GenericResponse(false, 
+                    localizationService.GetLocalizedString("WorkOrderPhaseNotFound"));
+
+            // Check if this is the last active non-external phase
+            var activePhasesOrdered = workOrder.Phases
+                .Where(p => p.Disabled == false && p.IsExternalWork == false)
+                .OrderByDescending(p => p.CodeAsNumber)
+                .ToList();
+            
+            bool isLastPhase = activePhasesOrdered.FirstOrDefault()?.Id == completedPhaseId;
+            
+            // Check if there's a subsequent external work phase
+            var currentPhaseCodeAsNumber = completedPhase.CodeAsNumber;
+            var hasSubsequentExternalPhase = workOrder.Phases
+                .Any(p => !p.Disabled && p.IsExternalWork && p.CodeAsNumber > currentPhaseCodeAsNumber);
+            
+            // Determine the appropriate status for the work order
+            if (hasSubsequentExternalPhase)
+            {
+                // Set work order status to "Servei Extern"
+                var externalServiceStatus = await unitOfWork.Lifecycles.GetStatusByName(
+                    StatusConstants.Lifecycles.WorkOrder,
+                    StatusConstants.Statuses.ServeiExtern);
+                
+                if (externalServiceStatus == null)
+                {
+                    return new GenericResponse(false, 
+                        localizationService.GetLocalizedString("StatusNotFound", StatusConstants.Statuses.ServeiExtern));
+                }
+                
+                workOrder.StatusId = externalServiceStatus.Id;
+                workOrder.Phases = []; // Clear phases to avoid tracking issues
+                await unitOfWork.WorkOrders.Update(workOrder);
+            }
+            else if (isLastPhase)
+            {
+                // If last phase and no subsequent external phases, close the work order
+                var outStatus = await unitOfWork.Lifecycles.StatusRepository.Get(phaseOutStatusId);
+                if (outStatus == null)
+                    return new GenericResponse(false, 
+                        localizationService.GetLocalizedString("StatusNotFound"));
+
+                workOrder.StatusId = outStatus.Id;
+                workOrder.EndTime = DateTime.Now;
+                
+                workOrder.Phases = []; // Clear phases to avoid tracking issues
+                await unitOfWork.WorkOrders.Update(workOrder);
+            }
+            
+            return new GenericResponse(true);
+        }
+
     }
 }
 

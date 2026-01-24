@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260123160222_AddQuantityOkQuantityKoToWorkOrderPhase")]
+    partial class AddQuantityOkQuantityKoToWorkOrderPhase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2269,41 +2272,6 @@ namespace Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("WorkCenterCosts", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.Production.WorkcenterProfitPercentage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bool")
-                        .HasDefaultValue(false);
-
-                    b.Property<decimal>("ProfitPercentage")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("decimal");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp without time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<Guid>("WorkcenterId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id")
-                        .HasName("PK_WorkcenterProfitPercentage");
-
-                    b.HasIndex("WorkcenterId");
-
-                    b.ToTable("WorkcenterProfitPercentages", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Production.WorkcenterShift", b =>
@@ -5800,17 +5768,6 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("MachineStatus");
-
-                    b.Navigation("Workcenter");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Production.WorkcenterProfitPercentage", b =>
-                {
-                    b.HasOne("Domain.Entities.Production.Workcenter", "Workcenter")
-                        .WithMany()
-                        .HasForeignKey("WorkcenterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("Workcenter");
                 });

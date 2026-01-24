@@ -45,6 +45,20 @@ public class WorkOrderPhaseBuilder : IEntityTypeConfiguration<WorkOrderPhase>
                           ApplicationDbContextConstants.DECIMAL_SCALE);
 
         builder
+            .Property(b => b.QuantityOk)
+            .IsRequired()
+            .HasColumnType("decimal")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
+
+        builder
+            .Property(b => b.QuantityKo)
+            .IsRequired()
+            .HasColumnType("decimal")
+            .HasPrecision(ApplicationDbContextConstants.DECIMAL_PRECISION,
+                          ApplicationDbContextConstants.DECIMAL_SCALE);
+
+        builder
             .HasKey(b => b.Id)
             .HasName($"PK_{TABLE_NAME}");
 
