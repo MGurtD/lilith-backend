@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Services.Production
 {
-    public class WorkcenterShiftDetailService(IUnitOfWork unitOfWork, IMetricsService metricsService, IWorkOrderPhaseService workOrderPhaseService, ILogger<WorkcenterShiftDetailService> logger) : IWorkcenterShiftDetailService
+    public class WorkcenterShiftDetailService(IUnitOfWork unitOfWork, IMetricsService metricsService, IWorkOrderPhaseService workOrderPhaseService, ILocalizationService localizationService, ILogger<WorkcenterShiftDetailService> logger) : IWorkcenterShiftDetailService
     {
         private GenericResponse LogAndReturnError(string message)
         {
@@ -517,14 +517,26 @@ namespace Application.Services.Production
                                                 .FirstOrDefaultAsync();
             if (recentDetail != null)
             {
+                // Actualizar WorkcenterShiftDetail
                 recentDetail.QuantityOk += dto.QuantityOk;
                 recentDetail.QuantityKo += dto.QuantityKo;
-                await unitOfWork.WorkcenterShifts.Details.Update(recentDetail);
+                unitOfWork.WorkcenterShifts.Details.UpdateWithoutSave(recentDetail);
+
+                // Actualizar WorkOrderPhase con las unidades fabricadas
+                var workOrderPhase = await unitOfWork.WorkOrders.Phases.Get(dto.WorkOrderPhaseId);
+                if (workOrderPhase != null)
+                {
+                    workOrderPhase.QuantityOk += dto.QuantityOk;
+                    workOrderPhase.QuantityKo += dto.QuantityKo;
+                    unitOfWork.WorkOrders.Phases.UpdateWithoutSave(workOrderPhase);
+                }
+
+                await unitOfWork.CompleteAsync();
                 return new GenericResponse(true);
             }
             else
             {
-                return LogAndReturnError("La fase de fabricació no está carregada al centre de treball indicat");
+                return LogAndReturnError(localizationService.GetLocalizedString("WorkOrderPhaseShiftDetailNotLoaded"));
             }
         }
 

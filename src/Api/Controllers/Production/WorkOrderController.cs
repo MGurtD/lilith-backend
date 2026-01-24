@@ -68,6 +68,23 @@ namespace Api.Controllers.Production
             return Ok(workOrders);
         }
 
+        [HttpPost("Phase/ValidatePreviousQuantity")]
+        [SwaggerOperation("ValidatePreviousPhaseQuantity")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ValidatePreviousPhaseQuantity(ValidatePreviousPhaseQuantityRequest request)
+        {
+            var response = await phaseService.ValidatePreviousPhaseQuantity(request);
+            if (response is not null)
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+        }
+
         [HttpGet("Plannable")]
         [SwaggerOperation("GetPlannableWorkOrders")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -180,6 +197,18 @@ namespace Api.Controllers.Production
         {
             var phases = await phaseService.GetWorkOrderPhasesDetailed(workOrderId);            
             return Ok(phases);
+        }
+
+        [HttpGet("Phase/{currentPhaseId:guid}/NextForWorkcenter/{workcenterId:guid}")]
+        [SwaggerOperation("GetNextPhaseForWorkcenter")]
+        [ProducesResponseType(typeof(NextPhaseInfoDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> GetNextPhaseForWorkcenter(Guid currentPhaseId, Guid workcenterId)
+        {
+            var nextPhase = await phaseService.GetNextPhaseForWorkcenter(workcenterId, currentPhaseId);
+            if (nextPhase == null)
+                return NoContent();
+            return Ok(nextPhase);
         }
 
 

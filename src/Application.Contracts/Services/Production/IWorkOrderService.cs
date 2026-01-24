@@ -1,4 +1,3 @@
-using Application.Contracts;
 using Domain.Entities.Production;
 
 namespace Application.Contracts;
@@ -14,9 +13,11 @@ public interface IWorkOrderService
     IEnumerable<WorkOrder> GetBetweenDatesAndStatus(DateTime startDate, DateTime endDate, Guid? statusId);
     IEnumerable<DetailedWorkOrder> GetWorkOrderDetails(Guid id);
     Task<IEnumerable<WorkOrder>> GetBySalesOrderId(Guid salesOrderId);
-    Task<GenericResponse> AddProductionPart(Guid id, ProductionPart productionPart);
-    Task<GenericResponse> RemoveProductionPart(Guid id, ProductionPart productionPart);
-    Task Update(WorkOrder workOrder);
     Task<IEnumerable<WorkOrder>> GetPlannableWorkOrders();
     Task<GenericResponse> Priorize(List<UpdateWorkOrderOrderDTO> orders);
+    Task Update(WorkOrder workOrder);
+    Task<GenericResponse> UpdateStatusAfterPhaseEnd(Guid workOrderId, Guid completedPhaseId, Guid phaseOutStatusId);
+
+    Task<GenericResponse> AddProductionPart(Guid id, ProductionPart productionPart);
+    Task<GenericResponse> RemoveProductionPart(Guid id, ProductionPart productionPart);
 }

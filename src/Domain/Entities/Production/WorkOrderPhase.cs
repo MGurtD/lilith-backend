@@ -38,6 +38,9 @@ public class WorkOrderPhase : Entity
     public DateTime? StartTime { get; set; }
     public DateTime? EndTime { get; set; }
 
+    public decimal QuantityOk { get; set; } = decimal.Zero;
+    public decimal QuantityKo { get; set; } = decimal.Zero;
+
     public Guid? PurchaseOrderId { get; set; }
     public PurchaseOrder? PurchaseOrder { get; set; }
     public ICollection<WorkOrderPhaseDetail> Details { get; set; } = [];

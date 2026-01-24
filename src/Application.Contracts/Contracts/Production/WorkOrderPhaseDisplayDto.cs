@@ -125,6 +125,9 @@ public class PlannedPhaseDto
 
     /// <summary>Indicates if this phase involves external work</summary>
      public bool IsExternalWork { get; set; }
+
+     public decimal QuantityOk { get; set; }
+     public decimal QuantityKo { get; set; }
 }
 
 /// <summary>
@@ -174,6 +177,9 @@ public class WorkOrderPhaseDetailedDto
 
     /// <summary>Indicates if this phase involves external work</summary>
     public bool IsExternalWork { get; set; }
+
+    public decimal QuantityOk { get; set; }
+    public decimal QuantityKo { get; set; }
     
     /// <summary>Phase operation details</summary>
     public List<PhaseDetailItemDto> Details { get; set; } = [];
@@ -221,4 +227,20 @@ public class BillOfMaterialsItemDto
     
     /// <summary>Required quantity</summary>
     public decimal Quantity { get; set; }
+}
+
+/// <summary>
+/// Simple DTO for next phase information when unloading a phase from a workcenter.
+/// Used to suggest the next phase that can be loaded on the same workcenter type.
+/// </summary>
+public class NextPhaseInfoDto
+{
+    /// <summary>Phase ID</summary>
+    public Guid PhaseId { get; set; }
+    
+    /// <summary>Phase code</summary>
+    public string PhaseCode { get; set; } = string.Empty;
+    
+    /// <summary>Phase description</summary>
+    public string PhaseDescription { get; set; } = string.Empty;
 }

@@ -10,6 +10,8 @@ Lilith Backend is a comprehensive manufacturing ERP system built with .NET 10 us
 
 **Before coding, review the comprehensive documentation in `/docs`:**
 
+**Load only the docs relevant to your task.**
+
 - **[README.md](../README.md)** - Quick start, architecture overview, and documentation index
 - **[Architecture Layers](../docs/architecture-layers.md)** - Deep dive into all 6 projects and responsibilities
 - **[Domain Model](../docs/domain-model.md)** - Business entities across 4 areas (Sales, Purchase, Production, Warehouse)
@@ -47,6 +49,7 @@ lilith-backend/
 ### Quick Architecture Summary
 
 **Clean Architecture with 6 projects:**
+
 1. **Domain** - Pure entities (no dependencies) - See [Domain Model](../docs/domain-model.md)
 2. **Application.Contracts** - All interfaces, DTOs, constants (flat namespace)
 3. **Application** - Business logic services - See [Architectural Patterns](../docs/architectural-patterns.md)
@@ -104,6 +107,7 @@ public class GenericResponse
 ```
 
 **Usage:**
+
 - **Read operations:** Return entities directly (`Task<Budget?>`, `IEnumerable<Budget>`)
 - **Write operations:** Return `GenericResponse` for error handling
 - **Controllers:** Map `GenericResponse.Result` to HTTP status codes (200/201 success, 400/404/409 errors)
@@ -130,12 +134,14 @@ public class BudgetService : IBudgetService
 ### Namespace Conventions
 
 **Application.Contracts namespace** contains all contracts with flat structure:
+
 - Service interfaces: `Application.Contracts` (e.g., `IBudgetService`, `ISalesOrderService`)
 - DTOs and request/response models: `Application.Contracts` (e.g., `GenericResponse`, `CreateHeaderRequest`)
 - Repository interfaces: `Application.Contracts` (e.g., `IRepository<T>`, `IUnitOfWork`)
 - Constants: `Application.Contracts` (e.g., `StatusConstants`)
 
 **Usage in files:**
+
 ```csharp
 using Application.Contracts;  // All contracts, interfaces, DTOs, constants
 using Domain.Entities.Sales;  // Domain entities
@@ -240,6 +246,7 @@ The system implements **comprehensive multilanguage support** with full internat
 ### Critical Rules
 
 ⚠️ **ALL services MUST:**
+
 1. Inject `ILocalizationService` in constructor
 2. Use `StatusConstants` for database values (lifecycles/statuses)
 3. Add localization keys to ALL 3 language files (ca.json, es.json, en.json)
@@ -257,14 +264,14 @@ public class BudgetService(IUnitOfWork unitOfWork, ILocalizationService localiza
     {
         var exists = unitOfWork.Budgets.Find(b => b.Id == budget.Id).Any();
         if (exists)
-            return new GenericResponse(false, 
+            return new GenericResponse(false,
                 localization.GetLocalizedString("BudgetAlreadyExists"));
-        
+
         // Use StatusConstants for database values
         var lifecycle = unitOfWork.Lifecycles
             .Find(l => l.Name == StatusConstants.Lifecycles.Budget)
             .FirstOrDefault();
-        
+
         // ...
     }
 }
@@ -371,20 +378,21 @@ Before committing code changes:
 
 ### Documentation File Ownership
 
-| File | When to Update | Owner Mindset |
-|------|---------------|---------------|
-| **README.md** | Tech stack, quick start changes | First impression document |
-| **architecture-layers.md** | Project structure, layer changes | Architecture authority |
-| **domain-model.md** | Entity changes, new business areas | Business domain expert |
-| **architectural-patterns.md** | New patterns, pattern changes | Pattern library |
-| **request-flow.md** | Middleware, flow, layer changes | Flow diagram master |
-| **localization.md** | Localization changes, new keys | i18n expert |
-| **developer-guide.md** | Setup, tasks, conventions | Onboarding guide |
-| **external-integrations.md** | External service changes | Integration specialist |
+| File                          | When to Update                     | Owner Mindset             |
+| ----------------------------- | ---------------------------------- | ------------------------- |
+| **README.md**                 | Tech stack, quick start changes    | First impression document |
+| **architecture-layers.md**    | Project structure, layer changes   | Architecture authority    |
+| **domain-model.md**           | Entity changes, new business areas | Business domain expert    |
+| **architectural-patterns.md** | New patterns, pattern changes      | Pattern library           |
+| **request-flow.md**           | Middleware, flow, layer changes    | Flow diagram master       |
+| **localization.md**           | Localization changes, new keys     | i18n expert               |
+| **developer-guide.md**        | Setup, tasks, conventions          | Onboarding guide          |
+| **external-integrations.md**  | External service changes           | Integration specialist    |
 
 ### Common Documentation Mistakes to Avoid
 
 ❌ **DON'T:**
+
 - Leave outdated code examples in documentation
 - Document planned features not yet implemented
 - Use inconsistent terminology across files
@@ -393,6 +401,7 @@ Before committing code changes:
 - Use overly complex language or unexplained jargon
 
 ✅ **DO:**
+
 - Update docs in the same commit as code changes
 - Keep examples concise and relevant
 - Use established terminology consistently
