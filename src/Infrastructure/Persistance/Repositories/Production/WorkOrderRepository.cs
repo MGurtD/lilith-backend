@@ -146,5 +146,37 @@ namespace Infrastructure.Persistance.Repositories.Production
             return workOrders;
         }
 
+        public async Task<IEnumerable<WorkOrderPhaseEstimationDto>> GetWorkcenterLoadBetweenDatesByWorkcenterType(DateTime startDate, DateTime endDate)
+        {
+            return await dbSet
+                .Where(wo => wo.PlannedDate >= startDate && wo.PlannedDate <= endDate)
+                .Include(wo => wo.Phases)
+                    .ThenInclude(p => p.Details)
+                .AsNoTracking()
+                .SelectMany(wo => wo.Phases
+                            .GroupBy(wp => new 
+                            {
+                                wo.Code,
+                                wo.PlannedQuantity,
+                                PhaseCode = wp.Code,
+                                PhaseDescription = wp.Description,
+                                wp.WorkcenterTypeId                                
+                            })
+                .Select(g => new WorkOrderPhaseEstimationDto
+                {
+                    Code = g.Key.Code,
+                    PlannedQuantity = g.Key.PlannedQuantity,
+                    PhaseCode = g.Key.PhaseCode,
+                    PhaseDescription = g.Key.PhaseDescription,
+                    WorkcenterTypeId = g.Key.WorkcenterTypeId,
+                    EstimatedTime = g.SelectMany(wp => wp.Details)
+                        .Sum(wd => wd.IsCycleTime
+                            ? g.Key.PlannedQuantity * wd.EstimatedTime
+                            : wd.EstimatedTime
+                        )
+                }))
+                .ToListAsync();
+        }
+
     }
 }

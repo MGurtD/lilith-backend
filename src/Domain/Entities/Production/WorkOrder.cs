@@ -35,3 +35,13 @@ public class UpdateWorkOrderOrderDTO
     public Guid Id { get; set; }
     public int Order { get; set; }
 }
+
+public class WorkOrderPhaseEstimationDto
+{
+    public string Code { get; set; } = string.Empty;
+    public decimal PlannedQuantity { get; set; }
+    public string PhaseCode { get; set; } = string.Empty;
+    public string PhaseDescription { get; set; } = string.Empty;
+    public Guid? WorkcenterTypeId { get; set; }
+    public decimal EstimatedTime { get; set; }
+}

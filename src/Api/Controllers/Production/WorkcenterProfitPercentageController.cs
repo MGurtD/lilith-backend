@@ -1,15 +1,15 @@
-﻿using Application.Contracts;
+using Application.Contracts;
 using Domain.Entities.Production;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers.Production
+namespace Api.Controllers.Production;
+
+[ApiController]
+[Route("api/[controller]")]
+public class WorkcenterProfitPercentageController(IWorkcenterProfitPercentageService service) : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class WorkcenterController(IWorkcenterService service) : ControllerBase
-    {
         [HttpPost]
-        public async Task<IActionResult> Create(Workcenter request)
+        public async Task<IActionResult> Create(WorkcenterProfitPercentage request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState.ValidationState);
 
@@ -24,18 +24,11 @@ namespace Api.Controllers.Production
                 return Conflict(response);
             }
         }
-        
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var entities = await service.GetAll();
-            return Ok(entities);
-        }
-
-        [HttpGet("plant")]
-        public async Task<IActionResult> GetVisibleInPlant()
-        {
-            var entities = await service.GetVisibleInPlant();
             return Ok(entities);
         }
 
@@ -44,27 +37,20 @@ namespace Api.Controllers.Production
         {
             var entity = await service.GetById(id);
             if (entity is not null)
-            {
                 return Ok(entity);
-            }
             else
-            {
                 return NotFound();
-            }
         }
 
-        [HttpGet("workcenterload")]
-        public async Task<IActionResult> GetWorkcenterLoadBetweenDatesByWorkcenterType([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        [HttpGet("workcenter/{workcenterId:guid}")]
+        public async Task<IActionResult> GetByWorkcenterId(Guid workcenterId)
         {
-
-            var workorders = await service.GetWorkcenterLoadBetweenDatesByWorkcenterType(startDate, endDate);
-            if (workorders.Count() == 0)
-                return NoContent();
-            return Ok(workorders);
+            var entities = await service.GetByWorkcenterId(workcenterId);
+            return Ok(entities);
         }
-        
+
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid Id, Workcenter request)
+        public async Task<IActionResult> Update(Guid Id, WorkcenterProfitPercentage request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.ValidationState);
@@ -91,4 +77,3 @@ namespace Api.Controllers.Production
                 return NotFound(response);
         }
     }
-}
