@@ -10,6 +10,7 @@ public class MachineStatus : Entity
     public bool Default { get; set; } = false;
     public bool Closed { get; set;} = false;
     public bool Preferred { get; set; } = false;
+    public bool WorkOrderAllowed { get; set; } = true;
     public string Icon { get; set;} = string.Empty;
     public ICollection<MachineStatusReason> Reasons { get; set; } = [];
 }

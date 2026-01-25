@@ -40,6 +40,9 @@ namespace Infrastructure.Persistance.EntityConfiguration.Production
                 .Property(b => b.Default)
                 .HasColumnType("boolean");  
             builder
+                .Property(b => b.WorkOrderAllowed)
+                .HasColumnType("boolean");
+            builder
                 .Property(b => b.Icon)
                 .HasColumnType("varchar")
                 .HasMaxLength(50);
