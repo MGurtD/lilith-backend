@@ -5,36 +5,27 @@ using Domain.Implementations.ReferenceFormat;
 
 namespace Application.Services.Production
 {
-    public class MetricsService : IMetricsService
+    public class MetricsService(IUnitOfWork unitOfWork, ILocalizationService localizationService) : IMetricsService
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ILocalizationService _localizationService;
-
-        public MetricsService(IUnitOfWork unitOfWork, ILocalizationService localizationService)
-        {
-            _unitOfWork = unitOfWork;
-            _localizationService = localizationService;
-        }
-
         public async Task<GenericResponse> GetOperatorCost(Guid operatorId)
         {
-            var oper = await _unitOfWork.Operators.Get(operatorId);
+            var oper = await unitOfWork.Operators.Get(operatorId);
             if (oper == null) {
-                return new GenericResponse(false, _localizationService.GetLocalizedString("OperatorNotFound")); 
+                return new GenericResponse(false, localizationService.GetLocalizedString("OperatorNotFound")); 
             }
 
-            var operatorType = await _unitOfWork.OperatorTypes.Get(oper.OperatorTypeId);
+            var operatorType = await unitOfWork.OperatorTypes.Get(oper.OperatorTypeId);
             if (operatorType == null) 
-                return new GenericResponse(false, _localizationService.GetLocalizedString("OperatorTypeNotFound"));
+                return new GenericResponse(false, localizationService.GetLocalizedString("OperatorTypeNotFound"));
 
             return new GenericResponse(true, operatorType.Cost);
         }
 
         public Task<GenericResponse> GetWorkcenterStatusCost(Guid workcenterId, Guid statusId)
         {
-            var workcenterCost = _unitOfWork.WorkcenterCosts.Find(wc => wc.WorkcenterId == workcenterId && wc.MachineStatusId == statusId).FirstOrDefault();
+            var workcenterCost = unitOfWork.WorkcenterCosts.Find(wc => wc.WorkcenterId == workcenterId && wc.MachineStatusId == statusId).FirstOrDefault();
             if (workcenterCost == null) 
-                return Task.FromResult(new GenericResponse(false, _localizationService.GetLocalizedString("WorkcenterCostNotFound")));
+                return Task.FromResult(new GenericResponse(false, localizationService.GetLocalizedString("WorkcenterCostNotFound")));
 
             return Task.FromResult(new GenericResponse(true, workcenterCost.Cost));
         }
@@ -42,7 +33,7 @@ namespace Application.Services.Production
         public async Task<GenericResponse> GetWorkmasterMetrics(WorkMaster workMaster, decimal? producedQuantity)
         {
             // Recollir la quantitat a calcular, si no es passa es calcula per la quantitat base
-            var baseQuantity = producedQuantity.HasValue ? producedQuantity.Value : workMaster.BaseQuantity;
+            var baseQuantity = producedQuantity ?? workMaster.BaseQuantity;
             var operatorCost = 0.0M;
             var machineCost = 0.0M;
             var materialCost = 0.0M;
@@ -59,10 +50,10 @@ namespace Application.Services.Production
             //temps en minuts cost en hores
             foreach (var phase in workMaster.Phases)
             {
-                var operatorType = _unitOfWork.OperatorTypes.Find(o => o.Id == phase.OperatorTypeId).FirstOrDefault();
+                var operatorType = unitOfWork.OperatorTypes.Find(o => o.Id == phase.OperatorTypeId).FirstOrDefault();
                 var operatorTypeCost = operatorType != null ? operatorType.Cost : 0;
 
-                var phaseDetails = await _unitOfWork.WorkMasters.Phases.Get(phase.Id);
+                var phaseDetails = await unitOfWork.WorkMasters.Phases.Get(phase.Id);
                 if (phaseDetails == null) continue;
 
                 // Cálcul de fases externes
@@ -85,14 +76,14 @@ namespace Application.Services.Production
                     }
 
                     // Cost Operari
-                    operatorCost += (estimatedOperatorTime / 60) * operatorTypeCost;
+                    operatorCost += estimatedOperatorTime / 60 * operatorTypeCost;
 
                     // Cost Màquina                    
-                    var workCenterCost = _unitOfWork.WorkcenterCosts.Find(wc => wc.WorkcenterId == phase.PreferredWorkcenterId && wc.MachineStatusId == detail.MachineStatusId).FirstOrDefault();
+                    var workCenterCost = unitOfWork.WorkcenterCosts.Find(wc => wc.WorkcenterId == phase.PreferredWorkcenterId && wc.MachineStatusId == detail.MachineStatusId).FirstOrDefault();
                     if (workCenterCost == null) {
-                        return new GenericResponse(false, _localizationService.GetLocalizedString("WorkcenterCombinationNotFound"));
+                        return new GenericResponse(false, localizationService.GetLocalizedString("WorkcenterCombinationNotFound"));
                     }
-                    machineCost += (estimatedWorkcenterTime / 60) * workCenterCost.Cost;
+                    machineCost += estimatedWorkcenterTime / 60 * workCenterCost.Cost;
 
                 }
 
@@ -100,21 +91,21 @@ namespace Application.Services.Production
                 foreach (var bom in phaseDetails.BillOfMaterials)
                 {
 
-                    var reference = await _unitOfWork.References.Get(bom.ReferenceId);
+                    var reference = await unitOfWork.References.Get(bom.ReferenceId);
                     if (reference == null) continue;
                     if (!reference.ReferenceTypeId.HasValue)
                     {
-                        return new GenericResponse(false, _localizationService.GetLocalizedString("ReferenceTypeNotFound"));
+                        return new GenericResponse(false, localizationService.GetLocalizedString("ReferenceTypeNotFound"));
                     }
 
                     if (reference.ReferenceFormatId.HasValue)
                     {
-                        var referenceType = await _unitOfWork.ReferenceTypes.Get(reference.ReferenceTypeId.Value);
+                        var referenceType = await unitOfWork.ReferenceTypes.Get(reference.ReferenceTypeId.Value);
 
                         // Obtenir calculadora segons el format
-                        var format = await _unitOfWork.ReferenceFormats.Get(reference.ReferenceFormatId.Value);
+                        var format = await unitOfWork.ReferenceFormats.Get(reference.ReferenceFormatId.Value);
                         if (format == null) {
-                            return new GenericResponse(false, _localizationService.GetLocalizedString("ReferenceFormatNotFound"));
+                            return new GenericResponse(false, localizationService.GetLocalizedString("ReferenceFormatNotFound"));
                         }
 
                         // Assignar dimensions a la calculadora
@@ -144,7 +135,7 @@ namespace Application.Services.Production
 
                                 // Calcular el preu
 
-                                Amount = reference.LastCost * (UnitWeight * bom.Quantity * materialFactor);
+                                Amount = reference.LastCost * UnitWeight * bom.Quantity * materialFactor;
 
                             }
 
@@ -175,7 +166,7 @@ namespace Application.Services.Production
             }
 
             // Get workcenter cost
-            var workOrderPhaseDetail = await _unitOfWork.WorkOrders.Phases.Details.Get(productionPart.WorkOrderPhaseDetailId);
+            var workOrderPhaseDetail = await unitOfWork.WorkOrders.Phases.Details.Get(productionPart.WorkOrderPhaseDetailId);
             if (workOrderPhaseDetail != null && workOrderPhaseDetail.MachineStatusId.HasValue)
             {
                 var workcenterCostRequest = await GetWorkcenterStatusCost(productionPart.WorkcenterId, workOrderPhaseDetail.MachineStatusId.Value);

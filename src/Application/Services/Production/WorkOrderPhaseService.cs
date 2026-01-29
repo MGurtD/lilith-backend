@@ -568,4 +568,76 @@ public class WorkOrderPhaseService(
     }
 
     #endregion
+
+    #region Time Metrics
+
+    public async Task<GenericResponse> GetPhaseTimeMetrics(Guid phaseId, Guid machineStatusId, Guid? operatorId)
+    {
+        // 1. Get phase with details
+        var phase = await unitOfWork.WorkOrders.Phases.Get(phaseId);
+        if (phase == null)
+        {
+            return new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderPhaseNotFound"));
+        }
+
+        // 2. Get parent work order for planned quantity
+        var workOrder = await unitOfWork.WorkOrders.Get(phase.WorkOrderId);
+        if (workOrder == null)
+        {
+            return new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderNotFound", phase.WorkOrderId));
+        }
+
+        var plannedQuantity = workOrder.PlannedQuantity;
+
+        // 3. Calculate estimated times from phase details matching the machine status
+        decimal estimatedMachineTimeMinutes = 0;
+        decimal estimatedOperatorTimeMinutes = 0;
+
+        if (phase.Details != null)
+        {
+            foreach (var detail in phase.Details.Where(d => !d.Disabled && d.MachineStatusId == machineStatusId))
+            {
+                var machineTime = detail.EstimatedTime;
+                var operatorTime = detail.EstimatedOperatorTime;
+
+                // If it's cycle time, multiply by planned quantity
+                if (detail.IsCycleTime)
+                {
+                    machineTime = machineTime * plannedQuantity;
+                    operatorTime = operatorTime * plannedQuantity;
+                }
+
+                estimatedMachineTimeMinutes += machineTime;
+                estimatedOperatorTimeMinutes += operatorTime;
+            }
+        }
+
+        // 4. Get actual times from WorkcenterShiftDetail
+        var actualMachineTimeMinutes = await unitOfWork.WorkcenterShifts.Details
+            .GetTotalMachineTimeByPhaseAndStatus(phaseId, machineStatusId);
+
+        decimal actualOperatorTimeMinutes = 0;
+        if (operatorId.HasValue)
+        {
+            actualOperatorTimeMinutes = await unitOfWork.WorkcenterShifts.Details
+                .GetTotalOperatorTimeByPhaseAndOperator(phaseId, operatorId.Value);
+        }
+
+        // 5. Build and return metrics DTO
+        var metrics = new PhaseTimeMetricsDto
+        {
+            PhaseId = phaseId,
+            MachineStatusId = machineStatusId,
+            OperatorId = operatorId,
+            EstimatedMachineTimeMinutes = estimatedMachineTimeMinutes,
+            EstimatedOperatorTimeMinutes = estimatedOperatorTimeMinutes,
+            ActualMachineTimeMinutes = actualMachineTimeMinutes,
+            ActualOperatorTimeMinutes = actualOperatorTimeMinutes,
+            CalculatedAt = DateTime.UtcNow
+        };
+
+        return new GenericResponse(true, metrics);
+    }
+
+    #endregion
 }
