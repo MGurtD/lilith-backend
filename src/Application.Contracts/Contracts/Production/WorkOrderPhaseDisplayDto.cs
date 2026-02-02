@@ -88,6 +88,9 @@ public class WorkOrderWithPhasesDto
     /// <summary>Work order priority (Order field - lower value = higher priority)</summary>
     public int Priority { get; set; }
     
+    /// <summary>Work order comment</summary>
+    public string Comment { get; set; } = string.Empty;
+    
     /// <summary>List of planned phases for this work order</summary>
     public List<PlannedPhaseDto> Phases { get; set; } = new();
 }
@@ -128,6 +131,43 @@ public class PlannedPhaseDto
 
      public decimal QuantityOk { get; set; }
      public decimal QuantityKo { get; set; }
+
+    /// <summary>Phase comment</summary>
+    public string Comment { get; set; } = string.Empty;
+
+    /// <summary>Phase operation details for activity buttons in plant module</summary>
+    public List<PhaseDetailForPlantDto> Details { get; set; } = [];
+}
+
+/// <summary>
+/// Simplified phase detail DTO for plant module activity buttons.
+/// Contains only the information needed for dynamic status buttons.
+/// </summary>
+public class PhaseDetailForPlantDto
+{
+    /// <summary>Machine status ID</summary>
+    public Guid? MachineStatusId { get; set; }
+    
+    /// <summary>Machine status name (display text for button)</summary>
+    public string MachineStatusName { get; set; } = string.Empty;
+    
+    /// <summary>Machine status color (hex code for button background)</summary>
+    public string MachineStatusColor { get; set; } = string.Empty;
+    
+    /// <summary>Machine status icon (PrimeIcons class for button icon)</summary>
+    public string MachineStatusIcon { get; set; } = string.Empty;
+    
+    /// <summary>Display order for buttons</summary>
+    public int Order { get; set; }
+    
+    /// <summary>Estimated machine time in minutes</summary>
+    public decimal EstimatedTime { get; set; }
+    
+    /// <summary>Estimated operator time in minutes</summary>
+    public decimal EstimatedOperatorTime { get; set; }
+    
+    /// <summary>Detail comment</summary>
+    public string Comment { get; set; } = string.Empty;
 }
 
 /// <summary>
@@ -180,6 +220,9 @@ public class WorkOrderPhaseDetailedDto
 
     public decimal QuantityOk { get; set; }
     public decimal QuantityKo { get; set; }
+    
+    /// <summary>Phase comment</summary>
+    public string Comment { get; set; } = string.Empty;
     
     /// <summary>Phase operation details</summary>
     public List<PhaseDetailItemDto> Details { get; set; } = [];

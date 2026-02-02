@@ -245,6 +245,23 @@ public class WorkOrderPhaseService(
 
             foreach (var phase in wo.Phases)
             {
+                // Map phase details to PhaseDetailForPlantDto (for activity buttons)
+                var phaseDetails = phase.Details
+                    .Where(d => d.MachineStatusId != null && d.MachineStatus != null)
+                    .OrderBy(d => d.Order)
+                    .Select(d => new PhaseDetailForPlantDto
+                    {
+                        MachineStatusId = d.MachineStatusId,
+                        MachineStatusName = d.MachineStatus?.Name ?? string.Empty,
+                        MachineStatusColor = d.MachineStatus?.Color ?? string.Empty,
+                        MachineStatusIcon = d.MachineStatus?.Icon ?? string.Empty,
+                        Order = d.Order,
+                        EstimatedTime = d.EstimatedTime,
+                        EstimatedOperatorTime = d.EstimatedOperatorTime,
+                        Comment = d.Comment ?? string.Empty
+                    })
+                    .ToList();
+
                 plannedPhases.Add(new PlannedPhaseDto
                 {
                     PhaseId = phase.Id,
@@ -257,7 +274,9 @@ public class WorkOrderPhaseService(
                     PreferredWorkcenterName = phase.PreferredWorkcenter?.Name ?? string.Empty,
                     IsExternalWork = phase.IsExternalWork,
                     QuantityOk = phase.QuantityOk,
-                    QuantityKo = phase.QuantityKo
+                    QuantityKo = phase.QuantityKo,
+                    Comment = phase.Comment ?? string.Empty,
+                    Details = phaseDetails
                 });
             }
 
@@ -275,6 +294,7 @@ public class WorkOrderPhaseService(
                 StartTime = wo.StartTime,
                 WorkOrderStatus = wo.Status?.Name ?? string.Empty,
                 Priority = wo.Order,
+                Comment = wo.Comment ?? string.Empty,
                 Phases = plannedPhases
             });
         }
@@ -321,6 +341,7 @@ public class WorkOrderPhaseService(
                 EndTime = phase.EndTime,
                 QuantityOk = phase.QuantityOk,
                 QuantityKo = phase.QuantityKo,
+                Comment = phase.Comment ?? string.Empty,
                 PreferredWorkcenterName = phase.PreferredWorkcenter?.Name ?? string.Empty,
                 IsExternalWork = phase.IsExternalWork,
                 WorkcenterTypeId = phase.WorkcenterTypeId ?? Guid.Empty
