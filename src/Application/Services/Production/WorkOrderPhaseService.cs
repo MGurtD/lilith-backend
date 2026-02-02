@@ -245,6 +245,23 @@ public class WorkOrderPhaseService(
 
             foreach (var phase in wo.Phases)
             {
+                // Map phase details to PhaseDetailForPlantDto (for activity buttons)
+                var phaseDetails = phase.Details
+                    .Where(d => d.MachineStatusId != null && d.MachineStatus != null)
+                    .OrderBy(d => d.Order)
+                    .Select(d => new PhaseDetailForPlantDto
+                    {
+                        MachineStatusId = d.MachineStatusId,
+                        MachineStatusName = d.MachineStatus?.Name ?? string.Empty,
+                        MachineStatusColor = d.MachineStatus?.Color ?? string.Empty,
+                        MachineStatusIcon = d.MachineStatus?.Icon ?? string.Empty,
+                        Order = d.Order,
+                        EstimatedTime = d.EstimatedTime,
+                        EstimatedOperatorTime = d.EstimatedOperatorTime,
+                        Comment = d.Comment ?? string.Empty
+                    })
+                    .ToList();
+
                 plannedPhases.Add(new PlannedPhaseDto
                 {
                     PhaseId = phase.Id,
@@ -257,7 +274,9 @@ public class WorkOrderPhaseService(
                     PreferredWorkcenterName = phase.PreferredWorkcenter?.Name ?? string.Empty,
                     IsExternalWork = phase.IsExternalWork,
                     QuantityOk = phase.QuantityOk,
-                    QuantityKo = phase.QuantityKo
+                    QuantityKo = phase.QuantityKo,
+                    Comment = phase.Comment ?? string.Empty,
+                    Details = phaseDetails
                 });
             }
 
@@ -275,6 +294,7 @@ public class WorkOrderPhaseService(
                 StartTime = wo.StartTime,
                 WorkOrderStatus = wo.Status?.Name ?? string.Empty,
                 Priority = wo.Order,
+                Comment = wo.Comment ?? string.Empty,
                 Phases = plannedPhases
             });
         }
@@ -321,6 +341,7 @@ public class WorkOrderPhaseService(
                 EndTime = phase.EndTime,
                 QuantityOk = phase.QuantityOk,
                 QuantityKo = phase.QuantityKo,
+                Comment = phase.Comment ?? string.Empty,
                 PreferredWorkcenterName = phase.PreferredWorkcenter?.Name ?? string.Empty,
                 IsExternalWork = phase.IsExternalWork,
                 WorkcenterTypeId = phase.WorkcenterTypeId ?? Guid.Empty
@@ -565,6 +586,78 @@ public class WorkOrderPhaseService(
             currentPhaseQuantityOk = currentPhase.QuantityOk,
             isFirstPhase = previousPhase == null
         });
+    }
+
+    #endregion
+
+    #region Time Metrics
+
+    public async Task<GenericResponse> GetPhaseTimeMetrics(Guid phaseId, Guid machineStatusId, Guid? operatorId)
+    {
+        // 1. Get phase with details
+        var phase = await unitOfWork.WorkOrders.Phases.Get(phaseId);
+        if (phase == null)
+        {
+            return new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderPhaseNotFound"));
+        }
+
+        // 2. Get parent work order for planned quantity
+        var workOrder = await unitOfWork.WorkOrders.Get(phase.WorkOrderId);
+        if (workOrder == null)
+        {
+            return new GenericResponse(false, localizationService.GetLocalizedString("WorkOrderNotFound", phase.WorkOrderId));
+        }
+
+        var plannedQuantity = workOrder.PlannedQuantity;
+
+        // 3. Calculate estimated times from phase details matching the machine status
+        decimal estimatedMachineTimeMinutes = 0;
+        decimal estimatedOperatorTimeMinutes = 0;
+
+        if (phase.Details != null)
+        {
+            foreach (var detail in phase.Details.Where(d => !d.Disabled && d.MachineStatusId == machineStatusId))
+            {
+                var machineTime = detail.EstimatedTime;
+                var operatorTime = detail.EstimatedOperatorTime;
+
+                // If it's cycle time, multiply by planned quantity
+                if (detail.IsCycleTime)
+                {
+                    machineTime = machineTime * plannedQuantity;
+                    operatorTime = operatorTime * plannedQuantity;
+                }
+
+                estimatedMachineTimeMinutes += machineTime;
+                estimatedOperatorTimeMinutes += operatorTime;
+            }
+        }
+
+        // 4. Get actual times from WorkcenterShiftDetail
+        var actualMachineTimeMinutes = await unitOfWork.WorkcenterShifts.Details
+            .GetTotalMachineTimeByPhaseAndStatus(phaseId, machineStatusId);
+
+        decimal actualOperatorTimeMinutes = 0;
+        if (operatorId.HasValue)
+        {
+            actualOperatorTimeMinutes = await unitOfWork.WorkcenterShifts.Details
+                .GetTotalOperatorTimeByPhaseAndOperator(phaseId, operatorId.Value);
+        }
+
+        // 5. Build and return metrics DTO
+        var metrics = new PhaseTimeMetricsDto
+        {
+            PhaseId = phaseId,
+            MachineStatusId = machineStatusId,
+            OperatorId = operatorId,
+            EstimatedMachineTimeMinutes = estimatedMachineTimeMinutes,
+            EstimatedOperatorTimeMinutes = estimatedOperatorTimeMinutes,
+            ActualMachineTimeMinutes = actualMachineTimeMinutes,
+            ActualOperatorTimeMinutes = actualOperatorTimeMinutes,
+            CalculatedAt = DateTime.UtcNow
+        };
+
+        return new GenericResponse(true, metrics);
     }
 
     #endregion

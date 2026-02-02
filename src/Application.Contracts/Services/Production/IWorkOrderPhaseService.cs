@@ -69,5 +69,16 @@ public interface IWorkOrderPhaseService
 
     // Quantity Validation
     Task<GenericResponse> ValidatePreviousPhaseQuantity(ValidatePreviousPhaseQuantityRequest request);
+
+    // Time Metrics
+    /// <summary>
+    /// Gets estimated vs actual time metrics for a work order phase.
+    /// Used for progress tracking in the plant module.
+    /// </summary>
+    /// <param name="phaseId">Work order phase ID</param>
+    /// <param name="machineStatusId">Machine status ID to filter phase details and actual machine time</param>
+    /// <param name="operatorId">Optional operator ID to filter actual operator time</param>
+    /// <returns>Phase time metrics DTO with estimated and actual times</returns>
+    Task<GenericResponse> GetPhaseTimeMetrics(Guid phaseId, Guid machineStatusId, Guid? operatorId);
 }
 

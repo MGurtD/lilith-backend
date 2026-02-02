@@ -85,6 +85,32 @@ namespace Api.Controllers.Production
             }
         }
 
+        /// <summary>
+        /// Gets estimated vs actual time metrics for a work order phase.
+        /// Used for progress tracking in the plant module.
+        /// </summary>
+        /// <param name="phaseId">Work order phase ID</param>
+        /// <param name="machineStatusId">Machine status ID to filter phase details and actual machine time</param>
+        /// <param name="operatorId">Optional operator ID to filter actual operator time</param>
+        /// <returns>Phase time metrics with estimated and actual times</returns>
+        [HttpGet("Phase/{phaseId}/TimeMetrics")]
+        [SwaggerOperation("GetPhaseTimeMetrics")]
+        [ProducesResponseType(typeof(PhaseTimeMetricsDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetPhaseTimeMetrics(Guid phaseId, [FromQuery] Guid machineStatusId, [FromQuery] Guid? operatorId)
+        {
+            var response = await phaseService.GetPhaseTimeMetrics(phaseId, machineStatusId, operatorId);
+            if (response.Result)
+            {
+                return Ok(response.Content);
+            }
+            else
+            {
+                return NotFound(response);
+            }
+        }
+
         [HttpGet("Plannable")]
         [SwaggerOperation("GetPlannableWorkOrders")]
         [ProducesResponseType(StatusCodes.Status200OK)]
