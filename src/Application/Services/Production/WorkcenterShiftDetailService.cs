@@ -520,7 +520,7 @@ namespace Application.Services.Production
                 // Actualizar WorkcenterShiftDetail
                 recentDetail.QuantityOk += dto.QuantityOk;
                 recentDetail.QuantityKo += dto.QuantityKo;
-                unitOfWork.WorkcenterShifts.Details.UpdateWithoutSave(recentDetail);
+                await unitOfWork.WorkcenterShifts.Details.Update(recentDetail);
 
                 // Actualizar WorkOrderPhase con las unidades fabricadas
                 var workOrderPhase = await unitOfWork.WorkOrders.Phases.Get(dto.WorkOrderPhaseId);
@@ -528,10 +528,9 @@ namespace Application.Services.Production
                 {
                     workOrderPhase.QuantityOk += dto.QuantityOk;
                     workOrderPhase.QuantityKo += dto.QuantityKo;
-                    unitOfWork.WorkOrders.Phases.UpdateWithoutSave(workOrderPhase);
+                    await unitOfWork.WorkOrders.Phases.Update(workOrderPhase);
                 }
 
-                await unitOfWork.CompleteAsync();
                 return new GenericResponse(true);
             }
             else
