@@ -22,6 +22,11 @@ namespace Application.Services.Production
             return [.. workcenterShifts];
         }
 
+        public async Task<List<WorkcenterShift>> GetCurrentsWithDetails()
+        {
+            return await unitOfWork.WorkcenterShifts.GetCurrentsWithDetails();
+        }
+
         public async Task<GenericResponse> CreateWorkcenterShifts(List<CreateWorkcenterShiftDto> dtos)
         {
             // Obtenir els torns actius dels centres de treball indicats en els DTOs
