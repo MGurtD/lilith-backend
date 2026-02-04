@@ -9,6 +9,7 @@ public interface IWorkcenterShiftService
 
     Task<WorkcenterShift?> GetWorkcenterShift(Guid workcenterShiftId);
     Task<List<WorkcenterShift>> GetCurrentWorkcenterShifts();
+    Task<List<WorkcenterShift>> GetCurrentsWithDetails();
 
     Task<GenericResponse> CreateWorkcenterShifts(List<CreateWorkcenterShiftDto> dtos);
 

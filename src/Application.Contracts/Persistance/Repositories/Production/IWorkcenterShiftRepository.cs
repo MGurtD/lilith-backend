@@ -8,6 +8,8 @@ namespace Application.Contracts
         IWorkcenterShiftDetailRepository Details { get; }
 
         Task<WorkcenterShift?> GetCurrentWorkcenterShiftWithCurrentDetails(Guid workcenterId);
+        
+        Task<List<WorkcenterShift>> GetCurrentsWithDetails();
 
         IQueryable<WorkcenterShift> FindWithDetails(Expression<Func<WorkcenterShift, bool>> predicate);
 

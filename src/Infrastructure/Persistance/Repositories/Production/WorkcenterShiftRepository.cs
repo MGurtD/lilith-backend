@@ -23,6 +23,15 @@ namespace Infrastructure.Persistance.Repositories.Production
             return currentWorkcenterShift;
         }
 
+        public async Task<List<WorkcenterShift>> GetCurrentsWithDetails()
+        {
+            return dbSet
+                    .Include(d => d.Details.Where(detail => detail.Current))
+                    .Where(d => d.Current)
+                    .AsNoTracking()
+                    .ToList();
+        }
+
         public async Task<List<WorkcenterShiftHistorical>> GetWorkcenterShiftHistorical(WorkcenterShiftHistoricRequest request)
         {
             var query = context.Set<WorkcenterShiftHistorical>()
