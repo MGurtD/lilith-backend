@@ -93,13 +93,10 @@ namespace Application.Services.Production
             else
             {
                 // Cas 2 : Hi ha detalls actius al centre de treball
-                foreach (var currentWorkcenterDetail in currentWorkcenterDetails)
+                foreach (var currentWorkcenterDetail in currentWorkcenterDetails.Where(wsd => wsd.OperatorId == null))
                 {
-                    if (currentWorkcenterDetail.OperatorId == null)
-                    {
-                        currentWorkcenterDetail.Close(request.Timestamp);
-                        unitOfWork.WorkcenterShifts.Details.UpdateWithoutSave(currentWorkcenterDetail);
-                    }
+                    currentWorkcenterDetail.Close(request.Timestamp);
+                    unitOfWork.WorkcenterShifts.Details.UpdateWithoutSave(currentWorkcenterDetail);
 
                     var newDetail = new WorkcenterShiftDetail()
                     {
