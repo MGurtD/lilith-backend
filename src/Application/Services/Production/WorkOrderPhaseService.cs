@@ -350,7 +350,7 @@ public class WorkOrderPhaseService(
             // Map phase details
             if (phase.Details != null)
             {
-                foreach (var detail in phase.Details.Where(d => !d.Disabled))
+                foreach (var detail in phase.Details.Where(d => !d.Disabled).OrderBy(d => d.Order))
                 {
                     detailedPhase.Details.Add(new PhaseDetailItemDto
                     {
@@ -359,7 +359,8 @@ public class WorkOrderPhaseService(
                         EstimatedTime = detail.EstimatedTime,
                         EstimatedOperatorTime = detail.EstimatedOperatorTime,
                         IsCycleTime = detail.IsCycleTime,
-                        Comment = detail.Comment ?? string.Empty
+                        Comment = detail.Comment ?? string.Empty,
+                        Order = detail.Order
                     });
                 }
             }
