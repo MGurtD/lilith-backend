@@ -22,6 +22,11 @@ public class WorkcenterService(IUnitOfWork unitOfWork, ILocalizationService loca
         return await unitOfWork.Workcenters.GetVisibleInPlant();
     }
 
+    public async Task<IEnumerable<WorkcenterLoadDto>> GetWorkcenterLoadBetweenDatesByWorkcenterType(DateTime startDate, DateTime endDate)
+    {
+        return await unitOfWork.Workcenters.GetWorkcenterLoadBetweenDatesByWorkcenterType(startDate, endDate);
+    }
+
     public async Task<GenericResponse> Create(Workcenter workcenter)
     {
         var exists = unitOfWork.Workcenters.Find(w => w.Name == workcenter.Name).Any();

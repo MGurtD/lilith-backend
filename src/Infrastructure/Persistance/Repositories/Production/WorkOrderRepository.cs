@@ -138,12 +138,47 @@ namespace Infrastructure.Persistance.Repositories.Production
                     .ThenInclude(p => p.Status)
                 .Include(wo => wo.Phases.Where(p => phaseIds.Contains(p.Id)))
                     .ThenInclude(p => p.PreferredWorkcenter)
+                .Include(wo => wo.Phases.Where(p => phaseIds.Contains(p.Id)))
+                    .ThenInclude(p => p.Details.OrderBy(d => d.Order))
+                        .ThenInclude(d => d.MachineStatus)
                 .AsNoTracking()
                 .OrderBy(w => w.Order)
                     .ThenBy(w => w.PlannedDate)
                 .ToListAsync();
 
             return workOrders;
+        }
+
+        public async Task<IEnumerable<WorkOrderPhaseEstimationDto>> GetWorkcenterLoadBetweenDatesByWorkcenterType(DateTime startDate, DateTime endDate)
+        {
+            return await dbSet
+                .Where(wo => wo.PlannedDate >= startDate && wo.PlannedDate <= endDate)
+                .Include(wo => wo.Phases)
+                    .ThenInclude(p => p.Details)
+                .AsNoTracking()
+                .SelectMany(wo => wo.Phases
+                            .GroupBy(wp => new 
+                            {
+                                wo.Code,
+                                wo.PlannedQuantity,
+                                PhaseCode = wp.Code,
+                                PhaseDescription = wp.Description,
+                                wp.WorkcenterTypeId                                
+                            })
+                .Select(g => new WorkOrderPhaseEstimationDto
+                {
+                    Code = g.Key.Code,
+                    PlannedQuantity = g.Key.PlannedQuantity,
+                    PhaseCode = g.Key.PhaseCode,
+                    PhaseDescription = g.Key.PhaseDescription,
+                    WorkcenterTypeId = g.Key.WorkcenterTypeId,
+                    EstimatedTime = g.SelectMany(wp => wp.Details)
+                        .Sum(wd => wd.IsCycleTime
+                            ? g.Key.PlannedQuantity * wd.EstimatedTime
+                            : wd.EstimatedTime
+                        )
+                }))
+                .ToListAsync();
         }
 
     }

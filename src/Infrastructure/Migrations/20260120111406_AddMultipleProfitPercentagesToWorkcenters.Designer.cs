@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260120111406_AddMultipleProfitPercentagesToWorkcenters")]
+    partial class AddMultipleProfitPercentagesToWorkcenters
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1153,9 +1156,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasDefaultValueSql("NOW()");
 
-                    b.Property<bool>("WorkOrderAllowed")
-                        .HasColumnType("boolean");
-
                     b.HasKey("Id")
                         .HasName("PK_MachineStatus");
 
@@ -1999,14 +1999,6 @@ namespace Infrastructure.Migrations
 
                     b.Property<Guid?>("PurchaseOrderId")
                         .HasColumnType("uuid");
-
-                    b.Property<decimal>("QuantityKo")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("decimal");
-
-                    b.Property<decimal>("QuantityOk")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("decimal");
 
                     b.Property<Guid?>("ServiceReferenceId")
                         .HasColumnType("uuid");

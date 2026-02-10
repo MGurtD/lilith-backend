@@ -33,5 +33,7 @@ namespace Application.Contracts
         /// </summary>
         Task<WorkOrder?> GetWorkOrderWithPhasesDetailed(Guid workOrderId);
 
+        Task<IEnumerable<WorkOrderPhaseEstimationDto>>GetWorkcenterLoadBetweenDatesByWorkcenterType(DateTime startDate, DateTime endDate);
+
     }
 }

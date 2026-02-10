@@ -28,6 +28,17 @@ public class WorkcenterShiftController(IWorkcenterShiftService workcenterShiftSe
         return Ok(workcenterShifts);
     }
 
+    [HttpGet("Currents")]
+    public async Task<IActionResult> GetCurrentsWithDetails()
+    {
+        var workcenterShifts = await workcenterShiftService.GetCurrentsWithDetails();
+        if (workcenterShifts.Count == 0)
+        {
+            return NotFound();
+        }
+        return Ok(workcenterShifts);
+    }
+
     [HttpPost("CreateWorkcenterShifts")]
     public async Task<IActionResult> CreateWorkcenterShifts(List<CreateWorkcenterShiftDto> dtos)
     {

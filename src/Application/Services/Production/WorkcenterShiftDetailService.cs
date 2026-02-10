@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Services.Production
 {
-    public class WorkcenterShiftDetailService(IUnitOfWork unitOfWork, IMetricsService metricsService, IWorkOrderPhaseService workOrderPhaseService, ILogger<WorkcenterShiftDetailService> logger) : IWorkcenterShiftDetailService
+    public class WorkcenterShiftDetailService(IUnitOfWork unitOfWork, IMetricsService metricsService, IWorkOrderPhaseService workOrderPhaseService, ILocalizationService localizationService, ILogger<WorkcenterShiftDetailService> logger) : IWorkcenterShiftDetailService
     {
         private GenericResponse LogAndReturnError(string message)
         {
@@ -93,13 +93,10 @@ namespace Application.Services.Production
             else
             {
                 // Cas 2 : Hi ha detalls actius al centre de treball
-                foreach (var currentWorkcenterDetail in currentWorkcenterDetails)
+                foreach (var currentWorkcenterDetail in currentWorkcenterDetails.Where(wsd => wsd.OperatorId == null))
                 {
-                    if (currentWorkcenterDetail.OperatorId == null)
-                    {
-                        currentWorkcenterDetail.Close(request.Timestamp);
-                        unitOfWork.WorkcenterShifts.Details.UpdateWithoutSave(currentWorkcenterDetail);
-                    }
+                    currentWorkcenterDetail.Close(request.Timestamp);
+                    unitOfWork.WorkcenterShifts.Details.UpdateWithoutSave(currentWorkcenterDetail);
 
                     var newDetail = new WorkcenterShiftDetail()
                     {
@@ -517,14 +514,25 @@ namespace Application.Services.Production
                                                 .FirstOrDefaultAsync();
             if (recentDetail != null)
             {
+                // Actualizar WorkcenterShiftDetail
                 recentDetail.QuantityOk += dto.QuantityOk;
                 recentDetail.QuantityKo += dto.QuantityKo;
                 await unitOfWork.WorkcenterShifts.Details.Update(recentDetail);
+
+                // Actualizar WorkOrderPhase con las unidades fabricadas
+                var workOrderPhase = await unitOfWork.WorkOrders.Phases.Get(dto.WorkOrderPhaseId);
+                if (workOrderPhase != null)
+                {
+                    workOrderPhase.QuantityOk += dto.QuantityOk;
+                    workOrderPhase.QuantityKo += dto.QuantityKo;
+                    await unitOfWork.WorkOrders.Phases.Update(workOrderPhase);
+                }
+
                 return new GenericResponse(true);
             }
             else
             {
-                return LogAndReturnError("La fase de fabricació no está carregada al centre de treball indicat");
+                return LogAndReturnError(localizationService.GetLocalizedString("WorkOrderPhaseShiftDetailNotLoaded"));
             }
         }
 

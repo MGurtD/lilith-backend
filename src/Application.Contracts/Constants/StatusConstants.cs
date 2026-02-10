@@ -37,6 +37,7 @@ namespace Application.Contracts
             public const string Llancada = "Llançada";
             public const string Tancada = "Tancada";
             public const string OFCancellada = "Cancel·lada";
+            public const string ServeiExtern = "Servei Extern";
 
             // Sales Order statuses
             public const string Comanda = "Comanda";
