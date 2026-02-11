@@ -289,4 +289,7 @@ public class NextPhaseInfoDto
     
     /// <summary>Phase description</summary>
     public string PhaseDescription { get; set; } = string.Empty;
+
+    /// <summary>Phase operation details</summary>
+    public List<PhaseDetailItemDto> Details { get; set; } = [];
 }
