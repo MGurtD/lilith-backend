@@ -63,7 +63,9 @@ public class WorkcenterRepository : Repository<Workcenter, Guid>, IWorkcenterRep
                 .Where(wp => wp.WorkcenterType != null)  // Filter out phases without WorkcenterType
                 .GroupBy(wp => new 
                 { 
-                    wo.Code, 
+                    wo.Code,
+                    wo.Order,
+                    wo.PlannedDate,
                     wo.PlannedQuantity, 
                     PhaseCode = wp.Code, 
                     PhaseDescription = wp.Description, 
@@ -73,6 +75,8 @@ public class WorkcenterRepository : Repository<Workcenter, Guid>, IWorkcenterRep
                 .Select(g => new WorkcenterLoadDto
                 {
                     WorkOrderCode = g.Key.Code,
+                    WorkOrderPriority = g.Key.Order,
+                    WorkOrderPlannedDate = g.Key.PlannedDate,
                     PlannedQuantity = g.Key.PlannedQuantity,
                     PhaseCode = g.Key.PhaseCode,
                     PhaseDescription = g.Key.PhaseDescription,
