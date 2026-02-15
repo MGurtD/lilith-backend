@@ -55,10 +55,10 @@ public class ProductionPartGeneratorHandler(
             return;
         }
 
-        // 4. Agrupar per (MachineStatusId, OperatorId) - Només detalls amb operari
+        // 4. Agrupar per (WorkcenterShiftId, MachineStatusId, OperatorId) - Només detalls amb operari
         var groups = shiftDetails
             .Where(d => d.OperatorId.HasValue)
-            .GroupBy(d => new { d.MachineStatusId, OperatorId = d.OperatorId!.Value });
+            .GroupBy(d => new { d.WorkcenterShiftId, d.MachineStatusId, OperatorId = d.OperatorId!.Value });
 
         // Build all ProductionParts first, then persist in batch
         var partsToCreate = new List<ProductionPart>();
@@ -83,6 +83,7 @@ public class ProductionPartGeneratorHandler(
             decimal weightedOperatorCostSum = 0;
             decimal weightedWorkcenterCostSum = 0;
             decimal totalDuration = 0;
+            DateTime? minStartTime = null;
 
             foreach (var detail in group)
             {
@@ -101,6 +102,10 @@ public class ProductionPartGeneratorHandler(
                 weightedOperatorCostSum += detail.OperatorCost * duration;
                 weightedWorkcenterCostSum += detail.WorkcenterCost * duration;
                 totalDuration += duration;
+
+                // Track minimum StartTime for Date field
+                if (minStartTime == null || detail.StartTime < minStartTime)
+                    minStartTime = detail.StartTime;
             }
 
             if (totalDuration <= 0) continue;
@@ -116,7 +121,7 @@ public class ProductionPartGeneratorHandler(
             partsToCreate.Add(new ProductionPart
             {
                 Id = Guid.NewGuid(),
-                Date = request.ClosedAt,
+                Date = minStartTime ?? request.ClosedAt, // Use earliest work start date, fallback to close timestamp
                 WorkcenterId = workcenterId,
                 WorkOrderId = phase.WorkOrderId,
                 WorkOrderPhaseId = request.WorkOrderPhaseId,
