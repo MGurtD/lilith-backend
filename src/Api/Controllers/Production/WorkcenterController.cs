@@ -56,10 +56,7 @@ namespace Api.Controllers.Production
         [HttpGet("workcenterload")]
         public async Task<IActionResult> GetWorkcenterLoadBetweenDatesByWorkcenterType([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
-
             var workorders = await service.GetWorkcenterLoadBetweenDatesByWorkcenterType(startDate, endDate);
-            if (workorders.Count() == 0)
-                return NoContent();
             return Ok(workorders);
         }
         
